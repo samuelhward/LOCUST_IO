@@ -1,4 +1,4 @@
-#!/work/imas/opt/EasyBuild/software/Anaconda2/4.4.0/bin/python
+#!/usr/bin/env python
 
 #input_classes_testing.py
 
@@ -6,7 +6,7 @@
 Samuel Ward
 02/11/2017
 ----
-Tests for the input_classes.py methods
+Unit tests for the input_classes.py methods
 ---
 
 ---
@@ -18,7 +18,7 @@ Tests for the input_classes.py methods
 #Preamble
 
 import sys
-sys.path.insert(0,'/home/ITER/wards2/random_code_tests/')
+#sys.path.insert(1,'/home/ITER/wards2/random_code_tests/')
 
 try:
 	import input_classes 
@@ -38,25 +38,16 @@ except:
 #Main Code
 
 
-#initialise some object here and test the class methods 
-
-ID='hm'
-
-input_filename="input_file.txt"
+ID='eq_ID_here'
+input_filename="test.eqdsk"
 data_format='GEQDSK'
+
 test=input_classes.Equilibrium(ID,input_filename,data_format)
 
-print(test.data) #this should be 10 but is None
+print(test.input_type)
+print(test.data)
 print(test.input_filename)
 print(test.data_format)
-
-print("Do we get here?\n")
-
-data_format='IDS_equilibrium'
-test2=input_classes.Equilibrium(ID,input_filename,data_format)
-print(test2.data) #this should be 20
-print(test2.input_filename)
-print(test2.data_format)
 
 #################################
 

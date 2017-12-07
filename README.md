@@ -1,8 +1,20 @@
-# IDS_converters
+# LOCUST IO Module
+
+This package is designed to process input and output for the LOCUST-GPU code, developed by Rob Akers at CCFE. There are two sub-modules - input and output - which contain python objects, each representing LOCUST data.
+
+## Input Module
+
+## Output Module
+
+## Usage
 
 
 
-## Par heading 
+
+
+
+Template things below
+
 
 * Bullet point here
 
@@ -17,12 +29,6 @@ this code will just be in a little box
 ```
 
 [this_appears_as_a_url](www.with.this.address)
-
-
-
-
-
-
 
 
 Table of Contents

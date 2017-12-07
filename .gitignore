@@ -1,11 +1,10 @@
-$ cat .gitignore
-
 #files to ignore...
 
 
 *.dat
 *.eqdsk
 *.mesh.*
+*.pyc
 
 
 #note - to begin to ignore existing files, must use
