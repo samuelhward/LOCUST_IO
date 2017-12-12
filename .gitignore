@@ -1,11 +1,15 @@
 #files to ignore...
 
-
+#LOCUST input files
 *.dat
 *.eqdsk
 *.mesh.*
+
+#python module files
 *.pyc
 
+#MAC ds_store
+.DS_Store 
 
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME

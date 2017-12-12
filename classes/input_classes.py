@@ -120,27 +120,38 @@ def get_next(obj):
 def read_GEQDSK(ID,input_filename): 
     ''' 
     read a G-EQDSK formatted equilibrium file, originally written by Ben Dudson and edited by Nick Walkden
-    
-    format is specified here:
-    https://fusion.gat.com/theory/Efitgeqdsk
-    
-    input_data = dictionary containing:
-        nw, nh        Number of points in R (x or width), Z (y or height)
-        idum          Dummy array?
-        rdim, zdim    Sizes of the R,Z dimensions in m
-        rcentr        Reference value of R
-        bcentr        Vacuum toroidal magnetic field at rcentr
-        rleft         R at left (inner) boundary
-        zmid          Z at middle of domain
-        rmagx, zmagx  R,Z at magnetic axis (O-point)
-        simagx        Poloidal flux psi at magnetic axis
-        sibdry        Poloidal flux psi at plasma boundary
-        cplasma        Plasma current [Amps]   
-        fpol          1D array of f(psi)=R*Bt  [meter-Tesla]
-        pres          1D array of p(psi) [Pascals]
-        qpsi          1D array of q(psi)
+      
+        0D data
+    nh          #number of points in R (x or width)
+    nw          #number of points in Z (y or height)
+    idum        #number of spatial dimensions?
+    rdim        #size of the R dimension in m
+    zdim        #size of the Z dimension in m
+    rcentr      #reference value of R
+    bcentr      #vacuum toroidal magnetic field at rcentr
+    rleft       #R at left (inner) boundary
+    zmid        #Z at middle of domain
+    rmaxis      #R at magnetic axis (O-point)
+    zmaxis      #Z at magnetic axis (O-point)
+    simag       #poloidal flux psi at magnetic axis (Weber / rad)
+    sibry       #poloidal flux at plasma boundary (Weber / rad)
+    current     #plasma current [Amps]   
+    xdum        #dummy variable - just contains zero
+    nbbbs       #plasma boundary
+    limitr      #wall boundary
+        1D data
+    fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+    pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+    ffprime     #workk1
+    pprime      #workk1
+    qpsi        #q values on uniform flux grid
+    rlim        #r wall boundary
+    zlim        #z wall boundary
+    rbbbs       #r plasma boundary
+    zbbbs       #z plasma boundary
+        2D data
+    psirz       #array (nx,ny) of poloidal flux
 
-        psi           2D array (nx,ny) of poloidal flux
     '''
 
     input_data = {}
@@ -230,23 +241,36 @@ def dump_GEQDSK(ID,data,output_file):
     '''
     generic function for writing a GEQDSK to file, originally written by Ben Dudson and edited by Nick Walkden
 
-    data = dictionary containing:
-        nw, nh        Number of points in R (x or width), Z (y or height)
-        idum          Dummy array?
-        rdim, zdim    Sizes of the R,Z dimensions in m
-        rcentr        Reference value of R
-        bcentr        Vacuum toroidal magnetic field at rcentr
-        rleft         R at left (inner) boundary
-        zmid          Z at middle of domain
-        rmagx, zmagx  R,Z at magnetic axis (O-point)
-        simagx        Poloidal flux psi at magnetic axis
-        sibdry        Poloidal flux psi at plasma boundary
-        cplasma        Plasma current [Amps]   
-        fpol          1D array of f(psi)=R*Bt  [meter-Tesla]
-        pres          1D array of p(psi) [Pascals]
-        qpsi          1D array of q(psi)
-
-        psi           2D array (nx,ny) of poloidal flux
+        0D data
+    nh          #number of points in R (x or width)
+    nw          #number of points in Z (y or height)
+    idum        #number of spatial dimensions?
+    rdim        #size of the R dimension in m
+    zdim        #size of the Z dimension in m
+    rcentr      #reference value of R
+    bcentr      #vacuum toroidal magnetic field at rcentr
+    rleft       #R at left (inner) boundary
+    zmid        #Z at middle of domain
+    rmaxis      #R at magnetic axis (O-point)
+    zmaxis      #Z at magnetic axis (O-point)
+    simag       #poloidal flux psi at magnetic axis (Weber / rad)
+    sibry       #poloidal flux at plasma boundary (Weber / rad)
+    current     #plasma current [Amps]   
+    xdum        #dummy variable - just contains zero
+    nbbbs       #plasma boundary
+    limitr      #wall boundary
+        1D data
+    fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+    pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+    ffprime     #workk1
+    pprime      #workk1
+    qpsi        #q values on uniform flux grid
+    rlim        #r wall boundary
+    zlim        #z wall boundary
+    rbbbs       #r plasma boundary
+    zbbbs       #z plasma boundary
+        2D data
+    psirz       #array (nx,ny) of poloidal flux    
     '''
 
     filename=output_file
