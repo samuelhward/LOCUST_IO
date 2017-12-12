@@ -8,25 +8,27 @@ python module for classes which hold LOCUST's input data
 contains methods for reading/writing/converting/plotting/manipulating LOCUST input data
 ---
 notes: 
-    if data source formats change, only need to change the supporting functions
 
+see README.md for usage
+
+-if data source formats change, only need to change the supporting functions
 
 
 
 TODO GEQDSK read in seems ok, may need to have a look online at certain functions and need testing. now need to check GEQDSK dump and add IDS functionality
 TODO need to decide how to standardise data in dicts
-
 TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
 i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
 the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
 TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
+TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
+
 
 NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
 and argparse to a python script which implements this module
 NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obvs then with paramiko)
 ---
 '''
-
 
 
 ###################################################################################################
@@ -60,6 +62,18 @@ except:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ###################################################################################################
 #Main Code
 
@@ -67,9 +81,6 @@ except:
 
 
 ################################################################## supporting functions
-
-#TODO could have a generic error function which just generates a string with ID and input type in it, like below in none_check but for any error?
-
 def none_check(ID,input_type,error_message,*args):
     '''
     generic function for checking if a None value appears in *args
@@ -113,7 +124,7 @@ def read_GEQDSK(ID,input_filename):
     format is specified here:
     https://fusion.gat.com/theory/Efitgeqdsk
     
-    data = dictionary containing:
+    input_data = dictionary containing:
         nw, nh        Number of points in R (x or width), Z (y or height)
         idum          Dummy array?
         rdim, zdim    Sizes of the R,Z dimensions in m
@@ -132,6 +143,9 @@ def read_GEQDSK(ID,input_filename):
         psi           2D array (nx,ny) of poloidal flux
     '''
 
+    input_data = {}
+    flags = {'loaded' : False } #XXX might not need this variable now
+
     file = open(input_filename) #open file, assumed input_filename is object
     
     line = file.readline() #first line should be case, id number and dimensions
@@ -140,9 +154,9 @@ def read_GEQDSK(ID,input_filename):
     
     #extract case, id number and dimensions  
     conts = line.split()    #split by white space (no arguement in .split())
-    data['nh'] = int(conts[-1]) #same as nyefit or height dimension
-    data['nw'] = int(conts[-2]) #same as nxefit or width dimension
-    data['idum'] = int(conts[-3])
+    input_data['nh'] = int(conts[-1]) #same as nyefit or height dimension
+    input_data['nw'] = int(conts[-2]) #same as nxefit or width dimension
+    input_data['idum'] = int(conts[-3])
     flags['case'] = conts[0:-4]
 
     #now use generator to read numbers from remaining lines in file
@@ -156,31 +170,31 @@ def read_GEQDSK(ID,input_filename):
     
     #read in all floats
     for key in float_keys:                              
-        data[key] = float(get_next(token)) #these are all single value floats
+        input_data[key] = float(get_next(token)) #these are all single value floats
     
     #now read arrays  
     def read_1d(n): 
-        data = np.zeros([n]) #initialise blank lists
+        input_data = np.zeros([n]) #initialise blank lists
         for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
-            data[i] = float(get_next(token))
-        return data
+            input_data[i] = float(get_next(token))
+        return input_data
 
     def read_2d(nx,ny):
-        data = np.zeros([nx,ny])
+        input_data = np.zeros([nx,ny])
         for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
-            data[i,:] = read_1d(ny)
-        return data
-        
-        data['fpol'] = read_1d(data['nw']) #remember data['nw'] holds width, data['nh'] holds height
-        data['pres'] = read_1d(data['nw'])
-        data['ffprime'] = read_1d(data['nw'])
-        data['pprime'] = read_1d(data['nw'])
-        data['psirz'] = read_2d(data['nw'],data['nh'])
-        data['qpsi'] = read_1d(data['nw'])
+            input_data[i,:] = read_1d(ny)
+        return input_data
     
-        #now deal with boundaries
-        data['nbbbs'] = int(get_next(token))
-        data['limitr'] = int(get_next(token))
+    input_data['fpol'] = read_1d(input_data['nw']) #remember input_data['nw'] holds width, input_data['nh'] holds height
+    input_data['pres'] = read_1d(input_data['nw'])
+    input_data['ffprime'] = read_1d(input_data['nw'])
+    input_data['pprime'] = read_1d(input_data['nw'])
+    input_data['psirz'] = read_2d(input_data['nw'],input_data['nh'])
+    input_data['qpsi'] = read_1d(input_data['nw'])
+
+    #now deal with boundaries
+    input_data['nbbbs'] = int(get_next(token))
+    input_data['limitr'] = int(get_next(token))
 
     def read_bndy(nb,nl): #number of boundaries and limiters
         if nb > 0: #read in boundaries
@@ -205,10 +219,10 @@ def read_GEQDSK(ID,input_filename):
 
         return rb,zb,rl,zl
 
-    data['rbbbs'],data['zbbbs'],data['rlim'],data['zlim'] = read_bndy(data['nbbbs'],data['limitr'])
+    input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
     flags['loaded'] = True
     
-    return data
+    return input_data
 
 
 
@@ -271,7 +285,7 @@ def dump_GEQDSK(ID,data,output_file):
         file.write("\n")
     
     with open(filename,'w') as file:
-        line = " pyEquilibrium "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(data['nw'])+" "+str(data['nh'])+"\n"
+        line = " pyEquilibrium "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(output_data['nw'])+" "+str(output_data['nh'])+"\n"
         file.write(line)
 
         float_keys = [
@@ -280,17 +294,17 @@ def dump_GEQDSK(ID,data,output_file):
         'current','simag','xdum','rmaxis','xdum',
         'zmaxis','xdum','sibry','xdum','xdum']
         for key in float_keys:
-            write_number(file,data[key],cnt)
-        write_1d(file,data['fpol'],cnt)
-        write_1d(file,data['pres'],cnt)
-        write_1d(file,data['ffprime'],cnt)
-        write_1d(file,data['pprime'],cnt)
-        write_2d(file,data['psirz'],cnt)
+            write_number(file,output_data[key],cnt)
+        write_1d(file,output_data['fpol'],cnt)
+        write_1d(file,output_data['pres'],cnt)
+        write_1d(file,output_data['ffprime'],cnt)
+        write_1d(file,output_data['pprime'],cnt)
+        write_2d(file,output_data['psirz'],cnt)
         #No qpsi in eq object for now
-        write_1d(file,np.zeros(data['nw']),cnt)    
-        file.write("\n"+str(len(list(data['rbbbs'])))+"\t"+str(len(list(data['rlim'])))+"\n")
-        write_bndry(file,data['rbbbs'],data['zbbbs'],cnt)
-        write_bndry(file,data['rlim'],data['zlim'],cnt)
+        write_1d(file,np.zeros(output_data['nw']),cnt)    
+        file.write("\n"+str(len(list(output_data['rbbbs'])))+"\t"+str(len(list(output_data['rlim'])))+"\n")
+        write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
+        write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
 
 def read_IDS_equilibrium(ID,shot,run): 
     '''
@@ -327,6 +341,22 @@ def dump_IDS_equilibrium(ID,data,shot,run):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ################################################################## base class
 class LOCUST_input:
     """
@@ -343,19 +373,33 @@ class LOCUST_input:
 
     input_type='base_input'
 
-    def __init__(self,ID,input_filename=None,data_format=None,*args,**kwargs):
+    def __init__(self,ID,input_filename=None,data_format=None,*args,**kwargs): #this is common to all children (not overloaded)
 
         self.ID=ID
         self.input_filename=input_filename
         self.data_format=data_format
 
         if none_check(self.ID,self.input_type,'blank LOCUST input initialised - either input_filename or data_format is missing\n',input_filename,data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
-            pass #XXX at the moment this is stopping object being instantiated
-        else: #read input data if both filled
+            pass #TODO check whether this generates blank object
+        else: #read input data if sufficient arguements are given
             self.read_data(input_filename,data_format)
 
     def read_data(self,input_filename=None,data_format=None): #bad practice to change overridden method signatures, so retain all method arguements             
-        self.data=None #read_data definition is to be overloaded in child input classes 
+        self.data=None #read_data definition is to be overloaded in children classes 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -401,11 +445,11 @@ class Equilibrium(LOCUST_input):
             self.input_filename=input_filename
             self.data_format=data_format
 
-            if data_format=='GEQDSK':
-                self.data=read_GEQDSK(self.ID,input_filename)
+            if self.data_format=='GEQDSK':
+                self.data=read_GEQDSK(self.ID,self.input_filename)
                
-            elif data_format=='IDS_equilibrium':
-                self.data=read_IDS_equilibrium(self.ID,input_filename)
+            elif self.data_format=='IDS_equilibrium':
+                self.data=read_IDS_equilibrium(self.ID,self.input_filename)
 
             
     def dump_data(self,output_file="test.eqdsk",data_format='GEQDSK'):
@@ -430,9 +474,10 @@ class Equilibrium(LOCUST_input):
         copy two equilibrium objects 
 
         notes:
-        -if target data is empty this function does nothing
-        -if no key supplied then copy everything
-        -if key supplied then copy/append dictionary data accordingly
+            usage:
+                -if target data is empty this function does nothing
+                -if no key supplied then copy everything
+                -if key supplied then copy/append dictionary data accordingly
         """
 
         if target.data == None:    #return warning if target is empty
@@ -457,6 +502,20 @@ class Equilibrium(LOCUST_input):
             pass
         else:
             self.data[key]=value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
