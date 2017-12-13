@@ -7,26 +7,22 @@ Samuel Ward
 python module for classes which hold LOCUST's input data
 contains methods for reading/writing/converting/plotting/manipulating LOCUST input data
 ---
+usage:
+    see README.md for usage
+
 notes: 
-
-see README.md for usage
-
--if data source formats change, only need to change the supporting functions
-
-
-
-TODO GEQDSK read in seems ok, may need to have a look online at certain functions and need testing. now need to check GEQDSK dump and add IDS functionality
-TODO need to decide how to standardise data in dicts
-TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
-i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
-the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
-TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
-TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
+    TODO GEQDSK read in seems ok, may need to have a look online at certain functions and need testing. now need to check GEQDSK dump and add IDS functionality
+    TODO need to decide how to standardise data in dicts
+    TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
+    i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
+    the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
+    TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
+    TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
 
 
-NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
-and argparse to a python script which implements this module
-NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obvs then with paramiko)
+    NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
+    and argparse to a python script which implements this module
+    NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obvs then with paramiko)
 ---
 '''
 
@@ -37,7 +33,7 @@ NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/ha
 import sys
 
 try:
-    from LCOUST_IO.classes import support
+    from LOCUST_IO.classes import support 
     import numpy as np
     import copy
     import re

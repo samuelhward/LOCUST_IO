@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #input_classes_testing.py
 
@@ -8,7 +8,7 @@ Samuel Ward
 ----
 Unit tests for the input_classes.py methods
 ---
-
+notes:
 ---
 '''
 
@@ -18,6 +18,12 @@ Unit tests for the input_classes.py methods
 #Preamble
 
 import sys
+
+try:
+	import context
+except:
+	raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
+	sys.exit(1)
 
 try:
 	from LOCUST_IO.classes import input_classes 

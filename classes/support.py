@@ -2,12 +2,13 @@
 
 '''
 Samuel Ward
-02/11/2017
+13/12/2017
 ----
 File which holds supporting functions and variables for the LOCUST-IO package
 ---
 notes: 
-
+	TODO this could hold all non-class functions? 
+	TODO could also have another file called read_write functions to hold all the file methods too
 ---
 '''
 
