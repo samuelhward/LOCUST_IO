@@ -6,12 +6,47 @@ This package is designed to process input and output for the LOCUST-GPU code, de
 
 It is designed such that individual file read/write methods can easily be swapped out if new methods/filetypes come and go - all that needs to be changed is the respective function (which would be the same amount of work as writing the function bespoke).
 
-## Input Module
 
-## Output Module
 
-## Usage
 
+
+
+## Basic Usage
+
+-Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project
+-Copy a context.py file from LOCUST_IO/testing to LOCUST_IO/my_project
+-Copy the file which you want to manipulate to LOCUST_IO/input_files and LOCUST_IO/output_files
+
+
+
+
+
+## Advanced Usage
+-Import the classes submodule by...
+
+
+
+
+
+
+## Structure
+
+The overall layout consists of the main subpackage "classes" which takes data from the "input_files" and "output_files" folders, as well as individual folders for projects which draw from these folders. Every project folder, such as "testing" and "examples" must contain a context.py to ensure the package can see its folders and files. 
+
+### Classes Subpackage
+
+#### Input Module
+
+#### Output Module
+
+#### Support Module
+
+
+### Testing Subpackage
+
+#### Input Class Tests
+
+#### Output Class Tests
 
 
 

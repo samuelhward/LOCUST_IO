@@ -31,16 +31,11 @@ dir_input_files=os.path.join(dir_locust_io,'input_files/') #add the / at the end
 dir_output_files=os.path.join(dir_locust_io,'output_files/')
 dir_classes=os.path.join(dir_locust_io,'classes/')
 
+
+
+
+
 #sys.path.insert(1,dir_classes) #add that to python path (must specify the exact module directory, python does not search recursively)
-
-
-
-
-
-
-
-
-
 
 #################################
 

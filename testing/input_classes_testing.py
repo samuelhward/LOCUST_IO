@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #input_classes_testing.py
 
@@ -22,13 +22,13 @@ import sys
 try:
 	import context
 except:
-	raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
+	raise ImportError("ERROR: local context.py not found!\nreturning\n")
 	sys.exit(1)
 
-try:
-	from LOCUST_IO.classes import input_classes 
+try: 
+	import input_classes
 except:
-	raise ImportError("ERROR: input_classes.py could not be imported!\nreturning\n")
+	raise ImportError("ERROR: LOCUST_IO/classes/input_classes.py could not be imported!\nreturning\n")
 	sys.exit(1)
 
 try:
@@ -92,8 +92,8 @@ plt.plot(test.data['zbbbs'])	#z plasma boundary
 plt.plot(test.data['psirz']) #2D array (nx,ny) of poloidal flux
 '''
 
-#plt.plot(test.data['psirz']) #2D array (nx,ny) of poloidal flux
-#plt.show()
+plt.plot(test.data['psirz']) #2D array (nx,ny) of poloidal flux
+plt.show()
 
 
 

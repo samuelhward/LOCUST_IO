@@ -18,6 +18,7 @@ notes:
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
     TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
+    TODO input_filename and input_filepath should be two separate things to stop it getting confusing
 
 
     NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
@@ -33,7 +34,7 @@ notes:
 import sys
 
 try:
-    from LOCUST_IO.classes import support 
+    import support #import support module from this directory
     import numpy as np
     import copy
     import re
