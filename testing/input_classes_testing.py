@@ -18,14 +18,9 @@ Unit tests for the input_classes.py methods
 #Preamble
 
 import sys
-import os
-
-pwd=os.path.dirname(os.path.abspath(__file__)) #get the directory this script is in
-pwd_up1=os.path.dirname(pwd) #go one level up from that 
-sys.path.insert(1,pwd_up1) #add that to python path, so we can import modules not in this exact directory
 
 try:
-	import input_classes 
+	from LOCUST_IO.classes import input_classes 
 except:
 	raise ImportError("ERROR: input_classes.py could not be imported!\nreturning\n")
 	sys.exit(1)

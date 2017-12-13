@@ -37,12 +37,13 @@ NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/ha
 import sys
 
 try:
+    from LCOUST_IO.classes import support
     import numpy as np
     import copy
     import re
     import imas
 except:
-    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
+    raise ImportError("ERROR: initial imported modules not found!\nreturning\n") #TODO give each of these its own error
     sys.exit(1)
 
 
@@ -120,7 +121,7 @@ def get_next(obj):
 def read_GEQDSK(ID,input_filename): 
     ''' 
     read a G-EQDSK formatted equilibrium file, originally written by Ben Dudson and edited by Nick Walkden
-      
+
         0D data
     nh          #number of points in R (x or width)
     nw          #number of points in Z (y or height)
@@ -388,7 +389,8 @@ class LOCUST_input:
 
     self.input_type - string which holds this class' input type, this case = 'equilibrium'
     self.ID - unique object identifier, good convention to fill these for error handling etc
-    self.input_filename - filename string to read from
+    input_filename - name of file in input_files folder
+    self.input_filename - full path of file in input_files folder  
     self.data_format - data format of input_file e.g. G-EQDSK
     self.data - holds all input data in dictionary object
 
@@ -400,7 +402,7 @@ class LOCUST_input:
     def __init__(self,ID,input_filename=None,data_format=None,*args,**kwargs): #this is common to all children (not overloaded)
 
         self.ID=ID
-        self.input_filename=input_filename
+        self.input_filename=support.dir_input_files+input_filename
         self.data_format=data_format
 
         if none_check(self.ID,self.input_type,'blank LOCUST input initialised - either input_filename or data_format is missing\n',input_filename,data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
@@ -443,6 +445,13 @@ class Equilibrium(LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
 
+    self.input_type - string which holds this class' input type, this case = 'equilibrium'
+    self.ID - unique object identifier, good convention to fill these for error handling etc
+    input_filename - name of file in input_files folder
+    self.input_filename - full path of file in input_files folder  
+    self.data_format - data format of input_file e.g. G-EQDSK
+    self.data - holds all input data in dictionary object
+
     key - key in data dictionary to specify data entries
     target - external object to copy from
 
@@ -466,7 +475,7 @@ class Equilibrium(LOCUST_input):
 
         if not none_check(self.ID,self.input_type,'cannot read_data, both input_filename and data_format required\n',input_filename,data_format): #check to make sure input_filename and data_format are specified
 
-            self.input_filename=input_filename
+            self.input_filename=support.dir_input_files+input_filename
             self.data_format=data_format
 
             if self.data_format=='GEQDSK':
