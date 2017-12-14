@@ -11,16 +11,32 @@ It is designed such that individual file read/write methods can easily be swappe
 
 ## Basic Usage
 
--Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project
--Copy a context.py file from LOCUST_IO/testing to LOCUST_IO/my_project
--Copy the file which you want to manipulate to LOCUST_IO/input_files and LOCUST_IO/output_files
+* Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project
+* Copy a context.py file from LOCUST_IO/testing to LOCUST_IO/my_project
+* Copy the file which you want to manipulate to LOCUST_IO/input_files and LOCUST_IO/output_files
 
 
+```python
+ID='eq_ID_here' #specify the object data here
+input_filename="test.eqdsk"
+data_format='GEQDSK'
+my_equilibrium=input_classes.Equilibrium(ID,input_filename,data_format) #my_equilibrium now holds all the data in one object
+```
+
+```python
+ID='eq_ID_here' #specify the object data here
+input_filename="test.eqdsk"
+data_format='GEQDSK'
+my_equilibrium=input_classes.Equilibrium(ID) #initialise a blank my_equilibrium
+
+my_equilibrium.read_data(input_filename, data_format)
+my_equilibrium.dump_data()
+```
 
 
 
 ## Advanced Usage
--Import the classes submodule by...
+* Import the classes submodule by...
 
 
 
@@ -57,9 +73,7 @@ Template things below
 
 `highlight this writing`
 
-```python
-this code will be syntax highlighted and in a little box
-```
+
 
 ```
 this code will just be in a little box
