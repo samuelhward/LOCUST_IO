@@ -6,7 +6,11 @@ It is designed such that individual file read/write methods can easily be swappe
 
 
 
+## Requirements
 
+* IMAS module (contact shw515@york.ac.uk)
+* Python ___ or higher
+*
 
 
 ## Basic Usage

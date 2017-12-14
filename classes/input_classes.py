@@ -18,8 +18,6 @@ notes:
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
     TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
-    TODO input_filename and input_filepath should be two separate things to stop it getting confusing
-
 
     NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
     and argparse to a python script which implements this module
@@ -91,6 +89,8 @@ def none_check(ID,input_type,error_message,*args):
         
     return False
 
+
+
 def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
     '''
     generator to read numbers in a file, originally written by Ben Dudson
@@ -105,6 +105,8 @@ def file_numbers(ingf):#instance of generators are objects hence can use .next()
         for tok in toklist: #runs whilst True and so yields every line in a file
             yield tok #tok is each number in a file line
 
+
+
 def get_next(obj):
     '''
     generic object iterator
@@ -115,51 +117,53 @@ def get_next(obj):
     else:
         return next(obj)
 
-def read_GEQDSK(ID,input_filename): 
+
+
+def read_GEQDSK(ID,input_filepath): 
     ''' 
     read a G-EQDSK formatted equilibrium file, originally written by Ben Dudson and edited by Nick Walkden
 
-        0D data
-    nh          #number of points in R (x or width)
-    nw          #number of points in Z (y or height)
-    idum        #number of spatial dimensions?
-    rdim        #size of the R dimension in m
-    zdim        #size of the Z dimension in m
-    rcentr      #reference value of R
-    bcentr      #vacuum toroidal magnetic field at rcentr
-    rleft       #R at left (inner) boundary
-    zmid        #Z at middle of domain
-    rmaxis      #R at magnetic axis (O-point)
-    zmaxis      #Z at magnetic axis (O-point)
-    simag       #poloidal flux psi at magnetic axis (Weber / rad)
-    sibry       #poloidal flux at plasma boundary (Weber / rad)
-    current     #plasma current [Amps]   
-    xdum        #dummy variable - just contains zero
-    nbbbs       #plasma boundary
-    limitr      #wall boundary
-        1D data
-    fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
-    pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-    ffprime     #workk1
-    pprime      #workk1
-    qpsi        #q values on uniform flux grid
-    rlim        #r wall boundary
-    zlim        #z wall boundary
-    rbbbs       #r plasma boundary
-    zbbbs       #z plasma boundary
-        2D data
-    psirz       #array (nx,ny) of poloidal flux
+    0D data
+        nh          #number of points in R (x or width)
+        nw          #number of points in Z (y or height)
+        idum        #number of spatial dimensions?
+        rdim        #size of the R dimension in m
+        zdim        #size of the Z dimension in m
+        rcentr      #reference value of R
+        bcentr      #vacuum toroidal magnetic field at rcentr
+        rleft       #R at left (inner) boundary
+        zmid        #Z at middle of domain
+        rmaxis      #R at magnetic axis (O-point)
+        zmaxis      #Z at magnetic axis (O-point)
+        simag       #poloidal flux psi at magnetic axis (Weber / rad)
+        sibry       #poloidal flux at plasma boundary (Weber / rad)
+        current     #plasma current [Amps]   
+        xdum        #dummy variable - just contains zero
+        nbbbs       #plasma boundary
+        limitr      #wall boundary
+    1D data
+        fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+        pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+        ffprime     #workk1
+        pprime      #workk1
+        qpsi        #q values on uniform flux grid
+        rlim        #r wall boundary
+        zlim        #z wall boundary
+        rbbbs       #r plasma boundary
+        zbbbs       #z plasma boundary
+    2D data
+        psirz       #array (nx,ny) of poloidal flux (array of arrays)   
 
     '''
 
     input_data = {}
     flags = {'loaded' : False } #XXX might not need this variable now
 
-    file = open(input_filename) #open file, assumed input_filename is object
+    file = open(input_filepath) #open file, assumed input_filepath is object
     
     line = file.readline() #first line should be case, id number and dimensions
     if not line:
-        raise IOError("ERROR: Cannot read from file"+input_filename)
+        raise IOError("ERROR: Cannot read from file"+input_filepath)
     
     #extract case, id number and dimensions  
     conts = line.split()    #split by white space (no arguement in .split())
@@ -235,43 +239,42 @@ def read_GEQDSK(ID,input_filename):
 
 
 
-def dump_GEQDSK(ID,data,output_file):
+def dump_GEQDSK(ID,data,output_filepath):
     '''
     generic function for writing a GEQDSK to file, originally written by Ben Dudson and edited by Nick Walkden
 
-        0D data
-    nh          #number of points in R (x or width)
-    nw          #number of points in Z (y or height)
-    idum        #number of spatial dimensions?
-    rdim        #size of the R dimension in m
-    zdim        #size of the Z dimension in m
-    rcentr      #reference value of R
-    bcentr      #vacuum toroidal magnetic field at rcentr
-    rleft       #R at left (inner) boundary
-    zmid        #Z at middle of domain
-    rmaxis      #R at magnetic axis (O-point)
-    zmaxis      #Z at magnetic axis (O-point)
-    simag       #poloidal flux psi at magnetic axis (Weber / rad)
-    sibry       #poloidal flux at plasma boundary (Weber / rad)
-    current     #plasma current [Amps]   
-    xdum        #dummy variable - just contains zero
-    nbbbs       #plasma boundary
-    limitr      #wall boundary
-        1D data
-    fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
-    pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-    ffprime     #workk1
-    pprime      #workk1
-    qpsi        #q values on uniform flux grid
-    rlim        #r wall boundary
-    zlim        #z wall boundary
-    rbbbs       #r plasma boundary
-    zbbbs       #z plasma boundary
-        2D data
-    psirz       #array (nx,ny) of poloidal flux    
+    0D data
+        nh          #number of points in R (x or width)
+        nw          #number of points in Z (y or height)
+        idum        #number of spatial dimensions?
+        rdim        #size of the R dimension in m
+        zdim        #size of the Z dimension in m
+        rcentr      #reference value of R
+        bcentr      #vacuum toroidal magnetic field at rcentr
+        rleft       #R at left (inner) boundary
+        zmid        #Z at middle of domain
+        rmaxis      #R at magnetic axis (O-point)
+        zmaxis      #Z at magnetic axis (O-point)
+        simag       #poloidal flux psi at magnetic axis (Weber / rad)
+        sibry       #poloidal flux at plasma boundary (Weber / rad)
+        current     #plasma current [Amps]   
+        xdum        #dummy variable - just contains zero
+        nbbbs       #plasma boundary
+        limitr      #wall boundary
+    1D data
+        fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+        pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+        ffprime     #workk1
+        pprime      #workk1
+        qpsi        #q values on uniform flux grid
+        rlim        #r wall boundary
+        zlim        #z wall boundary
+        rbbbs       #r plasma boundary
+        zbbbs       #z plasma boundary
+    2D data
+        psirz       #array (nx,ny) of poloidal flux (array of arrays)   
     '''
 
-    filename=output_file
     import time #TODO check this
     from itertools import cycle
     cnt = cycle([0,1,2,3,4]) #counter
@@ -306,7 +309,7 @@ def dump_GEQDSK(ID,data,output_file):
             write_number(file,Z[i],counter)
         file.write("\n")
     
-    with open(filename,'w') as file:
+    with open(output_filepath,'w') as file:
         line = " pyEquilibrium "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(output_data['nw'])+" "+str(output_data['nh'])+"\n"
         file.write(line)
 
@@ -328,6 +331,8 @@ def dump_GEQDSK(ID,data,output_file):
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
 
+
+
 def read_IDS_equilibrium(ID,shot,run): 
     '''
     generic function for reading an IDS equilibrium file and returning it as a dictionary
@@ -338,16 +343,14 @@ def read_IDS_equilibrium(ID,shot,run):
  
     return data
 
+
+
 def dump_IDS_equilibrium(ID,data,shot,run):
     '''
     generic function for reading a GEQDSK file and returning as a dictionary
     '''
 
     output_IDS=imas.ids(shot,run)
-
-
-
-
     output_IDS.equilibrium.put() #finally "put" the data
     output_IDS.close()
 
@@ -386,8 +389,8 @@ class LOCUST_input:
 
     self.input_type - string which holds this class' input type, this case = 'equilibrium'
     self.ID - unique object identifier, good convention to fill these for error handling etc
-    input_filename - name of file in input_files folder
-    self.input_filename - full path of file in input_files folder  
+    self.input_filename - name of file in input_files folder
+    self.input_filepath - full path of file in input_files folder  
     self.data_format - data format of input_file e.g. G-EQDSK
     self.data - holds all input data in dictionary object
 
@@ -399,13 +402,14 @@ class LOCUST_input:
     def __init__(self,ID,input_filename=None,data_format=None,*args,**kwargs): #this is common to all children (not overloaded)
 
         self.ID=ID
-        self.input_filename=support.dir_input_files+input_filename
         self.data_format=data_format
+        self.input_filename=input_filename
+        self.input_filepath=support.dir_input_files+input_filename #prepend the path to the file as calculated within the support module
 
-        if none_check(self.ID,self.input_type,'blank LOCUST input initialised - either input_filename or data_format is missing\n',input_filename,data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
+        if none_check(self.ID,self.input_type,'blank LOCUST_input initialised - input_filename or data_format is missing\n',self.input_filename,self.data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
             pass #TODO check whether this generates blank object
         else: #read input data if sufficient arguements are given
-            self.read_data(input_filename,data_format)
+            self.read_data(self.input_filename,self.data_format)
 
     def read_data(self,input_filename=None,data_format=None): #bad practice to change overridden method signatures, so retain all method arguements             
         self.data=None #read_data definition is to be overloaded in children classes 
@@ -442,15 +446,16 @@ class Equilibrium(LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
 
-    self.input_type - string which holds this class' input type, this case = 'equilibrium'
-    self.ID - unique object identifier, good convention to fill these for error handling etc
-    input_filename - name of file in input_files folder
-    self.input_filename - full path of file in input_files folder  
-    self.data_format - data format of input_file e.g. G-EQDSK
-    self.data - holds all input data in dictionary object
-
-    key - key in data dictionary to specify data entries
-    target - external object to copy from
+    inherited from LOCUST_input:
+        self.input_type - string which holds this class' input type, this case = 'equilibrium'
+        self.ID - unique object identifier, good convention to fill these for error handling etc
+        self.input_filename - name of file in input_files folder
+        self.input_filepath - full path of file in input_files folder  
+        self.data_format - data format of input_file e.g. G-EQDSK
+        self.data - holds all input data in dictionary object
+    Equilibrium data
+        key - key in data dictionary to specify data entries
+        target - external object to copy from
 
     notes:
     """
@@ -472,19 +477,22 @@ class Equilibrium(LOCUST_input):
 
         if not none_check(self.ID,self.input_type,'cannot read_data, both input_filename and data_format required\n',input_filename,data_format): #check to make sure input_filename and data_format are specified
 
-            self.input_filename=support.dir_input_files+input_filename
             self.data_format=data_format
+            self.input_filename=input_filename
+            self.input_filepath=support.dir_input_files+input_filename
 
             if self.data_format=='GEQDSK':
-                self.data=read_GEQDSK(self.ID,self.input_filename)
+                self.data=read_GEQDSK(self.ID,self.input_filepath)
                
             elif self.data_format=='IDS_equilibrium':
-                self.data=read_IDS_equilibrium(self.ID,self.input_filename)
+                self.data=read_IDS_equilibrium(self.ID,self.input_filepath)
 
             
-    def dump_data(self,output_file="test.eqdsk",data_format='GEQDSK'):
+    def dump_data(self,output_filename="test.eqdsk",data_format='GEQDSK'):
         """
         write data to file
+
+        output_filename - name of file
 
         notes: 
         """
@@ -493,10 +501,10 @@ class Equilibrium(LOCUST_input):
             pass
         else:
             if data_format=='GEQDSK':
-                dump_GEQDSK(self.ID,self.data,output_file)
+                dump_GEQDSK(self.ID,self.data,output_filename)
 
             elif data_format=='IDS':
-                dump_IDS_equilibrium(self.ID,self.data,output_file)
+                dump_IDS_equilibrium(self.ID,self.data,output_filename)
 
 
     def copy(self,target,key=None):
@@ -504,10 +512,9 @@ class Equilibrium(LOCUST_input):
         copy two equilibrium objects 
 
         notes:
-            usage:
-                -if target data is empty this function does nothing
-                -if no key supplied then copy everything
-                -if key supplied then copy/append dictionary data accordingly
+            -if target data is empty this function does nothing
+            -if no key supplied then copy everything
+            -if key supplied then copy/append dictionary data accordingly
         """
 
         if target.data == None:    #return warning if target is empty
@@ -618,6 +625,24 @@ def N(LOCUST_input):
     def class_methods(self,*args,**kwargs):
         some_things
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
