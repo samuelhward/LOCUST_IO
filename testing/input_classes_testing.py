@@ -61,7 +61,12 @@ print(test_2.LOCUST_input_type)
 print(test_2.ID)
 
 
-
+#next test to see if we can dump an Equilibrium to GEQDSK
+test3_ID='test3_ID'
+test3_input_filename='test.eqdsk'
+test3_data_format='GEQDSK'
+test3=input_classes.Equilibrium(test3_ID,test3_input_filename,test3_data_format)
+test3.dump_data('test3_output.eqdsk','GEQDSK')
 
 
 
