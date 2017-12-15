@@ -22,7 +22,7 @@ import sys
 try:
 	import context
 except:
-	raise ImportError("ERROR: local context.py not found!\nreturning\n")
+	raise ImportError("ERROR: local context.py not found - please create one and add it to this directory\nreturning\n")
 	sys.exit(1)
 
 try: 
@@ -38,20 +38,51 @@ except:
 ##################################################################
 #Main Code
 
-#specify test GEQDSK data
-ID='eq_ID_here'
-input_filename="test.eqdsk"
-data_format='GEQDSK'
-test=input_classes.Equilibrium(ID,input_filename,data_format)
-
-#test to see that member data has been set correctly
-print(test.input_filename)
-print(test.data_format)
-print(test.input_type)
-print(test.ID)
+#first test is to open an Equilibrium GEQDSK and test that reading in upon initialisation is OK and that all member data is set correctly
+test1_ID='test1_ID'
+test1_input_filename='test.eqdsk'
+test1_data_format='GEQDSK'
+test_1=input_classes.Equilibrium(test1_ID,test1_input_filename,test1_data_format)
+print(test_1.input_filename)
+print(test_1.data_format)
+print(test_1.LOCUST_input_type)
+print(test_1.ID)
 
 
-#examine the data
+#next test to see if we can initialise a blank Equilibrium before populating with GEQDSK formatted data using read_data
+test2_ID='test2_ID'
+test2_input_filename='test.eqdsk'
+test2_data_format='GEQDSK'
+test_2=input_classes.Equilibrium(test2_ID)
+test_2.read_data(test2_input_filename,test2_data_format)
+print(test_2.input_filename)
+print(test_2.data_format)
+print(test_2.LOCUST_input_type)
+print(test_2.ID)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#examine the data - uncomment relevant sections
 
 '''
 #0D data
@@ -85,7 +116,6 @@ plt.plot(test.data['zlim'])		#z wall boundary
 plt.plot(test.data['rbbbs'])	#r plasma boundary
 plt.plot(test.data['zbbbs'])	#z plasma boundary
 
-'''
 #2D data
 import matplotlib.pyplot as plt
 from matplotlib import cm #get colourmaps
@@ -101,7 +131,7 @@ ax=plt.axes(projection='3d')
 #ax.view_init(elev=90, azim=None) #rotate the camera
 ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*numpy.amin(Z),vmax=1.01*numpy.amax(Z))
 plt.show()
-
+'''
 
 
 

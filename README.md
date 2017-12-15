@@ -37,7 +37,7 @@ my_equilibrium.read_data(input_filename, data_format)
 my_equilibrium.dump_data()
 ```
 
-
+* Everything MUST have an ID
 
 ## Advanced Usage
 * Import the classes submodule by...

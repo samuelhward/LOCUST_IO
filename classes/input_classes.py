@@ -77,14 +77,14 @@ except:
 
 
 ################################################################## supporting functions
-def none_check(ID,input_type,error_message,*args):
+def none_check(ID,LOCUST_input_type,error_message,*args):
     '''
     generic function for checking if a None value appears in *args
     '''
 
     for arg in args: #loop through and return this error if any element in args is None, otherwise return False 
         if arg == None:
-            print("Warning: none_check returned True (input_type={input_type}, ID={ID}): {message}".format(input_type=input_type,ID=ID,message=error_message))
+            print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
             return True
         
     return False
@@ -239,7 +239,7 @@ def read_GEQDSK(ID,input_filepath):
 
 
 
-def dump_GEQDSK(ID,data,output_filepath):
+def dump_GEQDSK(ID,output_data,output_filepath):
     '''
     generic function for writing a GEQDSK to file, originally written by Ben Dudson and edited by Nick Walkden
 
@@ -275,7 +275,7 @@ def dump_GEQDSK(ID,data,output_filepath):
         psirz       #array (nx,ny) of poloidal flux (array of arrays)   
     '''
 
-    import time #TODO check this
+    import time
     from itertools import cycle
     cnt = cycle([0,1,2,3,4]) #counter
 
@@ -387,29 +387,23 @@ class LOCUST_input:
     """
     base class for a LOCUST input object
 
-    self.input_type - string which holds this class' input type, this case = 'equilibrium'
     self.ID - unique object identifier, good convention to fill these for error handling etc
-    self.input_filename - name of file in input_files folder
-    self.input_filepath - full path of file in input_files folder  
-    self.data_format - data format of input_file e.g. G-EQDSK
+    self.LOCUST_input_type - string which holds this class' input type, this case = 'equilibrium'
     self.data - holds all input data in dictionary object
 
     notes:
     """
 
-    input_type='base_input'
+    LOCUST_input_type='base_input'
 
     def __init__(self,ID,input_filename=None,data_format=None,*args,**kwargs): #this is common to all children (not overloaded)
 
         self.ID=ID
-        self.data_format=data_format
-        self.input_filename=input_filename
-        self.input_filepath=support.dir_input_files+input_filename #prepend the path to the file as calculated within the support module
 
-        if none_check(self.ID,self.input_type,'blank LOCUST_input initialised - input_filename or data_format is missing\n',self.input_filename,self.data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
-            pass #TODO check whether this generates blank object
+        if none_check(self.ID,self.LOCUST_input_type,'blank LOCUST_input initialised - input_filename or data_format is missing\n',input_filename,data_format): #check to make sure input_filename and data_format are specified, if either are blank then do nothing, can still read later in program using read_data() directly
+            pass
         else: #read input data if sufficient arguements are given
-            self.read_data(self.input_filename,self.data_format)
+            self.read_data(input_filename,data_format)
 
     def read_data(self,input_filename=None,data_format=None): #bad practice to change overridden method signatures, so retain all method arguements             
         self.data=None #read_data definition is to be overloaded in children classes 
@@ -447,20 +441,20 @@ class Equilibrium(LOCUST_input):
     class describing the equilibrium input for LOCUST
 
     inherited from LOCUST_input:
-        self.input_type - string which holds this class' input type, this case = 'equilibrium'
         self.ID - unique object identifier, good convention to fill these for error handling etc
-        self.input_filename - name of file in input_files folder
-        self.input_filepath - full path of file in input_files folder  
-        self.data_format - data format of input_file e.g. G-EQDSK
+        self.LOCUST_input_type - string which holds this class' input type, this case = 'equilibrium'
         self.data - holds all input data in dictionary object
     Equilibrium data
+        self.input_filename - name of file in input_files folder
+        self.data_format - data format of input_file e.g. GEQDSK
+        self.input_filepath - full path of file in input_files folder  
         key - key in data dictionary to specify data entries
         target - external object to copy from
 
     notes:
     """
 
-    input_type='equilibrium'
+    LOCUST_input_type='equilibrium'
 
     def __enter__(self,*args,**kwargs):
         return self
@@ -475,7 +469,7 @@ class Equilibrium(LOCUST_input):
         notes:
         """
 
-        if not none_check(self.ID,self.input_type,'cannot read_data, both input_filename and data_format required\n',input_filename,data_format): #check to make sure input_filename and data_format are specified
+        if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data, both input_filename and data_format required\n',input_filename,data_format): #check to make sure input_filename and data_format are specified
 
             self.data_format=data_format
             self.input_filename=input_filename
@@ -488,23 +482,27 @@ class Equilibrium(LOCUST_input):
                 self.data=read_IDS_equilibrium(self.ID,self.input_filepath)
 
             
-    def dump_data(self,output_filename="test.eqdsk",data_format='GEQDSK'):
+    def dump_data(self,output_filename,output_data_format):
         """
         write data to file
 
         output_filename - name of file
+        output_filepath - full path to output file in output_files folder
+        output_data_format - data format of output file e.g. GEQDSK
 
         notes: 
         """
 
-        if none_check(self.ID,self.input_type,'cannot dump_data, data=None\n',self.data): #check to make sure input_filename and data_format are specified
+        if none_check(self.ID,self.LOCUST_input_type,'cannot dump_data, data=None\n',self.data): #check to make sure input_filename and output_data_format are specified
             pass
         else:
-            if data_format=='GEQDSK':
-                dump_GEQDSK(self.ID,self.data,output_filename)
 
-            elif data_format=='IDS':
-                dump_IDS_equilibrium(self.ID,self.data,output_filename)
+            output_filepath=support.dir_output_files+output_filename
+            if output_data_format=='GEQDSK':
+                dump_GEQDSK(self.ID,self.data,output_filepath)
+
+            elif output_data_format=='IDS':
+                dump_IDS_equilibrium(self.ID,self.data,output_filepath)
 
 
     def copy(self,target,key=None):
@@ -535,7 +533,7 @@ class Equilibrium(LOCUST_input):
         notes:
         """
         
-        if none_check(self.ID,self.input_type,'tried to call set() with empty key or value\n',key,value):
+        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty key or value\n',key,value):
             pass
         else:
             self.data[key]=value
