@@ -11,17 +11,14 @@ usage:
     see README.md for usage
 
 notes: 
-    TODO GEQDSK read in seems ok, may need to have a look online at certain functions and need testing. now need to check GEQDSK dump and add IDS functionality
+    TODO needs IDS functionality
     TODO need to decide how to standardise data in dicts
+
     TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
-    TODO integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without JET SAL)
-
-    NOTE use argparse to input command line arguments etc to the python code which calls from input_classes. e.g. pass file names etc via command line
-    and argparse to a python script which implements this module
-    NOTE use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obvs then with paramiko)
+    TODO warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
 ---
 '''
 
@@ -29,26 +26,27 @@ notes:
 ###################################################################################################
 #Preamble
 
-import sys
 
+import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
 try:
-    import support #import support module from this directory
     import numpy as np
     import copy
     import re
-    import imas
+    import time
+    import itertools
 except:
-    raise ImportError("ERROR: initial imported modules not found!\nreturning\n") #TODO give each of these its own error
+    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
-
-
-
-
-
-
-
-
-
+try:
+    import support #import support module from this directory
+except:
+    raise ImportError("ERROR: support.py not found in this directory!\nreturning\n") 
+    sys.exit(1)
+try:
+    import imas 
+except:
+    raise ImportError("ERROR: IMAS module not found!\nreturning\n")
+    sys.exit(1)
 
 
 
@@ -80,6 +78,8 @@ except:
 def none_check(ID,LOCUST_input_type,error_message,*args):
     '''
     generic function for checking if a None value appears in *args
+
+    notes:
     '''
 
     for arg in args: #loop through and return this error if any element in args is None, otherwise return False 
@@ -110,6 +110,8 @@ def file_numbers(ingf):#instance of generators are objects hence can use .next()
 def get_next(obj):
     '''
     generic object iterator
+
+    notes:
     '''
     pyVer = sys.version_info[0]
     if pyVer == 2:
@@ -121,38 +123,42 @@ def get_next(obj):
 
 def read_GEQDSK(ID,input_filepath): 
     ''' 
-    read a G-EQDSK formatted equilibrium file, originally written by Ben Dudson and edited by Nick Walkden
+    generic function for reading a G-EQDSK-formatted equilibrium file
 
-    0D data
-        nh          #number of points in R (x or width)
-        nw          #number of points in Z (y or height)
-        idum        #number of spatial dimensions?
-        rdim        #size of the R dimension in m
-        zdim        #size of the Z dimension in m
-        rcentr      #reference value of R
-        bcentr      #vacuum toroidal magnetic field at rcentr
-        rleft       #R at left (inner) boundary
-        zmid        #Z at middle of domain
-        rmaxis      #R at magnetic axis (O-point)
-        zmaxis      #Z at magnetic axis (O-point)
-        simag       #poloidal flux psi at magnetic axis (Weber / rad)
-        sibry       #poloidal flux at plasma boundary (Weber / rad)
-        current     #plasma current [Amps]   
-        xdum        #dummy variable - just contains zero
-        nbbbs       #plasma boundary
-        limitr      #wall boundary
-    1D data
-        fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
-        pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-        ffprime     #workk1
-        pprime      #workk1
-        qpsi        #q values on uniform flux grid
-        rlim        #r wall boundary
-        zlim        #z wall boundary
-        rbbbs       #r plasma boundary
-        zbbbs       #z plasma boundary
-    2D data
-        psirz       #array (nx,ny) of poloidal flux (array of arrays)   
+    notes:
+        originally written by Ben Dudson and edited by Nick Walkden
+
+    data key:
+        0D data
+            nh          #number of points in R (x or width)
+            nw          #number of points in Z (y or height)
+            idum        #number of spatial dimensions?
+            rdim        #size of the R dimension in m
+            zdim        #size of the Z dimension in m
+            rcentr      #reference value of R
+            bcentr      #vacuum toroidal magnetic field at rcentr
+            rleft       #R at left (inner) boundary
+            zmid        #Z at middle of domain
+            rmaxis      #R at magnetic axis (O-point)
+            zmaxis      #Z at magnetic axis (O-point)
+            simag       #poloidal flux psi at magnetic axis (Weber / rad)
+            sibry       #poloidal flux at plasma boundary (Weber / rad)
+            current     #plasma current [Amps]   
+            xdum        #dummy variable - just contains zero
+            nbbbs       #plasma boundary
+            limitr      #wall boundary
+        1D data
+            fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+            pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+            ffprime     #workk1
+            pprime      #workk1
+            qpsi        #q values on uniform flux grid
+            rlim        #r wall boundary
+            zlim        #z wall boundary
+            rbbbs       #r plasma boundary
+            zbbbs       #z plasma boundary
+        2D data
+            psirz       #array (nx,ny) of poloidal flux (array of arrays)   
 
     '''
 
@@ -235,49 +241,55 @@ def read_GEQDSK(ID,input_filepath):
     input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
     flags['loaded'] = True
     
+    #could rename here
+
     return input_data
 
 
 
 def dump_GEQDSK(ID,output_data,output_filepath):
     '''
-    generic function for writing a GEQDSK to file, originally written by Ben Dudson and edited by Nick Walkden
+    generic function for writing G-EQDSK-formatted data to file
 
-    0D data
-        nh          #number of points in R (x or width)
-        nw          #number of points in Z (y or height)
-        idum        #number of spatial dimensions?
-        rdim        #size of the R dimension in m
-        zdim        #size of the Z dimension in m
-        rcentr      #reference value of R
-        bcentr      #vacuum toroidal magnetic field at rcentr
-        rleft       #R at left (inner) boundary
-        zmid        #Z at middle of domain
-        rmaxis      #R at magnetic axis (O-point)
-        zmaxis      #Z at magnetic axis (O-point)
-        simag       #poloidal flux psi at magnetic axis (Weber / rad)
-        sibry       #poloidal flux at plasma boundary (Weber / rad)
-        current     #plasma current [Amps]   
-        xdum        #dummy variable - just contains zero
-        nbbbs       #plasma boundary
-        limitr      #wall boundary
-    1D data
-        fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
-        pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-        ffprime     #workk1
-        pprime      #workk1
-        qpsi        #q values on uniform flux grid
-        rlim        #r wall boundary
-        zlim        #z wall boundary
-        rbbbs       #r plasma boundary
-        zbbbs       #z plasma boundary
-    2D data
-        psirz       #array (nx,ny) of poloidal flux (array of arrays)   
+    notes:
+        originally written by Ben Dudson and edited by Nick Walkden
+    
+    data key:
+        0D data
+            nh          #number of points in R (x or width)
+            nw          #number of points in Z (y or height)
+            idum        #number of spatial dimensions?
+            rdim        #size of the R dimension in m
+            zdim        #size of the Z dimension in m
+            rcentr      #reference value of R
+            bcentr      #vacuum toroidal magnetic field at rcentr
+            rleft       #R at left (inner) boundary
+            zmid        #Z at middle of domain
+            rmaxis      #R at magnetic axis (O-point)
+            zmaxis      #Z at magnetic axis (O-point)
+            simag       #poloidal flux psi at magnetic axis (Weber / rad)
+            sibry       #poloidal flux at plasma boundary (Weber / rad)
+            current     #plasma current [Amps]   
+            xdum        #dummy variable - just contains zero
+            nbbbs       #plasma boundary
+            limitr      #wall boundary
+        1D data
+            fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+            pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+            ffprime     #workk1
+            pprime      #workk1
+            qpsi        #q values on uniform flux grid
+            rlim        #r wall boundary
+            zlim        #z wall boundary
+            rbbbs       #r plasma boundary
+            zbbbs       #z plasma boundary
+        2D data
+            psirz       #array (nx,ny) of poloidal flux (array of arrays)   
     '''
 
-    import time
-    from itertools import cycle
-    cnt = cycle([0,1,2,3,4]) #counter
+
+    #could re-rename here
+    cnt = itertools.cycle([0,1,2,3,4]) #counter
 
     def write_number(file,number,counter):
         if number < 0:
@@ -333,10 +345,21 @@ def dump_GEQDSK(ID,output_data,output_filepath):
 
 
 
-def read_IDS_equilibrium(ID,shot,run): 
+def read_IDS_equilibrium(ID,shot,run,occurrence): 
     '''
     generic function for reading an IDS equilibrium file and returning it as a dictionary
+
+    notes:
+        writes to the "equilibrium" IDS
+        see the ITER data dictionary for details
     '''
+
+
+
+
+
+
+
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.create() 
@@ -345,20 +368,97 @@ def read_IDS_equilibrium(ID,shot,run):
 
 
 
-def dump_IDS_equilibrium(ID,data,shot,run):
+def dump_IDS_equilibrium(ID,data,shot,run,occurrence):
     '''
     generic function for reading a GEQDSK file and returning as a dictionary
+
+    notes:
+
+        writes to the "equilibrium" IDS
+        see the ITER data dictionary for details
     '''
 
     output_IDS=imas.ids(shot,run)
+    output_IDS.create() #TODO CHECK THIS - this step will generate a new IDS IFF one doesn't already exist
+
+    output_IDS.equilibrium.ids_properties.homoegeneous_time=1 #must set homogeneous_time
+    output_IDS.equilibrium.time_slice.resize(1)
+    output_IDS.equilibrium.time_slice=np.linspace() #TODO how to decide time_slice? How has Mireille done it?
+
+    output_IDS.equilibrium.time_slice[0].=data['nh']
+    output_IDS.equilibrium.time_slice[0].=data['nw']
+    output_IDS.equilibrium.time_slice[0].=data['idum']
+    output_IDS.equilibrium.time_slice[0].=data['rdim']
+    output_IDS.equilibrium.time_slice[0].=data['zdim']
+    output_IDS.equilibrium.r0=data['rcentr']
+    output_IDS.equilibrium.b0=data['bcentr']
+    output_IDS.equilibrium.time_slice[0].=data['rleft']
+    output_IDS.equilibrium.time_slice[0].=data['zmid']
+    output_IDS.equilibrium.time_slice[0].=data['rmaxis']
+    output_IDS.equilibrium.time_slice[0].=data['zmaxis']
+    output_IDS.equilibrium.time_slice[0].=data['simag']
+    output_IDS.equilibrium.time_slice[0].=data['sibry']
+    output_IDS.equilibrium.time_slice[0].=data['current']
+    output_IDS.equilibrium.time_slice[0].=data['xdum']
+    output_IDS.equilibrium.time_slice[0].=data['nbbbs']
+    output_IDS.equilibrium.time_slice[0].=data['limitr']
+
+    output_IDS.equilibrium.time_slice[0].=data['fpol']
+    output_IDS.equilibrium.time_slice[0].=data['pres']
+    output_IDS.equilibrium.time_slice[0].=data['ffprime']
+    output_IDS.equilibrium.time_slice[0].=data['pprime']
+    output_IDS.equilibrium.time_slice[0].=data['qpsi']
+    #need to set boundary.type here
+    output_IDS.equilibrium.boundary.outline.r=data['rlim']
+    output_IDS.equilibrium.boundary.outline.z=data['zlim']
+    output_IDS.equilibrium.boundary.lcfs.r=data['rbbbs']
+    output_IDS.equilibrium.boundary.lcfs.z=data['zbbbs']
+
+    output_IDS.equilibrium.time_slice[0].=data['psirz']
+    
+
+    output_IDS.ids_properties.comment=ID #write out identification
+    output_IDS.equilibrium.code.name="LOCUST_IO"
+    output_IDS.equilibrium.code.version=support.LOCUST_IO_version
+
     output_IDS.equilibrium.put() #finally "put" the data
     output_IDS.close()
 
 
 
 
-
-
+    '''
+        0D data
+            nh          #number of points in R (x or width)
+            nw          #number of points in Z (y or height)
+            idum        #number of spatial dimensions?
+            rdim        #size of the R dimension in m
+            zdim        #size of the Z dimension in m
+            rcentr      #reference value of R
+            bcentr      #vacuum toroidal magnetic field at rcentr
+            rleft       #R at left (inner) boundary
+            zmid        #Z at middle of domain
+            rmaxis      #R at magnetic axis (O-point)
+            zmaxis      #Z at magnetic axis (O-point)
+            simag       #poloidal flux psi at magnetic axis (Weber / rad)
+            sibry       #poloidal flux at plasma boundary (Weber / rad)
+            current     #plasma current [Amps]   
+            xdum        #dummy variable - just contains zero
+            nbbbs       #plasma boundary
+            limitr      #wall boundary
+        1D data
+            fpol        #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+            pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+            ffprime     #workk1
+            pprime      #workk1
+            qpsi        #q values on uniform flux grid
+            rlim        #r wall boundary
+            zlim        #z wall boundary
+            rbbbs       #r plasma boundary
+            zbbbs       #z plasma boundary
+        2D data
+            psirz       #array (nx,ny) of poloidal flux (array of arrays)   
+    '''
 
 
 
@@ -387,9 +487,9 @@ class LOCUST_input:
     """
     base class for a LOCUST input object
 
-    self.ID - unique object identifier, good convention to fill these for error handling etc
-    self.LOCUST_input_type - string which holds this class' input type, this case = 'equilibrium'
-    self.data - holds all input data in dictionary object
+    self.ID                     unique object identifier, good convention to fill these for error handling etc
+    self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
+    self.data                   holds all input data in dictionary object
 
     notes:
     """
@@ -441,17 +541,52 @@ class Equilibrium(LOCUST_input):
     class describing the equilibrium input for LOCUST
 
     inherited from LOCUST_input:
-        self.ID - unique object identifier, good convention to fill these for error handling etc
-        self.LOCUST_input_type - string which holds this class' input type, this case = 'equilibrium'
-        self.data - holds all input data in dictionary object
+        self.ID                     unique object identifier, good convention to fill these for error handling etc
+        self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
+        self.data                   holds all input data in dictionary object
     Equilibrium data
-        self.input_filename - name of file in input_files folder
-        self.data_format - data format of input_file e.g. GEQDSK
-        self.input_filepath - full path of file in input_files folder  
-        key - key in data dictionary to specify data entries
-        target - external object to copy from
+        self.input_filename         name of file in input_files folder
+        self.data_format            data format of input_file e.g. GEQDSK
+        self.input_filepath         full path of file in input_files folder  
+        key                         key in data dictionary to specify data entries
+        target                      external object to copy from
 
     notes:
+
+
+    global data definitions (Equilibrium/GEQDSK/IDS):
+
+        0D data
+            /nh/            #number of points in R (x or width)
+            /nw/            #number of points in Z (y or height)
+            /idum/          #number of spatial dimensions?
+            /rdim/          #size of the R dimension in m
+            /zdim/          #size of the Z dimension in m
+            r0/rcentr/      #reference value of R
+            b0/bcentr/      #vacuum toroidal magnetic field at rcentr
+            /rleft/         #R at left (inner) boundary
+            /zmid/          #Z at middle of domain
+            /rmaxis/        #R at magnetic axis (O-point)
+            /zmaxis/        #Z at magnetic axis (O-point)
+            /simag /        #poloidal flux psi at magnetic axis (Weber / rad)
+            /sibry /        #poloidal flux at plasma boundary (Weber / rad)
+            /current/       #plasma current [Amps]   
+            /xdum/          #dummy variable - just contains zero
+            /nbbbs/         #plasma boundary
+            /limitr/        #wall boundary
+        1D data
+            /fpol/          #poloidal current function on uniform flux grid (1D array of f(psi)=R*Bt  [meter-Tesla])
+            /pres/          #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+            /ffprime/       #workk1
+            /pprime/        #workk1
+            /qpsi/          #q values on uniform flux grid
+            /rlim/          #r wall boundary
+            /zlim/          #z wall boundary
+            /rbbbs/         #r plasma boundary
+            /zbbbs/         #z plasma boundary
+        2D data
+            /psirz/       #array (nx,ny) of poloidal flux (array of arrays)   
+
     """
 
     LOCUST_input_type='equilibrium'
@@ -510,9 +645,9 @@ class Equilibrium(LOCUST_input):
         copy two equilibrium objects 
 
         notes:
-            -if target data is empty this function does nothing
-            -if no key supplied then copy everything
-            -if key supplied then copy/append dictionary data accordingly
+            if target data is empty this function does nothing
+            if no key supplied then copy everything
+            if key supplied then copy/append dictionary data accordingly
         """
 
         if target.data == None:    #return warning if target is empty
