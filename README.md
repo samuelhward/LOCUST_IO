@@ -10,23 +10,23 @@ It is designed such that individual file read/write methods can easily be swappe
 Table of Contents
 -----------------
 
-* [Requirements](#Requirements)
-* [Basic Usage](#Basic-Usage)
-* [Advanced Usage](#Advanced-Usage)
-* [Overview](#Overview)
-	* [Classes Subpackage](#Classes-Subpackage)
-		* [Input Module](#Input-Module)
-		* [Output Module](#Output-Module)
-	  	* [Support Module](#Support-Module)
-	* [Testing Subpackage](#Testing-Subpackage)
-		* [Input Class Tests](#Input-Class-Tests)
-		* [Output Class Tests](#Output-Class-Tests)
-	* [Plotting Subpackage](#Plotting-Subpackage)
-* [Further Ideas And Contributing](#Further-Ideas-And-Contributing)
-* [Appendix](#Appendix)
-	* [Global Data Definitions & Variable Names](#Global-Data-Definitions-&-Variable-Names)
-		* [Equilibrium](#Equilibrium)
-	* [GEQDSK File Format](#GEQDSK-File-Format)
+* [Requirements](#requirements)
+* [Basic Usage](#basic-usage)
+* [Advanced Usage](#advanced-usage)
+* [Overview](#overview)
+	* [Classes Subpackage](#classes-subpackage)
+		* [Input Module](#input-module)
+		* [Output Module](#output-module)
+	  	* [Support Module](#support-module)
+	* [Testing Subpackage](#testing-subpackage)
+		* [Input Class Tests](#input-class-tests)
+		* [Output Class Tests](output-class-tests)
+	* [Plotting Subpackage](#plotting-subpackage)
+* [Further Ideas And Contributing](#further-ideas-and-contributing)
+* [Appendix](#appendix)
+	* [Global Data Definitions & Variable Names](#global-data-definitions-&-variable-names)
+		* [Equilibrium](#equilibrium)
+	* [GEQDSK File Format](#geqdsk-file-format)
 
 
 
@@ -145,122 +145,37 @@ Got any burning questions? Want to feedback? Please email the author, Sam, at sh
 
 Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, here are all the different variable names used by different codes and file formats for similar quantities. '-' means they are not used/are empty/not written to.
 
-#### Equilibrium (LOCUST_IO/GEQDSK/Equilibrium IDS/LOCUST):
+#### Equilibrium:
+
+(LOCUST_IO/[GEQDSK](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)/Equilibrium IDS/LOCUST)
 
     0D data
-        /nw/-/nEQ_R            #number of points in R (x or width)
-        /nh/-/nEQ_Z            #number of points in Z (y or height)
-        /idum/-/IDUM          #number of spatial dimensions?
-        /rdim//RDIM         #size of the R dimension in m
-        /zdim//ZDIM         #size of the Z dimension in m
-        r0/rcentr/.r0/RCENTR      #reference value of R
-        b0/bcentr/.b0/BCENTR     #vacuum toroidal magnetic field at rcentr
-        /rleft/    /RLEFT     #R at left (inner) boundary
-        /zmid/      /ZMID    #Z at middle of domain (from origin)
-        /rmaxis/  /Rmagh      #R at magnetic axis (O-point)
-        /zmaxis/  /Zmagh      #Z at magnetic axis (O-point)
-        /simag /  /PSI_magh      #poloidal flux psi at magnetic axis (Weber / rad)
-        /sibry /  /SIBRY      #poloidal flux psi at plasma boundary (Weber / rad)
-        /current/ /CURRENT      #plasma current [Amps]   
-        /xdum/    /XDUM      #dummy variable - just contains zero
-        /nbbbs/   /nb      #plasma boundary
-        /limitr/   /IDUM     #wall boundary
+        /nw/-/nEQ_R            			#number of points in R (x or width)
+        /nh/-/nEQ_Z            			#number of points in Z (y or height)
+        /idum/-/IDUM          			#number of spatial dimensions?
+        /rdim//RDIM         			#size of the R dimension in m
+        /zdim//ZDIM         			#size of the Z dimension in m
+        r0/rcentr/.r0/RCENTR      		#reference value of R
+        b0/bcentr/.b0/BCENTR     		#vacuum toroidal magnetic field at rcentr
+        /rleft/    /RLEFT     			#R at left (inner) boundary
+        /zmid/      /ZMID    			#Z at middle of domain (from origin)
+        /rmaxis/  /Rmagh      			#R at magnetic axis (O-point)
+        /zmaxis/  /Zmagh      			#Z at magnetic axis (O-point)
+        /simag /  /PSI_magh      		#poloidal flux psi at magnetic axis (Weber / rad)
+        /sibry /  /SIBRY      			#poloidal flux psi at plasma boundary (Weber / rad)
+        /current/ /CURRENT      		#plasma current [Amps]   
+        /xdum/    /XDUM      			#dummy variable - just contains zero
+        /nbbbs/   /nb      				#plasma boundary
+        /limitr/   /IDUM     			#wall boundary
     1D data
-        /fpol/    /RBphih      #poloidal current function on uniform flux grid (1D array of f(psi)=R*B_tor [meter-Tesla])
-        /pres/    /PRES      #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-        /ffprime/  /FFPRIM     #workk1
-        /pprime/   /PPRIM     #workk1
-        /qpsi/      /QPSI    #q values on uniform flux grid
-        /rlim/          /#r wall boundary
-        /zlim/         / #z wall boundary
-        /rbbbs/       /Rp  #r plasma boundary
-        /zbbbs/      /Zp   #z plasma boundary
+        /fpol/    /RBphih      			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_tor [meter-Tesla])
+        /pres/    /PRES      			#plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+        /ffprime/  /FFPRIM     			#workk1 (check papers)
+        /pprime/   /PPRIM     			#workk1 (check papers)
+        /qpsi/      /QPSI    			#q values on uniform flux grid
+        /rlim/          /				#r wall boundary
+        /zlim/         / 				#z wall boundary
+        /rbbbs/       /Rp  				#r plasma boundary
+        /zbbbs/      /Zp   				#z plasma boundary
     2D data
-        /psirz/    /psi_equil_h     #array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
-
-
-
-
-###[GEQDSK File Format](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)
-
-The G EQDSK file contains information on P', FF', the flux on the
-rectangular grid used, q, the boundary, and the limiter contour. A
-right-handed cylindrical coordinate system (R, phi, Z) is used. The G EQDSK
-provides information on the pressure , poloidal current function, q profile
-on a uniform flux grid from the magnetic axis to the plasma boundary and the
-poloidal flux function on the rectangular computation grid. Information on
-the plasma boundary and the surrounding limiter contour is also provided. 
-
-Variables 
----------
-
-CASE: Identification character string 
-
-NW: Number of horizontal R grid points 
-
-NH: Number of vertical Z grid points 
-
-
-Namelist OUT1:  
-
-BCENTR: Vacuum toroidal magnetic field in Tesla at RCENTR 
-
-CURRENT: Plasma current in Ampere 
-
-FPOL: Poloidal current function in m-T, F = RBT on flux grid 
-
-FFPRIM: FF'(psi) in (mT)2 / (Weber/rad) on uniform flux grid 
-
-LIMITR: Number of limiter points (length of Rlim or Zlim)
-
-NBBBS: Number of boundary points (length of RBBBS or ZBBBS)
-
-NQPSI: 
-
-PPRIME: P'(psi) in (nt/m2) / (Weber/rad) on uniform flux grid 
-
-PRES: Plasma pressure in nt / m2 on uniform flux grid 
-
-PSIZR: Poloidal flux in Weber/rad on the rectangular grid points 
-
-QPSI: q values on uniform flux grid from axis to boundary 
-
-RBBBS: R of boundary points in meter 
-
-RCENTR: R in meter of vacuum toroidal magnetic field BCENTR 
-
-RDIM: Horizontal dimension in meter of computational box 
-
-RLEFT: Minimum R in meter of rectangular computational box 
-
-RLIM: R of surrounding limiter contour in meter 
-
-RMAXIS: R of magnetic axis in meter 
-
-SIMAG: poloidal flux at magnetic axis in Weber/rad 
-
-SIBRY: poloidal flux at the plasma boundary in Weber/rad 
-
-ZBBBS: Z of boundary points in meter 
-
-ZDIM: Vertical dimension in meter of computational box 
-
-ZLIM: Z of surrounding limiter contour in meter 
-
-ZMAXIS: Z of magnetic axis in meter 
-
-ZMID: Z of center of computational box in meter (from origin)
-
-
-Namelist BASIS  
-
-  KPPFNC  KPPKNT  PPKNT  PPTENS  KFFFNC  KFFKNT  FFKNT 
-  FFTENS  KWWFNC  KWWKNT  WWKNT  WWTENS  PPBDRY  PP2BDRY  KPPBDRY  KPP2BDRY 
-  FFBDRY  FF2BDRY  KFFBDRY  KFF2BDRY  WWBDRY  WW2BDRY  KWWBDRY  KWW2BDRY 
-
-Namelist CHIOUT
-
-  SAISIL  SAIMPI  SAIPR  SAIIP  
-  
-Toroidal Current Density  The toroidal current JT related to P'(psi) and
-FF'(psi) through  JT (Amp/m2) = R P'(psi) + FF'(psi)/R 
+        /psirz/    /psi_equil_h     	#array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
