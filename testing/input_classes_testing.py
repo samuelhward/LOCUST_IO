@@ -10,6 +10,10 @@ Small tests to demonstrate the input_classes.py methods
 ---
 notes:
 	TODO need to test the set/copy input_equilibrium methods
+	TODO need IDS tests
+
+	TODO need to write a script which checks read/write consistency (written a script to test if we actually read/write all parts of the file properly)
+
 ---
 '''
 
@@ -40,7 +44,8 @@ except:
 ##################################################################
 #Main Code
 
-#first test is to open an Equilibrium GEQDSK and test that reading in upon initialisation is OK and that all member data is set correctly
+
+#################################first test is to open an Equilibrium GEQDSK and test that reading in upon initialisation is OK and that all member data is set correctly
 test1_ID='test1_ID'
 test1_input_filename='test.eqdsk'
 test1_data_format='GEQDSK'
@@ -51,7 +56,7 @@ print(test_1.LOCUST_input_type)
 print(test_1.ID)
 
 
-#next test to see if we can initialise a blank Equilibrium before populating with GEQDSK formatted data using read_data
+#################################next test to see if we can initialise a blank Equilibrium before populating with GEQDSK formatted data using read_data
 test2_ID='test2_ID'
 test2_input_filename='test.eqdsk'
 test2_data_format='GEQDSK'
@@ -63,7 +68,7 @@ print(test_2.LOCUST_input_type)
 print(test_2.ID)
 
 
-#next test to see if we can dump an Equilibrium to GEQDSK
+#################################next test to see if we can dump an Equilibrium to GEQDSK
 test3_ID='test3_ID'
 test3_input_filename='test.eqdsk'
 test3_data_format='GEQDSK'
@@ -71,7 +76,7 @@ test3=input_classes.Equilibrium(test3_ID,test3_input_filename,test3_data_format)
 test3.dump_data('test3_output.eqdsk','GEQDSK')
 
 
-#now need to check the data we just outputted in test 3 to see if it's the same - subtract all the member data away from eachother to see if it's = 0
+#################################now need to check the data we just outputted in test 3 to see if it's the same - subtract all the member data away from eachother to see if it's = 0
 test4_ID='test4_ID'
 test4_input_filename='test3_output.eqdsk'
 test4_data_format='GEQDSK'

@@ -5,6 +5,7 @@ This "package" is designed to process input and output for the LOCUST-GPU code, 
 It is designed such that individual file read/write methods can easily be swapped out if new methods/filetypes come and go - all that needs to be changed is the respective function (which would be the same amount of work as writing the function bespoke).
 
 
+Got any burning questions? Want to feedback? Please email the author, Sam, at shw515@york.ac.uk. Alternatively, raise an issue on the CCFE github!
 
 
 Table of Contents
@@ -19,15 +20,11 @@ Table of Contents
 		* [Output Module](#output-module)
 	  	* [Support Module](#support-module)
 	* [Testing Subpackage](#testing-subpackage)
-		* [Input Class Tests](#input-class-tests)
-		* [Output Class Tests](output-class-tests)
 	* [Plotting Subpackage](#plotting-subpackage)
 * [Further Ideas And Contributing](#further-ideas-and-contributing)
 * [Appendix](#appendix)
-	* [Global Data Definitions & Variable Names](#global-data-definitions-&-variable-names)
+	* [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
 		* [Equilibrium](#equilibrium)
-	* [GEQDSK File Format](#geqdsk-file-format)
-
 
 
 
@@ -109,13 +106,7 @@ The overall layout consists of the main subpackage "classes" which takes data fr
 
 ### Testing Subpackage
 
-#### Input Class Tests
-
-#### Output Class Tests
-
-
-
-
+### Plotting Subpackage
 
 
 
@@ -129,10 +120,20 @@ The overall layout consists of the main subpackage "classes" which takes data fr
 * Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
 
 
-Please feel free to raise pull requests with this repo, it's designed to be easily contributed to. For example, adding a new file format type for a LOCUST input equilibrium simply requires you to standardise your data according to the .data[] member dictionary, add the generic read/write functions (which you may have written before!) and add to the data_format "if" statement in the object read/write methods. Easy!
+Please feel free to raise pull requests with this repo, it's designed to be easily contributed to. For example:
 
-Got any burning questions? Want to feedback? Please email the author, Sam, at shw515@york.ac.uk. Alternatively, raise an issue on the CCFE github!
+* Want to add a new file format type for an input equilibrium? Just standardise your data according to the .data[] member dictionary (see Appendix), copypaste the generic read/write functions (which you may have already written!) and add to the Equilibrium.read_data()/Equilibrium.dump_data() methods as below:
 
+```python
+elif data_format=='Baby': #say I want to import files that are encoded in the well-known Baby format, which requires a input_lemon and a pirate_tag
+
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from Baby format - lemon and pirate required\n',input_lemon,pirate_tag) #include a safety check 
+
+                self.data_format=data_format #now just add the appropriate member data 
+                self.lemon=lemon
+                self.pirate=pirate #add these arguments to the read_data() argument list too
+                self.data=read_Baby(self.lemon,self.pirate) #call my external read_Baby function
+```
 
 
 
@@ -147,7 +148,7 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 #### Equilibrium:
 
-(LOCUST_IO/[GEQDSK](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)/Equilibrium IDS/LOCUST)
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[GEQDSK](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)/[Equilibrium IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/equilibrium.html)/LOCUST)
 
     0D data
         /nw/-/nEQ_R            			#number of points in R (x or width)
@@ -168,7 +169,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         /nbbbs/   /nb      				#plasma boundary
         /limitr/   /IDUM     			#wall boundary
     1D data
-        /fpol/    /RBphih      			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_tor [meter-Tesla])
+        /fpol/    /RBphih      			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla])
         /pres/    /PRES      			#plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
         /ffprime/  /FFPRIM     			#workk1 (check papers)
         /pprime/   /PPRIM     			#workk1 (check papers)
@@ -179,3 +180,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         /zbbbs/      /Zp   				#z plasma boundary
     2D data
         /psirz/    /psi_equil_h     	#array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
+
+
+#TODO
+
+

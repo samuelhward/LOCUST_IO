@@ -23,7 +23,7 @@ notes:
 
 
 
-#GEQDSK format:
+#GEQDSK variable names:
 
 
 #0D data

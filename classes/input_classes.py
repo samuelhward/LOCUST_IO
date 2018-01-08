@@ -12,8 +12,9 @@ usage:
 
 notes: 
     TODO needs IDS functionality
-    TODO need to decide how to standardise data in dicts
+    TODO need to decide how to standardise data in dicts NOTE for IDS tests just use print my_ids.equilibrium and it will print all the data associated!
     TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
+    TODO add a print member function
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
@@ -24,8 +25,7 @@ notes:
     TODO need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
     TODO generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
 
-    NOTE not gone through dump_GEQDSK method yet
-    NOTE not checked the GEQDSK read/write consistency (written a script to test if we actually read/write all parts of the file properly)
+    NOTE not commented dump_GEQDSK method yet
 ---
 '''
 
@@ -86,6 +86,7 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     generic function for checking if a None value appears in *args
 
     notes:
+        message should be something specific to the section of code which called none_check
     '''
 
     for arg in args: #loop through and return this error if any element in args is None, otherwise return False 
@@ -130,58 +131,50 @@ def get_next(obj):
 
 
 
-def read_GEQDSK(ID,input_filepath): 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def read_GEQDSK(input_filepath): 
     ''' 
     generic function for reading a G-EQDSK-formatted equilibrium file
 
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
+        see README.md for data key
 
-    data key (see http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt): NOTE might be able to remove this key now
-        0D data
-            nw          #number of grid points in R (x or width)
-            nh          #number of grid points in Z (y or height)
-            idum        #number of spatial dimensions?
-            rdim        #size of the R dimension in m
-            zdim        #size of the Z dimension in m
-            rcentr      #vacuum toroidal field reference value of R (in m)
-            bcentr      #vacuum toroidal magnetic field at rcentr (in T)
-            rleft       #R at left (inner) boundary (in m)
-            zmid        #Z at middle of domain
-            rmaxis      #R of magnetic axis (O-point)
-            zmaxis      #Z of magnetic axis (O-point)
-            simag       #poloidal flux psi at magnetic axis (Weber / rad)
-            sibry       #poloidal flux at plasma boundary (Weber / rad)
-            current     #plasma current [Amps]   
-            xdum        #dummy variable - just contains zero
-            nbbbs       #number of plasma boundary points
-            limitr      #number of limiter points
-        1D data
-            fpol        #poloidal current function on uniform flux grid (1D array of F(psi)=R*B_T  [meter-Tesla])
-            pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-            ffprime     #FF'(psi) on uniform flux grid (in (m^2T^2)/(Weber/rad)) remember F=R*B_T
-            pprime      #P'(psi) (in (nt/m^2)/(Weber/rad))
-            qpsi        #q(psi) values on uniform flux grid from axis to boundary
-            rlim        #r wall boundary
-            zlim        #z wall boundary
-            rbbbs       #r plasma boundary
-            zbbbs       #z plasma boundary
-                        #toroidal current density is related by to P'(psi) and FF'(psi) via J_T(amp/m^2)= RP'(psi)+FF'(psi)/R
-        2D data
-            psirz       #array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
-   '''
+    '''
 
     input_data = {}
     flags = {'loaded' : False } #NOTE might not need this variable now
 
-    file = open(input_filepath) #open file, assumed input_filepath is object
+    file = open(input_filepath) #open file
     
     line = file.readline() #first line should be case, id number and dimensions
     if not line:
-        raise IOError("ERROR: Cannot read from file"+input_filepath)
+        raise IOError("ERROR: read_GEQDSK cannot read from file"+input_filepath)
     
     #extract case, id number and dimensions  
-    conts = line.split()    #split by white space (no arguement in .split())
+    conts = line.split()    #split by white space (no argument in .split())
     input_data['nh'] = int(conts[-1]) #same as nyefit or height dimension
     input_data['nw'] = int(conts[-2]) #same as nxefit or width dimension
     input_data['idum'] = int(conts[-3])
@@ -256,45 +249,13 @@ def read_GEQDSK(ID,input_filepath):
 
 
 
-def dump_GEQDSK(ID,output_data,output_filepath):
+def dump_GEQDSK(output_data,output_filepath):
     '''
     generic function for writing G-EQDSK-formatted data to file
 
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
-    
-    data key (see http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt): NOTE might be able to remove this key now
-        0D data
-            nw          #number of grid points in R (x or width)
-            nh          #number of grid points in Z (y or height)
-            idum        #number of spatial dimensions?
-            rdim        #size of the R dimension in m
-            zdim        #size of the Z dimension in m
-            rcentr      #vacuum toroidal field reference value of R (in m)
-            bcentr      #vacuum toroidal magnetic field at rcentr (in T)
-            rleft       #R at left (inner) boundary (in m)
-            zmid        #Z at middle of domain
-            rmaxis      #R of magnetic axis (O-point)
-            zmaxis      #Z of magnetic axis (O-point)
-            simag       #poloidal flux psi at magnetic axis (Weber / rad)
-            sibry       #poloidal flux at plasma boundary (Weber / rad)
-            current     #plasma current [Amps]   
-            xdum        #dummy variable - just contains zero
-            nbbbs       #number of plasma boundary points
-            limitr      #number of limiter points
-        1D data
-            fpol        #poloidal current function on uniform flux grid (1D array of F(psi)=R*B_T  [meter-Tesla])
-            pres        #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-            ffprime     #FF'(psi) on uniform flux grid (in (m^2T^2)/(Weber/rad)) remember F=R*B_T
-            pprime      #P'(psi) (in (nt/m^2)/(Weber/rad))
-            qpsi        #q(psi) values on uniform flux grid from axis to boundary
-            rlim        #r wall boundary
-            zlim        #z wall boundary
-            rbbbs       #r plasma boundary
-            zbbbs       #z plasma boundary
-                        #toroidal current density is related by to P'(psi) and FF'(psi) via J_T(amp/m^2)= RP'(psi)+FF'(psi)/R
-        2D data
-            psirz       #array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
+        see README.md for data key
     '''
 
     cnt = itertools.cycle([0,1,2,3,4]) #counter
@@ -371,7 +332,7 @@ def dump_GEQDSK(ID,output_data,output_filepath):
 
 
 
-def read_IDS_equilibrium(ID,shot,run): 
+def read_IDS_equilibrium(shot,run): 
     '''
     function which reads relevant LOCUST equilibrium data from an IDS equilibrium and returns as a dictionary
 
@@ -383,14 +344,13 @@ def read_IDS_equilibrium(ID,shot,run):
 
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    
+
     input_IDS.create() 
  
+
+
     return data
-
-
-
-
-
 
 
 
@@ -416,11 +376,12 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.create()
 
     #set some mandatory IDS properties
-    output_IDS.equilibrium.ids_properties.homoegeneous_time=1 #must set homogeneous_time variable
+    output_IDS.equilibrium.ids_properties.homoegeneous_time=0 #must set homogeneous_time variable
     output_IDS.equilibrium.time_slice.resize(1) #just do one time slice i.e. static equilibrium
+    output_IDS.equilibrium.time_slice[0].time=0 #the time that this time slice is at
 
     #write out code properties
-    output_IDS.ids_properties.comment=ID #write out identification
+    output_IDS.equilibrium.ids_properties.comment=ID #write out identification
     output_IDS.equilibrium.code.name="LOCUST_IO"
     output_IDS.equilibrium.code.version=support.LOCUST_IO_version
 
@@ -432,35 +393,35 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=data['simag']  
     output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=data['sibry']    
     output_IDS.equilibrium.time_slice[0].global_quantities.ip=data['current']
-    output_IDS.equilibrium.time_slice[0].boundary.type=1 #boundary type (0 for limiter, 1 for diverted)
-    output_IDS.equilibrium.time_slice[0].boundary.outline.r=data['rbbbs'] 
-    output_IDS.equilibrium.time_slice[0].boundary.outline.z=data['zbbbs']
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=data['rlim'] #this is now obsolete - need to figure out where to write to 
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=data['zlim']
+    output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
+    output_IDS.equilibrium.time_slice[0].boundary.outline.r=data['rlim'] 
+    output_IDS.equilibrium.time_slice[0].boundary.outline.z=data['zlim']
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=data['rbbbs'] #this is apparently obsolete - need to figure out where to write to 
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=data['zbbbs']
 
 
     #now to define the grids, start with the uniform flux grid
-    psi_1D=np.linspace(data['simag'],data['sibry'],len(data['ffprime'])) #use any of fpol, pres, ffprime, pprime, qpsi - they're all the same length
+    psi_1D=np.linspace(data['simag'],data['sibry'],len(data['ffprime'])) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
 
     #write out the uniform flux grid data
     output_IDS.equilibrium.time_slice[0].profiles_1d.psi=psi_1D
-    #output_IDS.equilibrium.time_slice[0].=data['fpol'] #TODO           where to write these? does LOCUST use these quantities? check LOCUST source code
+    output_IDS.equilibrium.time_slice[0].profiles_1d.f=data['fpol'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=data['pres'] 
-    #output_IDS.equilibrium.time_slice[0].=data['ffprime'] #TODO
-    #output_IDS.equilibrium.time_slice[0].=data['pprime'] #TODO
+    output_IDS.equilibrium.time_slice[0].f_df_dpsi=data['ffprime'] 
+    output_IDS.equilibrium.time_slice[0].dpressure_dpsi=data['pprime'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] 
 
 
     #now define the R,Z simulation grid
     output_IDS.equilibrium.time_slice[0].profiles_2d.resize(1) #add an element onto the profiles_2d struct_array to define this grid
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.name='grid_name_here' #add some identifiers for this particular grid
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.description='grid_description_here' 
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.name='rectangular grid' #add some identifiers for this particular grid
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.description='grid handled with GEQDSK/LOCUST_IO' 
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,z), 0 for inverse (psi,theta)
 
     #generate the R,Z grid coordinate arrays
     R_1D=np.linspace(data['rleft'],data['rleft']+data['rdim'],num=data['nw']) #generate 1D arrays of the R,z values         TODO do this upon writing in instaed of here     
     Z_1D=np.linspace(data['zmid']-0.5*data['zdim'],data['zmid']+0.5*data['zdim'],num=data['nh']) 
-    R_2D,Z_2D=numpy.meshgrid(R_1D,Z_1D) #generate 2D arrays of R,Z values
+    R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate 2D arrays of R,Z values
 
     #write out R,Z grid coordinate arrays
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1=R_1D #dim1=R values/dim2=Z values
@@ -470,7 +431,6 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     
     #write out 2D profiles
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].psi=data['psirz'] 
-
     
     #'put' all the data into the file and close
     output_IDS.equilibrium.put()
@@ -494,44 +454,32 @@ def dump_IDS_equilibrium(ID,data,shot,run):
 
 
 
+
 ################################################################## base class
 class LOCUST_input:
     """
     base class for a LOCUST input object
 
     self.ID                     unique object identifier, good convention to fill these for error handling etc
-    self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
     self.data                   holds all input data in dictionary object
+    self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
 
     notes:
     """
 
     LOCUST_input_type='base_input'
 
-    def __init__(self,ID,input_filename=None,data_format=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded)
+    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded), must have ID
 
         self.ID=ID
+        self.read_data(data_format,input_filename,shot,run)
 
-        if none_check(self.ID,self.LOCUST_input_type,'blank LOCUST_input initialised - input_filename, data_format, shot or run is missing\n',input_filename,data_format,shot,run): #check to make sure input_filename, data_format, run and shot are specified, if either are blank then do nothing, can still read later in program using read_data() directly
-            pass
-        else: #read input data if sufficient arguements are given
-            self.read_data(input_filename,data_format,shot,run)
-
-    def read_data(self,input_filename=None,data_format=None): #bad practice to change overridden method signatures, so retain all method arguements             
-        self.data=None #read_data definition is to be overloaded in children classes 
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
+        self.data=None #read_data definition is designed to be overloaded in children classes 
 
 
 
 
-
-
-
-
-
-
-
-
-        
 
 
 
@@ -557,8 +505,8 @@ class Equilibrium(LOCUST_input):
 
     inherited from LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
-        self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
         self.data                   holds all input data in dictionary object
+        self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
     Equilibrium data
         self.input_filename         name of file in input_files folder
         self.data_format            data format of input_file e.g. GEQDSK
@@ -581,45 +529,56 @@ class Equilibrium(LOCUST_input):
     def __exit__(self,*args,**kwargs):
         pass
 
-    def read_data(self,input_filename=None,data_format=None,shot=None,run=None):
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
 
         notes:
         """
 
-        if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data, input_filename, data_format, shot and run required\n',input_filename,data_format,shot,run): #check to make sure input_filename and data_format are specified
+        if data_format==None: #must always have data_format if reading in data
+            print("WARNING: read_data requires data_format, blank input initialised (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+            pass
 
-            self.data_format=data_format
-            self.input_filename=input_filename
-            self.input_filepath=support.dir_input_files+input_filename
-            self.shot=shot
-            self.run=run
 
-            if self.data_format=='GEQDSK':
-                self.data=read_GEQDSK(self.ID,self.input_filepath,self.shot,self.run)
-               
-            elif self.data_format=='IDS_equilibrium':
-                self.data=read_IDS_equilibrium(self.ID,self.input_filepath,self.shot,self.run)
+        elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - self.input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
+
+                self.data_format=data_format #add to the member data
+                self.input_filename=input_filename
+                self.input_filepath=support.dir_input_files+input_filename
+                self.data=read_GEQDSK(self.input_filepath) #read the file
+           
+
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - self.shot and self.run data required\n',shot,run):
+
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.data=read_IDS_equilibrium(self.shot,self.run)
+    
+
 
             
-    def dump_data(self,output_filename,output_data_format):
+    def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
         """
-        write data to file
+        write equilibrium to file
 
         notes: 
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'cannot dump_data, data=None\n',self.data): #check to make sure input_filename and output_data_format are specified
-            pass
-        else:
+        if self.data==None or output_data_format==None:
+            print("ERROR: dump_data requires self.data and self.output_data_format (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
 
-            output_filepath=support.dir_output_files+output_filename
-            if output_data_format=='GEQDSK':
-                dump_GEQDSK(self.ID,self.data,output_filepath)
+        elif output_data_format=='GEQDSK':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - self.output_filename required\n',output_filename):
+                output_filepath=support.dir_output_files+output_filename
+                dump_GEQDSK(self.data,output_filepath)
 
-            elif output_data_format=='IDS':
-                dump_IDS_equilibrium(self.ID,self.data,output_filepath)
+        elif output_data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - self.shot and self.run required\n',shot,run):
+                dump_IDS_equilibrium(self.ID,self.data,shot,run)
 
 
     def copy(self,target,key=None):
@@ -627,13 +586,13 @@ class Equilibrium(LOCUST_input):
         copy two equilibrium objects 
 
         notes:
-            if target data is empty this function does nothing
+            if target data is empty then this function does nothing
             if no key supplied then copy everything
             if key supplied then copy/append dictionary data accordingly
         """
 
         if target.data == None:    #return warning if target is empty
-            raise RuntimeError("Warning (ID=%s): tried to copy from blank equilibrium\n" % self.ID) #TODO need to python3 this + print statement here?
+            raise RuntimeError("Error (ID={ID}): tried to copy from blank equilibrium\n".format(ID=self.ID)) 
         elif key == None: #if no key supplied then copy everything
             self.data_format=target.data_format
             self.input_filename=target.input_filename
@@ -654,7 +613,6 @@ class Equilibrium(LOCUST_input):
             pass
         else:
             self.data[key]=value
-
 
 
 
