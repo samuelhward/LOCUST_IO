@@ -12,16 +12,19 @@ usage:
 
 notes: 
     TODO needs IDS functionality
+    
     TODO need to decide how to standardise data in dicts NOTE for IDS tests just use print my_ids.equilibrium and it will print all the data associated!
+    
     TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
-    TODO add a print member function
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
+    
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
+    
     TODO warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
+    
     TODO get GEQDSK read in method to calculate the toroidal current density (outlined in the GEQDSK outline description pdf thing)
     TODO need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT
-    TODO need to figure out where to write limiter r,z in IDS equilibrium write out since .lcfs is apparently obsolete
     TODO need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
     TODO generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
 
@@ -396,7 +399,7 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
     output_IDS.equilibrium.time_slice[0].boundary.outline.r=data['rlim'] 
     output_IDS.equilibrium.time_slice[0].boundary.outline.z=data['zlim']
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=data['rbbbs'] #this is apparently obsolete - need to figure out where to write to 
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=data['rbbbs'] #NOTE this is apparently obsolete - need to figure out where to write to 
     output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=data['zbbbs']
 
 

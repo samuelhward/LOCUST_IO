@@ -7,19 +7,12 @@ Samuel Ward
 Plotting routines for LOCUST equilibria data
 ---
 notes:
-	
+	NOTE here can define all the plotting member functions for the input/output classes	
+	https://stackoverflow.com/questions/9455111/python-define-method-outside-of-class-definition
 ---
 '''
 
 '''
-
-
-
-
-
-
-
-
 
 
 
@@ -71,18 +64,6 @@ ax=plt.axes(projection='3d')
 #ax.view_init(elev=90, azim=None) #rotate the camera
 ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*numpy.amin(Z),vmax=1.01*numpy.amax(Z))
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 '''

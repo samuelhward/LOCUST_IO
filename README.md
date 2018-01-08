@@ -12,8 +12,8 @@ Table of Contents
 -----------------
 
 * [Requirements](#requirements)
-* [Basic Usage](#basic-usage)
-* [Advanced Usage](#advanced-usage)
+* [Getting Started](#getting-started)
+* [Usage](#usage)
 * [Overview](#overview)
 	* [Classes Subpackage](#classes-subpackage)
 		* [Input Module](#input-module)
@@ -40,48 +40,51 @@ Table of Contents
 
 
 
-## Basic Usage
+## Getting Started
 
-* Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project
+* Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project (this is where you will run the package)
 * Copy a context.py file from LOCUST_IO/testing to LOCUST_IO/my_project
 * Copy the file which you want to manipulate to LOCUST_IO/input_files and LOCUST_IO/output_files
+* Import context
+* Import input_classes or output_classes
+* You're good to go!
 
+
+## Usage
+
+Some basic usage is outlined below. This includes importing/exporting an equilibrium for LOCUST between two different file formats.
 
 ```python
+import context
+import input_classes
+
+
 ID='eq_ID_here' #specify the object data here
 input_filename="test.eqdsk"
 data_format='GEQDSK'
-my_equilibrium=input_classes.Equilibrium(ID,input_filename,data_format) #my_equilibrium now holds all the data in one object
+my_equilibrium=input_classes.Equilibrium(ID,data_format,input_filename) #my_equilibrium now holds all the data in one object
 ```
 
 ```python
 ID='eq_ID_here' #specify the object data here
 input_filename="test.eqdsk"
 data_format='GEQDSK'
-my_equilibrium=input_classes.Equilibrium(ID) #initialise a blank my_equilibrium
+my_equilibrium=input_classes.Equilibrium(ID) #you can initialise an empty equilibrium this way! (must always specify an ID) fill later with the read_dat() method
 
-my_equilibrium.read_data(input_filename, data_format)
-my_equilibrium.dump_data()
+my_equilibrium.read_data(data_format,input_filename)
+
+output_data_format='IDS'
+shot=1
+run=1
+my_equilibrium.dump_data(output_data_format=output_data_format,shot=shot,run=run)
 ```
 
-* Everything MUST have an ID
 
+* LOCUST inputs/outputs can be copied using the .copy() method:
 
+* You can also set individual pieces of data with the .set() method:
 
-
-
-
-
-
-
-## Advanced Usage
-
-* You can instantiate a blank LOCUST input/output by instantiating by not specifying data_format or input_filename (you must always specify an ID). Fill the input/output later by using the .read_data() method. 
-* The .copy() method can be used to...
-* The .set() method can be used to...
-* You can use this package interactively/non-interactively anywhere on your system as long as you append your python path to find the classes/ folder. However, input/output files will still be written to the input/output folders within the package directory.
-
-
+* LOCUST_IO will also plot input/output data using the methods in the plotting/ directory:
 
 
 
@@ -99,6 +102,13 @@ The overall layout consists of the main subpackage "classes" which takes data fr
 
 #### Input Module
 
+Import this module if you want to handle inputs for LOCUST. File formats currently supported are:
+
+* Equilibrium - GEQDSK/IDS
+* NBI - ASCII
+* Number Density - ASCII
+* Temperature - ASCII
+
 #### Output Module
 
 #### Support Module
@@ -112,13 +122,6 @@ The overall layout consists of the main subpackage "classes" which takes data fr
 
 
 ## Further Ideas And Contributing
-
-
-* Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
-* Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
-* Use argparse to input command line arguments etc. to the python code which calls from input_classes. e.g. pass file names etc. via command line and argparse to a python script which implements this module
-* Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
-
 
 Please feel free to raise pull requests with this repo, it's designed to be easily contributed to. For example:
 
@@ -140,7 +143,6 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 
 
 ## Appendix
-
 
 ### Global Data Definitions & Variable Names
 
@@ -184,4 +186,8 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 #TODO
 
-
+* Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
+* Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
+* Use argparse to input command line arguments etc. to the python code which calls from input_classes. e.g. pass file names etc. via command line and argparse to a python script which implements this module
+* Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
+* Add plotting functionality
