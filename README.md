@@ -50,6 +50,10 @@ Table of Contents
 * You're good to go!
 
 
+
+
+
+
 ## Usage
 
 Some basic usage is outlined below. This includes importing/exporting an equilibrium for LOCUST between two different file formats.
@@ -191,3 +195,4 @@ Since this package aims to bridge the gap between various file formats for diffe
 * Use argparse to input command line arguments etc. to the python code which calls from input_classes. e.g. pass file names etc. via command line and argparse to a python script which implements this module
 * Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
 * Add plotting functionality
+* Reorginase classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long

@@ -309,9 +309,9 @@ def dump_GEQDSK(output_data,output_filepath):
         write_1d(file,output_data['pres'],cnt)
         write_1d(file,output_data['ffprime'],cnt)
         write_1d(file,output_data['pprime'],cnt)
-        write_2d(file,output_data['psirz'],cnt)
-        #No qpsi in eq object for now
-        write_1d(file,np.zeros(output_data['nw']),cnt)    
+        write_2d(file,output_data['psirz'],cnt)    
+        write_1d(file,output_data['qpsi'],cnt) 
+        
         file.write("\n"+str(len(list(output_data['rbbbs'])))+"\t"+str(len(list(output_data['rlim'])))+"\n")
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
