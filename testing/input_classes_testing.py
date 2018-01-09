@@ -12,7 +12,7 @@ notes:
 	TODO need to test the set/copy input_equilibrium methods
 	TODO need IDS tests
 
-	TODO need to write a script which checks read/write consistency (written a script to test if we actually read/write all parts of the file properly)
+	TODO need to write a script which checks read/write consistency (written a script to test if we actually read/write all parts of the file properly) - could compare the data dictionaries?
 
 ---
 '''

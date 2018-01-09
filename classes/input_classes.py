@@ -10,9 +10,7 @@ contains methods for reading/writing/converting/plotting/manipulating LOCUST inp
 usage:
     see README.md for usage
 
-notes: 
-    TODO needs IDS functionality
-    
+notes:     
     TODO need to decide how to standardise data in dicts NOTE for IDS tests just use print my_ids.equilibrium and it will print all the data associated!
     
     TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
@@ -23,10 +21,9 @@ notes:
     
     TODO warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
     
-    TODO get GEQDSK read in method to calculate the toroidal current density (outlined in the GEQDSK outline description pdf thing)
-    TODO need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT
     TODO need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
     TODO generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
+    TODO need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT
 
     NOTE not commented dump_GEQDSK method yet
 ---
@@ -246,8 +243,6 @@ def read_GEQDSK(input_filepath):
     input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
     flags['loaded'] = True
     
-    #could rename input_data keys here
-
     return input_data
 
 
@@ -258,6 +253,8 @@ def dump_GEQDSK(output_data,output_filepath):
 
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
+        does not write out idum
+
         see README.md for data key
     '''
 
@@ -340,23 +337,61 @@ def read_IDS_equilibrium(shot,run):
     function which reads relevant LOCUST equilibrium data from an IDS equilibrium and returns as a dictionary
 
     notes:
-        see the ITER data dictionary for details
+        idum not read
+        see README.md for data key
     '''
 
 
 
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open()
+    input_IDS.equilibrium.get() #open the file and get all the data from it
+
+    input_data = {} #initialise blank dictionary to hold the data
+
+    #pull out easy things - 0D data, profiles etc which map straight over
+    input_data['rcentr']=input_IDS.equilibrium.vacuum_toroidal_field.r0 
+    #input_data['bcentr']=input_IDS.equilibrium.vacuum_toroidal_field.b0 #XXX this doesn't currently work - supposed to be 1D?
+    input_data['rmaxis']=input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r
+    input_data['zmaxis']=input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z
+    input_data['simag']=input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis
+    input_data['sibry']=input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary
+    input_data['current']=input_IDS.equilibrium.time_slice[0].global_quantities.ip
+    input_data['psirz']=input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi
     
+    input_data['rlim']=input_IDS.equilibrium.time_slice[0].boundary.outline.r #boundaries
+    input_data['zlim']=input_IDS.equilibrium.time_slice[0].boundary.outline.z
+    input_data['rbbbs']=input_IDS.equilibrium.time_slice[0].boundary.lcfs.r #NOTE this is apparently obsolete - need to figure out where to write to 
+    input_data['zbbbs']=input_IDS.equilibrium.time_slice[0].boundary.lcfs.z
 
-    input_IDS.create() 
- 
+    input_data['fpol'] =input_IDS.equilibrium.time_slice[0].profiles_1d.f #flux grid data
+    input_data['pres'] =input_IDS.equilibrium.time_slice[0].profiles_1d.pressure
+    input_data['ffprime']=input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi
+    input_data['pprime'] =input_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi
+    input_data['qpsi'] =input_IDS.equilibrium.time_slice[0].profiles_1d.q
 
+    #values derived from grids and profiles
+    psi_1D=input_IDS.equilibrium.time_slice[0].profiles_1d.psi 
+    simag=min(psi_1D)
+    sibry=max(psi_1D)
 
-    return data
+    input_data['limitr']=len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
+    input_data['nbbbs']=len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
 
+    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
+    Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
 
+    input_data['nw']=len(R_1D)
+    input_data['nh']=len(Z_1D)
+    input_data['rleft']=min(R_1D)
+    input_data['rdim']=abs(max(R_1D)-min(R_1D))
+    input_data['zdim']=abs(max(Z_1D)-min(Z_1D))
+    input_data['zmid']=0.5*(max(Z_1D)+min(Z_1D))
 
+    input_IDS.close()
+
+    return input_data
 
 
 def dump_IDS_equilibrium(ID,data,shot,run):
@@ -364,24 +399,25 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     function for writing a LOCUST equilibrium to an equilibrium IDS
 
     notes:
-        currently this only runs for rectangular equilibria 
-        see the ITER data dictionary for details
+        currently only for rectangular equilibria 
+        currently overwrites pre-existing IDSs
+        idum not dumped
 
-        Following aren't written out to IDS:
-            nbbbs   #just the length of rbbbs or zbbbs
-            limitr  #just the length of rlim or zlim
-
-    NOTE    what if we are holding a flux coordinate-based equilibrium? does LOCUST only use rectangular?
+        see README.md for data key
     '''
 
     #generate a new IDS IFF one doesn't already exist 
-    output_IDS=imas.ids(shot,run) #TODO check this step actually does this 'IFF'
-    output_IDS.create()
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.create() #this will overwrite any existing IDS for this shot/run
 
     #set some mandatory IDS properties
-    output_IDS.equilibrium.ids_properties.homoegeneous_time=0 #must set homogeneous_time variable
+    output_IDS.equilibrium.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
     output_IDS.equilibrium.time_slice.resize(1) #just do one time slice i.e. static equilibrium
-    output_IDS.equilibrium.time_slice[0].time=0 #the time that this time slice is at
+    output_IDS.equilibrium.time_slice[0].time=0.0 #the time that this time slice is at
+
+    '''#XXX TRYING THIS NEXT
+    output_IDS.equilibrium.time=np.array([0.0,1.0,2.0]) set b to same dimension
+    '''
 
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
@@ -389,13 +425,14 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.code.version=support.LOCUST_IO_version
 
     #write out the easy stuff - global quantities, some 1D profiles and the boundaries
-    output_IDS.equilibrium.r0=data['rcentr'] 
-    output_IDS.equilibrium.b0=data['bcentr'] 
+    output_IDS.equilibrium.vacuum_toroidal_field.r0=data['rcentr'] 
+    #output_IDS.equilibrium.vacuum_toroidal_field.b0=data['bcentr'] #XXX this doesn't currently work - supposed to be 1D?
     output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r=data['rmaxis']   
     output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z=data['zmaxis']    
     output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=data['simag']  
     output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=data['sibry']    
     output_IDS.equilibrium.time_slice[0].global_quantities.ip=data['current']
+
     output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
     output_IDS.equilibrium.time_slice[0].boundary.outline.r=data['rlim'] 
     output_IDS.equilibrium.time_slice[0].boundary.outline.z=data['zlim']
@@ -410,9 +447,9 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_1d.psi=psi_1D
     output_IDS.equilibrium.time_slice[0].profiles_1d.f=data['fpol'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=data['pres'] 
-    output_IDS.equilibrium.time_slice[0].f_df_dpsi=data['ffprime'] 
-    output_IDS.equilibrium.time_slice[0].dpressure_dpsi=data['pprime'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=data['ffprime'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi=data['pprime'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] #XXX up to here
 
 
     #now define the R,Z simulation grid
@@ -465,7 +502,7 @@ class LOCUST_input:
 
     self.ID                     unique object identifier, good convention to fill these for error handling etc
     self.data                   holds all input data in dictionary object
-    self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
+    self.LOCUST_input_type      string which holds this class' input type
 
     notes:
     """
@@ -514,11 +551,14 @@ class Equilibrium(LOCUST_input):
         self.input_filename         name of file in input_files folder
         self.data_format            data format of input_file e.g. GEQDSK
         self.input_filepath         full path of file in input_files folder  
+        self.shot                   shot number
+        self.run                    run number
         key                         key in data dictionary to specify data entries
         target                      external object to copy from
         output_filename             name of file to write to
         output_filepath             full path to output file in output_files folder
         output_data_format          data format of output file e.g. GEQDSK
+
 
     notes:
 
@@ -532,7 +572,7 @@ class Equilibrium(LOCUST_input):
     def __exit__(self,*args,**kwargs):
         pass
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type NOTE could change to **kwargs instead? would haveto change none_check to look for variable names in a *args array
         """
         read equilibrium from file 
 
@@ -545,7 +585,7 @@ class Equilibrium(LOCUST_input):
 
 
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - self.input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
 
                 self.data_format=data_format #add to the member data
                 self.input_filename=input_filename
@@ -554,7 +594,7 @@ class Equilibrium(LOCUST_input):
            
 
         elif data_format=='IDS':
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - self.shot and self.run data required\n',shot,run):
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - shot and run data required\n',shot,run):
 
                 self.data_format=data_format
                 self.shot=shot
@@ -575,12 +615,12 @@ class Equilibrium(LOCUST_input):
             print("ERROR: dump_data requires self.data and self.output_data_format (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
 
         elif output_data_format=='GEQDSK':
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - self.output_filename required\n',output_filename):
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
                 dump_GEQDSK(self.data,output_filepath)
 
         elif output_data_format=='IDS':
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - self.shot and self.run required\n',shot,run):
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
                 dump_IDS_equilibrium(self.ID,self.data,shot,run)
 
 

@@ -172,8 +172,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         /sibry /  /SIBRY      			#poloidal flux psi at plasma boundary (Weber / rad)
         /current/ /CURRENT      		#plasma current [Amps]   
         /xdum/    /XDUM      			#dummy variable - just contains zero
-        /nbbbs/   /nb      				#plasma boundary
-        /limitr/   /IDUM     			#wall boundary
+        /nbbbs/   /nb      				#number of points in the plasma boundary
+        /limitr/   /IDUM     			#number of points in the wall boundary
     1D data
         /fpol/    /RBphih      			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla])
         /pres/    /PRES      			#plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
@@ -196,3 +196,7 @@ Since this package aims to bridge the gap between various file formats for diffe
 * Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
 * Add plotting functionality
 * Reorginase classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
+
+* Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
+
+* In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding.
