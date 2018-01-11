@@ -150,53 +150,62 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 
 ### Global Data Definitions & Variable Names
 
-Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, here are all the different variable names used by different codes and file formats for similar quantities. '-' means they are not used/are empty/not written to.
+Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, here are all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways.
 
 #### Equilibrium:
 
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[GEQDSK](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)/[Equilibrium IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/equilibrium.html)/LOCUST)
 
     0D data
-        /nw/-/nEQ_R            			#number of points in R (x or width)
-        /nh/-/nEQ_Z            			#number of points in Z (y or height)
-        /idum/-/IDUM          			#number of spatial dimensions?
-        /rdim//RDIM         			#size of the R dimension in m
-        /zdim//ZDIM         			#size of the Z dimension in m
-        r0/rcentr/.r0/RCENTR      		#reference value of R
-        b0/bcentr/.b0/BCENTR     		#vacuum toroidal magnetic field at rcentr
-        /rleft/    /RLEFT     			#R at left (inner) boundary
-        /zmid/      /ZMID    			#Z at middle of domain (from origin)
-        /rmaxis/  /Rmagh      			#R at magnetic axis (O-point)
-        /zmaxis/  /Zmagh      			#Z at magnetic axis (O-point)
-        /simag /  /PSI_magh      		#poloidal flux psi at magnetic axis (Weber / rad)
-        /sibry /  /SIBRY      			#poloidal flux psi at plasma boundary (Weber / rad)
-        /current/ /CURRENT      		#plasma current [Amps]   
-        /xdum/    /XDUM      			#dummy variable - just contains zero
-        /nbbbs/   /nb      				#number of points in the plasma boundary
-        /limitr/   /IDUM     			#number of points in the wall boundary
+        /nw/-/nEQ_R                 			                            #number of points in R (x or width)
+        /nh/-/nEQ_Z                                                			#number of points in Z (y or height)
+        /idum/-/IDUM          			                                    #number of spatial dimensions?
+        /rdim/-/RDIM                                             			#size of the R dimension in m
+        /zdim/-/ZDIM         		                                        #size of the Z dimension in m
+        r0/rcentr/...vacuum_toroidal_field.r0/RCENTR                 		#reference value of R
+        b0/bcentr/...vacuum_toroidal_field.b0/BCENTR     		            #vacuum toroidal magnetic field at rcentr
+        /rleft/-/RLEFT     			                                        #R at left (inner) boundary
+        /zmid/-/ZMID    			                                        #Z at middle of domain (from origin)
+        /rmaxis/...global_quantities.magnetic_axis.r/Rmagh      			#R at magnetic axis (O-point)
+        /zmaxis/...global_quantities.magnetic_axis.z/Zmagh      			#Z at magnetic axis (O-point)
+        /simag/...global_quantities.psi_axis/PSI_magh      		            #poloidal flux psi at magnetic axis (Weber / rad)
+        /sibry/...global_quantities.psi_boundary/SIBRY      			    #poloidal flux psi at plasma boundary (Weber / rad)
+        /current/...global_quantities.ip/CURRENT      		                #plasma current [Amps]   
+        /xdum/-/XDUM                                              			#dummy variable - just contains zero
+        /nbbbs/-/nb                                         				#number of points in the plasma boundary
+        /limitr/-/IDUM                                          			#number of points in the wall boundary
     1D data
-        /fpol/    /RBphih      			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla])
-        /pres/    /PRES      			#plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-        /ffprime/  /FFPRIM     			#workk1 (check papers)
-        /pprime/   /PPRIM     			#workk1 (check papers)
-        /qpsi/      /QPSI    			#q values on uniform flux grid
-        /rlim/          /				#r wall boundary
-        /zlim/         / 				#z wall boundary
-        /rbbbs/       /Rp  				#r plasma boundary
-        /zbbbs/      /Zp   				#z plasma boundary
+        /fpol/...profiles_1d.f/RBphih                            			#poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla])
+        /pres/...profiles_1d.pressure/PRES      			                #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
+        /ffprime/...profiles_1d.f_df_dpsi/FFPRIM                   			#workk1 (check papers)
+        /pprime/...profiles_1d.dpressure_dpsi/PPRIM     		          	#workk1 (check papers)
+        /qpsi/...profiles_1d.q/QPSI    			                            #q values on uniform flux grid
+        /rlim/...boundary.outline.r/	                           			#r wall boundary
+        /zlim/...boundary.outline.z/ 				                        #z wall boundary
+        /rbbbs/...boundary.lcfs.r/Rp  			                           	#r plasma boundary
+        /zbbbs/...boundary.lcfs.z/Zp   		                           		#z plasma boundary
     2D data
-        /psirz/    /psi_equil_h     	#array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
+        /psirz/...profiles_2d[0].psi/psi_equil_h     	                    #array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
 
 
-#TODO
+# TODO
+
+## General
 
 * Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
 * Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
-* Use argparse to input command line arguments etc. to the python code which calls from input_classes. e.g. pass file names etc. via command line and argparse to a python script which implements this module
-* Currently, this package will remain in the given folder structure. I understand that this may limit flexibility somewhat if the user is looking for something ultra-light, but sticking to this folder format means that the environment stays controlled and limits the variation across user environments to make reading/using/debugging/contributing as easy as possible. This may change in the future (may be I will implement a light and heavy version...)
+* Make an example project which uses argparse to input command line arguments and then use the rest of the module to do batch operations or something 
 * Add plotting functionality
-* Reorginase classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
-
-* Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
-
 * In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding.
+
+* Reorganise classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
+* Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
+* Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
+* need to decide how to standardise data in dicts 
+* because I added __getitem__ __setite__ to classes to access the data more easily, can now reference data with myeq['fpol'] instead of myeq.data['fpol']. On top of this, you could now iterate through myeq.data i.e. could have equilibrium['fpol'] which returns fpol, or equilibrium[some_list_of_keys] to set/get multiple items at once...useful to have in the copy function to get around calling it x times! (in this case must add kwargs to copy functions to copy arbitrary number of items)
+
+## Equilibrium Things
+
+* Need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
+* Generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
+* Need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT

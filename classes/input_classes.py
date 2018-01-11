@@ -10,22 +10,11 @@ contains methods for reading/writing/converting/plotting/manipulating LOCUST inp
 usage:
     see README.md for usage
 
-notes:     
-    TODO need to decide how to standardise data in dicts NOTE for IDS tests just use print my_ids.equilibrium and it will print all the data associated!
-    
+notes:         
     TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
-    
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
-    
-    TODO warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
-    
-    TODO need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
-    TODO generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
-    TODO need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT
-
-    NOTE not commented dump_GEQDSK method yet
 ---
 '''
 
@@ -40,6 +29,7 @@ try:
     import re
     import time
     import itertools
+    import copy
 except:
     raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
@@ -80,7 +70,13 @@ except:
 
 
 
-################################################################## supporting functions
+
+
+
+
+
+################################################################## Supporting functions
+
 def none_check(ID,LOCUST_input_type,error_message,*args):
     '''
     generic function for checking if a None value appears in *args
@@ -88,15 +84,63 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     notes:
         message should be something specific to the section of code which called none_check
     '''
-
-    for arg in args: #loop through and return this error if any element in args is None, otherwise return False 
-        if arg == None:
-            print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
-            return True
+    if all(arg is not None for arg in args):
+        return False
+    else:
+        print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
+        return True
         
-    return False
 
 
+
+
+
+
+
+
+################################################################## base class
+
+class LOCUST_input:
+    """
+    base class for a LOCUST input object
+
+    self.ID                     unique object identifier, good convention to fill these for error handling etc
+    self.data                   holds all input data in dictionary object
+    self.LOCUST_input_type      string which holds this class' input type
+
+    notes:
+    """
+
+    LOCUST_input_type='base_input'
+
+    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded), must have ID
+
+        self.ID=ID
+        self.read_data(data_format,input_filename,shot,run)
+
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
+        self.data=None #read_data definition is designed to be overloaded in children classes 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################## Equilibrium functions
 
 def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
     '''
@@ -128,31 +172,6 @@ def get_next(obj):
         return obj.next() #XX how exactly does .next() work? will it accept tok in toklist values from file_numbers() and allow file_numbers to then read in the next bunch (since yield will pause the While True loop?)
     else:
         return next(obj)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 def read_GEQDSK(input_filepath): 
     ''' 
@@ -314,24 +333,6 @@ def dump_GEQDSK(output_data,output_filepath):
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def read_IDS_equilibrium(shot,run): 
     '''
     function which reads relevant LOCUST equilibrium data from an IDS equilibrium and returns as a dictionary
@@ -340,9 +341,6 @@ def read_IDS_equilibrium(shot,run):
         idum not read
         see README.md for data key
     '''
-
-
-
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
@@ -477,68 +475,8 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.close()
 
 
-  
+################################################################## Equilibrium class
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-################################################################## base class
-class LOCUST_input:
-    """
-    base class for a LOCUST input object
-
-    self.ID                     unique object identifier, good convention to fill these for error handling etc
-    self.data                   holds all input data in dictionary object
-    self.LOCUST_input_type      string which holds this class' input type
-
-    notes:
-    """
-
-    LOCUST_input_type='base_input'
-
-    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded), must have ID
-
-        self.ID=ID
-        self.read_data(data_format,input_filename,shot,run)
-
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
-        self.data=None #read_data definition is designed to be overloaded in children classes 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-################################################################## main classes
 class Equilibrium(LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
@@ -566,11 +504,18 @@ class Equilibrium(LOCUST_input):
 
     LOCUST_input_type='equilibrium'
 
-    def __enter__(self,*args,**kwargs):
-        return self
+    def __setitem__(self,key,value):
+        """
+        function so can access member data via []
+        """
+        self.data[key]=value
 
-    def __exit__(self,*args,**kwargs):
-        pass
+    def __getitem__(self,key):
+        """
+        function so can access member data via []        
+        """
+        return self.data[key]
+    
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type NOTE could change to **kwargs instead? would haveto change none_check to look for variable names in a *args array
         """
@@ -624,42 +569,42 @@ class Equilibrium(LOCUST_input):
                 dump_IDS_equilibrium(self.ID,self.data,shot,run)
 
 
-    def copy(self,target,key=None):
+    def copy(self,target,*keys):
         """
         copy two equilibrium objects 
 
         notes:
-            if target data is empty then this function does nothing
-            if no key supplied then copy everything
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
             if key supplied then copy/append dictionary data accordingly
+
+            TODO need some way of editing data_format and input_filename/shot/run after a copy
+
+        usage:
+            my_equilibrium.copy(some_other_equilibrium) to copy all data
+            my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg') to copy specific fields
         """
 
-        if target.data == None:    #return warning if target is empty
-            raise RuntimeError("Error (ID={ID}): tried to copy from blank equilibrium\n".format(ID=self.ID)) 
-        elif key == None: #if no key supplied then copy everything
-            self.data_format=target.data_format
-            self.input_filename=target.input_filename
-            self.data=target.data
-        else: #if key supplied then overwrite self.input_filename to show data has been edited
-            self.input_filename='MIXED' #don't append here because many copy() calls will create huge input_filename
-            self.data[key]=target.data[key]
+        if none_check(self.ID,self.LOCUST_input_type,'tried to copy() from blank target.data\n',target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_input_type,'tried to copy() with None in *keys\n',keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+    
 
-
-    def set(self,key=None,value=None):
+    def set(self,**kwargs):
         """
         set equilibrium object data 
 
-        notes:
+        usage:
+            myeq.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
         """
-        
-        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty key or value\n',key,value):
+        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
             pass
         else:
-            self.data[key]=value
-
-
-
-
+            for key,value in kwargs.items():
+                self[key]=value
 
 
 
@@ -689,7 +634,7 @@ class Equilibrium(LOCUST_input):
 '''
 def Ptcles(LOCUST_input):
     """
-    Neutral beam deposition profile
+    class describing neutral beam deposition profile input for LOCUST
 
     NOTE this needs to store in the "distribution_sources" IDS which stores marker information
     """
@@ -721,17 +666,11 @@ def Ptcles(LOCUST_input):
 
 
 
-
-
-
-
-
-
 #################################
 '''
 def T(LOCUST_input):
     """
-    Species temperature as a function of Psi
+    class describing species temperature as a function of Psi input for LOCUST
     """
     class_level_attribute=attribute_here 
 
@@ -764,7 +703,7 @@ def T(LOCUST_input):
 '''
 def N(LOCUST_input):
     """
-    Particle number density as a function of Psi
+    class describing particle number density as a function of Psi input for LOCUST
     """
     class_level_attribute=attribute_here 
 
@@ -780,6 +719,23 @@ def N(LOCUST_input):
 
 
 
+#################################
+'''
+def Collisions(LOCUST_input):
+    """
+    class describing collision data input for LOCUST
+    """
+    class_level_attribute=attribute_here 
+
+    def __init__(self,*args,**kwargs):
+        instance data, methods etc
+    def __enter__(self,*args,**kwargs):
+        some_things
+    def __exit__(self,*args,**kwargs):
+        some_things
+    def class_methods(self,*args,**kwargs):
+        some_things
+'''
 
 
 
