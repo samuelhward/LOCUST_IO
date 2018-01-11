@@ -98,11 +98,29 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ################################################################## base class
 
 class LOCUST_input:
     """
-    base class for a LOCUST input object
+    base class for a generic LOCUST input object
 
     self.ID                     unique object identifier, good convention to fill these for error handling etc
     self.data                   holds all input data in dictionary object
@@ -120,6 +138,9 @@ class LOCUST_input:
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
+
+
+
 
 
 
@@ -504,18 +525,17 @@ class Equilibrium(LOCUST_input):
 
     LOCUST_input_type='equilibrium'
 
-    def __setitem__(self,key,value):
-        """
-        function so can access member data via []
-        """
-        self.data[key]=value
-
     def __getitem__(self,key):
         """
         function so can access member data via []        
         """
         return self.data[key]
     
+    def __setitem__(self,key,value):
+        """
+        function so can access member data via []
+        """
+        self.data[key]=value
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type NOTE could change to **kwargs instead? would haveto change none_check to look for variable names in a *args array
         """
@@ -524,10 +544,8 @@ class Equilibrium(LOCUST_input):
         notes:
         """
 
-        if data_format==None: #must always have data_format if reading in data
-            print("WARNING: read_data requires data_format, blank input initialised (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format): #must always have data_format if reading in data
             pass
-
 
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
@@ -537,7 +555,6 @@ class Equilibrium(LOCUST_input):
                 self.input_filepath=support.dir_input_files+input_filename
                 self.data=read_GEQDSK(self.input_filepath) #read the file
            
-
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - shot and run data required\n',shot,run):
 
@@ -545,9 +562,6 @@ class Equilibrium(LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.data=read_IDS_equilibrium(self.shot,self.run)
-    
-
-
             
     def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -556,8 +570,8 @@ class Equilibrium(LOCUST_input):
         notes: 
         """
 
-        if self.data==None or output_data_format==None:
-            print("ERROR: dump_data requires self.data and self.output_data_format (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+        if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and output_data_format\n',self.data,output_data_format):
+            pass
 
         elif output_data_format=='GEQDSK':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
@@ -567,7 +581,6 @@ class Equilibrium(LOCUST_input):
         elif output_data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
                 dump_IDS_equilibrium(self.ID,self.data,shot,run)
-
 
     def copy(self,target,*keys):
         """
@@ -592,7 +605,6 @@ class Equilibrium(LOCUST_input):
         elif not none_check(self.ID,self.LOCUST_input_type,'tried to copy() with None in *keys\n',keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
     
-
     def set(self,**kwargs):
         """
         set equilibrium object data 
@@ -624,31 +636,120 @@ class Equilibrium(LOCUST_input):
 
 
 
-
-
-
-
-
-
-#################################
 '''
-def Ptcles(LOCUST_input):
+
+
+
+just 6 arrays of numbers - check LOCUST for what these actually are
+
+
+
+
+################################################################## Beam_Deposition functions
+
+read_ASCII_beam_depo
+
+read_IDS_distribution_sources
+
+dump_ASCII_beam_depo
+
+dump_IDS_distribution_sources
+
+################################################################## Beam_Deposition functions
+
+def Beam_Deposition(LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
 
-    NOTE this needs to store in the "distribution_sources" IDS which stores marker information
+    notes:
     """
-    class_level_attribute=attribute_here 
 
-    def __init__(self,*args,**kwargs):
-        instance data, methods etc
-    def __enter__(self,*args,**kwargs):
-        some_things
-    def __exit__(self,*args,**kwargs):
-        some_things
-    def class_methods(self,*args,**kwargs):
-        some_things
+    LOCUST_input_type='beam_deposition' 
+
+    def __getitem__(self,key):
+
+        return #XXX something here
+
+    def __setitem__(self,key,value):
+
+        #XXX do something here 
+
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): 
+        """
+        read beam deposition from file 
+
+        notes:
+        """
+
+        if data_format==None: #must always have data_format if reading in data
+            print("WARNING: read_data requires data_format, blank input initialised (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+            pass
+
+
+        elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from ASCII - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
+
+                self.data_format=data_format #add to the member data
+                self.input_filename=input_filename
+                self.input_filepath=support.dir_input_files+input_filename
+                self.data=read_ASCII_beam_depo(self.input_filepath) #read the file
+           
+
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from distribution_sources IDS - shot and run data required\n',shot,run):
+
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.data=read_IDS_distribution_sources(self.shot,self.run)
+
+    def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
+        """
+        write beam deposition to file
+
+        notes: 
+        """
+
+        if self.data==None or output_data_format==None:
+            print("ERROR: dump_data requires self.data and self.output_data_format (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+
+        elif output_data_format=='ASCII':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
+                output_filepath=support.dir_output_files+output_filename
+                dump_ASCII_beam_depo(self.data,output_filepath)
+
+        elif output_data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
+                dump_IDS_distribution_sources(self.ID,self.data,shot,run)
+
+
+
+
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -668,7 +769,7 @@ def Ptcles(LOCUST_input):
 
 #################################
 '''
-def T(LOCUST_input):
+def Tempetature(LOCUST_input):
     """
     class describing species temperature as a function of Psi input for LOCUST
     """
@@ -688,20 +789,9 @@ def T(LOCUST_input):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 #################################
 '''
-def N(LOCUST_input):
+def Number_Density(LOCUST_input):
     """
     class describing particle number density as a function of Psi input for LOCUST
     """

@@ -28,12 +28,20 @@ Table of Contents
 
 
 
+
+
+
+
+
 ## Requirements
 
 * IMAS module with imasdb environment variable set
 * Numpy/Matplotlib for plotting
 * Python ___ or higher
 *
+
+
+
 
 
 
@@ -48,6 +56,9 @@ Table of Contents
 * Import context
 * Import input_classes or output_classes
 * You're good to go!
+
+
+
 
 
 
@@ -76,17 +87,21 @@ my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1)
 * You can also set individual pieces of data with the .set() method:
 
 ```python
-my_equilibrium.copy(some_other_equilibrium) to copy all data
-my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg') to copy specific fields
+my_equilibrium.copy(some_other_equilibrium)                             #to copy all data
+my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg')  #to copy specific fields
 ```
 
 * LOCUST inputs/outputs can be copied using the .copy() method:
 
 ```python
-my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'fpol':some_external_array}) #to set multiple values simultaneously
+my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
+myeq.set(**{'nh':100,'fpol':some_external_array})   #equally
 ```
 
 * LOCUST_IO will also plot input/output data using the methods in the plotting/ directory:
+
+
+
 
 
 
@@ -123,6 +138,16 @@ Import this module if you want to handle inputs for LOCUST. File formats current
 
 
 
+
+
+
+
+
+
+
+
+
+
 ## Further Ideas And Contributing
 
 Please feel free to raise pull requests with this repo, it's designed to be easily contributed to. For example:
@@ -144,7 +169,21 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 ## Appendix
+
+
+
 
 ### Global Data Definitions & Variable Names
 
@@ -185,6 +224,25 @@ Since this package aims to bridge the gap between various file formats for diffe
     2D data
         /psirz/...profiles_2d[0].psi/psi_equil_h     	                    #array (nx,ny) of poloidal flux on rectangular grid points (array of arrays)   
 
+#### Beam Deposition:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # TODO
 
@@ -194,12 +252,13 @@ Since this package aims to bridge the gap between various file formats for diffe
 * Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
 * Make an example project which uses argparse to input command line arguments and then use the rest of the module to do batch operations or something 
 * Add plotting functionality
-* In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding.
+* In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding. would also need to the change the LOCUST_INPUT.__init__() method too
 
 * Reorganise classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
 * Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
 * Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
 * need to decide how to standardise data in dicts 
+
 
 ## Equilibrium Things
 
