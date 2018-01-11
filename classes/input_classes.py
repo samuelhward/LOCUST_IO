@@ -598,7 +598,7 @@ class Equilibrium(LOCUST_input):
         set equilibrium object data 
 
         usage:
-            myeq.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
+            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
         """
         if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
             pass

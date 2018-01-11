@@ -62,31 +62,29 @@ Some basic usage is outlined below. This includes importing/exporting an equilib
 import context
 import input_classes
 
-
-ID='eq_ID_here' #specify the object data here
-input_filename="test.eqdsk"
-data_format='GEQDSK'
-my_equilibrium=input_classes.Equilibrium(ID,data_format,input_filename) #my_equilibrium now holds all the data in one object
+my_equilibrium=input_classes.Equilibrium('some_identification',data_format='GEQDSK',input_filename='some.eqdsk') #my_equilibrium now holds all the data in one object
 ```
 
 ```python
-ID='eq_ID_here' #specify the object data here
-input_filename="test.eqdsk"
-data_format='GEQDSK'
-my_equilibrium=input_classes.Equilibrium(ID) #you can initialise an empty equilibrium this way! (must always specify an ID) fill later with the read_dat() method
+my_equilibrium=input_classes.Equilibrium('some_identification') #you can initialise an empty equilibrium this way! (must always specify an ID) fill later with the read_dat() method
 
-my_equilibrium.read_data(data_format,input_filename)
+my_equilibrium.read_data(data_format='GEQDSK',input_filename='some.eqdsk')
 
-output_data_format='IDS'
-shot=1
-run=1
-my_equilibrium.dump_data(output_data_format=output_data_format,shot=shot,run=run)
+my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1)
 ```
 
+* You can also set individual pieces of data with the .set() method:
+
+```python
+my_equilibrium.copy(some_other_equilibrium) to copy all data
+my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg') to copy specific fields
+```
 
 * LOCUST inputs/outputs can be copied using the .copy() method:
 
-* You can also set individual pieces of data with the .set() method:
+```python
+my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'fpol':some_external_array}) #to set multiple values simultaneously
+```
 
 * LOCUST_IO will also plot input/output data using the methods in the plotting/ directory:
 
@@ -202,7 +200,6 @@ Since this package aims to bridge the gap between various file formats for diffe
 * Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
 * Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
 * need to decide how to standardise data in dicts 
-* because I added __getitem__ __setite__ to classes to access the data more easily, can now reference data with myeq['fpol'] instead of myeq.data['fpol']. On top of this, you could now iterate through myeq.data i.e. could have equilibrium['fpol'] which returns fpol, or equilibrium[some_list_of_keys] to set/get multiple items at once...useful to have in the copy function to get around calling it x times! (in this case must add kwargs to copy functions to copy arbitrary number of items)
 
 ## Equilibrium Things
 
