@@ -87,15 +87,16 @@ my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1)
 * You can also set individual pieces of data with the .set() method:
 
 ```python
-my_equilibrium.copy(some_other_equilibrium)                             #to copy all data
-my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg')  #to copy specific fields
+my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
+myeq.set(**{'nh':100,'fpol':some_external_array})   #equally
 ```
+
 
 * LOCUST inputs/outputs can be copied using the .copy() method:
 
 ```python
-my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
-myeq.set(**{'nh':100,'fpol':some_external_array})   #equally
+my_equilibrium.copy(some_other_equilibrium)                             #to copy all data
+my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg')  #to copy specific fields
 ```
 
 * LOCUST_IO will also plot input/output data using the methods in the plotting/ directory:
@@ -166,8 +167,7 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 ```
 
 
-
-
+* Changing a feature common to all classes is very very easy since most classes follow the exact same structure - most methods are identical!
 
 
 
@@ -226,8 +226,15 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 #### Beam Deposition:
 
+(LOCUST_IO/ASCII/Distribution_Sources IDS)
 
-
+    1D data
+        /column 1/...profiles_1d.f                                               #
+        /column 2/...profiles_1d.pressure                                        #
+        /column 3/...profiles_1d.f_df_dpsi                                       #
+        /column 4/...profiles_1d.dpressure_dpsi                                  #
+        /column 5/...profiles_1d.q                                               #
+        /column 6/...boundary.outline.r                                          #
 
 
 
@@ -249,9 +256,13 @@ Since this package aims to bridge the gap between various file formats for diffe
 ## General
 
 * Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
+
 * Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
+
 * Make an example project which uses argparse to input command line arguments and then use the rest of the module to do batch operations or something 
+
 * Add plotting functionality
+
 * In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding. would also need to the change the LOCUST_INPUT.__init__() method too
 
 * Reorganise classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
@@ -262,6 +273,4 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 ## Equilibrium Things
 
-* Need to add functionality to calculate toroidal current density when reading in GEQDSK. equivalent IDS is #time_slice(itime)/profiles_2d(i1)/j_tor 
-* Generate the R,Z coordinate arrays when reading in a GEQDSK (currently only generated when writing out to IDS)
 * Need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT

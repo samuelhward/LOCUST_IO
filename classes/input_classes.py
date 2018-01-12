@@ -1,6 +1,6 @@
 #input_classes.py
 
-'''
+"""
 Samuel Ward
 02/11/2017
 ----
@@ -15,8 +15,10 @@ notes:
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
+
+    TODO idea for a workflow could be to have a shell script which then issues commands to an interactive python session? is this possible?
 ---
-'''
+"""
 
 
 ###################################################################################################
@@ -78,25 +80,66 @@ except:
 ################################################################## Supporting functions
 
 def none_check(ID,LOCUST_input_type,error_message,*args):
-    '''
+    """
     generic function for checking if a None value appears in *args
 
     notes:
         message should be something specific to the section of code which called none_check
-    '''
+    """
     if all(arg is not None for arg in args):
         return False
     else:
         print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
         return True
         
+def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
+    """
+    generator to read numbers in a file
 
+    notes:
+        originally written by Ben Dudson
 
+        calling get_next() on a generator produced with this function will permanently advance the iterator in this generator
+        when generators reach the end, that's permanently it!
+    """
+    toklist = []
+    while True: #runs forever until break statement (until what is read is not a line) below will cause a return - which permanently stops a generator
+        line = ingf.readline() #read in line from INGF
+        if not line: break #break if readline() doesnt return a line i.e. end of file
+        line = line.replace("NaN","-0.00000e0") #replaces NaNs with 0s
+        pattern = r'[+-]?\d*[\.]?\d+(?:[Ee][+-]?\d+)?' #regular expression to find numbers
+        toklist = re.findall(pattern,line) #toklist now holds all the numbers in a file line (is essentially a single file line)
+        for tok in toklist: #yield every number in that one line individually
+            yield tok #so in terms of iteration, using get_next() will cause another line to be read
 
+def get_next(obj):
+    """
+    generic object iterator
 
+    notes:
+        every time get_next() is called, it will advance the counter one
+    """
+    pyVer = sys.version_info[0]
+    if pyVer == 2:
+        return obj.next() #NOTE how exactly does .next() work? will it accept tok in toklist values from file_numbers() and allow file_numbers to then read in the next bunch (since yield will pause the While True loop?)
+    else:
+        return next(obj)
 
+def read_1d(n): 
+    """
+    """
+    input_data = np.zeros([n]) #initialise blank lists
+    for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
+        input_data[i] = float(get_next(token))
+    return input_data
 
-
+def read_2d(nx,ny):
+    """
+    """
+    input_data = np.zeros([nx,ny])
+    for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
+        input_data[i,:] = read_1d(ny)
+    return input_data
 
 
 
@@ -161,48 +204,18 @@ class LOCUST_input:
 
 
 
+
 ################################################################## Equilibrium functions
 
-def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
-    '''
-    generator to read numbers in a file
-
-    notes:
-        originally written by Ben Dudson
-    '''
-    toklist = []
-    while True:#runs until break statement below (i.e. until what is read is not a line)
-        line = ingf.readline() #read in line from INGF
-        if not line: break #break if readline() doesnt return a line i.e. end of file
-        line = line.replace("NaN","-0.00000e0") #replaces NaNs with 0s
-        pattern = r'[+-]?\d*[\.]?\d+(?:[Ee][+-]?\d+)?' #regular expression to find numbers
-        toklist = re.findall(pattern,line) #toklist now holds all the numbers in a file line (is essentially a single file line)
-        for tok in toklist: #runs whilst True and so yields every line in a file
-            yield tok #tok is each number in a file line
-
-
-
-def get_next(obj):
-    '''
-    generic object iterator
-
-    notes:
-    '''
-    pyVer = sys.version_info[0]
-    if pyVer == 2:
-        return obj.next() #XX how exactly does .next() work? will it accept tok in toklist values from file_numbers() and allow file_numbers to then read in the next bunch (since yield will pause the While True loop?)
-    else:
-        return next(obj)
-
 def read_GEQDSK(input_filepath): 
-    ''' 
+    """ 
     generic function for reading a G-EQDSK-formatted equilibrium file
 
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
         see README.md for data key
 
-    '''
+    """
 
     input_data = {}
     flags = {'loaded' : False } #NOTE might not need this variable now
@@ -211,7 +224,7 @@ def read_GEQDSK(input_filepath):
     
     line = file.readline() #first line should be case, id number and dimensions
     if not line:
-        raise IOError("ERROR: read_GEQDSK cannot read from file"+input_filepath)
+        raise IOError("ERROR: read_GEQDSK() cannot read from "+input_filepath)
     
     #extract case, id number and dimensions  
     conts = line.split()    #split by white space (no argument in .split())
@@ -229,23 +242,11 @@ def read_GEQDSK(input_filepath):
     'current','simag','xdum','rmaxis','xdum',
     'zmaxis','xdum','sibry','xdum','xdum']
     
-    #read in all floats
+    #read in all 0D floats
     for key in float_keys:                              
-        input_data[key] = float(get_next(token)) #these are all single value floats
+        input_data[key] = float(get_next(token)) #get_next(token) always yields just a single value
     
-    #now read arrays  
-    def read_1d(n): 
-        input_data = np.zeros([n]) #initialise blank lists
-        for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
-            input_data[i] = float(get_next(token))
-        return input_data
-
-    def read_2d(nx,ny):
-        input_data = np.zeros([nx,ny])
-        for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
-            input_data[i,:] = read_1d(ny)
-        return input_data
-    
+    #read in the arrays
     input_data['fpol'] = read_1d(input_data['nw']) #remember input_data['nw'] holds width, input_data['nh'] holds height
     input_data['pres'] = read_1d(input_data['nw'])
     input_data['ffprime'] = read_1d(input_data['nw'])
@@ -288,7 +289,7 @@ def read_GEQDSK(input_filepath):
 
 
 def dump_GEQDSK(output_data,output_filepath):
-    '''
+    """
     generic function for writing G-EQDSK-formatted data to file
 
     notes:
@@ -296,7 +297,7 @@ def dump_GEQDSK(output_data,output_filepath):
         does not write out idum
 
         see README.md for data key
-    '''
+    """
 
     cnt = itertools.cycle([0,1,2,3,4]) #counter
 
@@ -355,13 +356,13 @@ def dump_GEQDSK(output_data,output_filepath):
 
 
 def read_IDS_equilibrium(shot,run): 
-    '''
+    """
     function which reads relevant LOCUST equilibrium data from an IDS equilibrium and returns as a dictionary
 
     notes:
         idum not read
         see README.md for data key
-    '''
+    """
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
@@ -414,7 +415,7 @@ def read_IDS_equilibrium(shot,run):
 
 
 def dump_IDS_equilibrium(ID,data,shot,run):
-    '''
+    """
     function for writing a LOCUST equilibrium to an equilibrium IDS
 
     notes:
@@ -423,9 +424,8 @@ def dump_IDS_equilibrium(ID,data,shot,run):
         idum not dumped
 
         see README.md for data key
-    '''
+    """
 
-    #generate a new IDS IFF one doesn't already exist 
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
 
@@ -434,9 +434,9 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice.resize(1) #just do one time slice i.e. static equilibrium
     output_IDS.equilibrium.time_slice[0].time=0.0 #the time that this time slice is at
 
-    '''#XXX TRYING THIS NEXT
+    """#XXX TRYING THIS NEXT
     output_IDS.equilibrium.time=np.array([0.0,1.0,2.0]) set b to same dimension
-    '''
+    """
 
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
@@ -468,7 +468,7 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=data['pres'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=data['ffprime'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi=data['pprime'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] #XXX up to here
+    output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] 
 
 
     #now define the R,Z simulation grid
@@ -478,7 +478,7 @@ def dump_IDS_equilibrium(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,z), 0 for inverse (psi,theta)
 
     #generate the R,Z grid coordinate arrays
-    R_1D=np.linspace(data['rleft'],data['rleft']+data['rdim'],num=data['nw']) #generate 1D arrays of the R,z values         TODO do this upon writing in instaed of here     
+    R_1D=np.linspace(data['rleft'],data['rleft']+data['rdim'],num=data['nw']) #generate 1D arrays of the R,z values  TODO do this upon writing in instaed of here     
     Z_1D=np.linspace(data['zmid']-0.5*data['zdim'],data['zmid']+0.5*data['zdim'],num=data['nh']) 
     R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate 2D arrays of R,Z values
 
@@ -506,18 +506,17 @@ class Equilibrium(LOCUST_input):
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
-    Equilibrium data
+    class data
         self.input_filename         name of file in input_files folder
         self.data_format            data format of input_file e.g. GEQDSK
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
-        key                         key in data dictionary to specify data entries
+        key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
         output_filename             name of file to write to
         output_filepath             full path to output file in output_files folder
         output_data_format          data format of output file e.g. GEQDSK
-
 
     notes:
 
@@ -530,14 +529,14 @@ class Equilibrium(LOCUST_input):
         function so can access member data via []        
         """
         return self.data[key]
-    
+
     def __setitem__(self,key,value):
         """
         function so can access member data via []
         """
         self.data[key]=value
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type NOTE could change to **kwargs instead? would haveto change none_check to look for variable names in a *args array
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
 
@@ -548,8 +547,7 @@ class Equilibrium(LOCUST_input):
             pass
 
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
-
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from GEQDSK - input_filename required\n',input_filename): #check we have all info for reading GEQDSKs
                 self.data_format=data_format #add to the member data
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
@@ -557,7 +555,6 @@ class Equilibrium(LOCUST_input):
            
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - shot and run data required\n',shot,run):
-
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
@@ -572,12 +569,12 @@ class Equilibrium(LOCUST_input):
 
         if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and output_data_format\n',self.data,output_data_format):
             pass
-
+        
         elif output_data_format=='GEQDSK':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
                 dump_GEQDSK(self.data,output_filepath)
-
+        
         elif output_data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
                 dump_IDS_equilibrium(self.ID,self.data,shot,run)
@@ -610,7 +607,7 @@ class Equilibrium(LOCUST_input):
         set equilibrium object data 
 
         usage:
-            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or myeq.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
+            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or my_equilibrium.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
         """
         if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
             pass
@@ -636,24 +633,133 @@ class Equilibrium(LOCUST_input):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
-
-
-
-just 6 arrays of numbers - check LOCUST for what these actually are
-
-
 
 
 ################################################################## Beam_Deposition functions
 
-read_ASCII_beam_depo
+def read_ASCII_beam_depo(input_filepath):
+    """
+    """
 
-read_IDS_distribution_sources
 
-dump_ASCII_beam_depo
+    with open(input_filepath) as file:
+        
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_ASCII_beam_depo() cannot read from "+input_filepath)
+    
+    del(lines[0]) #first two lines are junk
+    del(lines[0])
 
-dump_IDS_distribution_sources
+    input_data = {} #initialise the dictionary to hold the data
+    input_data['r']=[] #initialise the arrays 
+    input_data['z']=[]
+    input_data['phi']=[]
+    input_data['v_r']=[]
+    input_data['v_z']=[]
+    input_data['v_phi']=[]
+
+    for line in lines:
+
+        split_line=line.split()
+        input_data['r'].append(split_line[0])
+        input_data['z'].append(split_line[1])
+        input_data['phi'].append(split_line[2])
+        input_data['v_r'].append(split_line[3])
+        input_data['v_z'].append(split_line[4])
+        input_data['v_phi'].append(split_line[5])
+
+    return input_data
+
+
+
+
+def dump_ASCII_beam_depo(output_data,output_filepath):
+    """
+    """
+
+
+
+
+
+
+
+def read_IDS_distribution_sources(shot,run):
+    """
+    function which reads relevant LOCUST beam_deposition data from an IDS distribution_sources and returns as a dictionary
+
+    notes:
+        see README.md for data key
+    """
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open()
+    input_IDS.distribution_sources.get() #open the file and get all the data from it
+
+    input_data = {} #initialise blank dictionary to hold the data
+
+    #pull out easy things - 0D data, profiles etc which map straight over
+    input_data['r']=input_IDS.distribution_sources #XXX figure what these are
+    input_data['z']=input_IDS.distribution_sources
+    input_data['phi']=input_IDS.distribution_sources
+    input_data['v_r']=input_IDS.distribution_sources
+    input_data['v_z']=input_IDS.distribution_sources
+    input_data['v_phi']=input_IDS.distribution_sources
+
+    input_IDS.close()
+
+    return input_data
+
+
+
+
+
+
+def dump_IDS_distribution_sources(ID,data,shot,run):
+
+
+    
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+
+    #set some mandatory IDS properties
+    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+    output_IDS.distribution_sources.time_slice.resize(1) #just do one time slice
+    output_IDS.distribution_sources.time_slice[0].time=0.0 #the time that this time slice is at
+
+    #write out code properties
+    output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
+    output_IDS.distribution_sources.code.name="LOCUST_IO"
+    output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
+    
+
+
+
+
+
+'''
+
+
+
+
 
 ################################################################## Beam_Deposition functions
 
@@ -661,30 +767,45 @@ def Beam_Deposition(LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
 
+    inherited from LOCUST_input:
+        self.ID                     unique object identifier, good convention to fill these for error handling etc
+        self.data                   holds all input data in dictionary object
+        self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
+    class data
+        self.input_filename         name of file in input_files folder
+        self.data_format            data format of input_file e.g. ASCII
+        self.input_filepath         full path of file in input_files folder  
+        self.shot                   shot number
+        self.run                    run number
+        key, value                  key for data dictionary to specify data entry holding value
+        target                      external object to copy from
+        output_filename             name of file to write to
+        output_filepath             full path to output file in output_files folder
+        output_data_format          data format of output file e.g. ASCII
+
     notes:
+        just 6 1D arrays of numbers
     """
 
     LOCUST_input_type='beam_deposition' 
 
     def __getitem__(self,key):
 
-        return #XXX something here
+        return self.data[key]
 
     def __setitem__(self,key,value):
 
-        #XXX do something here 
+        self.data[key]=value
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None): 
         """
-        read beam deposition from file 
+        read beam_deposition from file 
 
         notes:
         """
 
-        if data_format==None: #must always have data_format if reading in data
-            print("WARNING: read_data requires data_format, blank input initialised (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
+        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format): #must always have data_format if reading in data
             pass
-
 
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from ASCII - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
@@ -693,8 +814,7 @@ def Beam_Deposition(LOCUST_input):
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
                 self.data=read_ASCII_beam_depo(self.input_filepath) #read the file
-           
-
+        
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from distribution_sources IDS - shot and run data required\n',shot,run):
 
@@ -705,70 +825,101 @@ def Beam_Deposition(LOCUST_input):
 
     def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
         """
-        write beam deposition to file
+        write beam_deposition to file
 
         notes: 
         """
 
-        if self.data==None or output_data_format==None:
-            print("ERROR: dump_data requires self.data and self.output_data_format (LOCUST_input_type={LOCUST_input_type}, ID={ID})\n".format(LOCUST_input_type=self.LOCUST_input_type,ID=self.ID))
-
+        if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and output_data_format\n',self.data,output_data_format):
+            pass
+        
         elif output_data_format=='ASCII':
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to ASCII - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
                 dump_ASCII_beam_depo(self.data,output_filepath)
-
+        
         elif output_data_format=='IDS':
-            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to distribution_sources IDS - shot and run required\n',shot,run):
                 dump_IDS_distribution_sources(self.ID,self.data,shot,run)
+
+    def copy(self,target,*keys):
+        """
+        copy two beam_deposition objects 
+
+        notes:
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
+            if key supplied then copy/append dictionary data accordingly
+
+            TODO need some way of editing data_format and input_filename/shot/run after a copy
+
+        usage:
+            my_beam_deposition.copy(some_other_beam_deposition) to copy all data
+            my_beam_deposition.copy(some_other_beam_deposition,'some_arg','some_other_arg') to copy specific fields
+        """
+
+        if none_check(self.ID,self.LOCUST_input_type,'tried to copy() from blank target.data\n',target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_input_type,'tried to copy() with None in *keys\n',keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+    
+    def set(self,**kwargs):
+        """
+        set beam_deposition object data 
+
+        usage:
+            my_beam_deposition.set(some_arg=5,some_other_arg=[1,2,3,4]) or my_beam_deposition.set(**{'some_arg':100,'some_other_arg':200}) to set multiple values simultaneously
+        """
+        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
+            pass
+        else:
+            for key,value in kwargs.items():
+                self[key]=value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 #################################
-'''
 def Tempetature(LOCUST_input):
     """
     class describing species temperature as a function of Psi input for LOCUST
@@ -783,14 +934,13 @@ def Tempetature(LOCUST_input):
         some_things
     def class_methods(self,*args,**kwargs):
         some_things
-'''
+
 
 
 
 
 
 #################################
-'''
 def Number_Density(LOCUST_input):
     """
     class describing particle number density as a function of Psi input for LOCUST
@@ -805,12 +955,11 @@ def Number_Density(LOCUST_input):
         some_things
     def class_methods(self,*args,**kwargs):
         some_things
-'''
+
 
 
 
 #################################
-'''
 def Collisions(LOCUST_input):
     """
     class describing collision data input for LOCUST
@@ -825,7 +974,7 @@ def Collisions(LOCUST_input):
         some_things
     def class_methods(self,*args,**kwargs):
         some_things
-'''
+
 
 
 
@@ -855,7 +1004,7 @@ def Collisions(LOCUST_input):
 
 #NOTE post-processing IDL script for LOCUST to be re-written in Python?
 
-'''
+
 pro locust_orplot
 
 device, decompose=0
