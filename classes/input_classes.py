@@ -207,7 +207,7 @@ class LOCUST_input:
 
 ################################################################## Equilibrium functions
 
-def read_GEQDSK(input_filepath): 
+def read_equilibrium_GEQDSK(input_filepath): 
     """ 
     generic function for reading a G-EQDSK-formatted equilibrium file
 
@@ -224,7 +224,7 @@ def read_GEQDSK(input_filepath):
     
     line = file.readline() #first line should be case, id number and dimensions
     if not line:
-        raise IOError("ERROR: read_GEQDSK() cannot read from "+input_filepath)
+        raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+input_filepath)
     
     #extract case, id number and dimensions  
     conts = line.split()    #split by white space (no argument in .split())
@@ -288,7 +288,7 @@ def read_GEQDSK(input_filepath):
 
 
 
-def dump_GEQDSK(output_data,output_filepath):
+def dump_equilibrium_GEQDSK(output_data,output_filepath):
     """
     generic function for writing G-EQDSK-formatted data to file
 
@@ -355,7 +355,7 @@ def dump_GEQDSK(output_data,output_filepath):
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
 
 
-def read_IDS_equilibrium(shot,run): 
+def read_equilibrium_IDS(shot,run): 
     """
     function which reads relevant LOCUST equilibrium data from an IDS equilibrium and returns as a dictionary
 
@@ -414,7 +414,7 @@ def read_IDS_equilibrium(shot,run):
     return input_data
 
 
-def dump_IDS_equilibrium(ID,data,shot,run):
+def dump_equilibrium_IDS(ID,data,shot,run):
     """
     function for writing a LOCUST equilibrium to an equilibrium IDS
 
@@ -551,14 +551,14 @@ class Equilibrium(LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
-                self.data=read_GEQDSK(self.input_filepath) #read the file
+                self.data=read_equilibrium_GEQDSK(self.input_filepath) #read the file
            
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - shot and run data required\n',shot,run):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.data=read_IDS_equilibrium(self.shot,self.run)
+                self.data=read_equilibrium_IDS(self.shot,self.run)
             
     def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -573,11 +573,11 @@ class Equilibrium(LOCUST_input):
         elif output_data_format=='GEQDSK':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
-                dump_GEQDSK(self.data,output_filepath)
+                dump_equilibrium_GEQDSK(self.data,output_filepath)
         
         elif output_data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
-                dump_IDS_equilibrium(self.ID,self.data,shot,run)
+                dump_equilibrium_IDS(self.ID,self.data,shot,run)
 
     def copy(self,target,*keys):
         """
@@ -653,7 +653,7 @@ class Equilibrium(LOCUST_input):
 
 ################################################################## Beam_Deposition functions
 
-def read_ASCII_beam_depo(input_filepath):
+def read_beam_depo_ASCII(input_filepath):
     """
     """
 
@@ -662,7 +662,7 @@ def read_ASCII_beam_depo(input_filepath):
         
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_ASCII_beam_depo() cannot read from "+input_filepath)
+            raise IOError("ERROR: read_beam_depo_ASCII() cannot read from "+input_filepath)
     
     del(lines[0]) #first two lines are junk
     del(lines[0])
@@ -690,7 +690,7 @@ def read_ASCII_beam_depo(input_filepath):
 
 
 
-def dump_ASCII_beam_depo(output_data,output_filepath):
+def dump_beam_depo_ASCII(output_data,output_filepath):
     """
     """
 
@@ -715,7 +715,7 @@ def dump_ASCII_beam_depo(output_data,output_filepath):
 '''
 
 
-def read_IDS_distribution_sources(shot,run):
+def read_beam_depo_IDS(shot,run):
     """
     function which reads relevant LOCUST beam_deposition data from an IDS distribution_sources and returns as a dictionary
 
@@ -746,8 +746,9 @@ def read_IDS_distribution_sources(shot,run):
 
 
 
-def dump_IDS_distribution_sources(ID,data,shot,run):
-
+def dump_beam_depo_IDS(ID,data,shot,run):
+    """
+    """
 
     
     output_IDS=imas.ids(shot,run) 
@@ -823,7 +824,7 @@ def Beam_Deposition(LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
-                self.data=read_ASCII_beam_depo(self.input_filepath) #read the file
+                self.data=read_beam_depo_ASCII(self.input_filepath) #read the file
         
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from distribution_sources IDS - shot and run data required\n',shot,run):
@@ -831,7 +832,7 @@ def Beam_Deposition(LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.data=read_IDS_distribution_sources(self.shot,self.run)
+                self.data=read_beam_depo_IDS(self.shot,self.run)
 
     def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -846,11 +847,11 @@ def Beam_Deposition(LOCUST_input):
         elif output_data_format=='ASCII':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to ASCII - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
-                dump_ASCII_beam_depo(self.data,output_filepath)
+                dump_beam_depo_ASCII(self.data,output_filepath)
         
         elif output_data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to distribution_sources IDS - shot and run required\n',shot,run):
-                dump_IDS_distribution_sources(self.ID,self.data,shot,run)
+                dump_beam_depo_IDS(self.ID,self.data,shot,run)
 
     def copy(self,target,*keys):
         """
@@ -930,6 +931,12 @@ def Beam_Deposition(LOCUST_input):
 
 
 #################################
+
+
+def read_temperature_ASCII
+
+def dump_temperature_ASCII
+
 def Tempetature(LOCUST_input):
     """
     class describing species temperature as a function of Psi input for LOCUST
