@@ -229,12 +229,12 @@ Since this package aims to bridge the gap between various file formats for diffe
 (LOCUST_IO/ASCII/Distribution_Sources IDS)
 
     1D data
-        /column 1/...profiles_1d.f                                               #
-        /column 2/...profiles_1d.pressure                                        #
-        /column 3/...profiles_1d.f_df_dpsi                                       #
-        /column 4/...profiles_1d.dpressure_dpsi                                  #
-        /column 5/...profiles_1d.q                                               #
-        /column 6/...boundary.outline.r                                          #
+        r/column 1/...source[0].markers[0].positions[][]                                          #holds r coordinates for every particle
+        z/column 2/                                        #holds z coordinates for every particle
+        phi/column 3/                                     #holds phi coordinates for every particle
+        v_r/column 4/                                #holds r component of v for every particle
+        v_z/column 5/                                             #holds z component of v for every particle
+        v_phi/column 6/                                      #holds phi component of v for every particle
 
 
 

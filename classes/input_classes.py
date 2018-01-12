@@ -688,16 +688,31 @@ def read_ASCII_beam_depo(input_filepath):
     return input_data
 
 
-'''
+
 
 def dump_ASCII_beam_depo(output_data,output_filepath):
     """
     """
 
+    with open(output_filepath) as file: #open file
+
+        for this_particle in range(len(output_data['r'])): #iterate through all particles i.e. length of our dictionary's arrays
+
+            r_out=output_data['r'][this_particle] #briefly set to a temporary variable to improve readability
+            z_out=output_data['z'][this_particle]
+            phi_out=output_data['phi'][this_particle]
+            v_r_out=output_data['v_r'][this_particle]
+            v_z_out=output_data['v_z'][this_particle]
+            v_phi_out=output_data['v_phi'][this_particle]
+
+            file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
 
 
 
 
+
+
+'''
 
 
 def read_IDS_distribution_sources(shot,run):
@@ -750,9 +765,6 @@ def dump_IDS_distribution_sources(ID,data,shot,run):
     
 
 
-
-
-
 '''
 
 
@@ -782,7 +794,7 @@ def Beam_Deposition(LOCUST_input):
         output_data_format          data format of output file e.g. ASCII
 
     notes:
-        just 6 1D arrays of numbers
+
     """
 
     LOCUST_input_type='beam_deposition' 
@@ -802,7 +814,7 @@ def Beam_Deposition(LOCUST_input):
         notes:
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format): #must always have data_format if reading in data
+        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised\n',data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
