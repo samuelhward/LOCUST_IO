@@ -16,15 +16,11 @@ Table of Contents
 * [Usage](#usage)
 * [Overview](#overview)
 	* [Classes Subpackage](#classes-subpackage)
-		* [Input Module](#input-module)
-		* [Output Module](#output-module)
-	  	* [Support Module](#support-module)
 	* [Testing Subpackage](#testing-subpackage)
 	* [Plotting Subpackage](#plotting-subpackage)
 * [Further Ideas And Contributing](#further-ideas-and-contributing)
 * [Appendix](#appendix)
 	* [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
-		* [Equilibrium](#equilibrium)
 
 
 
@@ -226,15 +222,15 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 #### Beam Deposition:
 
-(LOCUST_IO/ASCII/Distribution_Sources IDS)
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Distribution_Sources IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/distribution_sources.html))
 
     1D data
-        r/column 1/...source[0].markers[0].positions[][]                                          #holds r coordinates for every particle
-        z/column 2/                                        #holds z coordinates for every particle
-        phi/column 3/                                     #holds phi coordinates for every particle
-        v_r/column 4/                                #holds r component of v for every particle
-        v_z/column 5/                                             #holds z component of v for every particle
-        v_phi/column 6/                                      #holds phi component of v for every particle
+        r/column 1/...source[0].markers[0].positions[0][:]                   #holds r coordinates for every particle
+        z/column 2/...source[0].markers[0].positions[1][:]                   #holds z coordinates for every particle
+        phi/column 3/...source[0].markers[0].positions[2][:]                 #holds phi coordinates for every particle
+        v_r/column 4/...source[0].markers[0].positions[3][:]                 #holds r component of v for every particle
+        v_z/column 5/...source[0].markers[0].positions[4][:]                 #holds z component of v for every particle
+        v_phi/column 6/...source[0].markers[0].positions[5][:]               #holds phi component of v for every particle
 
 
 
@@ -257,6 +253,8 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 * Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
 
+* Integrate with MAST-U data system
+
 * Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
 
 * Make an example project which uses argparse to input command line arguments and then use the rest of the module to do batch operations or something 
@@ -269,6 +267,8 @@ Since this package aims to bridge the gap between various file formats for diffe
 * Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
 * Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
 * need to decide how to standardise data in dicts 
+
+* Add the __getitem__, __setitem__, set, copy to the LOCUST input base class?
 
 
 ## Equilibrium Things

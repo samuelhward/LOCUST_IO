@@ -414,7 +414,7 @@ def read_equilibrium_IDS(shot,run):
     return input_data
 
 
-def dump_equilibrium_IDS(ID,data,shot,run):
+def dump_equilibrium_IDS(ID,output_output_data,shot,run):
     """
     function for writing a LOCUST equilibrium to an equilibrium IDS
 
@@ -423,53 +423,47 @@ def dump_equilibrium_IDS(ID,data,shot,run):
         currently overwrites pre-existing IDSs
         idum not dumped
 
-        see README.md for data key
+        see README.md for output_data key
     """
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
 
-    #set some mandatory IDS properties
-    output_IDS.equilibrium.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
-    output_IDS.equilibrium.time_slice.resize(1) #just do one time slice i.e. static equilibrium
-    output_IDS.equilibrium.time_slice[0].time=0.0 #the time that this time slice is at
-
-    """#XXX TRYING THIS NEXT
-    output_IDS.equilibrium.time=np.array([0.0,1.0,2.0]) set b to same dimension
-    """
-
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
     output_IDS.equilibrium.code.name="LOCUST_IO"
     output_IDS.equilibrium.code.version=support.LOCUST_IO_version
+    output_IDS.equilibrium.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+
+    #add a time slice and set the time of this slice
+    output_IDS.equilibrium.time_slice.resize(1) #just add one time slice i.e. static equilibrium
+    output_IDS.equilibrium.time_slice[0].time=0.0
 
     #write out the easy stuff - global quantities, some 1D profiles and the boundaries
-    output_IDS.equilibrium.vacuum_toroidal_field.r0=data['rcentr'] 
-    #output_IDS.equilibrium.vacuum_toroidal_field.b0=data['bcentr'] #XXX this doesn't currently work - supposed to be 1D?
-    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r=data['rmaxis']   
-    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z=data['zmaxis']    
-    output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=data['simag']  
-    output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=data['sibry']    
-    output_IDS.equilibrium.time_slice[0].global_quantities.ip=data['current']
+    output_IDS.equilibrium.vacuum_toroidal_field.r0=output_data['rcentr'] 
+    #output_IDS.equilibrium.vacuum_toroidal_field.b0=output_data['bcentr'] #XXX this doesn't currently work - supposed to be 1D? #XXX TRYING THIS NEXT - output_IDS.equilibrium.time=np.array([0.0,1.0,2.0]) set b to same dimension
+    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r=output_data['rmaxis']   
+    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z=output_data['zmaxis']    
+    output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=output_data['simag']  
+    output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=output_data['sibry']    
+    output_IDS.equilibrium.time_slice[0].global_quantities.ip=output_data['current']
 
     output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
-    output_IDS.equilibrium.time_slice[0].boundary.outline.r=data['rlim'] 
-    output_IDS.equilibrium.time_slice[0].boundary.outline.z=data['zlim']
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=data['rbbbs'] #NOTE this is apparently obsolete - need to figure out where to write to 
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=data['zbbbs']
-
+    output_IDS.equilibrium.time_slice[0].boundary.outline.r=output_data['rlim'] 
+    output_IDS.equilibrium.time_slice[0].boundary.outline.z=output_data['zlim']
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=output_data['rbbbs'] #NOTE this is apparently obsolete - need to figure out where to write to 
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zbbbs']
 
     #now to define the grids, start with the uniform flux grid
-    psi_1D=np.linspace(data['simag'],data['sibry'],len(data['ffprime'])) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+    psi_1D=np.linspace(output_data['simag'],output_data['sibry'],len(output_data['ffprime'])) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
 
-    #write out the uniform flux grid data
+    #write out the uniform flux grid output_data
     output_IDS.equilibrium.time_slice[0].profiles_1d.psi=psi_1D
-    output_IDS.equilibrium.time_slice[0].profiles_1d.f=data['fpol'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=data['pres'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=data['ffprime'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi=data['pprime'] 
-    output_IDS.equilibrium.time_slice[0].profiles_1d.q=data['qpsi'] 
-
+    output_IDS.equilibrium.time_slice[0].profiles_1d.f=output_data['fpol'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=output_data['pres'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=output_data['ffprime'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi=output_data['pprime'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.q=output_data['qpsi'] 
 
     #now define the R,Z simulation grid
     output_IDS.equilibrium.time_slice[0].profiles_2d.resize(1) #add an element onto the profiles_2d struct_array to define this grid
@@ -478,8 +472,8 @@ def dump_equilibrium_IDS(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,z), 0 for inverse (psi,theta)
 
     #generate the R,Z grid coordinate arrays
-    R_1D=np.linspace(data['rleft'],data['rleft']+data['rdim'],num=data['nw']) #generate 1D arrays of the R,z values  TODO do this upon writing in instaed of here     
-    Z_1D=np.linspace(data['zmid']-0.5*data['zdim'],data['zmid']+0.5*data['zdim'],num=data['nh']) 
+    R_1D=np.linspace(output_data['rleft'],output_data['rleft']+output_data['rdim'],num=output_data['nw']) #generate 1D arrays of the R,z values  TODO do this upon writing in instaed of here     
+    Z_1D=np.linspace(output_data['zmid']-0.5*output_data['zdim'],output_data['zmid']+0.5*output_data['zdim'],num=output_data['nh']) 
     R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate 2D arrays of R,Z values
 
     #write out R,Z grid coordinate arrays
@@ -489,9 +483,9 @@ def dump_equilibrium_IDS(ID,data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].z=Z_2D
     
     #write out 2D profiles
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].psi=data['psirz'] 
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].psi=output_data['psirz'] 
     
-    #'put' all the data into the file and close
+    #'put' all the output_data into the file and close
     output_IDS.equilibrium.put()
     output_IDS.close()
 
@@ -612,7 +606,7 @@ class Equilibrium(LOCUST_input):
         if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
             pass
         else:
-            for key,value in kwargs.items():
+            for key,value in kwargs.items(): #loop through kwargs
                 self[key]=value
 
 
@@ -655,6 +649,7 @@ class Equilibrium(LOCUST_input):
 
 def read_beam_depo_ASCII(input_filepath):
     """
+    reads in neutral beam deposition profile from ASCII format
     """
 
 
@@ -687,11 +682,9 @@ def read_beam_depo_ASCII(input_filepath):
 
     return input_data
 
-
-
-
 def dump_beam_depo_ASCII(output_data,output_filepath):
     """
+    writes out neutral beam deposition profile to ASCII format
     """
 
     with open(output_filepath) as file: #open file
@@ -706,18 +699,10 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
             v_phi_out=output_data['v_phi'][this_particle]
 
             file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
-
-
-
-
-
-
 '''
-
-
 def read_beam_depo_IDS(shot,run):
     """
-    function which reads relevant LOCUST beam_deposition data from an IDS distribution_sources and returns as a dictionary
+    reads relevant LOCUST beam_deposition data from a distribution_sources IDS and returns as a dictionary
 
     notes:
         see README.md for data key
@@ -729,8 +714,7 @@ def read_beam_depo_IDS(shot,run):
 
     input_data = {} #initialise blank dictionary to hold the data
 
-    #pull out easy things - 0D data, profiles etc which map straight over
-    input_data['r']=input_IDS.distribution_sources #XXX figure what these are
+    input_data['r']=input_IDS.distribution_sources.source[0].markers[0].positions[0][:]      #assume everything is stored in the first source, and first marker type
     input_data['z']=input_IDS.distribution_sources
     input_data['phi']=input_IDS.distribution_sources
     input_data['v_r']=input_IDS.distribution_sources
@@ -740,13 +724,13 @@ def read_beam_depo_IDS(shot,run):
     input_IDS.close()
 
     return input_data
+'''
 
 
+'''
 
 
-
-
-def dump_beam_depo_IDS(ID,data,shot,run):
+def dump_beam_depo_IDS(ID,output_data,shot,run):
     """
     """
 
@@ -754,19 +738,29 @@ def dump_beam_depo_IDS(ID,data,shot,run):
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
 
-    #set some mandatory IDS properties
-    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
-    output_IDS.distribution_sources.time_slice.resize(1) #just do one time slice
-    output_IDS.distribution_sources.time_slice[0].time=0.0 #the time that this time slice is at
-
     #write out code properties
     output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
     output_IDS.distribution_sources.code.name="LOCUST_IO"
     output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
+    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
     
+    #add a type of source and add a time_slice for this source
+    output_IDS.distribution_sources.source.resize(1)
+    output_IDS.distribution_sources.source[0].markers.resize(1)
+
+
+
+    
+    
+    output_IDS.distribution_sources.time_slice[0].time=0.0 #the time that this time slice is attribute_here
+
 
 
 '''
+
+
+
+
 
 
 
