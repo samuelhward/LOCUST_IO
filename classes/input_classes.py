@@ -650,8 +650,6 @@ class Equilibrium(LOCUST_input):
 
 
 
-'''
-
 
 ################################################################## Beam_Deposition functions
 
@@ -690,7 +688,7 @@ def read_ASCII_beam_depo(input_filepath):
     return input_data
 
 
-
+'''
 
 def dump_ASCII_beam_depo(output_data,output_filepath):
     """

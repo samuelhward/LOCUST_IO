@@ -88,7 +88,7 @@ my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1)
 
 ```python
 my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
-myeq.set(**{'nh':100,'fpol':some_external_array})   #equally
+myeq.set(**{'nh':100,'fpol':some_external_array})   #equally the same
 ```
 
 
