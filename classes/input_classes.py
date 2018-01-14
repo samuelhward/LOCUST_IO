@@ -159,13 +159,13 @@ class LOCUST_input:
 
     LOCUST_input_type='base_input'
 
-    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded), must have ID
+    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,properties=None): #this is common to all children (not overloaded), must have ID
 
         self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
         if not none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format):
-            self.read_data(data_format,input_filename,shot,run)
+            self.read_data(data_format,input_filename,shot,run,properties)
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
 
 
@@ -508,6 +508,7 @@ class Equilibrium(LOCUST_input):
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
+        self.properties             data to hold additional class-specific information e.g. ion species in Temperature
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
         output_filename             name of file to write to
@@ -531,7 +532,7 @@ class Equilibrium(LOCUST_input):
         """
         self.data[key]=value
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #always supply all possible arguments for reading in data, irrespective of read in type
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
 
@@ -547,6 +548,7 @@ class Equilibrium(LOCUST_input):
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
                 self.data=read_equilibrium_GEQDSK(self.input_filepath) #read the file
+                self.properties=properties
            
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from equilibrium IDS - shot and run data required\n',shot,run):
@@ -554,6 +556,7 @@ class Equilibrium(LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.data=read_equilibrium_IDS(self.shot,self.run)
+                self.properties=properties
 
         else:
             print("cannot read_data - please specify a compatible data_format\n")
@@ -693,6 +696,13 @@ def read_beam_depo_ASCII(input_filepath):
         input_data['v_z'].append(float(split_line[4]))
         input_data['v_phi'].append(float(split_line[5]))
 
+    input_data['r']=np.asarray(input_data['r']) #convert to arrays
+    input_data['z']=np.asarray(input_data['z'])
+    input_data['phi']=np.asarray(input_data['phi'])
+    input_data['v_r']=np.asarray(input_data['v_r'])
+    input_data['v_z']=np.asarray(input_data['v_z'])
+    input_data['v_phi']=np.asarray(input_data['v_phi'])    
+
     return input_data
 
 def dump_beam_depo_ASCII(output_data,output_filepath):
@@ -716,7 +726,7 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
 
             file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
 
-'''
+
 def read_beam_depo_IDS(shot,run):
     """
     reads relevant LOCUST beam_deposition data from a distribution_sources IDS and returns as a dictionary
@@ -729,23 +739,20 @@ def read_beam_depo_IDS(shot,run):
     input_IDS.open()
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
-    input_data = {} #initialise blank dictionary to hold the data
+    #extract the 2D positions array
+    positions=input_IDS.distribution_sources.source[0].markers[0].positions #assume everything is stored in the first source, and first marker type
 
-    input_data['r']=input_IDS.distribution_sources.source[0].markers[0].positions[0][:]      #assume everything is stored in the first source, and first marker type
-    input_data['z']=input_IDS.distribution_sources
-    input_data['phi']=input_IDS.distribution_sources
-    input_data['v_r']=input_IDS.distribution_sources
-    input_data['v_z']=input_IDS.distribution_sources
-    input_data['v_phi']=input_IDS.distribution_sources
+    input_data = {} #initialise blank dictionary to hold the data
+    input_data['r']=positions[:,0]
+    input_data['z']=positions[:,1]
+    input_data['phi']=positions[:,2]
+    input_data['v_r']=positions[:,3]
+    input_data['v_z']=positions[:,4]
+    input_data['v_phi']=positions[:,5]
 
     input_IDS.close()
 
     return input_data
-'''
-
-
-
-
 
 def dump_beam_depo_IDS(ID,output_data,shot,run):
     """
@@ -780,11 +787,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.put()
     output_IDS.close()
 
-
-
-
-
-################################################################## Beam_Deposition functions
+################################################################## Beam_Deposition class
 
 class Beam_Deposition(LOCUST_input):
     """
@@ -800,6 +803,7 @@ class Beam_Deposition(LOCUST_input):
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
+        self.properties             data to hold additional class-specific information e.g. ion species in Temperature
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
         output_filename             name of file to write to
@@ -821,7 +825,7 @@ class Beam_Deposition(LOCUST_input):
 
         self.data[key]=value
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None): 
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): 
         """
         read beam_deposition from file 
 
@@ -838,6 +842,7 @@ class Beam_Deposition(LOCUST_input):
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_input_files+input_filename
                 self.data=read_beam_depo_ASCII(self.input_filepath) #read the file
+                self.properties=properties
         
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from distribution_sources IDS - shot and run data required\n',shot,run):
@@ -846,6 +851,7 @@ class Beam_Deposition(LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.data=read_beam_depo_IDS(self.shot,self.run)
+                self.properties=properties
 
         else:
             print("cannot read_data - please specify a compatible data_format\n")            
@@ -950,31 +956,290 @@ class Beam_Deposition(LOCUST_input):
 
 
 
+
+
+
+
+'''
+
+################################################################## Temperature functions
+
+def read_temperature_ASCII(input_filepath):
+    """
+    reads in neutral beam deposition profile from ASCII format
+    """
+
+
+    with open(input_filepath) as file:
+        
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_beam_depo_ASCII() cannot read from "+input_filepath)
+    
+    del(lines[0]) #first two lines are junk
+    del(lines[0])
+
+    input_data = {} #initialise the dictionary to hold the data
+    input_data['r']=[] #initialise the arrays 
+    input_data['z']=[]
+    input_data['phi']=[]
+    input_data['v_r']=[]
+    input_data['v_z']=[]
+    input_data['v_phi']=[]
+
+    for line in lines:
+
+        split_line=line.split()
+        input_data['r'].append(float(split_line[0]))
+        input_data['z'].append(float(split_line[1]))
+        input_data['phi'].append(float(split_line[2]))
+        input_data['v_r'].append(float(split_line[3]))
+        input_data['v_z'].append(float(split_line[4]))
+        input_data['v_phi'].append(float(split_line[5]))
+
+    input_data['r']=np.asarray(input_data['r']) #convert to arrays
+    input_data['z']=np.asarray(input_data['z'])
+    input_data['phi']=np.asarray(input_data['phi'])
+    input_data['v_r']=np.asarray(input_data['v_r'])
+    input_data['v_z']=np.asarray(input_data['v_z'])
+    input_data['v_phi']=np.asarray(input_data['v_phi'])    
+
+    return input_data
+
+def dump_temperature_ASCII(output_data,output_filepath):
+    """
+    writes out neutral beam deposition profile to ASCII format
+    """
+
+    with open(output_filepath,'w') as file: #open file
+
+        file.write('1.0\n') #re-insert junk lines
+        file.write('1.0\n')
+
+        for this_particle in range(len(output_data['r'])): #iterate through all particles i.e. length of our dictionary's arrays
+
+            r_out=output_data['r'][this_particle] #briefly set to a temporary variable to improve readability
+            z_out=output_data['z'][this_particle]
+            phi_out=output_data['phi'][this_particle]
+            v_r_out=output_data['v_r'][this_particle]
+            v_z_out=output_data['v_z'][this_particle]
+            v_phi_out=output_data['v_phi'][this_particle]
+
+            file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
+
+
+def read_temperature_IDS(shot,run): #XXX need to check which IDS to write to - core_profiles saves temperatures wrt(psi)
+    """
+    reads relevant LOCUST beam_deposition data from a distribution_sources IDS and returns as a dictionary
+
+    notes:
+        see README.md for data key
+    """
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open()
+    input_IDS.distribution_sources.get() #open the file and get all the data from it
+
+    #extract the 2D positions array
+    positions=input_IDS.distribution_sources.source[0].markers[0].positions #assume everything is stored in the first source, and first marker type
+
+    input_data = {} #initialise blank dictionary to hold the data
+    input_data['r']=positions[:,0]
+    input_data['z']=positions[:,1]
+    input_data['phi']=positions[:,2]
+    input_data['v_r']=positions[:,3]
+    input_data['v_z']=positions[:,4]
+    input_data['v_phi']=positions[:,5]
+
+    input_IDS.close()
+
+    return input_data
+
+def dump_temperature_IDS(ID,output_data,shot,run): #XXX need to check which IDS to write to - core_profiles saves temperatures wrt(psi)
+    """
+    """
+
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+
+    #write out code properties
+    output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
+    output_IDS.distribution_sources.code.name="LOCUST_IO"
+    output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
+    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+    
+    #add a type of source and add a time_slice for this source
+    output_IDS.distribution_sources.source.resize(1) #adds a type of source here
+    output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
+    output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time slice
+
+    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_phi in this case
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name='r, z, phi' #add some description here
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 #set arbitrarily here
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description='r, z, phi, v_r, v_z, v_phi coordinate system'
+    
+    #start storing particle data
+    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(len(output_data['r'])) #define the weights, i.e. number of particles per marker 
+    positions=np.array([output_data['r'],output_data['z'],output_data['phi'],output_data['v_r'],output_data['v_z'],output_data['v_phi']]) #create 2D array of positions
+    output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
+
+    #'put' all the output_data into the file and close
+    output_IDS.distribution_sources.put()
+    output_IDS.close()
+
+################################################################## Temperature class
+
+class Temperature(LOCUST_input): #XXX assuming core_profiles IDS now need to check this!!!
+    """
+    class describing temperature profile input for LOCUST
+
+    inherited from LOCUST_input:
+        self.ID                     unique object identifier, good convention to fill these for error handling etc
+        self.data                   holds all input data in dictionary object
+        self.LOCUST_input_type      string which holds this class' input type, this case = 'temperature'
+    class data
+        self.input_filename         name of file in input_files folder
+        self.data_format            data format of original data e.g. ASCII
+        self.input_filepath         full path of file in input_files folder  
+        self.shot                   shot number
+        self.run                    run number
+        self.properties             data to hold additional class-specific information e.g. ion species in Temperature
+        key, value                  key for data dictionary to specify data entry holding value
+        target                      external object to copy from
+        output_filename             name of file to write to
+        output_filepath             full path to output file in output_files folder
+
+    notes:
+        data is stored such that the coordinate 'r' for all particles is stored in this_beam_depo['r']
+        therefore the phase space position of particle p is:
+            (this_beam_depo['r'][p], this_beam_depo['z'][p], this_beam_depo['phi'][p], this_beam_depo['v_r'][p], this_beam_depo['v_z'][p], this_beam_depo['v_phi'][p])
+    """
+
+    LOCUST_input_type='temperature' 
+
+    def __getitem__(self,key):
+
+        return self.data[key]
+
+    def __setitem__(self,key,value):
+
+        self.data[key]=value
+
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
+        """
+        read beam_deposition from file 
+
+        notes:
+        """
+
+        if none_check(self.ID,self.LOCUST_input_type,'cannot read_data - data_format required\n',data_format): #must always have data_format if reading in data
+            pass
+
+        elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from ASCII - input_filename required\n',input_filename): #must check we have all info required for reading GEQDSKs
+
+                self.data_format=data_format #add to the member data
+                self.input_filename=input_filename
+                self.input_filepath=support.dir_input_files+input_filename
+                self.data=read_temperature_ASCII(self.input_filepath) #read the file
+                self.properties=properties
+        
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot read_data from core_profiles IDS - shot and run data required\n',shot,run):
+
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.data=read_temperature_IDS(self.shot,self.run)
+                self.properties=properties
+
+        else:
+            print("cannot read_data - please specify a compatible data_format\n")            
+
+    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+        """
+        write beam_deposition to file
+
+        notes: 
+        """
+
+        if none_check(self.ID,self.LOCUST_input_type,'cannot dump_data - self.data and data_format required\n',self.data,data_format):
+            pass
+        
+        elif data_format=='ASCII':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to ASCII - output_filename required\n',output_filename):
+                output_filepath=support.dir_output_files+output_filename
+                dump_temperature_ASCII(self.data,output_filepath)
+        
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to core_profiles IDS - shot and run required\n',shot,run):
+                dump_temperature_IDS(self.ID,self.data,shot,run)
+
+        else:
+            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
+
+    def copy(self,target,*keys):
+        """
+        copy two temperature objects 
+
+        notes:
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
+            if key supplied then copy/append dictionary data accordingly
+
+            TODO need some way of editing data_format and input_filename/shot/run after a copy
+
+        usage:
+            my_temperature.copy(some_other_temperature) to copy all data
+            my_temperature.copy(some_other_temperature,'some_arg','some_other_arg') to copy specific fields
+            my_temperature.copy(some_other_temperature, *some_list_of_args) equally
+        """
+
+        if none_check(self.ID,self.LOCUST_input_type,'cannot copy() - target.data is blank\n',target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_input_type,'cannot copy() - found key containing None\n',*keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+    
+    def set(self,**kwargs):
+        """
+        set temperature object data 
+
+        usage:
+            my_temperature.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
+            my_temperature.set(**{'some_arg':100,'some_other_arg':200}) equally
+        """
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_input_type,'cannot set() - empty key/value pair found\n',*allkeysvalues):
+            pass
+        else:
+            for key,value in zip(keys,values): #loop through kwargs
+                self[key]=value
+
+
+
+
+
+
+
 '''
 
 
 
-#################################
+
+'''
 
 
-def read_temperature_ASCII
 
-def dump_temperature_ASCII
 
-class Tempetature(LOCUST_input):
-    """
-    class describing species temperature as a function of Psi input for LOCUST
-    """
-    class_level_attribute=attribute_here 
 
-    def __init__(self,*args,**kwargs):
-        instance data, methods etc
-    def __enter__(self,*args,**kwargs):
-        some_things
-    def __exit__(self,*args,**kwargs):
-        some_things
-    def class_methods(self,*args,**kwargs):
-        some_things
+
+
+
 
 
 
