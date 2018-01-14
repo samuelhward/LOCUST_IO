@@ -125,21 +125,6 @@ def get_next(obj):
     else:
         return next(obj)
 
-def read_1d(n): 
-    """
-    """
-    input_data = np.zeros([n]) #initialise blank lists
-    for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
-        input_data[i] = float(get_next(token))
-    return input_data
-
-def read_2d(nx,ny):
-    """
-    """
-    input_data = np.zeros([nx,ny])
-    for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
-        input_data[i,:] = read_1d(ny)
-    return input_data
 
 
 
@@ -176,8 +161,9 @@ class LOCUST_input:
 
     def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,*args,**kwargs): #this is common to all children (not overloaded), must have ID
 
-        self.ID=ID
-        self.read_data(data_format,input_filename,shot,run)
+        self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
+        if not none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format):
+            self.read_data(data_format,input_filename,shot,run)
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
@@ -246,6 +232,22 @@ def read_equilibrium_GEQDSK(input_filepath):
     for key in float_keys:                              
         input_data[key] = float(get_next(token)) #get_next(token) always yields just a single value
     
+    def read_1d(n): 
+        """
+        """
+        input_data = np.zeros([n]) #initialise blank lists
+        for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
+            input_data[i] = float(get_next(token))
+        return input_data
+
+    def read_2d(nx,ny):
+        """
+        """
+        input_data = np.zeros([nx,ny])
+        for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
+            input_data[i,:] = read_1d(ny)
+        return input_data
+
     #read in the arrays
     input_data['fpol'] = read_1d(input_data['nw']) #remember input_data['nw'] holds width, input_data['nh'] holds height
     input_data['pres'] = read_1d(input_data['nw'])
@@ -502,7 +504,7 @@ class Equilibrium(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
     class data
         self.input_filename         name of file in input_files folder
-        self.data_format            data format of input_file e.g. GEQDSK
+        self.data_format            data format of original data e.g. GEQDSK
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -510,7 +512,6 @@ class Equilibrium(LOCUST_input):
         target                      external object to copy from
         output_filename             name of file to write to
         output_filepath             full path to output file in output_files folder
-        output_data_format          data format of output file e.g. GEQDSK
 
     notes:
 
@@ -537,7 +538,7 @@ class Equilibrium(LOCUST_input):
         notes:
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised \n',data_format): #must always have data_format if reading in data
+        if none_check(self.ID,self.LOCUST_input_type,'cannot read_data - data_format required\n',data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
@@ -553,25 +554,32 @@ class Equilibrium(LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.data=read_equilibrium_IDS(self.shot,self.run)
-            
-    def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
+
+        else:
+            print("cannot read_data - please specify a compatible data_format\n")
+
+
+    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
         write equilibrium to file
 
         notes: 
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and output_data_format\n',self.data,output_data_format):
+        if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and data_format\n',self.data,data_format):
             pass
         
-        elif output_data_format=='GEQDSK':
+        elif data_format=='GEQDSK':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to GEQDSK - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
                 dump_equilibrium_GEQDSK(self.data,output_filepath)
         
-        elif output_data_format=='IDS':
+        elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to equilibrium IDS - shot and run required\n',shot,run):
                 dump_equilibrium_IDS(self.ID,self.data,shot,run)
+
+        else:
+            print("cannot dump_data - please specify a compatible data_format\n")
 
     def copy(self,target,*keys):
         """
@@ -587,13 +595,14 @@ class Equilibrium(LOCUST_input):
         usage:
             my_equilibrium.copy(some_other_equilibrium) to copy all data
             my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg') to copy specific fields
+            my_equilibrium.copy(some_other_equilibrium, *some_list_of_args) equally
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'tried to copy() from blank target.data\n',target.data): #return warning if any target data contains empty variables
+        if none_check(self.ID,self.LOCUST_input_type,'cannot copy() - target.data is blank\n',target.data): #return warning if any target data contains empty variables
             pass
         elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
             self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,'tried to copy() with None in *keys\n',keys): 
+        elif not none_check(self.ID,self.LOCUST_input_type,'cannot copy() - found key containing None\n',*keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
     
     def set(self,**kwargs):
@@ -601,12 +610,16 @@ class Equilibrium(LOCUST_input):
         set equilibrium object data 
 
         usage:
-            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) or my_equilibrium.set(**{'nh':100,'nw':200}) to set multiple values simultaneously
+            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) to set multiple values simultaneously
+            my_equilibrium.set(**{'nh':100,'nw':200}) equally
         """
-        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_input_type,'cannot set() - empty key/value pair found\n',*allkeysvalues):
             pass
         else:
-            for key,value in kwargs.items(): #loop through kwargs
+            for key,value in zip(keys,values): #loop through kwargs
                 self[key]=value
 
 
@@ -673,12 +686,12 @@ def read_beam_depo_ASCII(input_filepath):
     for line in lines:
 
         split_line=line.split()
-        input_data['r'].append(split_line[0])
-        input_data['z'].append(split_line[1])
-        input_data['phi'].append(split_line[2])
-        input_data['v_r'].append(split_line[3])
-        input_data['v_z'].append(split_line[4])
-        input_data['v_phi'].append(split_line[5])
+        input_data['r'].append(float(split_line[0]))
+        input_data['z'].append(float(split_line[1]))
+        input_data['phi'].append(float(split_line[2]))
+        input_data['v_r'].append(float(split_line[3]))
+        input_data['v_z'].append(float(split_line[4]))
+        input_data['v_phi'].append(float(split_line[5]))
 
     return input_data
 
@@ -687,7 +700,10 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
     writes out neutral beam deposition profile to ASCII format
     """
 
-    with open(output_filepath) as file: #open file
+    with open(output_filepath,'w') as file: #open file
+
+        file.write('1.0\n') #re-insert junk lines
+        file.write('1.0\n')
 
         for this_particle in range(len(output_data['r'])): #iterate through all particles i.e. length of our dictionary's arrays
 
@@ -768,7 +784,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
 
 ################################################################## Beam_Deposition functions
 
-def Beam_Deposition(LOCUST_input):
+class Beam_Deposition(LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
 
@@ -778,7 +794,7 @@ def Beam_Deposition(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
     class data
         self.input_filename         name of file in input_files folder
-        self.data_format            data format of input_file e.g. ASCII
+        self.data_format            data format of original data e.g. ASCII
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -786,7 +802,6 @@ def Beam_Deposition(LOCUST_input):
         target                      external object to copy from
         output_filename             name of file to write to
         output_filepath             full path to output file in output_files folder
-        output_data_format          data format of output file e.g. ASCII
 
     notes:
 
@@ -809,7 +824,7 @@ def Beam_Deposition(LOCUST_input):
         notes:
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'read_data requires data_format, blank input initialised\n',data_format): #must always have data_format if reading in data
+        if none_check(self.ID,self.LOCUST_input_type,'cannot read_data - data_format required\n',data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
@@ -828,24 +843,30 @@ def Beam_Deposition(LOCUST_input):
                 self.run=run
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
-    def dump_data(self,output_data_format=None,output_filename=None,shot=None,run=None):
+        else:
+            print("cannot read_data - please specify a compatible data_format\n")            
+
+    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
         write beam_deposition to file
 
         notes: 
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'dump_data requires self.data and output_data_format\n',self.data,output_data_format):
+        if none_check(self.ID,self.LOCUST_input_type,'cannot dump_data - self.data and data_format required\n',self.data,data_format):
             pass
         
-        elif output_data_format=='ASCII':
+        elif data_format=='ASCII':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to ASCII - output_filename required\n',output_filename):
                 output_filepath=support.dir_output_files+output_filename
                 dump_beam_depo_ASCII(self.data,output_filepath)
         
-        elif output_data_format=='IDS':
+        elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,'cannot dump_data to distribution_sources IDS - shot and run required\n',shot,run):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
+
+        else:
+            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
 
     def copy(self,target,*keys):
         """
@@ -861,13 +882,14 @@ def Beam_Deposition(LOCUST_input):
         usage:
             my_beam_deposition.copy(some_other_beam_deposition) to copy all data
             my_beam_deposition.copy(some_other_beam_deposition,'some_arg','some_other_arg') to copy specific fields
+            my_beam_deposition.copy(some_other_beam_deposition, *some_list_of_args) equally
         """
 
-        if none_check(self.ID,self.LOCUST_input_type,'tried to copy() from blank target.data\n',target.data): #return warning if any target data contains empty variables
+        if none_check(self.ID,self.LOCUST_input_type,'cannot copy() - target.data is blank\n',target.data): #return warning if any target data contains empty variables
             pass
         elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
             self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,'tried to copy() with None in *keys\n',keys): 
+        elif not none_check(self.ID,self.LOCUST_input_type,'cannot copy() - found key containing None\n',*keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
     
     def set(self,**kwargs):
@@ -875,12 +897,16 @@ def Beam_Deposition(LOCUST_input):
         set beam_deposition object data 
 
         usage:
-            my_beam_deposition.set(some_arg=5,some_other_arg=[1,2,3,4]) or my_beam_deposition.set(**{'some_arg':100,'some_other_arg':200}) to set multiple values simultaneously
+            my_beam_deposition.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
+            my_beam_deposition.set(**{'some_arg':100,'some_other_arg':200}) equally
         """
-        if none_check(self.ID,self.LOCUST_input_type,'tried to call set() with empty an key/value pair\n',kwargs):
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_input_type,'cannot set() - empty key/value pair found\n',*allkeysvalues):
             pass
         else:
-            for key,value in kwargs.items():
+            for key,value in zip(keys,values): #loop through kwargs
                 self[key]=value
 
 
@@ -931,7 +957,7 @@ def read_temperature_ASCII
 
 def dump_temperature_ASCII
 
-def Tempetature(LOCUST_input):
+class Tempetature(LOCUST_input):
     """
     class describing species temperature as a function of Psi input for LOCUST
     """
@@ -952,7 +978,7 @@ def Tempetature(LOCUST_input):
 
 
 #################################
-def Number_Density(LOCUST_input):
+class Number_Density(LOCUST_input):
     """
     class describing particle number density as a function of Psi input for LOCUST
     """
@@ -971,7 +997,7 @@ def Number_Density(LOCUST_input):
 
 
 #################################
-def Collisions(LOCUST_input):
+class Collisions(LOCUST_input):
     """
     class describing collision data input for LOCUST
     """
