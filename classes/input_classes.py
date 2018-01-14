@@ -416,7 +416,7 @@ def read_equilibrium_IDS(shot,run):
     return input_data
 
 
-def dump_equilibrium_IDS(ID,output_output_data,shot,run):
+def dump_equilibrium_IDS(ID,output_data,shot,run):
     """
     function for writing a LOCUST equilibrium to an equilibrium IDS
 
@@ -715,6 +715,7 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
             v_phi_out=output_data['v_phi'][this_particle]
 
             file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
+
 '''
 def read_beam_depo_IDS(shot,run):
     """
@@ -743,14 +744,13 @@ def read_beam_depo_IDS(shot,run):
 '''
 
 
-'''
+
 
 
 def dump_beam_depo_IDS(ID,output_data,shot,run):
     """
     """
 
-    
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
 
@@ -761,22 +761,24 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
     
     #add a type of source and add a time_slice for this source
-    output_IDS.distribution_sources.source.resize(1)
-    output_IDS.distribution_sources.source[0].markers.resize(1)
+    output_IDS.distribution_sources.source.resize(1) #adds a type of source here
+    output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
+    output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time slice
 
-
-
+    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_phi in this case
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name='r, z, phi' #add some description here
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 #set arbitrarily here
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description='r, z, phi, v_r, v_z, v_phi coordinate system'
     
-    
-    output_IDS.distribution_sources.time_slice[0].time=0.0 #the time that this time slice is attribute_here
+    #start storing particle data
+    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(len(output_data['r'])) #define the weights, i.e. number of particles per marker 
+    positions=np.array([output_data['r'],output_data['z'],output_data['phi'],output_data['v_r'],output_data['v_z'],output_data['v_phi']]) #create 2D array of positions
+    output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
 
-
-
-'''
-
-
-
-
+    #'put' all the output_data into the file and close
+    output_IDS.distribution_sources.put()
+    output_IDS.close()
 
 
 
@@ -804,7 +806,9 @@ class Beam_Deposition(LOCUST_input):
         output_filepath             full path to output file in output_files folder
 
     notes:
-
+        data is stored such that the coordinate 'r' for all particles is stored in this_beam_depo['r']
+        therefore the phase space position of particle p is:
+            (this_beam_depo['r'][p], this_beam_depo['z'][p], this_beam_depo['phi'][p], this_beam_depo['v_r'][p], this_beam_depo['v_z'][p], this_beam_depo['v_phi'][p])
     """
 
     LOCUST_input_type='beam_deposition' 
