@@ -18,7 +18,7 @@ notes:
 ###################################################################################################
 #Preamble
 
-import sys #have global imports --> makes less modular (no "from output_classes import x") but best practice to import whole input_classes module anyway
+import sys #have global imports --> makes less modular (no "from output_classes import x") but best practice to import whole output_classes module anyway
 try:
     import numpy as np
     import copy
