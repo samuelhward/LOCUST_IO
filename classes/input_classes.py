@@ -978,8 +978,7 @@ def read_temperature_ASCII(input_filepath):
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_temperature_ASCII() cannot read from "+input_filepath)
     
-    number_data_points=lines[0] #first line contains the number of points
-    del(lines[0])
+    del(lines[0]) #first line contains the number of points
 
     input_data = {} #initialise the dictionary to hold the data
     input_data['psi']=[] #initialise the arrays 
@@ -1092,7 +1091,7 @@ class Temperature(LOCUST_input):
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
-        self.properties             data to hold additional class-specific information e.g. ion species in Temperature
+        self.properties             data to hold additional class-specific information e.g. ion species
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
         output_filename             name of file to write to
@@ -1235,28 +1234,325 @@ class Temperature(LOCUST_input):
 
 
 
+
+
+
+
+
+################################################################## Temperature functions
+
+def read_number_density_ASCII(input_filepath):
+    """
+    reads number density profile stored in ASCII format - psi n
+    """
+
+    with open(input_filepath) as file:
+        
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_number_density_ASCII() cannot read from "+input_filepath)
+    
+    del(lines[0]) #first line contains the number of points
+
+    input_data = {} #initialise the dictionary to hold the data
+    input_data['psi']=[] #initialise the arrays 
+    input_data['n']=[]
+
+    for line in lines:
+
+        split_line=line.split()
+        input_data['psi'].append(float(split_line[0]))
+        input_data['n'].append(float(split_line[1]))
+
+    input_data['psi']=np.asarray(input_data['psi']) #convert to arrays
+    input_data['n']=np.asarray(input_data['n'])
+   
+    return input_data
+
+def dump_number_density_ASCII(output_data,output_filepath):
+    """
+    writes number density profile to ASCII format - psi n 
+    
+    notes:
+        writes out a headerline for length of file
+    """
+
+    with open(output_filepath,'w') as file: #open file
+
+        file.write("{}\n".format(len(output_data['psi']))) #re-insert line containing length
+
+        for point in range(len(output_data['psi'])): #iterate through all points i.e. length of our dictionary's arrays
+
+            psi_out=output_data['psi'][point] #briefly set to a temporary variable to improve readability
+            n_out=output_data['n'][point]
+            
+            file.write("{psi} {n}\n".format(psi=psi_out,n=n_out))
+
+def read_number_density_IDS(shot,run,properties):
+    """
+    reads relevant LOCUST number density data from a core_profiles IDS and returns as a dictionary
+
+    notes:
+        see README.md for data key
+    """
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open()
+    input_IDS.core_profiles.get() #open the file and get all the data from it
+
+    input_data = {} #initialise blank dictionary to hold the data
+    input_data['psi']=input_IDS.core_profiles.profiles_1d[0].grid.psi
+
+    #read in temperature depending on species
+    if properties=='electrons':
+        input_data['n']=input_IDS.core_profiles.profiles_1d[0].electrons.density        
+    elif properties=='ions':
+        input_data['n']=input_IDS.core_profiles.profiles_1d[0].ion[0].density 
+    else:
+        print("cannot read_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
+
+    input_IDS.close()
+
+    return input_data
+
+def dump_number_density_IDS(ID,output_data,shot,run,properties):
+    """
+    writes relevant LOCUST number density data to a core_profiles IDS
+    """
+
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+
+    #write out code properties
+    output_IDS.core_profiles.ids_properties.comment=ID #write out identification
+    output_IDS.core_profiles.code.name="LOCUST_IO"
+    output_IDS.core_profiles.code.version=support.LOCUST_IO_version
+    output_IDS.core_profiles.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+    
+    #add a time_slice and set the time
+    output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
+    output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['psi']
+
+    #write out number density depending on species
+    if properties=='electrons':
+        output_IDS.core_profiles.profiles_1d[0].electrons.density=output_data['n']
+    elif properties=='ions':
+        output_IDS.core_profiles.profiles_1d[0].ion.resize(1) #add an ion species 
+        #TODO need to add additional species data here e.g. mass, charge
+        output_IDS.core_profiles.profiles_1d[0].ion[0].density=output_data['n']
+    else:
+        print("cannot dump_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
+
+    #'put' all the output_data into the file and close
+    output_IDS.core_profiles.put()
+    output_IDS.close()
+
+
+################################################################## Temperature class
+
+class Number_Density(LOCUST_input):
+    """
+    class describing number density profile input for LOCUST
+
+    inherited from LOCUST_input:
+        self.ID                     unique object identifier, good convention to fill these for error handling etc
+        self.data                   holds all input data in dictionary object
+        self.LOCUST_input_type      string which holds this class' input type, this case = 'number density'
+    class data
+        self.input_filename         name of file in input_files folder
+        self.data_format            data format of original data e.g. ASCII
+        self.input_filepath         full path of file in input_files folder  
+        self.shot                   shot number
+        self.run                    run number
+        self.properties             data to hold additional class-specific information e.g. ion species
+        key, value                  key for data dictionary to specify data entry holding value
+        target                      external object to copy from
+        output_filename             name of file to write to
+        output_filepath             full path to output file in output_files folder
+
+    notes:
+        data is stored such that a reading of number density at psi coordinate 'coord' is:
+            this_number_density['psi'][coord], this_number_density['n'][coord]
+    """
+
+    LOCUST_input_type='number density'
+
+    def __getitem__(self,key):
+
+        return self.data[key]
+
+    def __setitem__(self,key,value):
+
+        self.data[key]=value
+
+    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
+        """
+        read number density from file 
+
+        notes:
+        """
+        if none_check(self.ID,self.LOCUST_input_type,"Number_Density.properties not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
+            pass
+
+        if none_check(self.ID,self.LOCUST_input_type,"cannot read_data - data_format required\n",data_format): #must always have data_format if reading in data
+            pass
+
+        elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - input_filename required\n",input_filename): #must check we have all info required for reading GEQDSKs
+
+                self.data_format=data_format #add to the member data
+                self.input_filename=input_filename
+                self.input_filepath=support.dir_input_files+input_filename
+                self.properties=properties
+                self.data=read_number_density_ASCII(self.input_filepath) #read the file
+        
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
+
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.properties=properties
+                self.data=read_number_density_IDS(self.shot,self.run,self.properties)
+
+        else:
+            print("cannot read_data - please specify a compatible data_format\n")            
+
+    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+        """
+        write number density to file
+
+        notes: 
+        """
+        if none_check(self.ID,self.LOCUST_input_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
+            pass
+        
+        elif data_format=='ASCII':
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
+                output_filepath=support.dir_output_files+output_filename
+                dump_number_density_ASCII(self.data,output_filepath)
+        
+        elif data_format=='IDS':
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
+                dump_number_density_IDS(self.ID,self.data,shot,run,self.properties)
+
+        else:
+            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
+
+    def copy(self,target,*keys):
+        """
+        copy two number density objects 
+
+        notes:
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
+            if key supplied then copy/append dictionary data accordingly
+
+            TODO need some way of editing data_format and input_filename/shot/run after a copy
+
+        usage:
+            my_number_density.copy(some_other_number_density) to copy all data
+            my_number_density.copy(some_other_number_density,'some_arg','some_other_arg') to copy specific fields
+            my_number_density.copy(some_other_number_density, *some_list_of_args) equally
+        """
+        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+    
+    def set(self,**kwargs):
+        """
+        set number density object data 
+
+        usage:
+            my_number_density.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
+            my_number_density.set(**{'some_arg':100,'some_other_arg':200}) equally
+        """
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
+            pass
+        else:
+            for key,value in zip(keys,values): #loop through kwargs
+                self[key]=value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 
 
-
-
-
-
-#################################
-class Number_Density(LOCUST_input): write to core_profiles IDS
-    """
-    class describing particle number density as a function of Psi input for LOCUST
-    """
-    class_level_attribute=attribute_here 
-
-    def __init__(self,*args,**kwargs):
-        instance data, methods etc
-    def __enter__(self,*args,**kwargs):
-        some_things
-    def __exit__(self,*args,**kwargs):
-        some_things
-    def class_methods(self,*args,**kwargs):
-        some_things
 
 
 
@@ -1276,22 +1572,6 @@ class Collisions(LOCUST_input):
         some_things
     def class_methods(self,*args,**kwargs):
         some_things
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
