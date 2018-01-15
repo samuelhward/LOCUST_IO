@@ -1044,7 +1044,7 @@ def read_temperature_IDS(shot,run,properties):
 
     return input_data
 
-
+'''
 def dump_temperature_IDS(ID,output_data,shot,run,properties):
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
@@ -1061,12 +1061,12 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
-    output_IDS.core_profiles.profiles_1d.time=0.0 #set the time of the time_slice
+    output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['psi']
 
     #write out temperature depending on species
     if properties=='electrons':
-        output_IDS.core_profiles.profiles_1d[0].electrons.temeprature=output_data['T']        
+        output_IDS.core_profiles.profiles_1d[0].electrons.temperature=output_data['T']         #XXX this single line doesn't work
     elif properties=='ions':
         output_IDS.core_profiles.profiles_1d[0].ion.resize(1) #add an ion species 
         #TODO need to add additional species data here e.g. mass, charge
@@ -1078,7 +1078,6 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     output_IDS.core_profiles.put()
     output_IDS.close()
 
-'''
 
 ################################################################## Temperature class
 
@@ -1125,7 +1124,7 @@ class Temperature(LOCUST_input):
         """
         if none_check(self.ID,self.LOCUST_input_type,"Temperature.properties not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
             pass
-            
+
         if none_check(self.ID,self.LOCUST_input_type,"cannot read_data - data_format required\n",data_format): #must always have data_format if reading in data
             pass
 
