@@ -1015,8 +1015,6 @@ def dump_temperature_ASCII(output_data,output_filepath):
             
             file.write("{psi} {T}\n".format(psi=psi_out,T=T_out))
 
-'''
-
 def read_temperature_IDS(shot,run,properties):
     """
     reads relevant LOCUST temperature data from a core_profiles IDS and returns as a dictionary
@@ -1034,7 +1032,7 @@ def read_temperature_IDS(shot,run,properties):
 
     #read in temperature depending on species
     if properties=='electrons':
-        input_data['T']=input_IDS.core_profiles.profiles_1d[0].electrons.temeprature        
+        input_data['T']=input_IDS.core_profiles.profiles_1d[0].electrons.temperature        
     elif properties=='ions':
         input_data['T']=input_IDS.core_profiles.profiles_1d[0].ion[0].temperature 
     else:
@@ -1044,7 +1042,6 @@ def read_temperature_IDS(shot,run,properties):
 
     return input_data
 
-'''
 def dump_temperature_IDS(ID,output_data,shot,run,properties):
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
@@ -1066,7 +1063,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
 
     #write out temperature depending on species
     if properties=='electrons':
-        output_IDS.core_profiles.profiles_1d[0].electrons.temperature=output_data['T']         #XXX this single line doesn't work
+        output_IDS.core_profiles.profiles_1d[0].electrons.temperature=output_data['T']
     elif properties=='ions':
         output_IDS.core_profiles.profiles_1d[0].ion.resize(1) #add an ion species 
         #TODO need to add additional species data here e.g. mass, charge
@@ -1224,15 +1221,21 @@ class Temperature(LOCUST_input):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
-
-
-
-
-
-
-
-
 
 
 
