@@ -963,8 +963,6 @@ class Beam_Deposition(LOCUST_input):
 
 
 
-'''
-
 
 
 ################################################################## Temperature functions
@@ -997,7 +995,7 @@ def read_temperature_ASCII(input_filepath):
     input_data['T']=np.asarray(input_data['T'])
    
     return input_data
-
+'''
 def dump_temperature_ASCII(output_data,output_filepath):
     """
     writes temperature profile to ASCII format - psi T(ev)    
@@ -1017,6 +1015,7 @@ def dump_temperature_ASCII(output_data,output_filepath):
             T_out=output_data['T'][point]
             
             file.write("{psi} {T}\n".format(psi=psi_out,T=T_out))
+
 
 
 def read_temperature_IDS(shot,run,properties):
@@ -1045,6 +1044,7 @@ def read_temperature_IDS(shot,run,properties):
     input_IDS.close()
 
     return input_data
+
 
 def dump_temperature_IDS(ID,output_data,shot,run,properties):
     """
