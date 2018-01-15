@@ -503,8 +503,8 @@ class Equilibrium(LOCUST_input):
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
     class data
-        self.input_filename         name of file in input_files folder
         self.data_format            data format of original data e.g. GEQDSK
+        self.input_filename         name of file in input_files folder
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -559,7 +559,7 @@ class Equilibrium(LOCUST_input):
                 self.data=read_equilibrium_IDS(self.shot,self.run)
 
         else:
-            print("cannot read_data - please specify a compatible data_format\n")
+            print("cannot read_data - please specify a compatible data_format (GEQDSK/IDS)\n")
 
 
     def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
@@ -582,7 +582,7 @@ class Equilibrium(LOCUST_input):
                 dump_equilibrium_IDS(self.ID,self.data,shot,run)
 
         else:
-            print("cannot dump_data - please specify a compatible data_format\n")
+            print("cannot dump_data - please specify a compatible data_format (GEQDSK/IDS)\n")
 
     def copy(self,target,*keys):
         """
@@ -803,8 +803,8 @@ class Beam_Deposition(LOCUST_input):
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
     class data
-        self.input_filename         name of file in input_files folder
         self.data_format            data format of original data e.g. ASCII
+        self.input_filename         name of file in input_files folder
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -859,7 +859,7 @@ class Beam_Deposition(LOCUST_input):
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
         else:
-            print("cannot read_data - please specify a compatible data_format\n")            
+            print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
 
     def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -881,7 +881,7 @@ class Beam_Deposition(LOCUST_input):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
 
         else:
-            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
+            print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
 
     def copy(self,target,*keys):
         """
@@ -1086,8 +1086,8 @@ class Temperature(LOCUST_input):
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'temperature'
     class data
-        self.input_filename         name of file in input_files folder
         self.data_format            data format of original data e.g. ASCII
+        self.input_filename         name of file in input_files folder
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -1143,7 +1143,7 @@ class Temperature(LOCUST_input):
                 self.data=read_temperature_IDS(self.shot,self.run,self.properties)
 
         else:
-            print("cannot read_data - please specify a compatible data_format\n")            
+            print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
 
     def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -1165,7 +1165,7 @@ class Temperature(LOCUST_input):
                 dump_temperature_IDS(self.ID,self.data,shot,run,self.properties)
 
         else:
-            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
+            print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
 
     def copy(self,target,*keys):
         """
@@ -1360,8 +1360,8 @@ class Number_Density(LOCUST_input):
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'number density'
     class data
-        self.input_filename         name of file in input_files folder
         self.data_format            data format of original data e.g. ASCII
+        self.input_filename         name of file in input_files folder
         self.input_filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
@@ -1417,7 +1417,7 @@ class Number_Density(LOCUST_input):
                 self.data=read_number_density_IDS(self.shot,self.run,self.properties)
 
         else:
-            print("cannot read_data - please specify a compatible data_format\n")            
+            print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
 
     def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
@@ -1438,7 +1438,7 @@ class Number_Density(LOCUST_input):
                 dump_number_density_IDS(self.ID,self.data,shot,run,self.properties)
 
         else:
-            print("cannot dump_data - please specify a known data_format (ASCII/IDS)\n")
+            print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
 
     def copy(self,target,*keys):
         """
@@ -1573,15 +1573,36 @@ class Collisions(LOCUST_input):
     def class_methods(self,*args,**kwargs):
         some_things
 
+    needs to read these quantities from collisions.dat
+    since the fortran90 read() starts on a new line, then below essentially
+    reads the first len(cxh) numbers then goes onto the next line, then reads the next len(Teh) numbers
+    or if cxh is 0D it will just read a vertical 1D list of numbers
+    
+     read(lun, err=110, end=120, iostat=ios) cxh
+     read(lun, err=110, end=120, iostat=ios) Teh
+     read(lun, err=110, end=120, iostat=ios) neh
+     read(lun, err=110, end=120, iostat=ios) omh
+     read(lun, err=110, end=120, iostat=ios) RBphih
+     read(lun, err=110, end=120, iostat=ios) dPSInh
+     read(lun, err=110, end=120, iostat=ios) Rmagh
+     read(lun, err=110, end=120, iostat=ios) PSIh
+
+
+    cxh
+    Teh
+    neh
+    omh
+    RBphih
+    dPSInh
+    Rmagh
+    PSIh
+
+'''
 
 
 
 
-
-
-
-
-
+'''
 
 
 #NOTE post-processing IDL script for LOCUST to be re-written in Python?
