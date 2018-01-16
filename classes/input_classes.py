@@ -15,8 +15,6 @@ notes:
     i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
     TODO please check how get_next() works and whether it just returns one value at a time (this is what I think)
-
-    TODO idea for a workflow could be to have a shell script which then issues commands to an interactive python session? is this possible?
 ---
 """
 
@@ -1239,7 +1237,7 @@ class Temperature(LOCUST_input):
 
 
 
-################################################################## Temperature functions
+################################################################## Number_Density functions
 
 def read_number_density_ASCII(input_filepath):
     """
@@ -1303,7 +1301,7 @@ def read_number_density_IDS(shot,run,properties):
     input_data = {} #initialise blank dictionary to hold the data
     input_data['psi']=input_IDS.core_profiles.profiles_1d[0].grid.psi
 
-    #read in temperature depending on species
+    #read in number density depending on species
     if properties=='electrons':
         input_data['n']=input_IDS.core_profiles.profiles_1d[0].electrons.density        
     elif properties=='ions':
@@ -1349,7 +1347,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     output_IDS.close()
 
 
-################################################################## Temperature class
+################################################################## Number_Density class
 
 class Number_Density(LOCUST_input):
     """
