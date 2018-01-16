@@ -286,8 +286,6 @@ def read_equilibrium_GEQDSK(input_filepath):
     
     return input_data
 
-
-
 def dump_equilibrium_GEQDSK(output_data,output_filepath):
     """
     generic function for writing G-EQDSK-formatted data to file
@@ -354,7 +352,6 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
 
-
 def read_equilibrium_IDS(shot,run): 
     """
     reads relevant LOCUST equilibrium data from an equilibrium IDS and returns as a dictionary
@@ -412,7 +409,6 @@ def read_equilibrium_IDS(shot,run):
     input_IDS.close()
 
     return input_data
-
 
 def dump_equilibrium_IDS(ID,output_data,shot,run):
     """
@@ -489,7 +485,6 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.put()
     output_IDS.close()
 
-
 ################################################################## Equilibrium class
 
 class Equilibrium(LOCUST_input):
@@ -559,7 +554,6 @@ class Equilibrium(LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (GEQDSK/IDS)\n")
 
-
     def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
         """
         write equilibrium to file
@@ -572,7 +566,7 @@ class Equilibrium(LOCUST_input):
         
         elif data_format=='GEQDSK':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to GEQDSK - output_filename required\n",output_filename):
-                output_filepath=support.dir_output_files+output_filename
+                output_filepath=support.dir_input_files+output_filename
                 dump_equilibrium_GEQDSK(self.data,output_filepath)
         
         elif data_format=='IDS':
@@ -871,7 +865,7 @@ class Beam_Deposition(LOCUST_input):
         
         elif data_format=='ASCII':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_output_files+output_filename
+                output_filepath=support.dir_input_files+output_filename
                 dump_beam_depo_ASCII(self.data,output_filepath)
         
         elif data_format=='IDS':
@@ -1072,7 +1066,6 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     output_IDS.core_profiles.put()
     output_IDS.close()
 
-
 ################################################################## Temperature class
 
 class Temperature(LOCUST_input):
@@ -1155,7 +1148,7 @@ class Temperature(LOCUST_input):
         
         elif data_format=='ASCII':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_output_files+output_filename
+                output_filepath=support.dir_input_files+output_filename
                 dump_temperature_ASCII(self.data,output_filepath)
         
         elif data_format=='IDS':
@@ -1346,7 +1339,6 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     output_IDS.core_profiles.put()
     output_IDS.close()
 
-
 ################################################################## Number_Density class
 
 class Number_Density(LOCUST_input):
@@ -1428,7 +1420,7 @@ class Number_Density(LOCUST_input):
         
         elif data_format=='ASCII':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_output_files+output_filename
+                output_filepath=support.dir_input_files+output_filename
                 dump_number_density_ASCII(self.data,output_filepath)
         
         elif data_format=='IDS':
