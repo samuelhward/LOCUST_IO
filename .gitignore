@@ -4,6 +4,8 @@
 *.dat
 *.eqdsk
 *.mesh.*
+*.dfn
+*.vtk
 
 #python module files
 *.pyc
