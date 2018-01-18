@@ -807,9 +807,9 @@ class Beam_Deposition(LOCUST_input):
         output_filepath             full path to output file in output_files folder
 
     notes:
-        data is stored such that the coordinate 'r' for all particles is stored in this_beam_depo['r']
+        data is stored such that the coordinate 'r' for all particles is stored in my_beam_deposition['r']
         therefore the phase space position of particle p is:
-            (this_beam_depo['r'][p], this_beam_depo['z'][p], this_beam_depo['phi'][p], this_beam_depo['v_r'][p], this_beam_depo['v_z'][p], this_beam_depo['v_phi'][p])
+            (my_beam_deposition['r'][p], my_beam_deposition['z'][p], my_beam_deposition['phi'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_z'][p], my_beam_deposition['v_phi'][p])
     """
 
     LOCUST_input_type='beam_deposition' 
@@ -1090,7 +1090,7 @@ class Temperature(LOCUST_input):
 
     notes:
         data is stored such that a reading of temperature at psi coordinate 'coord' is:
-            this_temperature['psi'][coord], this_temperature['T'][coord]
+            my_temperature['psi'][coord], my_temperature['T'][coord]
     """
 
     LOCUST_input_type='temperature' 
@@ -1235,6 +1235,9 @@ class Temperature(LOCUST_input):
 def read_number_density_ASCII(input_filepath):
     """
     reads number density profile stored in ASCII format - psi n
+
+    notes:
+        reads in a headerline for length of file
     """
 
     with open(input_filepath) as file:
@@ -1363,7 +1366,7 @@ class Number_Density(LOCUST_input):
 
     notes:
         data is stored such that a reading of number density at psi coordinate 'coord' is:
-            this_number_density['psi'][coord], this_number_density['n'][coord]
+            my_number_density['psi'][coord], my_number_density['n'][coord]
     """
 
     LOCUST_input_type='number density'
@@ -1547,7 +1550,7 @@ class Number_Density(LOCUST_input):
 
 
 
-#################################
+################################# 
 class Collisions(LOCUST_input):
     """
     class describing collision data input for LOCUST
@@ -1563,6 +1566,7 @@ class Collisions(LOCUST_input):
     def class_methods(self,*args,**kwargs):
         some_things
 
+    XXX needs to read and write to binary
     needs to read these quantities from collisions.dat
     since the fortran90 read() starts on a new line, then below essentially
     reads the first len(cxh) numbers then goes onto the next line, then reads the next len(Teh) numbers

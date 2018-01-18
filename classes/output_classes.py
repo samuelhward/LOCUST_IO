@@ -147,14 +147,15 @@ class LOCUST_output:
 
 
 
-
-
-
 ################################################################## Orbits functions
 
-def read_orbits_ASCII(input_filepath): #XXX currently number_density methods
+def read_orbits_ASCII(input_filepath):
     """
-    reads orbits stored in ASCII format - 
+    reads orbits stored in ASCII format -   r z phi
+
+    notes:
+    reads in a headerline for number of particles
+    reads in a footerline for number of time steps
     """
 
     with open(input_filepath) as file:
@@ -163,49 +164,46 @@ def read_orbits_ASCII(input_filepath): #XXX currently number_density methods
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_orbits_ASCII() cannot read from "+input_filepath)
     
-    del(lines[0]) #first line contains the number of points
+    number_particles=int(lines[0]) #extract number of particles
+    number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
+
+    del(lines[0])
+    del(lines[-1])
 
     input_data = {} #initialise the dictionary to hold the data
-    input_data['psi']=[] #initialise the arrays 
-    input_data['n']=[]
-
-    for line in lines:
-
-        split_line=line.split()
-        input_data['psi'].append(float(split_line[0]))
-        input_data['n'].append(float(split_line[1]))
-
-    input_data['psi']=np.asarray(input_data['psi']) #convert to arrays
-    input_data['n']=np.asarray(input_data['n'])
+    input_data['orbits']=np.array([[[float(coord) for coord in time_slice.split()] for time_slice in lines[particle*number_timesteps:(particle+1)*number_timesteps]] for particle in range(number_particles)],ndmin=3)  #read in the data in one line using list comprehension again! (see dump_orbits_ASCII for a more digestable version of this)
+    #XXX still need to verify if the data is nested in this order
+    input_data['number_particles']=number_particles
+    input_data['number_timesteps']=number_timesteps
    
     return input_data
 
-def dump_orbits_ASCII(output_data,output_filepath):  #XXX currently number_density methods
+def dump_orbits_ASCII(output_data,output_filepath): 
     """
-    writes orbits to ASCII format -  
+    writes orbits to ASCII format -  r z phi
     
     notes:
-        writes out a headerline for length of file
+        writes out a headerline for number of particles
+        writes out a footerline for number of time steps
     """
 
     with open(output_filepath,'w') as file: #open file
 
-        file.write("{}\n".format(len(output_data['psi']))) #re-insert line containing length
+        file.write("{}\n".format(len(output_data['number_particles']))) #re-insert line containing number of particles
 
-        for point in range(len(output_data['psi'])): #iterate through all points i.e. length of our dictionary's arrays
+        for particle in range(len(output_data['orbits'][:][0][0])): #loop over everything again
+            for time_slice in range(len(output_data['orbits'][0][:][0])):
 
-            psi_out=output_data['psi'][point] #briefly set to a temporary variable to improve readability
-            n_out=output_data['n'][point]
-            
-            file.write("{psi} {n}\n".format(psi=psi_out,n=n_out))
+                    file.write("{r} {z} {phi}\n".format(r=output_data['orbits'][particle][time_slice][0],z=output_data['orbits'][particle][time_slice][1],phi=output_data['orbits'][particle][time_slice][2]))
 
+        file.write("{}".format(len(output_data['number_timesteps']))) #re-insert line containing number of time steps
 
 ################################################################## Orbits class
 
 class Orbits(LOCUST_output):
     """
     class describing orbits output for LOCUST
-
+    
     inherited from LOCUST_output:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all output data in dictionary object
@@ -221,7 +219,8 @@ class Orbits(LOCUST_output):
         output_filepath             full path to output file in output_files folder
 
     notes:
-        data is stored such that...
+        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][p,t,i]
+        in this way, a single particle's trajectory is my_orbit['orbits'][p,:,i]
     """
 
     LOCUST_output_type='orbits'
@@ -249,7 +248,7 @@ class Orbits(LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.input_filename=input_filename
-                self.input_filepath=support.dir_input_files+input_filename
+                self.input_filepath=support.dir_output_files+input_filename
                 self.properties=properties
                 self.data=read_orbits_ASCII(self.input_filepath) #read the file
         else:
@@ -279,8 +278,8 @@ class Orbits(LOCUST_output):
             if target.data is None or contains Nones then this function does nothing
             if no key supplied then copy all data over
             if key supplied then copy/append dictionary data accordingly
-
-            TODO 
+                        
+            TODO need some way of editing data_format and input_filename/shot/run after a copy
 
         usage:
             my_orbits.copy(some_other_orbits) to copy all data
@@ -313,6 +312,28 @@ class Orbits(LOCUST_output):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+for DFN class - would go in distributions IDS, same set up as distribution_sources
+
+
+XXXneeds to read/write from binary
+'''
 
 
 
