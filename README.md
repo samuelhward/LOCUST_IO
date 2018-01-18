@@ -5,7 +5,7 @@ This "package" is designed to process input and output for the LOCUST-GPU code, 
 It is designed such that individual file read/write methods can easily be swapped out if new methods/filetypes come and go - all that needs to be changed is the respective function (which would be the same amount of work as writing the function bespoke).
 
 
-Got any burning questions? Want to feedback? Please email the author, Sam, at shw515@york.ac.uk. Alternatively, raise an issue on the CCFE github!
+Got any burning questions? Want to feedback? Please raise an issue here on github!
 
 
 Table of Contents
@@ -232,10 +232,21 @@ Since this package aims to bridge the gap between various file formats for diffe
         v_z/column 5/...source[0].markers[0].positions[4][:]                 #holds z component of v for every particle
         v_phi/column 6/...source[0].markers[0].positions[5][:]               #holds phi component of v for every particle
 
+#### Temperature:
 
+(ASCII/Core_Profiles IDS)
 
+#### Number Density:
 
+(ASCII/Core_Profiles IDS)
 
+#### Orbits:
+
+(Binary)
+
+#### Distribution Function:
+
+(Binary/)
 
 
 
@@ -264,12 +275,12 @@ Since this package aims to bridge the gap between various file formats for diffe
 * In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding. would also need to the change the LOCUST_INPUT.__init__() method too
 
 * Reorganise classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
+
 * Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
+
 * Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
+
 * need to decide how to standardise data in dicts 
-
-* Add the __getitem__, __setitem__, set, copy to the LOCUST input base class?
-
 
 ## Equilibrium Things
 

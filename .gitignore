@@ -1,5 +1,8 @@
 #files to ignore...
 
+#overall files for workflow (for now)
+*.sh
+
 #LOCUST input files
 *.dat
 *.eqdsk
