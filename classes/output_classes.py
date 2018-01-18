@@ -96,7 +96,11 @@ def none_check(ID,LOCUST_output_type,error_message,*args):
 
 
 
-################################################################## base class
+
+
+
+
+################################################################## Base class
 
 class LOCUST_output:
     """

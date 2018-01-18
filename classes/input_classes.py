@@ -142,7 +142,7 @@ def get_next(obj):
 
 
 
-################################################################## base class
+################################################################## Base class
 
 class LOCUST_input:
     """
@@ -1165,7 +1165,7 @@ class Temperature(LOCUST_input):
         notes:
             if target.data is None or contains Nones then this function does nothing
             if no key supplied then copy all data over
-            if key supplied then copy/append dictionary data accordingly
+            if key supplied then copy/append  dictionary data accordingly
 
             TODO need some way of editing data_format and input_filename/shot/run after a copy
 
