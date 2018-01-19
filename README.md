@@ -21,7 +21,7 @@ Table of Contents
 * [Further Ideas And Contributing](#further-ideas-and-contributing)
 * [Appendix](#appendix)
 	* [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
-
+    * [Insalling IMAS]()#(installing-imas) 
 
 
 
@@ -181,7 +181,7 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 
 
 
-### Global Data Definitions & Variable Names
+### Global Data Definitions And Variable Names
 
 Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, here are all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways.
 
@@ -258,30 +258,4 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 
 
-# TODO
 
-## General
-
-* Integrate with JET SAL API for instant access to JET data (will need error handling for use of this module on systems without access to JET SAL)
-
-* Integrate with MAST-U data system
-
-* Use fabric/paramiko for remote host handling stuff https://dtucker.co.uk/hack/ssh-for-python-in-search-of-api-perfection.html (fab and spur both built on paramiko and simplifies it, although more options obviously with paramiko)
-
-* Make an example project which uses argparse to input command line arguments and then use the rest of the module to do batch operations or something 
-
-* Add plotting functionality
-
-* In the read_data/dump_data functions, could take data_format and then just **kwargs and then have none_check look in those /**kwargs for what the user has supplied? would mean that users can contribute new file formats but would not need to edit the arguement list in the read_data/dump_data functions - they would only need to copypaste the chunk of if logic as outlined above. also then it wouldn't matter what order users supplied their arguements at runtime - as long as they supply all the ones that are needed! this is good for hand holding. would also need to the change the LOCUST_INPUT.__init__() method too
-
-* Reorganise classes into individual equilibrium.py, another_input.py...files if input_files.py gets too long
-
-* Warn if writing to a filetype which holds less data than class instance currently holds - i.e. data will go missing! e.g. class has a "colour" and wants to write to a GEQDSK file (which doesn't have a colour field)
-
-* Add a feature to warn if pre-existing file exists when writing out (to stop unwanted overwriting)
-
-* need to decide how to standardise data in dicts 
-
-## Equilibrium Things
-
-* Need to pass grid name and description to equilibrium IDS write out function / DECIDE WHAT TO DO WITH THIS DATA AND HOW TO PASS IT
