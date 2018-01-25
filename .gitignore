@@ -1,7 +1,7 @@
 #files to ignore...
 
-#overall files for workflow (for now)
-*.sh
+#files which contain prototyping code/not ready to be published yet
+*.prototype*
 
 #LOCUST input files
 *.dat
