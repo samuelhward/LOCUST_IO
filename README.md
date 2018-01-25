@@ -21,7 +21,7 @@ Table of Contents
 * [Further Ideas And Contributing](#further-ideas-and-contributing)
 * [Appendix](#appendix)
 	* [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
-    * [Insalling IMAS]()#(installing-imas) 
+    * [Installing IMAS]()#(installing-imas) 
 
 
 
@@ -32,7 +32,8 @@ Table of Contents
 ## Requirements
 
 * IMAS module with imasdb environment variable set
-* Numpy/Matplotlib for plotting
+* Numpy
+* Matplotlib
 * Python ___ or higher
 *
 
@@ -80,7 +81,7 @@ my_equilibrium.read_data(data_format='GEQDSK',input_filename='some.eqdsk')
 my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1)
 ```
 
-* You can also set individual pieces of data with the .set() method:
+* You can also set individual pieces of data with the .set() method. By default, all member data is stored as dictionaries of numpy arrays:
 
 ```python
 my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
@@ -180,10 +181,12 @@ elif data_format=='Baby': #say I want to import files that are encoded in the we
 
 
 
-
 ### Global Data Definitions And Variable Names
 
 Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, here are all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways.
+
+
+
 
 #### Equilibrium:
 
@@ -240,19 +243,62 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 (ASCII/Core_Profiles IDS)
 
+
+
+
+
+
+
+
+
 #### Orbits:
 
-(Binary)
+(ASCII)
 
 #### Distribution Function:
 
-(Binary/)
+(Binary/IDS)
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+### Installing IMAS:
+
+    echo 'deb http://www.mdsplus.org/dist/Ubuntu16/repo MDSplus stable' | sudo tee --append /etc/apt/sources.list
+    cd /tmp
+    wget http://www.mdsplus.org/dist/mdsplus.gpg.key
+    sudo apt-key add mdsplus.gpg.key
+    sudo apt-get update
+    sudo apt-get install mdsplus mdsplus-devel libsaxonhe-java libblitz0-dev cython cython3
+    sudo ln -s /usr/share/java/Saxon-HE-9.5.1.1.jar /usr/share/java/saxon9he.jar
+    [add SSH key access using ssh-agent if necessary]
+    export MDSPLUS_DIR=/usr/local/mdsplus
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    export LD_LIBRARY_PATH=/usr/local/mdsplus/lib
+    export CLASSPATH=/usr/share/java/saxon9he.jar
+    export PKG_CONFIG_PATH=/usr/lib/pkgconfig
+    export IMAS_HOME=/scratch/IMAS
+    module load /usr/local/pgi/modulefiles/pgi64/17.4
+    mkdir /scratch/IMAS_SRC
+    cd /scratch/IMAS_SRC
+    
+    git clone url_to_imas
+    cd installer
+    make
+    make install
+    sudo cp $IMAS_HOME /usr/local/
+    sudo rm -rf $IMAS_HOME
 
 
 
