@@ -177,8 +177,8 @@ def read_orbits_ASCII(input_filepath):
     input_data = {} #initialise the dictionary to hold the data
     input_data['orbits']=np.array([[[float(coord) for coord in time_slice.split()] for time_slice in lines[particle*number_timesteps:(particle+1)*number_timesteps]] for particle in range(number_particles)],ndmin=3)  #read in the data in one line using list comprehension again! (see dump_orbits_ASCII for a more digestable version of this)
     #XXX still need to verify if the data is nested in this order
-    input_data['number_particles']=number_particles
-    input_data['number_timesteps']=number_timesteps
+    input_data['number_particles']=np.asarray(number_particles)
+    input_data['number_timesteps']=np.asarray(number_timesteps)
    
     return input_data
 
@@ -283,8 +283,6 @@ class Orbits(LOCUST_output):
             if no key supplied then copy all data over
             if key supplied then copy/append dictionary data accordingly
                         
-            TODO need some way of editing data_format and input_filename/shot/run after a copy
-
         usage:
             my_orbits.copy(some_other_orbits) to copy all data
             my_orbits.copy(some_other_orbits,'some_arg','some_other_arg') to copy specific fields
@@ -318,26 +316,6 @@ class Orbits(LOCUST_output):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-for DFN class - would go in distributions IDS, same set up as distribution_sources
-
-
-XXXneeds to read/write from binary
-'''
 
 
 
