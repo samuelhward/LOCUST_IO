@@ -4,11 +4,12 @@
 
 """
 Samuel Ward
-02/11/2017
+24/01/2018
 ----
-Small examples to demonstrate the input_classes.py methods
+very simple example project script for converting a set of IDSs into the LOCUST inputs
 ---
 notes:
+
 ---
 """
 
@@ -40,46 +41,35 @@ except:
 #Main Code
 
 
-#################################first test is to open an Equilibrium GEQDSK and test that reading in upon initialisation is OK and that all member data is set correctly
-test1_ID='test1_ID'
-test1_input_filename='test.eqdsk'
-test1_data_format='GEQDSK'
-test_1=input_classes.Equilibrium(test1_ID,test1_input_filename,test1_data_format)
-print(test_1.input_filename)
-print(test_1.data_format)
-print(test_1.LOCUST_input_type)
-print(test_1.ID)
+
+#read in all the required data
+
+equilibrium=input_classes.Equilibrium(ID='that awesome Jet equilibrium',data_format='IDS',shot=1,run=7) 
+
+particles=input_classes.Beam_Deposition(ID='that awesome ASDEX-U NBI deposition',data_format='IDS',shot=2,run=8)
+
+temperature_i=input_classes.Temperature(ID='that awesome KSTAR ion temperature profile',data_format='IDS',shot=3,run=9,properties='ions') 
+
+temperature_e=input_classes.Temperature(ID='that awesome MAST-U electron temperature profile',data_format='IDS',shot=4,run=10,properties='electrons')
+
+density_i=input_classes.Number_Density(ID='that awesome DIII-D ion density profile',data_format='IDS',shot=5,run=11,properties='ions')
+
+density_e=input_classes.Number_Density(ID='that awesome ITER electron density profile',data_format='IDS',shot=6,run=12,properties='electrons')
 
 
-#################################next test to see if we can initialise a blank Equilibrium before populating with GEQDSK formatted data using read_data
-test2_ID='test2_ID'
-test2_input_filename='test.eqdsk'
-test2_data_format='GEQDSK'
-test_2=input_classes.Equilibrium(test2_ID)
-test_2.read_data(test2_input_filename,test2_data_format)
-print(test_2.input_filename)
-print(test_2.data_format)
-print(test_2.LOCUST_input_type)
-print(test_2.ID)
+#dump all the data to the LOCUST formats 
 
+equilibrium.dump_data(data_format='GEQDSK',output_filename='my_equilibrium.eqdsk') 
 
-#################################next test to see if we can dump an Equilibrium to GEQDSK
-test3_ID='test3_ID'
-test3_input_filename='test.eqdsk'
-test3_data_format='GEQDSK'
-test3=input_classes.Equilibrium(test3_ID,test3_input_filename,test3_data_format)
-test3.dump_data('test3_output.eqdsk','GEQDSK')
+particles.dump_data(data_format='ASCII',output_filename='ptcles.dat')
 
+temperature_i.dump_data(data_format='ASCII',output_filename='profile_Ti.dat')
 
-#################################now need to check the data we just outputted in test 3 to see if it's the same - subtract all the member data away from eachother to see if it's = 0
-test4_ID='test4_ID'
-test4_input_filename='test3_output.eqdsk'
-test4_data_format='GEQDSK'
-test4=input_classes.Equilibrium(test4_ID,test4_input_filename,test4_data_format)
-print(numpy.subtract(test4.data['fpol'],test3.data['fpol']))
+temperature_e.dump_data(data_format='ASCII',output_filename='profile_Te.dat')
 
+density_i.dump_data(data_format='ASCII',output_filename='profile_ni.dat')
 
-
+density_e.dump_data(data_format='ASCII',output_filename='profile_ne.dat')
 
 
 
