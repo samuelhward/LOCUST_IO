@@ -23,9 +23,6 @@ try:
     import numpy as np
     import copy
     import re
-    import time
-    import itertools
-    import copy
 except:
     raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
