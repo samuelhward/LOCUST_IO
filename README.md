@@ -4,11 +4,11 @@ This "package" is designed to process input and output for the LOCUST-GPU code, 
 
 LOCUST_IO is...
 
-* __simple__* - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines! Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
+* __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines! Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
 
 * __extensible__ - Contributing to the project is simple, since most of the project is copy/paste! To add a new filetype, simply copypaste the read/write functions and use the [data dictionary](#global-data-definitions-and-variable-names) to match up your variables. Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
 
-* __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the example_project with the sample input/output files. Integration with LOCUST simply means cloning the latest version into LOCUST/ folder!
+* __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the example_project with the sample input/output files. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
 
 
 Got any burning questions? Want to feedback? Please raise an issue here on github!
@@ -80,9 +80,9 @@ Table of Contents
 
 ## Getting Started
 
-* Set up a folder within LOCUST_IO e.g. LOCUST_IO/my_project (this is where you will run the package)
-* Copy a context.py file from LOCUST_IO/testing or LOCUST_IO/example_project to LOCUST_IO/my_project (this sets up your paths etc)
-* Copy the files which you want to manipulate to LOCUST_IO/input_files and LOCUST_IO/output_files (former/latter for inputs/outputs to/from LOCUST)
+* Set up a folder within LOCUST_IO e.g. *LOCUST_IO/my_project* (this is where you will run the package)
+* Copy a context.py file from *LOCUST_IO/testing* or *LOCUST_IO/example_project* to *LOCUST_IO/my_project* (this sets up your paths etc)
+* Copy the files which you want to manipulate to *LOCUST_IO/input_files* and *LOCUST_IO/output_files* (former/latter for inputs/outputs to/from LOCUST)
 
 * Import context in your python session
 * Import input_classes or output_classes in your python session
@@ -214,12 +214,12 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Distribution_Sources IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/distribution_sources.html))
 
     1D data
-        r/column 1/...source[0].markers[0].positions[0][p]              #r coordinates for every particle
-        z/column 2/...source[0].markers[0].positions[1][p]              #z coordinates for every particle
-        phi/column 3/...source[0].markers[0].positions[2][p]            #phi coordinates for every particle
-        v_r/column 4/...source[0].markers[0].positions[3][p]            #r component of v for every particle
-        v_z/column 5/...source[0].markers[0].positions[4][p]            #z component of v for every particle
-        v_phi/column 6/...source[0].markers[0].positions[5][p]          #phi component of v for every particle
+        r/column 1/...source[0].markers[0].positions[0][p]              #r coordinates of particle p
+        z/column 2/...source[0].markers[0].positions[1][p]              #z coordinates of particle p
+        phi/column 3/...source[0].markers[0].positions[2][p]            #phi coordinates of particle p
+        v_r/column 4/...source[0].markers[0].positions[3][p]            #r component of v of particle p
+        v_z/column 5/...source[0].markers[0].positions[4][p]            #z component of v of particle p
+        v_phi/column 6/...source[0].markers[0].positions[5][p]          #phi component of v of particle p
 
 
 #### Temperature:
