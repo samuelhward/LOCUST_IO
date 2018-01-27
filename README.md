@@ -246,11 +246,11 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/Binary/IDS/LOCUST
 
-        ///cxh
-        ///Teh
-        ///neh
-        ///omh
-        ///RBphih
+        ///cxh   cx loss probability grid
+        ///Teh   Te(PSIn) 1D grid
+        ///neh   ne(PSIn) 1D grid
+        ///omh   Toroidal rotation freq. grid
+        ///RBphih F = R.Bphi(PSI) 
         ///dPSInh
         ///Rmagh
         ///PSIh
@@ -284,11 +284,11 @@ Since this package aims to bridge the gap between various file formats for diffe
         /V(+dV/2)/
         /PP(+dPP/2)/
         /MU(+MU/2)/
-        /Fh or Fh*dt0*Pdep/(Wtot*dVFh*dPPh*dMUh)/                      #latter if Wtot exists
-        /Fh_s/                                                         #if Fh_S exists
-        /Jh/                                                           #if Jh exists
-        /Jh_s/                                                         #if Jh_s exists
-        /cpuTime/                                                      #if cpuTime exists
+        /Fh or Fh*dt0*Pdep/(Wtot*dVFh*dPPh*dMUh)/                      #latter if Wtot (Total energy injected so far) exists    Final combined DFn. grid
+        /Fh_s/                                                         #if Fh_S exists   DFn. M.C. error
+        /Jh/                                                           #if Jh exists    Jacobian
+        /Jh_s/                                                         #if Jh_s exists Jacobian error
+        /cpuTime/                                                      #if cpuTime exists   Timing info 
 
     else
         /EQBM_md5/
