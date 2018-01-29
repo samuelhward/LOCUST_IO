@@ -11,6 +11,7 @@ LOCUST_IO is...
 * __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the *example_project/* with the sample input/output files. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
 
 
+
 Got any burning questions? Want to feedback? Please raise an issue here on github!
 
 
@@ -110,6 +111,7 @@ Table of Contents
 
 ## Usage
 
+
 As well as the included *example_project/*, some basic usage is outlined below:
 
 ```python
@@ -146,9 +148,8 @@ my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key'
 ```python
 import plot_input
 
-plot_input.plot_equilibrium(my_equilibrium,'psirz')                                  #plot the psirz data
+plot_input.plot_equilibrium(my_equilibrium)                                         #default psirz data plot
 ```
-
 
 
 
@@ -173,7 +174,9 @@ plot_input.plot_equilibrium(my_equilibrium,'psirz')                             
 
 ### Global Data Definitions And Variable Names
 
+
 Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, I've included all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways (such as the max() of an array). If there are duplicates, that may be because the data is degenerate (i.e. the same piece of data is written to a file multiple times) or because the same class may contain data from different types of files (e.g. the temperature IDS may hold electron or ion temperature - which will dictate how the data is read/written).
+
 
 #### Equilibrium:
 
@@ -252,18 +255,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         number_particles/first line                                     #total number of particles
         number_timesteps/last line                                      #total number of timesteps
     3D data
-        orbits[p,t,i]/column=r,z,phi row=time_step set of rows=particle #spatial coordinate i for particle p at time step t
-
-
-
-
-
-
-
-
-
-
-
+        orbits[t,p,i]/column=r,z,phi row=particle                       #spatial coordinate i for particle p at time step t
 
 
 
@@ -288,7 +280,6 @@ Since this package aims to bridge the gap between various file formats for diffe
     module load /usr/local/pgi/modulefiles/pgi64/17.4
     mkdir /scratch/IMAS_SRC
     cd /scratch/IMAS_SRC
-    
     git clone url_to_imas
     cd installer
     make
