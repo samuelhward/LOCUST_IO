@@ -152,7 +152,7 @@ class LOCUST_output:
 
 def read_orbits_ASCII(input_filepath):
     """
-    reads orbits stored in ASCII format -   r z phi
+    reads orbits stored in ASCII format -   r phi z
 
     notes:
     reads in a headerline for number of particles
@@ -172,8 +172,7 @@ def read_orbits_ASCII(input_filepath):
     del(lines[-1])
 
     input_data = {} #initialise the dictionary to hold the data
-    input_data['orbits']=np.array([[[float(coord) for coord in time_slice.split()] for time_slice in lines[particle*number_timesteps:(particle+1)*number_timesteps]] for particle in range(number_particles)],ndmin=3)  #read in the data in one line using list comprehension again! (see dump_orbits_ASCII for a more digestable version of this)
-    #XXX still need to verify if the data is nested in this order
+    input_data['orbits']=np.array([[[float(coord) for coord in particle.split()] for particle in lines[number_particles*timestep:(timestep+1)*number_particles]] for timestep in range(number_timesteps)],ndmin=3)  #read in the data in one line using list comprehension again! (see dump_orbits_ASCII for a more digestable version of this)
     input_data['number_particles']=np.asarray(number_particles)
     input_data['number_timesteps']=np.asarray(number_timesteps)
    
@@ -181,7 +180,7 @@ def read_orbits_ASCII(input_filepath):
 
 def dump_orbits_ASCII(output_data,output_filepath): 
     """
-    writes orbits to ASCII format -  r z phi
+    writes orbits to ASCII format -  r phi z
     
     notes:
         writes out a headerline for number of particles
@@ -192,10 +191,10 @@ def dump_orbits_ASCII(output_data,output_filepath):
 
         file.write("{}\n".format(len(output_data['number_particles']))) #re-insert line containing number of particles
 
-        for particle in range(len(output_data['orbits'][:][0][0])): #loop over everything again
-            for time_slice in range(len(output_data['orbits'][0][:][0])):
+        for time_slice in range(output_data['number_timesteps']): #loop over everything again 
+            for particle in range(output_data['number_particles']):
 
-                    file.write("{r} {z} {phi}\n".format(r=output_data['orbits'][particle][time_slice][0],z=output_data['orbits'][particle][time_slice][1],phi=output_data['orbits'][particle][time_slice][2]))
+                    file.write("{r} {phi} {z}\n".format(r=output_data['orbits'][time_slice][particle][0],phi=output_data['orbits'][time_slice][particle][1],z=output_data['orbits'][time_slice][particle][2]))
 
         file.write("{}".format(len(output_data['number_timesteps']))) #re-insert line containing number of time steps
 
@@ -220,8 +219,8 @@ class Orbits(LOCUST_output):
         output_filepath             full path to output file in output_files folder
 
     notes:
-        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][p,t,i]
-        in this way, a single particle's trajectory is my_orbit['orbits'][p,:,i]
+        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][t,p,i]
+        in this way, a single particle's trajectory is my_orbit['orbits'][:,p,i]
     """
 
     LOCUST_output_type='orbits'
