@@ -152,7 +152,7 @@ class LOCUST_output:
 
 def read_orbits_ASCII(input_filepath):
     """
-    reads orbits stored in ASCII format -   r phi z
+    reads orbits stored in ASCII format - r phi z
 
     notes:
     reads in a headerline for number of particles
@@ -180,7 +180,7 @@ def read_orbits_ASCII(input_filepath):
 
 def dump_orbits_ASCII(output_data,output_filepath): 
     """
-    writes orbits to ASCII format -  r phi z
+    writes orbits to ASCII format - r phi z
     
     notes:
         writes out a headerline for number of particles
