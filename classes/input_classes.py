@@ -200,90 +200,92 @@ def read_equilibrium_GEQDSK(input_filepath):
     """
  
     input_data = {}
- 
-    file = open(input_filepath) #open file
+
+    with open(input_filepath,'r') as file: #open file
      
-    line = file.readline() #first line should be case, id number and dimensions
-    if not line:
-        raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+input_filepath)
+        line = file.readline() #first line should be case, id number and dimensions
+        if not line:
+            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+input_filepath)
+         
+        #extract case, id number and dimensions  
+        conts = line.split()    #split by white space (no argument in .split())
+        input_data['nh'] = np.asarray(int(conts[-1])) #same as nyefit or height dimension
+        input_data['nw'] = np.asarray(int(conts[-2])) #same as nxefit or width dimension
+        input_data['idum'] = np.asarray(int(conts[-3]))
+        flags = {}
+        flags['case'] = conts[0:-4]
      
-    #extract case, id number and dimensions  
-    conts = line.split()    #split by white space (no argument in .split())
-    input_data['nh'] = np.asarray(int(conts[-1])) #same as nyefit or height dimension
-    input_data['nw'] = np.asarray(int(conts[-2])) #same as nxefit or width dimension
-    input_data['idum'] = np.asarray(int(conts[-3]))
-    flags = {}
-    flags['case'] = conts[0:-4]
- 
-    #now use generator to read numbers from remaining lines in file
-    token = file_numbers(file) #token now holds all lines in the file, containing all values. each get_next() call will grab the next number in a line (since get_next() returns the next value in the yield loop? check this plz)
+        #now use generator to read numbers from remaining lines in file
+        token = file_numbers(file) #token now holds all lines in the file, containing all values. each get_next() call will grab the next number in a line (since get_next() returns the next value in the yield loop? check this plz)
+         
+        float_keys = [
+        'rdim','zdim','rcentr','rleft','zmid',
+        'rmaxis','zmaxis','simag','sibry','bcentr',
+        'current','simag','xdum','rmaxis','xdum',
+        'zmaxis','xdum','sibry','xdum','xdum']
      
-    float_keys = [
-    'rdim','zdim','rcentr','rleft','zmid',
-    'rmaxis','zmaxis','simag','sibry','bcentr',
-    'current','simag','xdum','rmaxis','xdum',
-    'zmaxis','xdum','sibry','xdum','xdum']
- 
-    #read in all 0D floats
-    for key in float_keys:                              
-        input_data[key] = np.asarray(float(get_next(token))) #get_next(token) always yields just a single value, convert this to numpy array
- 
-    def read_1d(n): 
-        """
-        """
-        input_data = np.zeros(n) #initialise blank lists
-        for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
-            input_data[i] = float(get_next(token))
-        return input_data
- 
-    def read_2d(nx,ny):
-        """
-        """
-        input_data = np.zeros((nx,ny))
-        for i in np.arange(nx): #same technique here, iterate through one dimension and call read_1d along the other dimension
-            input_data[i,:] = read_1d(ny)
-        return input_data
- 
-    #read in the arrays
-    input_data['fpol'] = read_1d(input_data['nw']) #remember input_data['nw'] holds width, input_data['nh'] holds height
-    input_data['pres'] = read_1d(input_data['nw'])
-    input_data['ffprime'] = read_1d(input_data['nw'])
-    input_data['pprime'] = read_1d(input_data['nw'])
-    input_data['psirz'] = read_2d(input_data['nw'],input_data['nh'])
-    input_data['qpsi'] = read_1d(input_data['nw'])
- 
-    #now deal with boundaries
-    input_data['nbbbs'] = np.asarray(int(get_next(token)))
-    input_data['limitr'] = np.asarray(int(get_next(token)))
- 
-    def read_bndy(nb,nl): #number of boundaries and limiters
-        if nb > 0: #read in boundaries
-            rb = np.zeros(nb)
-            zb = np.zeros(nb)
-            for i in np.arange(nb):
-                rb[i] = float(get_next(token)) #read in R,Z pairs
-                zb[i] = float(get_next(token))
-        else:
-            rb = np.asarray(0,ndlim=0)
-            zb = np.asarray(0,ndlim=0)
+        #read in all 0D floats
+        for key in float_keys:                              
+            input_data[key] = np.asarray(float(get_next(token))) #get_next(token) always yields just a single value, convert this to numpy array
      
-        if nl > 0: #read in limiters
-            rl = np.zeros(nl)
-            zl = np.zeros(nl)
-            for i in np.arange(nl):
-                rl[i] = float(get_next(token))
-                zl[i] = float(get_next(token))
-        else:
-            rl = np.asarray(0,ndlim=0)
-            zl = np.asarray(0,ndlim=0)
- 
-        return rb,zb,rl,zl
- 
-    input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
-    flags['loaded'] = True
+        def read_1d(n): 
+            """
+            """
+            input_data = np.zeros(n) #initialise blank lists
+            for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
+                input_data[i] = float(get_next(token))
+            return input_data
      
+        def read_2d(nx,ny):
+            """
+            notes:
+                edited this function as it was not consistent with GEQDSK storage format
+            """
+            input_data = np.zeros((nx,ny))
+            for j in np.arange(ny): #same technique here, iterate through one dimension and call read_1d along the other dimension
+                input_data[:,j] = read_1d(nx)
+            return input_data
+
+        #read in the arrays
+        input_data['fpol'] = read_1d(input_data['nw']) #remember input_data['nw'] holds width, input_data['nh'] holds height
+        input_data['pres'] = read_1d(input_data['nw'])
+        input_data['ffprime'] = read_1d(input_data['nw'])
+        input_data['pprime'] = read_1d(input_data['nw'])
+        input_data['psirz'] = read_2d(input_data['nw'],input_data['nh'])
+        input_data['qpsi'] = read_1d(input_data['nw'])
+     
+        #now deal with boundaries
+        input_data['nbbbs'] = np.asarray(int(get_next(token)))
+        input_data['limitr'] = np.asarray(int(get_next(token)))
+     
+        def read_bndy(nb,nl): #number of boundaries and limiters
+            if nb > 0: #read in boundaries
+                rb = np.zeros(nb)
+                zb = np.zeros(nb)
+                for i in np.arange(nb):
+                    rb[i] = float(get_next(token)) #read in R,Z pairs
+                    zb[i] = float(get_next(token))
+            else:
+                rb = np.asarray(0,ndlim=0)
+                zb = np.asarray(0,ndlim=0)
+         
+            if nl > 0: #read in limiters
+                rl = np.zeros(nl)
+                zl = np.zeros(nl)
+                for i in np.arange(nl):
+                    rl[i] = float(get_next(token))
+                    zl[i] = float(get_next(token))
+            else:
+                rl = np.asarray(0,ndlim=0)
+                zl = np.asarray(0,ndlim=0)
+     
+            return rb,zb,rl,zl
+     
+        input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
+        flags['loaded'] = True
+         
     return input_data
- 
+     
 def dump_equilibrium_GEQDSK(output_data,output_filepath):
     """
     generic function for writing G-EQDSK-formatted data to file
@@ -317,9 +319,9 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
             write_number(file,num,counter)
  
     def write_2d(file,array,counter):
-        nx = array.shape[0]
-        for i in np.arange(nx):
-            write_1d(file,array[i],counter)
+        ny = array.shape[1]
+        for j in np.arange(ny):
+            write_1d(file,array[:,j],counter)
      
     def write_bndry(file,R,Z,counter):
         for i in np.arange(len(list(R))):
@@ -659,7 +661,7 @@ def read_beam_depo_ASCII(input_filepath):
     """
  
  
-    with open(input_filepath) as file:
+    with open(input_filepath,'r') as file:
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
@@ -960,7 +962,7 @@ def read_temperature_ASCII(input_filepath):
     reads temperature profile stored in ASCII format - psi T(ev)
     """
  
-    with open(input_filepath) as file:
+    with open(input_filepath,'r') as file:
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
@@ -1234,7 +1236,7 @@ def read_number_density_ASCII(input_filepath):
         reads in a headerline for length of file
     """
  
-    with open(input_filepath) as file:
+    with open(input_filepath,'r') as file:
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
@@ -1467,63 +1469,6 @@ class Number_Density(LOCUST_input):
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-'''
- 
- 
- 
-################################# 
-class Collisions(LOCUST_input):
-    """
-    class describing collision data input for LOCUST
-    """
-    class_level_attribute=attribute_here 
- 
-    def __init__(self,*args,**kwargs):
-        instance data, methods etc
-    def __enter__(self,*args,**kwargs):
-        some_things
-    def __exit__(self,*args,**kwargs):
-        some_things
-    def class_methods(self,*args,**kwargs):
-        some_things
- 
-    XXX needs to read and write to binary
-    needs to read these quantities from collisions.dat
-    since the fortran90 read() starts on a new line, then below essentially
-    reads the first len(cxh) numbers then goes onto the next line, then reads the next len(Teh) numbers
-    or if cxh is 0D it will just read a vertical 1D list of numbers
-     
-    cxh
-    Teh
-    neh
-    omh
-    RBphih
-    dPSInh
-    Rmagh
-    PSIh
- 
-'''
  
  
  
