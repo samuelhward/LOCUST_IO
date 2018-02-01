@@ -15,6 +15,8 @@ notes:
 #Preamble
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits import mplot3d #import 3D plotting axes
+from matplotlib import cm #get colourmaps
 
 
 
@@ -51,9 +53,6 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None):
     #default plot mode (plot psirz grid)
     if key==None:
 
-        import matplotlib.pyplot as plt
-        from matplotlib import cm #get colourmaps
-        from mpl_toolkits import mplot3d #import 3D plotting axes
         fig=plt.figure()
 
         X=np.arange(some_equilibrium['nw']) #make a mesh
@@ -78,9 +77,6 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None):
         #2D data
         elif some_equilibrium[key].ndim==2:
 
-            import matplotlib.pyplot as plt
-            from matplotlib import cm #get colourmaps
-            from mpl_toolkits import mplot3d #import 3D plotting axes
             fig=plt.figure()
 
             X=np.arange(some_equilibrium['nw']) #make a mesh
