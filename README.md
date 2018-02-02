@@ -38,6 +38,7 @@ Table of Contents
 * [Appendix](#appendix)
     * [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
     * [Installing IMAS](#installing-imas) 
+    * [Processing Routines](#processing-routines) 
 
 
 
@@ -119,6 +120,7 @@ import context
 import input_classes
 
 my_equilibrium=input_classes.Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') #my_equilibrium now holds all the data in one object
+my_equilibrium.look()                               #take a look at the data
 ```
 
 ```python
@@ -151,9 +153,16 @@ import plot_input
 plot_input.plot_equilibrium(my_equilibrium)                                         #default psirz data plot
 ```
 
-Other functions:
 
-* .look() - prints the data contained in your LOCUST_IO object 
+
+
+
+
+
+
+
+
+
 
 
 
@@ -260,6 +269,8 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 
 
+
+
 ### Installing IMAS:
 
     echo 'deb http://www.mdsplus.org/dist/Ubuntu16/repo MDSplus stable' | sudo tee --append /etc/apt/sources.list
@@ -285,3 +296,24 @@ Since this package aims to bridge the gap between various file formats for diffe
     make install
     sudo cp $IMAS_HOME /usr/local/
     sudo rm -rf $IMAS_HOME
+
+
+
+
+
+
+
+### Processing Routines
+
+LOCUST_IO contains a few simple physics routines to process data: 
+
+```python
+    #input_processing
+
+        calc_Q_tor_pol(Q=None,T=None,P=None)   #calculates the missing quantity out of Q, toroidal or poloidal flux
+        
+
+    #output_processing
+```
+
+

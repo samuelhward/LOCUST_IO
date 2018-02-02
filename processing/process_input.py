@@ -26,16 +26,28 @@ import scipy
 #Main Code
 
 
-def TorPolQ():
+def calc_Q_tor_pol(Q=None,T=None,P=None):
 	"""
+	calculates the missing quantity out of Q, toroidal or poloidal flux
 
 	notes:
+		feed this function a string 
 		http://theory.ipp.ac.cn/~yj/research_notes/tokamak_equilibrium/node11.html
 	"""
 
-	return result
+	if not Q: #need to calculate Q
+		
+		Q=np.gradient()
 
+		return Q
 
+	elif not T: #need to calculate T
+
+		return T
+
+	elif not P: #need to caclulate P
+
+		return P
 
 
 
