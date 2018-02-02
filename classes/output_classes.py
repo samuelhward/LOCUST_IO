@@ -119,6 +119,18 @@ class LOCUST_output:
         if not none_check(self.ID,self.LOCUST_output_type,"read_data requires data_format, blank output initialised \n",data_format):
             self.read_data(data_format,input_filename,shot,run,properties)
 
+    def __getitem__(self,key):
+        """
+        function so can access member data via []        
+        """
+        return self.data[key]
+ 
+    def __setitem__(self,key,value):
+        """
+        function so can access member data via []
+        """
+        self.data[key]=value
+
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
 
@@ -149,7 +161,43 @@ class LOCUST_output:
             print("{key} - {value}".format(key=key,value=self.data[key]))
         print("-----------------------\n")
 
-
+    def copy(self,target,*keys):
+        """
+        copy two output objects
+ 
+        notes:
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
+            if key supplied then copy/append dictionary data accordingly
+  
+        usage:
+            my_output.copy(some_other_output) to copy all data
+            my_output.copy(some_other_output,'some_arg','some_other_arg') to copy specific fields
+            my_output.copy(some_other_output, *some_list_of_args) equally
+        """
+        if none_check(self.ID,self.LOCUST_output_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_output_type,"cannot copy() - found key containing None\n",*keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+     
+    def set(self,**kwargs):
+        """
+        set output object data 
+ 
+        usage:
+            my_output.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
+            my_output.set(**{'some_arg':100,'some_other_arg':200}) equally
+        """
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_output_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
+            pass
+        else:
+            for key,value in zip(keys,values): #loop through kwargs
+                self[key]=value
 
 
 
@@ -251,14 +299,6 @@ class Orbits(LOCUST_output):
 
     LOCUST_output_type='orbits'
 
-    def __getitem__(self,key):
-
-        return self.data[key]
-
-    def __setitem__(self,key,value):
-
-        self.data[key]=value
-
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
         """
         read orbits from file 
@@ -296,43 +336,7 @@ class Orbits(LOCUST_output):
         else:
             print("cannot dump_data - please specify a compatible data_format (ASCII)\n")
 
-    def copy(self,target,*keys):
-        """
-        copy two orbit objects 
 
-        notes:
-            if target.data is None or contains Nones then this function does nothing
-            if no key supplied then copy all data over
-            if key supplied then copy/append dictionary data accordingly
-                        
-        usage:
-            my_orbits.copy(some_other_orbits) to copy all data
-            my_orbits.copy(some_other_orbits,'some_arg','some_other_arg') to copy specific fields
-            my_orbits.copy(some_other_orbits, *some_list_of_args) equally
-        """
-        if none_check(self.ID,self.LOCUST_output_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
-            pass
-        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
-            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_output_type,"cannot copy() - found key containing None\n",*keys): 
-            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
-    
-    def set(self,**kwargs):
-        """
-        set orbit object data 
-
-        usage:
-            my_orbits.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_orbits.set(**{'some_arg':100,'some_other_arg':200}) equally
-        """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_output_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pass
-        else:
-            for key,value in zip(keys,values): #loop through kwargs
-                self[key]=value
 
 
 
