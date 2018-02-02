@@ -161,6 +161,18 @@ class LOCUST_input:
         if not none_check(self.ID,self.LOCUST_input_type,"read_data requires data_format, blank input initialised \n",data_format):
             self.read_data(data_format,input_filename,shot,run,properties)
  
+    def __getitem__(self,key):
+        """
+        function so can access member data via []        
+        """
+        return self.data[key]
+ 
+    def __setitem__(self,key,value):
+        """
+        function so can access member data via []
+        """
+        self.data[key]=value
+
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
  
@@ -191,7 +203,43 @@ class LOCUST_input:
             print("{key} - {value}".format(key=key,value=self.data[key]))
         print("-----------------------\n")
  
+    def copy(self,target,*keys):
+        """
+        copy two input objects
  
+        notes:
+            if target.data is None or contains Nones then this function does nothing
+            if no key supplied then copy all data over
+            if key supplied then copy/append dictionary data accordingly
+  
+        usage:
+            my_input.copy(some_other_input) to copy all data
+            my_input.copy(some_other_input,'some_arg','some_other_arg') to copy specific fields
+            my_input.copy(some_other_input, *some_list_of_args) equally
+        """
+        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
+            pass
+        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
+            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
+            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+     
+    def set(self,**kwargs):
+        """
+        set input object data 
+ 
+        usage:
+            my_input.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
+            my_input.set(**{'some_arg':100,'some_other_arg':200}) equally
+        """
+        keys=kwargs.keys()
+        values=kwargs.values()
+        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
+            pass
+        else:
+            for key,value in zip(keys,values): #loop through kwargs
+                self[key]=value
  
  
  
@@ -540,19 +588,7 @@ class Equilibrium(LOCUST_input):
     """
  
     LOCUST_input_type='equilibrium'
- 
-    def __getitem__(self,key):
-        """
-        function so can access member data via []        
-        """
-        return self.data[key]
- 
-    def __setitem__(self,key,value):
-        """
-        function so can access member data via []
-        """
-        self.data[key]=value
- 
+  
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
@@ -603,68 +639,11 @@ class Equilibrium(LOCUST_input):
  
         else:
             print("cannot dump_data - please specify a compatible data_format (GEQDSK/IDS)\n")
- 
-    def copy(self,target,*keys):
-        """
-        copy two equilibrium objects 
- 
-        notes:
-            if target.data is None or contains Nones then this function does nothing
-            if no key supplied then copy all data over
-            if key supplied then copy/append dictionary data accordingly
 
-        usage:
-            my_equilibrium.copy(some_other_equilibrium) to copy all data
-            my_equilibrium.copy(some_other_equilibrium,'nh','nw','some_other_arg') to copy specific fields
-            my_equilibrium.copy(some_other_equilibrium, *some_list_of_args) equally
-        """
- 
-        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
-            pass
-        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
-            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
-            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
-     
-    def set(self,**kwargs):
-        """
-        set equilibrium object data 
- 
-        usage:
-            my_equilibrium.set(nw=5,fpol=[1,2,3,4]) to set multiple values simultaneously
-            my_equilibrium.set(**{'nh':100,'nw':200}) equally
-        """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pass
-        else:
-            for key,value in zip(keys,values): #loop through kwargs
-                self[key]=value
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
  
  
  
@@ -719,7 +698,7 @@ def read_beam_depo_ASCII(input_filepath):
     input_data['phi']=np.asarray(input_data['phi'])
     input_data['v_r']=np.asarray(input_data['v_r'])
     input_data['v_z']=np.asarray(input_data['v_z'])
-    input_data['v_phi']=np.asarray(input_data['v_phi'])    
+    input_data['v_phi']=np.asarray(input_data['v_phi'])
  
     return input_data
  
@@ -840,14 +819,6 @@ class Beam_Deposition(LOCUST_input):
  
     LOCUST_input_type='beam_deposition'
  
-    def __getitem__(self,key):
- 
-        return self.data[key]
- 
-    def __setitem__(self,key,value):
- 
-        self.data[key]=value
- 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): 
         """
         read beam_deposition from file 
@@ -901,47 +872,7 @@ class Beam_Deposition(LOCUST_input):
         else:
             print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
  
-    def copy(self,target,*keys):
-        """
-        copy two beam_deposition objects 
- 
-        notes:
-            if target.data is None or contains Nones then this function does nothing
-            if no key supplied then copy all data over
-            if key supplied then copy/append dictionary data accordingly
 
-        usage:
-            my_beam_deposition.copy(some_other_beam_deposition) to copy all data
-            my_beam_deposition.copy(some_other_beam_deposition,'some_arg','some_other_arg') to copy specific fields
-            my_beam_deposition.copy(some_other_beam_deposition, *some_list_of_args) equally
-        """
- 
-        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
-            pass
-        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
-            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
-            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
-     
-    def set(self,**kwargs):
-        """
-        set beam_deposition object data 
- 
-        usage:
-            my_beam_deposition.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_beam_deposition.set(**{'some_arg':100,'some_other_arg':200}) equally
-        """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pass
-        else:
-            for key,value in zip(keys,values): #loop through kwargs
-                self[key]=value
- 
- 
- 
  
  
  
@@ -1119,14 +1050,6 @@ class Temperature(LOCUST_input):
  
     LOCUST_input_type='temperature'
  
-    def __getitem__(self,key):
- 
-        return self.data[key]
- 
-    def __setitem__(self,key,value):
- 
-        self.data[key]=value
- 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
         """
         read temperature from file 
@@ -1182,44 +1105,7 @@ class Temperature(LOCUST_input):
         else:
             print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
  
-    def copy(self,target,*keys):
-        """
-        copy two temperature objects 
- 
-        notes:
-            if target.data is None or contains Nones then this function does nothing
-            if no key supplied then copy all data over
-            if key supplied then copy/append  dictionary data accordingly
-  
-        usage:
-            my_temperature.copy(some_other_temperature) to copy all data
-            my_temperature.copy(some_other_temperature,'some_arg','some_other_arg') to copy specific fields
-            my_temperature.copy(some_other_temperature, *some_list_of_args) equally
-        """
- 
-        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
-            pass
-        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
-            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
-            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
-     
-    def set(self,**kwargs):
-        """
-        set temperature object data 
- 
-        usage:
-            my_temperature.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_temperature.set(**{'some_arg':100,'some_other_arg':200}) equally
-        """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pass
-        else:
-            for key,value in zip(keys,values): #loop through kwargs
-                self[key]=value
+
  
  
  
@@ -1231,17 +1117,12 @@ class Temperature(LOCUST_input):
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
  
  
  
@@ -1393,14 +1274,6 @@ class Number_Density(LOCUST_input):
  
     LOCUST_input_type='number density'
  
-    def __getitem__(self,key):
- 
-        return self.data[key]
- 
-    def __setitem__(self,key,value):
- 
-        self.data[key]=value
- 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
         """
         read number density from file 
@@ -1455,43 +1328,7 @@ class Number_Density(LOCUST_input):
         else:
             print("cannot dump_data - please specify a compatible data_format (ASCII/IDS)\n")
  
-    def copy(self,target,*keys):
-        """
-        copy two number density objects 
- 
-        notes:
-            if target.data is None or contains Nones then this function does nothing
-            if no key supplied then copy all data over
-            if key supplied then copy/append dictionary data accordingly
-  
-        usage:
-            my_number_density.copy(some_other_number_density) to copy all data
-            my_number_density.copy(some_other_number_density,'some_arg','some_other_arg') to copy specific fields
-            my_number_density.copy(some_other_number_density, *some_list_of_args) equally
-        """
-        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
-            pass
-        elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
-            self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
-            self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
-     
-    def set(self,**kwargs):
-        """
-        set number density object data 
- 
-        usage:
-            my_number_density.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_number_density.set(**{'some_arg':100,'some_other_arg':200}) equally
-        """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pas
-        else:
-            for key,value in zip(keys,values): #loop through kwargs
-                self[key]=value
+
  
  
  
