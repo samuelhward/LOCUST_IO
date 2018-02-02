@@ -7,7 +7,6 @@ Samuel Ward
 plotting routines for LOCUST output data
 ---
 notes:
-    https://stackoverflow.com/questions/9455111/python-define-method-outside-of-class-definition
 ---
 '''
 
