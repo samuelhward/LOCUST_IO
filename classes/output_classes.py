@@ -38,6 +38,7 @@ except:
     sys.exit(1)
 
 
+np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
 
 
@@ -121,7 +122,32 @@ class LOCUST_output:
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
 
+    def look(self):
 
+        print("\n-----------------------")
+        print("ID - {ID}".format(ID=self.ID))  
+        print("Output Type - {LOCUST_output_type}".format(LOCUST_output_type=self.LOCUST_output_type))
+
+        if hasattr(self,'properties'): 
+            print("Properties - {properties}".format(properties=self.properties))
+
+        if hasattr(self,'data_format'):
+            print("Data Format - {data_format}".format(data_format=self.data_format))
+        
+        if hasattr(self,'input_filename'):
+            print("Input Filename - {input_filename}".format(input_filename=self.input_filename))
+        
+        if hasattr(self,'shot'):
+            print("Shot - {shot}".format(shot=self.shot))
+        
+        if hasattr(self,'run'):
+            print("Run - {run}".format(run=self.run))
+        
+        print("|")
+        print("|")
+        for key in self.data:
+            print("{key} - {value}".format(key=key,value=self.data[key]))
+        print("-----------------------\n")
 
 
 

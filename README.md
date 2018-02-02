@@ -151,10 +151,9 @@ import plot_input
 plot_input.plot_equilibrium(my_equilibrium)                                         #default psirz data plot
 ```
 
+Other functions:
 
-
-
-
+* .look() - prints the data contained in your LOCUST_IO object 
 
 
 

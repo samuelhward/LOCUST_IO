@@ -16,8 +16,8 @@ notes:
     the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
 ---
 """
- 
- 
+
+
 ###################################################################################################
 #Preamble
  
@@ -43,7 +43,7 @@ except:
     sys.exit(1)
  
  
- 
+np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
  
  
@@ -164,6 +164,32 @@ class LOCUST_input:
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         self.data=None #read_data definition is designed to be overloaded in children classes 
  
+    def look(self):
+
+        print("\n-----------------------")
+        print("ID - {ID}".format(ID=self.ID))  
+        print("Input Type - {LOCUST_input_type}".format(LOCUST_input_type=self.LOCUST_input_type))
+
+        if hasattr(self,'properties'): 
+            print("Properties - {properties}".format(properties=self.properties))
+
+        if hasattr(self,'data_format'):
+            print("Data Format - {data_format}".format(data_format=self.data_format))
+        
+        if hasattr(self,'input_filename'):
+            print("Input Filename - {input_filename}".format(input_filename=self.input_filename))
+        
+        if hasattr(self,'shot'):
+            print("Shot - {shot}".format(shot=self.shot))
+        
+        if hasattr(self,'run'):
+            print("Run - {run}".format(run=self.run))
+        
+        print("|")
+        print("|")
+        for key in self.data:
+            print("{key} - {value}".format(key=key,value=self.data[key]))
+        print("-----------------------\n")
  
  
  
@@ -1462,7 +1488,7 @@ class Number_Density(LOCUST_input):
         values=kwargs.values()
         allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
         if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
-            pass
+            pas
         else:
             for key,value in zip(keys,values): #loop through kwargs
                 self[key]=value
