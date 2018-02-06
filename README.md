@@ -263,7 +263,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         number_particles/first line                                     #total number of particles
         number_timesteps/last line                                      #total number of timesteps
     3D data
-        orbits[t,p,i]/column=r,z,phi row=particle                       #spatial coordinate i for particle p at time step t
+        orbits[t,p,i]/column=r,phi,z row=particle                       #spatial coordinate i for particle p at time step t
 
 
 
