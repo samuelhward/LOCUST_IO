@@ -1,6 +1,6 @@
 # LOCUST_IO Package
 
-This "package" is designed to process input and output for the LOCUST-GPU code, developed by Rob Akers at CCFE. There are two sub-modules - input and output - which contain python objects, each representing the types of data that LOCUST handles.
+This "package" is designed to process input and output for the LOCUST-GPU code, developed by Rob Akers at CCFE. There are two class sub-modules - input and output - which contain python objects, each representing the types of data that LOCUST handles.
 
 LOCUST_IO is...
 
