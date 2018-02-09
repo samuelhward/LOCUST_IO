@@ -18,7 +18,8 @@ notes:
 #Preamble
 
 import sys
-import numpy
+import numpy as np
+import matplotlib.pyplot as plt
 
 try:
 	import context
@@ -76,11 +77,30 @@ test4_ID='test4_ID'
 test4_input_filename='test3_output.eqdsk'
 test4_data_format='GEQDSK'
 test4=input_classes.Equilibrium(test4_ID,test4_input_filename,test4_data_format)
-print(numpy.subtract(test4.data['fpol'],test3.data['fpol']))
+print(np.subtract(test4.data['fpol'],test3.data['fpol']))
 
 
 
 
+
+
+
+#QTP_calc() tests
+
+#analytical
+P=np.linspace(0,8,num=1000) 
+T=np.sin(P)
+Q=np.cos(P)
+
+#QTP results
+P_recover=prin.QTP_calc(T=T,Q=Q)
+Q_recover=prin.QTP_calc(T=T,P=P)
+T_recover=prin.QTP_calc(Q=Q,P=P)
+
+plt.plot(P_recover-P,'r-')
+plt.plot(T_recover-T,'b-')
+plt.plot(Q_recover-Q,'g-')
+plt.show()
 
 
 #################################

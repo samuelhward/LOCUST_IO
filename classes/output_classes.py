@@ -84,7 +84,27 @@ def none_check(ID,LOCUST_output_type,error_message,*args):
         print("WARNING: none_check returned True (LOCUST_output_type={LOCUST_output_type}, ID={ID}): {message}".format(LOCUST_output_type=LOCUST_output_type,ID=ID,message=error_message))
         return True
         
+def dict_set(data,**kwargs):
+    """
+    generalised function (based upon safe_set) to set values in dictionary 'data' after checking source data exists 
 
+    usage:
+        dict_set(data,some_key=some_source,some_other_key=[1,2,3,4]) to set multiple values simultaneously
+        dict_set(data,**{'some_key':100,'some_other_key':200}) equally
+    """
+    keys=kwargs.keys()
+    values=kwargs.values()
+    
+    for key,value in zip(keys,values): #loop through kwargs
+        if key is not None and value is not None: 
+            data[key]=value
+
+def safe_set(target,source):
+    """
+    generalised function to set a target value to source if it exists 
+    """
+    if source is not None:
+        target=source
 
 
 
@@ -158,7 +178,8 @@ class LOCUST_output:
         print("|")
         print("|")
         for key in self.data:
-            print("{key} - {value}".format(key=key,value=self.data[key]))
+            if not self.data[key].size==0: #do not print if the data is empty
+                print("{key} - {value}".format(key=key,value=self.data[key]))
         print("-----------------------\n")
 
     def copy(self,target,*keys):
@@ -172,7 +193,7 @@ class LOCUST_output:
   
         usage:
             my_output.copy(some_other_output) to copy all data
-            my_output.copy(some_other_output,'some_arg','some_other_arg') to copy specific fields
+            my_output.copy(some_other_output,'some_key','some_other_key') to copy specific fields
             my_output.copy(some_other_output, *some_list_of_args) equally
         """
         if none_check(self.ID,self.LOCUST_output_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
@@ -185,11 +206,15 @@ class LOCUST_output:
     def set(self,**kwargs):
         """
         set output object data 
- 
+
+        notes:
+            specific to LOCUST_IO classes due to none_check call - see safe_set() for more general function
+
         usage:
-            my_output.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_output.set(**{'some_arg':100,'some_other_arg':200}) equally
+            my_output.set(some_key=5,some_other_key=[1,2,3,4]) to set multiple values simultaneously
+            my_output.set(**{'some_key':100,'some_other_key':200}) equally
         """
+
         keys=kwargs.keys()
         values=kwargs.values()
         allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
