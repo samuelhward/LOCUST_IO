@@ -120,20 +120,56 @@ def get_next(obj):
         return obj.next() #NOTE how exactly does .next() work? will it accept tok in toklist values from file_numbers() and allow file_numbers to then read in the next bunch (since yield will pause the While True loop?)
     else:
         return next(obj)
+     
+def dict_set(data,**kwargs):
+    """
+    generalised function (based upon safe_set) to set values in dictionary 'data' after checking source data exists 
+
+    usage:
+        dict_set(data,some_key=some_source,some_other_key=[1,2,3,4]) to set multiple values simultaneously
+        dict_set(data,**{'some_key':100,'some_other_key':200}) equally
+    """
+    keys=kwargs.keys()
+    values=kwargs.values()
+    
+    for key,value in zip(keys,values): #loop through kwargs
+        if key is not None and value is not None: 
+            data[key]=value
+
+def safe_set(target,source):
+    """
+    generalised function to set a target value to source if it exists
+    
+    """
+    if source is not None:
+        target=source
+
  
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
  
@@ -200,7 +236,8 @@ class LOCUST_input:
         print("|")
         print("|")
         for key in self.data:
-            print("{key} - {value}".format(key=key,value=self.data[key]))
+            if not self.data[key].size==0: #do not print if the data is empty
+                print("{key} - {value}".format(key=key,value=self.data[key]))
         print("-----------------------\n")
  
     def copy(self,target,*keys):
@@ -214,7 +251,7 @@ class LOCUST_input:
   
         usage:
             my_input.copy(some_other_input) to copy all data
-            my_input.copy(some_other_input,'some_arg','some_other_arg') to copy specific fields
+            my_input.copy(some_other_input,'some_key','some_other_key') to copy specific fields
             my_input.copy(some_other_input, *some_list_of_args) equally
         """
         if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
@@ -228,9 +265,12 @@ class LOCUST_input:
         """
         set input object data 
  
+        notes:
+            specific to LOCUST_IO classes due to none_check call - see safe_set() for more general function
+
         usage:
-            my_input.set(some_arg=5,some_other_arg=[1,2,3,4]) to set multiple values simultaneously
-            my_input.set(**{'some_arg':100,'some_other_arg':200}) equally
+            my_input.set(some_key=5,some_other_key=[1,2,3,4]) to set multiple values simultaneously
+            my_input.set(**{'some_key':100,'some_other_key':200}) equally
         """
         keys=kwargs.keys()
         values=kwargs.values()
@@ -269,7 +309,7 @@ def read_equilibrium_GEQDSK(input_filepath):
  
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
-        see README.md for data key
+        
  
     """
  
@@ -368,7 +408,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         originally written by Ben Dudson and edited by Nick Walkden
         does not write out idum
  
-        see README.md for data key
+        
     """
  
     cnt = itertools.cycle([0,1,2,3,4]) #counter
@@ -432,7 +472,7 @@ def read_equilibrium_IDS(shot,run):
  
     notes:
         idum not read
-        see README.md for data key
+        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -494,7 +534,6 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
         currently overwrites pre-existing IDSs
         idum not dumped
  
-        see README.md for output_data key
     """
  
     output_IDS=imas.ids(shot,run) 
@@ -662,7 +701,7 @@ class Equilibrium(LOCUST_input):
  
 def read_beam_depo_ASCII(input_filepath):
     """
-    reads neutral beam deposition profile stored in ASCII format - r z phi v_r v_z v_phi
+    reads neutral beam deposition profile stored in ASCII format - r phi z v_r v_phi v_z
     """
  
  
@@ -677,28 +716,28 @@ def read_beam_depo_ASCII(input_filepath):
  
     input_data = {} #initialise the dictionary to hold the data
     input_data['r']=[] #initialise the arrays 
-    input_data['z']=[]
     input_data['phi']=[]
+    input_data['z']=[]
     input_data['v_r']=[]
-    input_data['v_z']=[]
     input_data['v_phi']=[]
+    input_data['v_z']=[]
  
     for line in lines:
  
         split_line=line.split()
         input_data['r'].append(float(split_line[0]))
-        input_data['z'].append(float(split_line[1]))
-        input_data['phi'].append(float(split_line[2]))
+        input_data['phi'].append(float(split_line[1]))
+        input_data['z'].append(float(split_line[2]))
         input_data['v_r'].append(float(split_line[3]))
-        input_data['v_z'].append(float(split_line[4]))
-        input_data['v_phi'].append(float(split_line[5]))
+        input_data['v_phi'].append(float(split_line[4]))
+        input_data['v_z'].append(float(split_line[5]))
  
     input_data['r']=np.asarray(input_data['r']) #convert to arrays
-    input_data['z']=np.asarray(input_data['z'])
     input_data['phi']=np.asarray(input_data['phi'])
+    input_data['z']=np.asarray(input_data['z'])
     input_data['v_r']=np.asarray(input_data['v_r'])
-    input_data['v_z']=np.asarray(input_data['v_z'])
     input_data['v_phi']=np.asarray(input_data['v_phi'])
+    input_data['v_z']=np.asarray(input_data['v_z'])
  
     return input_data
  
@@ -718,13 +757,13 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
         for this_particle in range(len(output_data['r'])): #iterate through all particles i.e. length of our dictionary's arrays
  
             r_out=output_data['r'][this_particle] #briefly set to a temporary variable to improve readability
-            z_out=output_data['z'][this_particle]
             phi_out=output_data['phi'][this_particle]
+            z_out=output_data['z'][this_particle]
             v_r_out=output_data['v_r'][this_particle]
-            v_z_out=output_data['v_z'][this_particle]
             v_phi_out=output_data['v_phi'][this_particle]
+            v_z_out=output_data['v_z'][this_particle]
  
-            file.write("{r} {z} {phi} {v_r} {v_z} {v_phi}\n".format(r=r_out,z=z_out,phi=phi_out,v_r=v_r_out,v_z=v_z_out,v_phi=v_phi_out))
+            file.write("{r} {phi} {z} {v_r} {v_phi} {v_z}\n".format(r=r_out,phi=phi_out,z=z_out,v_r=v_r_out,v_phi=v_phi_out,v_z=v_z_out))
  
  
 def read_beam_depo_IDS(shot,run):
@@ -732,7 +771,7 @@ def read_beam_depo_IDS(shot,run):
     reads relevant LOCUST neutral beam data from a distribution_sources IDS and returns as a dictionary
  
     notes:
-        see README.md for data key
+        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -744,11 +783,11 @@ def read_beam_depo_IDS(shot,run):
  
     input_data = {} #initialise blank dictionary to hold the data
     input_data['r']=np.asarray(positions[:,0])
-    input_data['z']=np.asarray(positions[:,1])
-    input_data['phi']=np.asarray(positions[:,2])
+    input_data['phi']=np.asarray(positions[:,1])
+    input_data['z']=np.asarray(positions[:,2])
     input_data['v_r']=np.asarray(positions[:,3])
-    input_data['v_z']=np.asarray(positions[:,4])
-    input_data['v_phi']=np.asarray(positions[:,5])
+    input_data['v_phi']=np.asarray(positions[:,4])
+    input_data['v_z']=np.asarray(positions[:,5])
  
     input_IDS.close()
  
@@ -776,13 +815,13 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
  
     #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_phi in this case
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r, z, phi" #add some description here
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r, phi, z" #add some description here
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 #set arbitrarily here
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="r, z, phi, v_r, v_z, v_phi coordinate system"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="r, phi, z, v_r, v_phi, v_z coordinate system"
      
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(len(output_data['r'])) #define the weights, i.e. number of particles per marker 
-    positions=np.array([output_data['r'],output_data['z'],output_data['phi'],output_data['v_r'],output_data['v_z'],output_data['v_phi']]) #create 2D array of positions
+    positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_phi'],output_data['v_z']]) #create 2D array of positions
     output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
  
     #'put' all the output_data into the file and close
@@ -814,7 +853,7 @@ class Beam_Deposition(LOCUST_input):
     notes:
         data is stored such that the coordinate 'r' for all particles is stored in my_beam_deposition['r']
         therefore the phase space position of particle p is:
-            (my_beam_deposition['r'][p], my_beam_deposition['z'][p], my_beam_deposition['phi'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_z'][p], my_beam_deposition['v_phi'][p])
+            (my_beam_deposition['r'][p], my_beam_deposition['phi'][p], my_beam_deposition['z'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_phi'][p], my_beam_deposition['v_z'][p])
     """
  
     LOCUST_input_type='beam_deposition'
@@ -916,7 +955,7 @@ class Beam_Deposition(LOCUST_input):
  
 def read_temperature_ASCII(input_filepath):
     """
-    reads temperature profile stored in ASCII format - psi T(ev)
+    reads temperature profile stored in ASCII format - flux_pol T(ev)
     """
  
     with open(input_filepath,'r') as file:
@@ -928,23 +967,23 @@ def read_temperature_ASCII(input_filepath):
     del(lines[0]) #first line contains the number of points
  
     input_data = {} #initialise the dictionary to hold the data
-    input_data['psi']=[] #initialise the arrays 
+    input_data['flux_pol']=[] #initialise the arrays 
     input_data['T']=[]
  
     for line in lines:
  
         split_line=line.split()
-        input_data['psi'].append(float(split_line[0]))
+        input_data['flux_pol'].append(float(split_line[0]))
         input_data['T'].append(float(split_line[1]))
  
-    input_data['psi']=np.asarray(input_data['psi']) #convert to arrays
+    input_data['flux_pol']=np.asarray(input_data['flux_pol']) #convert to arrays
     input_data['T']=np.asarray(input_data['T'])
     
     return input_data
  
 def dump_temperature_ASCII(output_data,output_filepath):
     """
-    writes temperature profile to ASCII format - psi T(ev)    
+    writes temperature profile to ASCII format - flux_pol T(ev)    
      
     notes:
         writes out a headerline for length of file
@@ -952,21 +991,21 @@ def dump_temperature_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(len(output_data['psi']))) #re-insert line containing length
+        file.write("{}\n".format(len(output_data['flux_pol']))) #re-insert line containing length
  
-        for point in range(len(output_data['psi'])): #iterate through all points i.e. length of our dictionary's arrays
+        for point in range(len(output_data['flux_pol'])): #iterate through all points i.e. length of our dictionary's arrays
  
-            psi_out=output_data['psi'][point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             T_out=output_data['T'][point]
              
-            file.write("{psi} {T}\n".format(psi=psi_out,T=T_out))
+            file.write("{flux_pol} {T}\n".format(flux_pol=flux_pol_out,T=T_out))
  
 def read_temperature_IDS(shot,run,properties):
     """
     reads relevant LOCUST temperature data from a core_profiles IDS and returns as a dictionary
  
     notes:
-        see README.md for data key
+        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -974,7 +1013,8 @@ def read_temperature_IDS(shot,run,properties):
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
-    input_data['psi']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)
+    
+    input_data['flux_pol']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)
  
     #read in temperature depending on species
     if properties=='electrons':
@@ -984,11 +1024,15 @@ def read_temperature_IDS(shot,run,properties):
     else:
         print("cannot read_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
  
+    #read optional quantities
+    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
+    dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
+
     input_IDS.close()
  
     return input_data
  
-def dump_temperature_IDS(ID,output_data,shot,run,properties):
+def dump_temperature_IDS(ID,output_data,shot,run,properties):   
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
     """
@@ -1005,8 +1049,8 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['psi']
- 
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
+
     #write out temperature depending on species
     if properties=='electrons':
         output_IDS.core_profiles.profiles_1d[0].electrons.temperature=output_data['T']
@@ -1016,7 +1060,12 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
         output_IDS.core_profiles.profiles_1d[0].ion[0].temperature=output_data['T']
     else:
         print("cannot dump_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
- 
+
+    #dump optional quantities
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
+    safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
+
+
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
@@ -1044,8 +1093,8 @@ class Temperature(LOCUST_input):
         output_filepath             full path to output file in output_files folder
  
     notes:
-        data is stored such that a reading of temperature at psi coordinate 'coord' is:
-            my_temperature['psi'][coord], my_temperature['T'][coord]
+        data is stored such that a reading of temperature at coordinate 'coord' is:
+            my_temperature['flux_tor'][coord], my_temperature['T'][coord]
     """
  
     LOCUST_input_type='temperature'
@@ -1127,9 +1176,7 @@ class Temperature(LOCUST_input):
  
  
  
- 
- 
- 
+
  
  
  
@@ -1137,7 +1184,7 @@ class Temperature(LOCUST_input):
  
 def read_number_density_ASCII(input_filepath):
     """
-    reads number density profile stored in ASCII format - psi n
+    reads number density profile stored in ASCII format - flux_pol n
  
     notes:
         reads in a headerline for length of file
@@ -1152,23 +1199,23 @@ def read_number_density_ASCII(input_filepath):
     del(lines[0]) #first line contains the number of points
  
     input_data = {} #initialise the dictionary to hold the data
-    input_data['psi']=[] #initialise the arrays 
+    input_data['flux_pol']=[] #initialise the arrays 
     input_data['n']=[]
  
     for line in lines:
  
         split_line=line.split()
-        input_data['psi'].append(float(split_line[0]))
+        input_data['flux_pol'].append(float(split_line[0]))
         input_data['n'].append(float(split_line[1]))
  
-    input_data['psi']=np.asarray(input_data['psi']) #convert to arrays
+    input_data['flux_pol']=np.asarray(input_data['flux_pol']) #convert to arrays
     input_data['n']=np.asarray(input_data['n'])
     
     return input_data
  
 def dump_number_density_ASCII(output_data,output_filepath):
     """
-    writes number density profile to ASCII format - psi n 
+    writes number density profile to ASCII format - flux_pol n 
      
     notes:
         writes out a headerline for length of file
@@ -1176,21 +1223,21 @@ def dump_number_density_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(len(output_data['psi']))) #re-insert line containing length
+        file.write("{}\n".format(len(output_data['flux_pol']))) #re-insert line containing length
  
-        for point in range(len(output_data['psi'])): #iterate through all points i.e. length of our dictionary's arrays
+        for point in range(len(output_data['flux_pol'])): #iterate through all points i.e. length of our dictionary's arrays
  
-            psi_out=output_data['psi'][point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             n_out=output_data['n'][point]
              
-            file.write("{psi} {n}\n".format(psi=psi_out,n=n_out))
+            file.write("{flux_pol} {n}\n".format(flux_pol=flux_pol_out,n=n_out))
  
 def read_number_density_IDS(shot,run,properties):
     """
     reads relevant LOCUST number density data from a core_profiles IDS and returns as a dictionary
  
     notes:
-        see README.md for data key
+        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -1198,8 +1245,9 @@ def read_number_density_IDS(shot,run,properties):
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
-    input_data['psi']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)
- 
+    
+    input_data['flux_pol']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi) 
+
     #read in number density depending on species
     if properties=='electrons':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.density)
@@ -1207,7 +1255,11 @@ def read_number_density_IDS(shot,run,properties):
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].density)
     else:
         print("cannot read_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
- 
+
+    #read optional quantities
+    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
+    dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
+
     input_IDS.close()
  
     return input_data
@@ -1229,7 +1281,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['psi']
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
  
     #write out number density depending on species
     if properties=='electrons':
@@ -1240,7 +1292,11 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
         output_IDS.core_profiles.profiles_1d[0].ion[0].density=output_data['n']
     else:
         print("cannot dump_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
- 
+
+    #dump optional quantities
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
+    safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
+
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
@@ -1268,8 +1324,8 @@ class Number_Density(LOCUST_input):
         output_filepath             full path to output file in output_files folder
  
     notes:
-        data is stored such that a reading of number density at psi coordinate 'coord' is:
-            my_number_density['psi'][coord], my_number_density['n'][coord]
+        data is stored such that a reading of number density at coordinate 'coord' is:
+            my_number_density['flux_tor'][coord], my_number_density['n'][coord]
     """
  
     LOCUST_input_type='number density'

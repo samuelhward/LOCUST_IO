@@ -42,8 +42,8 @@ dir_classes=os.path.join(dir_locust_io,'classes/')
 
 #software version number 
 LOCUST_IO_version=str('LOCUST_IO version 1.0.0')
-
-
+numpy_version=np.version.version.split('.')
+python_version=sys.version_info
 
 
 

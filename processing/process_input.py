@@ -24,34 +24,15 @@ import scipy.integrate
 
 ##################################################################
 #Main Code
-'''
-def calc_gradient(x=None,y=None):
-	"""
-	function to calculate gradient for arbitrarily-spaced x,y data
 
-	notes:
-		first order at sides, second order at in the centre
-	"""
-
-	dx=np.diff(x)
-	dy=np.diff(y)
-	gradient=[]
-
-	gradient.append(dy[0]/dx[0])
-
-	for i+1 in range(len(x)):
-
-		gradient.append((dy[i]-dy[i-1])/(2*(dx[i]-dx[i-1])))
-
-	gradient.append(dy[-1]/dx[-1])
-
-	return gradient
-'''
-def calc_Q_tor_pol(Q=None,T=None,P=None):
+def QTP_calc(Q=None,T=None,P=None):
     """
-    calculates the missing quantity out of Q, toroidal or poloidal flux
+    generic script to solve Q=dT/dP when given 2/3 variables (no integration constants)
+
     notes:
+        used to calculate the missing quantity out of Q, toroidal or poloidal flux
         http://theory.ipp.ac.cn/~yj/research_notes/tokamak_equilibrium/node11.html
+        returns profiles normalised to zero at origin 
 
         Q - first order at sides, second order at in the centre
         T - second order composite trapezium rule
@@ -59,10 +40,12 @@ def calc_Q_tor_pol(Q=None,T=None,P=None):
     """
 
     if Q is None: #need to calculate Q
-        
+        '''
         dP=np.diff(P)
         dP=np.append(dP,dP[0]) #use same difference as the start of array, since this usually set smaller to counteract np.gradient's higher error
-        Q=np.gradient(T,dP)
+        Q=np.gradient(T,dP)'''
+
+        Q=np.gradient(T,P) #testing this
 
         return Q
 
@@ -74,7 +57,7 @@ def calc_Q_tor_pol(Q=None,T=None,P=None):
 
     elif P is None: #need to caclulate P
 
-    	P=scipy.integrate.cumtrapz(y=1/Q,x=T,initial=0) #0 here should be poloidal flux at the magnetic axis
+        P=scipy.integrate.cumtrapz(y=1/Q,x=T,initial=0) #0 here should be poloidal flux at the magnetic axis
 
         return P
 
