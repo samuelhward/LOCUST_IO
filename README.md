@@ -230,7 +230,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         R_1D/-/...profiles_2d[0].grid.dim1/                             #real values of R dimension
         Z_1D/-/...profiles_2d[0].grid.dim2/                             #real values of Z dimension
     2D data
-        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z   
+        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in Wb/rad   
 
 
 #### Beam Deposition:
