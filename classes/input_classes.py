@@ -524,7 +524,8 @@ def read_equilibrium_GEQDSK(input_filepath):
         #extra derived data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
-         
+        input_data['psi_1D']=np.linspace(output_data['simag'],output_data['sibry'],output_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+    
     return input_data
      
 def dump_equilibrium_GEQDSK(output_data,output_filepath):
@@ -637,6 +638,7 @@ def read_equilibrium_IDS(shot,run):
     psi_1D=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(psi_1D) and sibry=max(psi_1D)
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
+    input_data['psi_1D']=np.asarray(psi_1D)
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
@@ -693,12 +695,9 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.time_slice[0].boundary.outline.z=output_data['zlim']
     output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=output_data['rbbbs'] #NOTE this is apparently obsolete - need to figure out where to write to 
     output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zbbbs']
- 
-    #now to define the grids, start with the uniform flux grid
-    psi_1D=np.linspace(output_data['simag'],output_data['sibry'],output_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
- 
+     
     #write out the uniform flux grid output_data
-    output_IDS.equilibrium.time_slice[0].profiles_1d.psi=psi_1D
+    output_IDS.equilibrium.time_slice[0].profiles_1d.psi=output_data['psi_1D']
     output_IDS.equilibrium.time_slice[0].profiles_1d.f=output_data['fpol'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=output_data['pres'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=output_data['ffprime'] 

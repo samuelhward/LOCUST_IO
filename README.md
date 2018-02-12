@@ -227,10 +227,11 @@ Since this package aims to bridge the gap between various file formats for diffe
         zlim/zlim/...boundary.outline.z/                                #z coordinates of wall boundary
         rbbbs/rbbbs/...boundary.lcfs.r/Rp                               #r coordinates of plasma boundary
         zbbbs/zbbbs/...boundary.lcfs.z/Zp                               #z coordinates of plasma boundary
-        R_1D/-/...profiles_2d[0].grid.dim1/                             #real values of R dimension
-        Z_1D/-/...profiles_2d[0].grid.dim2/                             #real values of Z dimension
+        R_1D/-/...profiles_2d[0].grid.dim1/                             #R dimension (m)
+        Z_1D/-/...profiles_2d[0].grid.dim2/                             #Z dimension (m)
+        psi_1D/-/...profiles_1d.psi/                                    #real values of poloidal flux (Weber / rad)
     2D data
-        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in Wb/rad   
+        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad)   
 
 
 #### Beam Deposition:
