@@ -141,20 +141,29 @@ class LOCUST_output:
 
     def __getitem__(self,key):
         """
-        function so can access member data via []        
+        access member data via []        
         """
+
         return self.data[key]
  
     def __setitem__(self,key,value):
         """
-        function so can access member data via []
+        access member data via []
         """
+
         self.data[key]=value
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
+        """
+        read data to be overloaded in all children classes
+        """
+
         self.data=None #read_data definition is designed to be overloaded in children classes 
 
     def look(self):
+        """
+        print class information and data
+        """
 
         print("\n-----------------------")
         print("ID - {ID}".format(ID=self.ID))  
@@ -177,9 +186,12 @@ class LOCUST_output:
         
         print("|")
         print("|")
-        for key in self.data:
-            if not self.data[key].size==0: #do not print if the data is empty
-                print("{key} - {value}".format(key=key,value=self.data[key]))
+
+        if hasattr(self,'data') and self.data:
+            for key in self.data:
+                if not len(self.data[key])==0: #do not print if the data is empty
+                    print("{key} - {value}".format(key=key,value=self.data[key]))
+        
         print("-----------------------\n")
 
     def copy(self,target,*keys):
@@ -224,7 +236,47 @@ class LOCUST_output:
             for key,value in zip(keys,values): #loop through kwargs
                 self[key]=value
 
+    def compare(self,target,verbose=False):
+        """
+        compare two input objects
 
+        notes:
+            returns true if all data held by target is also held by self (self can have excess)
+            verbose option prints summary of compare results
+        """
+
+        data_missing_self=[]
+        data_missing_target=[]
+        data_different=[]
+
+        for key in target.data: #record fields we do not have that target does
+            if not key in self.data:
+                data_missing_self.append(key) 
+            
+            elif len(self[key])!=len(target[key]): #both contain data but data is different
+                data_different.append(key)
+            elif not np.allclose(self[key],target[key]): #must check size first before doing np.allclose()
+                data_different.append(key)
+
+        for key in self.data: #record fields we have that target does not
+            if not key in target.data:
+                data_missing_target.append(key) 
+
+        if verbose is True: #if wanting to print summary
+            if data_missing_self:
+                print("self is missing:")
+                print('\n'.join(str(key) for key in data_missing_self)) 
+            if data_missing_target:
+                print("target is missing:")
+                print('\n'.join(str(key) for key in data_missing_target)) 
+            if data_different: 
+                print("shared different data:")
+                print('\n'.join(str(key) for key in data_different))
+
+        if not data_different and not data_missing_self: #if shared data is the same and self all target data 
+            return True #self is same as target
+        else:
+            return False
 
 
 
