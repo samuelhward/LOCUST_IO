@@ -40,12 +40,14 @@ def QTP_calc(Q=None,T=None,P=None):
     """
 
     if Q is None: #need to calculate Q
-        '''
+        
+        ''' old numpy version
         dP=np.diff(P)
         dP=np.append(dP,dP[0]) #use same difference as the start of array, since this usually set smaller to counteract np.gradient's higher error
         Q=np.gradient(T,dP)'''
 
-        Q=np.gradient(T,P) #testing this
+        P[P==0.0]=0.0001 #replace zero values with small numbers to stop divide by zero
+        Q=np.gradient(T,P)
 
         return Q
 
@@ -57,9 +59,14 @@ def QTP_calc(Q=None,T=None,P=None):
 
     elif P is None: #need to caclulate P
 
+        Q[Q==0.0]=0.0001 #replace zero values with small numbers to stop divide by zero
         P=scipy.integrate.cumtrapz(y=1/Q,x=T,initial=0) #0 here should be poloidal flux at the magnetic axis
 
         return P
+
+
+
+
 
 
 #################################
