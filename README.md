@@ -39,7 +39,6 @@ Table of Contents
     * [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
     * [Processing Routines](#processing-routines) 
     * [Installing IMAS](#installing-imas) 
-    * [Installing Python Modules](#installing-python-modules) 
 
 
 
@@ -136,7 +135,7 @@ my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) #you've now writ
 
 ```python
 my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
-myeq.set(**{'nh':100,'fpol':some_external_array})   #equally by unpacking a dictionary (but uglier)
+myeq.set(**some_dict)                               #equally
 ```
 
 * Your input/output objects can also be copied using the .copy() method:
@@ -154,8 +153,17 @@ import plot_input
 plot_input.plot_equilibrium(my_equilibrium)                                         #default psirz data plot
 ```
 
+* To check if two objects share the same data, use .compare()
 
+```python
+my_equilibrium.compare(another_equilibrium,verbose=True)                            #returns true if my_equilibrium contains all data in another_equilibrium and that data is the same, verbose prints a summary
+```
 
+* To check if your object contains enough information to input into a LOCUST run, use .run_check()
+
+```python
+my_equilibrium.run_check(verbose=True)                                              #returns true if data contains correct fields
+```
 
 
 
@@ -219,6 +227,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         zlim/zlim/...boundary.outline.z/                                #z coordinates of wall boundary
         rbbbs/rbbbs/...boundary.lcfs.r/Rp                               #r coordinates of plasma boundary
         zbbbs/zbbbs/...boundary.lcfs.z/Zp                               #z coordinates of plasma boundary
+        R_1D/-/...profiles_2d[0].grid.dim1/                             #real values of R dimension
+        Z_1D/-/...profiles_2d[0].grid.dim2/                             #real values of Z dimension
     2D data
         psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z   
 
@@ -286,8 +296,12 @@ LOCUST_IO contains a few simple physics routines to process data:
 
         calc_Q_tor_pol(Q=None,T=None,P=None)   #calculates the missing quantity out of Q, toroidal or poloidal flux
         
-
     #output_processing
+
+    #input_plotting
+
+    #output_plotting
+
 ```
 
 
@@ -327,13 +341,6 @@ LOCUST_IO contains a few simple physics routines to process data:
 
 
 
-
-
-### Installing Python Modules:
-
-On clusters:
-
-* pip install module_name==version_number --user
 
 
 
