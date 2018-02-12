@@ -189,7 +189,7 @@ class LOCUST_output:
 
         if hasattr(self,'data') and self.data:
             for key in self.data:
-                if not len(self.data[key])==0: #do not print if the data is empty
+                if not self.data[key].size==0: #do not print if the data is empty
                     print("{key} - {value}".format(key=key,value=self.data[key]))
         
         print("-----------------------\n")
@@ -259,7 +259,7 @@ class LOCUST_output:
             if not key in self.data:
                 data_missing_self.append(key) 
             
-            elif len(self[key])!=len(target[key]): #both contain data but data is different
+            elif self[key].size!=target[key].size: #both contain data but data is different
                 data_different.append(key)
             elif not np.allclose(self[key],target[key]): #must check size first before doing np.allclose()
                 data_different.append(key)
@@ -346,14 +346,14 @@ def dump_orbits_ASCII(output_data,output_filepath):
 
     with open(output_filepath,'w') as file: #open file
 
-        file.write("{}\n".format(len(output_data['number_particles']))) #re-insert line containing number of particles
+        file.write("{}\n".format(output_data['number_particles'].size)) #re-insert line containing number of particles
 
         for time_slice in range(output_data['number_timesteps']): #loop over everything again 
             for particle in range(output_data['number_particles']):
 
                     file.write("{r} {phi} {z}\n".format(r=output_data['orbits'][time_slice][particle][0],phi=output_data['orbits'][time_slice][particle][1],z=output_data['orbits'][time_slice][particle][2]))
 
-        file.write("{}".format(len(output_data['number_timesteps']))) #re-insert line containing number of time steps
+        file.write("{}".format(output_data['number_timesteps'].size)) #re-insert line containing number of time steps
 
 ################################################################## Orbits class
 
