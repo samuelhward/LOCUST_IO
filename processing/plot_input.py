@@ -12,6 +12,7 @@ notes:
 
 ##################################################################
 #Preamble
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits import mplot3d #import 3D plotting axes
@@ -24,9 +25,9 @@ from matplotlib import cm #get colourmaps
 
 
 
-def plot_number_density(some_number_density=None,axis=None):
+def plot_number_density(some_number_density,axis=None):
     """
-    simple number density plot
+    plots number density
      
     notes:
     """
@@ -40,9 +41,12 @@ def plot_number_density(some_number_density=None,axis=None):
 
 
 
-def plot_temperature(some_temperature=None,axis=None):
+def plot_temperature(some_temperature,axis=None):
     """
-    simple temperature plot
+    plots number density
+
+    notes:
+
     """
 
     if axis is None:
@@ -54,23 +58,29 @@ def plot_temperature(some_temperature=None,axis=None):
 
 
 
-def plot_beam_deposition(some_beam_depo=None,ndim=1,number_bins=50,*keys): #NEED SOME_BEAM_DEPO FIRST WITHOUT THE NONE, THEN *KEYS THEN THE REST
+def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None):
     """
+    plots beam deposition
+
+    notes:
+        ndim - set number of dimensions to plot
+        number_bins - set bin for histogram
+        axes - list of strings specifying which axes should be plotted
     """
     
     if ndim==1:
-        if not keys:
+        if axes is None:
             some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo['r'],bins=number_bins)
             some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
             plt.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
         else:
-            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[keys],bins=number_bins)
+            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes],bins=number_bins)
             some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
             plt.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
 
     elif ndim==2:
 
-        if not keys: #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
+        if axes is None: #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
             some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo['r'],some_beam_depo['z'],bins=number_bins) 
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
@@ -79,7 +89,7 @@ def plot_beam_deposition(some_beam_depo=None,ndim=1,number_bins=50,*keys): #NEED
             #plt.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(0.99*np.amin(some_beam_depo_binned),1.01*np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(some_beam_depo_binned),vmax=1.01*np.amax(some_beam_depo_binned))
 
         else:
-            some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[keys[0]],some_beam_depo[keys[1]],bins=number_bins)
+            some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_x,some_beam_depo_binned_y=np.meshgrid(some_beam_depo_binned_x,some_beam_depo_binned_y)
@@ -91,9 +101,9 @@ def plot_beam_deposition(some_beam_depo=None,ndim=1,number_bins=50,*keys): #NEED
 
 
 
-def plot_equilibrium(some_equilibrium=None,key=None,boundary=None):
+def plot_equilibrium(some_equilibrium,key=None,boundary=None):
     """
-    simple equilibrium plot 
+    plots equilibrium
      
     notes:
     """
@@ -103,9 +113,9 @@ def plot_equilibrium(some_equilibrium=None,key=None,boundary=None):
 
         fig=plt.figure()
 
-        X=np.arange(some_equilibrium['nw']) #make a mesh
-        Y=np.arange(some_equilibrium['nh']) 
-        X,Y=np.meshgrid(X,Y) #NOTE change this to R_mesh Z_mesh after issue 23 is fixed
+        X=some_equilibrium['R_1D'] #make a mesh
+        Y=some_equilibrium['Z_1D'] 
+        X,Y=np.meshgrid(X,Y)
         Z=some_equilibrium['psirz'].T 
         plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
         #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
@@ -127,9 +137,9 @@ def plot_equilibrium(some_equilibrium=None,key=None,boundary=None):
 
             fig=plt.figure()
 
-            X=np.arange(some_equilibrium['nw']) #make a mesh
-            Y=np.arange(some_equilibrium['nh']) 
-            X,Y=np.meshgrid(X,Y) #NOTE change this to R_mesh Z_mesh after issue 23 is fixed
+            X=some_equilibrium['R_1D'] #make a mesh
+            Y=some_equilibrium['Z_1D'] 
+            X,Y=np.meshgrid(X,Y)
             Z=some_equilibrium['psirz'].T #2D array (nw,nh) of poloidal flux
             
             #2D plot
@@ -143,15 +153,13 @@ def plot_equilibrium(some_equilibrium=None,key=None,boundary=None):
             
             plt.colorbar()
 
+    if boundary is not None:
+        #add boundaries if requested
+        if 'limiters'in boundary:
+            plt.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
 
-    #add boundaries if requested
-    if boundary=='limiters':
-        pass
-        #plt.plot(some_equilibrium['rlim'],some_equilibrium['zlim']) #NOTE waiting for issue 23 fix
-
-    elif boundary=='plasma':
-        pass
-        #plt.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs']) #NOTE waiting for issue 23 fix
+        if 'plasma' in boundary:
+            plt.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
 
 
     plt.show()
