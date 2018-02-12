@@ -199,20 +199,27 @@ class LOCUST_input:
  
     def __getitem__(self,key):
         """
-        function so can access member data via []        
+        access member data via []        
         """
         return self.data[key]
  
     def __setitem__(self,key,value):
         """
-        function so can access member data via []
+        access member data via []
         """
         self.data[key]=value
 
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
-        self.data=None #read_data definition is designed to be overloaded in children classes 
+        """
+        read data to be overloaded in all children classes
+        """
+
+        self.data=None 
  
     def look(self):
+        """
+        print class information and data
+        """
 
         print("\n-----------------------")
         print("ID - {ID}".format(ID=self.ID))  
@@ -235,9 +242,12 @@ class LOCUST_input:
         
         print("|")
         print("|")
-        for key in self.data:
-            if not self.data[key].size==0: #do not print if the data is empty
-                print("{key} - {value}".format(key=key,value=self.data[key]))
+
+        if hasattr(self,'data') and self.data:
+            for key in self.data:
+                if not len(self.data[key])==0: #do not print if the data is empty
+                    print("{key} - {value}".format(key=key,value=self.data[key]))
+
         print("-----------------------\n")
  
     def copy(self,target,*keys):
@@ -281,24 +291,132 @@ class LOCUST_input:
             for key,value in zip(keys,values): #loop through kwargs
                 self[key]=value
  
+    def compare(self,target,verbose=False):
+        """
+        compare two input objects
+
+        notes:
+            returns true if all data held by target is also held by self (self can have excess)
+            verbose option prints summary of compare results
+        """
+
+        data_missing_self=[]
+        data_missing_target=[]
+        data_different=[]
+
+        for key in target.data: #record fields we do not have that target does
+            if not key in self.data:
+                data_missing_self.append(key) 
+            
+            elif len(self[key])!=len(target[key]): #both contain data but data is different
+                data_different.append(key)
+            elif not np.allclose(self[key],target[key]): #must check size first before doing np.allclose()
+                data_different.append(key)
+
+        for key in self.data: #record fields we have that target does not
+            if not key in target.data:
+                data_missing_target.append(key) 
+
+        if verbose is True: #if wanting to print summary
+            if data_missing_self:
+                print("self is missing:")
+                print('\n'.join(str(key) for key in data_missing_self)) 
+            if data_missing_target:
+                print("target is missing:")
+                print('\n'.join(str(key) for key in data_missing_target)) 
+            if data_different: 
+                print("shared different data:")
+                print('\n'.join(str(key) for key in data_different))
+
+        if not data_different and not data_missing_self: #if shared data is the same and self all target data 
+            return True #self is same as target
+        else:
+            return False
+
+    def run_check(self,verbose=False):
+        """
+        checks whether object is ready to run in LOCUST
+
+        notes:
+            only checks if correct data is held by object
+        """
+
+        missing_data=[]
+
+        if not self.data:
+            if verbose is True:
+                print("no data:")
+            return False
+
+        if self.LOCUST_input_type=='equilibrium':
+            for key in support.required_equilibrium:
+                if key not in self.data:
+                    missing_data.append(key)
+
+        elif self.LOCUST_input_type=='beam_deposition':
+            for key in support.required_beam_deposition:            
+                if key not in self.data:
+                    missing_data.append(key)
+
+        elif self.LOCUST_input_type=='temperature':
+            for key in support.required_temperature:
+                if key not in self.data:
+                    missing_data.append(key)
+
+        elif self.LOCUST_input_type=='number_density':
+            for key in support.required_number_density:
+                if key not in self.data:
+                    missing_data.append(key)
+ 
+        if missing_data: #object is not ready
+            if verbose is True: #if wanting to print summary
+                print("missing data:")
+                print('\n'.join(str(key) for key in missing_data))
+            return False
+        else:
+            return True 
  
  
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
 ################################################################## Equilibrium functions
@@ -396,7 +514,10 @@ def read_equilibrium_GEQDSK(input_filepath):
             return rb,zb,rl,zl
      
         input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
-        flags['loaded'] = True
+        
+        #extra derived data
+        input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
+        input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
          
     return input_data
      
@@ -462,7 +583,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         write_2d(file,output_data['psirz'],cnt)    
         write_1d(file,output_data['qpsi'],cnt) 
          
-        file.write("\n"+str(len(list(output_data['rbbbs'])))+"\t"+str(len(list(output_data['rlim'])))+"\n")
+        file.write("\n"+str(len(list(output_data['rbbbs'])))+"\t"+str(len(list(output_data['rlim'])))+"\n") #write out the nbbbs and limitr
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
  
@@ -501,7 +622,7 @@ def read_equilibrium_IDS(shot,run):
     input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
     input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.r) #NOTE this is apparently obsolete - need to figure out where to write to 
     input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
- 
+
     #2D data    
     input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)
  
@@ -510,7 +631,9 @@ def read_equilibrium_IDS(shot,run):
     psi_1D=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(psi_1D) and sibry=max(psi_1D)
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
- 
+    input_data['R_1D']=R_1D
+    input_data['Z_1D']=Z_1D
+
     #0D data
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z))
     input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z))
@@ -579,17 +702,13 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     #now define the R,Z simulation grid
     output_IDS.equilibrium.time_slice[0].profiles_2d.resize(1) #add an element onto the profiles_2d struct_array to define this grid
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.name='rectangular grid' #add some identifiers for this particular grid
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.description='grid handled with GEQDSK/LOCUST_IO'
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,z), 0 for inverse (psi,theta)
- 
-    #generate the R,Z grid coordinate arrays
-    R_1D=np.linspace(output_data['rleft'],output_data['rleft']+output_data['rdim'],num=output_data['nw']) #generate 1D arrays of the R,z values  TODO do this upon writing in instaed of here     
-    Z_1D=np.linspace(output_data['zmid']-0.5*output_data['zdim'],output_data['zmid']+0.5*output_data['zdim'],num=output_data['nh']) 
-    R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate 2D arrays of R,Z values
- 
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.description=''
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,Z), 0 for inverse (psi,theta)
+  
     #write out R,Z grid coordinate arrays
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1=R_1D #dim1=R values/dim2=Z values
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2=Z_1D
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1=output_data['R_1D'] #dim1=R values/dim2=Z values
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2=output_data['Z_1D']
+    R_2D,Z_2D=np.meshgrid(output_data['R_1D'],output_data['Z_1D']) #generate 2D arrays of R,Z values
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].r=R_2D
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].z=Z_2D
      
@@ -1328,7 +1447,7 @@ class Number_Density(LOCUST_input):
             my_number_density['flux_tor'][coord], my_number_density['n'][coord]
     """
  
-    LOCUST_input_type='number density'
+    LOCUST_input_type='number_density'
  
     def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
         """
