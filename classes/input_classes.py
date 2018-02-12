@@ -624,10 +624,10 @@ def read_equilibrium_IDS(shot,run):
     input_data['ffprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi)
     input_data['pprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi)
     input_data['qpsi']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.q)
-    input_data['rlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) #boundaries
-    input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
-    input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.r) #NOTE this is apparently obsolete - need to figure out where to write to 
-    input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
+    input_data['rlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.r) #boundaries, lcfs is obsolete in latest IMAS
+    input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
+    input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
+    input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
 
     #2D data    
     input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)
