@@ -524,7 +524,7 @@ def read_equilibrium_GEQDSK(input_filepath):
         #extra derived data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
-        input_data['psi_1D']=np.linspace(output_data['simag'],output_data['sibry'],output_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+        input_data['psi_1D']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
     
     return input_data
      
