@@ -101,7 +101,7 @@ def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None):
 
 
 
-def plot_equilibrium(some_equilibrium,key=None,boundary=None):
+def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20):
     """
     plots equilibrium
      
@@ -117,7 +117,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None):
         Y=some_equilibrium['Z_1D'] 
         X,Y=np.meshgrid(X,Y)
         Z=some_equilibrium['psirz'].T 
-        plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+        plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
         #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
 
         plt.colorbar()
@@ -143,7 +143,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None):
             Z=some_equilibrium['psirz'].T #2D array (nw,nh) of poloidal flux
             
             #2D plot
-            plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+            plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
             #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
 
             #3D plot
