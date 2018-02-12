@@ -208,12 +208,18 @@ class LOCUST_output:
             my_output.copy(some_other_output,'some_key','some_other_key') to copy specific fields
             my_output.copy(some_other_output, *some_list_of_args) equally
         """
-        if none_check(self.ID,self.LOCUST_output_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
+        if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
             pass
+
         elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
             self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
-        elif not none_check(self.ID,self.LOCUST_output_type,"cannot copy() - found key containing None\n",*keys): 
+            if hasattr(target,'properties'): #copy properties field
+                self.properties=target.properties
+
+        elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+            if hasattr(target,'properties'): #copy properties field
+                self.properties=target.properties
      
     def set(self,**kwargs):
         """
