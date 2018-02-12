@@ -245,7 +245,7 @@ class LOCUST_input:
 
         if hasattr(self,'data') and self.data:
             for key in self.data:
-                if not len(self.data[key])==0: #do not print if the data is empty
+                if not self.data[key].size==0: #do not print if the data is empty
                     print("{key} - {value}".format(key=key,value=self.data[key]))
 
         print("-----------------------\n")
@@ -314,7 +314,7 @@ class LOCUST_input:
             if not key in self.data:
                 data_missing_self.append(key) 
             
-            elif len(self[key])!=len(target[key]): #both contain data but data is different
+            elif self[key].size!=target[key].size: #both contain data but data is different
                 data_different.append(key)
             elif not np.allclose(self[key],target[key]): #must check size first before doing np.allclose()
                 data_different.append(key)
@@ -695,7 +695,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zbbbs']
  
     #now to define the grids, start with the uniform flux grid
-    psi_1D=np.linspace(output_data['simag'],output_data['sibry'],len(output_data['ffprime'])) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+    psi_1D=np.linspace(output_data['simag'],output_data['sibry'],output_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
  
     #write out the uniform flux grid output_data
     output_IDS.equilibrium.time_slice[0].profiles_1d.psi=psi_1D
@@ -879,7 +879,7 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
         file.write("1.0\n") #re-insert junk lines
         file.write("1.0\n")
  
-        for this_particle in range(len(output_data['r'])): #iterate through all particles i.e. length of our dictionary's arrays
+        for this_particle in range(output_data['r'].size): #iterate through all particles i.e. length of our dictionary's arrays
  
             r_out=output_data['r'][this_particle] #briefly set to a temporary variable to improve readability
             phi_out=output_data['phi'][this_particle]
@@ -945,7 +945,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="r, phi, z, v_r, v_phi, v_z coordinate system"
      
     #start storing particle data
-    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(len(output_data['r'])) #define the weights, i.e. number of particles per marker 
+    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['r'].size) #define the weights, i.e. number of particles per marker 
     positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_phi'],output_data['v_z']]) #create 2D array of positions
     output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
  
@@ -1116,9 +1116,9 @@ def dump_temperature_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(len(output_data['flux_pol']))) #re-insert line containing length
+        file.write("{}\n".format(output_data['flux_pol'].size)) #re-insert line containing length
  
-        for point in range(len(output_data['flux_pol'])): #iterate through all points i.e. length of our dictionary's arrays
+        for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
             flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             T_out=output_data['T'][point]
@@ -1348,9 +1348,9 @@ def dump_number_density_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(len(output_data['flux_pol']))) #re-insert line containing length
+        file.write("{}\n".format(output_data['flux_pol'].size)) #re-insert line containing length
  
-        for point in range(len(output_data['flux_pol'])): #iterate through all points i.e. length of our dictionary's arrays
+        for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
             flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             n_out=output_data['n'][point]
