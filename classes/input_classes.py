@@ -266,10 +266,16 @@ class LOCUST_input:
         """
         if none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
             pass
+
         elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
             self.data=copy.deepcopy(target.data) #using = with whole dictionary results in copying by reference, so need deepcopy() here
+            if hasattr(target,'properties'): #copy properties field
+                self.properties=target.properties
+
         elif not none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
+            if hasattr(target,'properties'): #copy properties field
+                self.properties=target.properties
      
     def set(self,**kwargs):
         """
@@ -631,8 +637,8 @@ def read_equilibrium_IDS(shot,run):
     psi_1D=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(psi_1D) and sibry=max(psi_1D)
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
-    input_data['R_1D']=R_1D
-    input_data['Z_1D']=Z_1D
+    input_data['R_1D']=np.asarray(R_1D)
+    input_data['Z_1D']=np.asarray(Z_1D)
 
     #0D data
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z))

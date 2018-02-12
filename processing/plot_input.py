@@ -155,7 +155,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None):
 
     if boundary is not None:
         #add boundaries if requested
-        if 'limiters'in boundary:
+        if 'limiters' in boundary:
             plt.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
 
         if 'plasma' in boundary:
