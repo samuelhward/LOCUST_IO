@@ -192,7 +192,7 @@ my_equilibrium.run_check(verbose=True)                                          
 ### Global Data Definitions And Variable Names
 
 
-Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, I've included all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways (such as the max() of an array). If there are duplicates, that may be because the data is degenerate (i.e. the same piece of data is written to a file multiple times) or because the same class may contain data from different types of files (e.g. the temperature IDS may hold electron or ion temperature - which will dictate how the data is read/written).
+Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, I've included all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways. If there are duplicates, that may be because the same class may contain data that can be written out in different ways (e.g. the temperature IDS may hold electron or ion temperature - which will dictate how the data is read/written).
 
 
 #### Equilibrium:
@@ -218,9 +218,9 @@ Since this package aims to bridge the gap between various file formats for diffe
         nbbbs/nbbbs/-/nb                                                #number of points in the plasma boundary
         limitr/limitr/-/IDUM                                            #number of points in the wall boundary
     1D data
-        fpol/fpol/...profiles_1d.f/RBphih                               #poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla])
+        fpol/fpol/...profiles_1d.f/RBphih                               #poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla]) (negative for positive plasma current in GEQDSK)
         pres/pres/...profiles_1d.pressure/PRES                          #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
-        ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where F=diamagnetic function=R*B_Phi 
+        ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where psi is poloidal flux per radian and  F=diamagnetic function=R*B_Phi 
         pprime/pprime/...profiles_1d.dpressure_dpsi/PPRIM               #plasma pressure * d(plasma pressure)/d(psi) (check papers)
         qpsi/qpsi/...profiles_1d.q/QPSI                                 #q values on uniform flux grid
         rlim/rlim/...boundary.outline.r/                                #r coordinates of wall boundary
@@ -229,7 +229,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         zbbbs/zbbbs/...boundary.lcfs.z/Zp                               #z coordinates of plasma boundary
         R_1D/-/...profiles_2d[0].grid.dim1/                             #R dimension (m)
         Z_1D/-/...profiles_2d[0].grid.dim2/                             #Z dimension (m)
-        psi_1D/-/...profiles_1d.psi/                                    #real values of poloidal flux (Weber / rad)
+        flux_pol/-/...profiles_1d.psi/                                  #poloidal flux (Weber / rad)
+        flux_tor/-/...profiles_1d.phi/                                  #toroidal flux (Weber / rad)                  
     2D data
         psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad)   
 

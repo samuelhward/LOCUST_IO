@@ -32,17 +32,26 @@ except:
     raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
 try:
+    import imas 
+except:
+    raise ImportError("ERROR: IMAS module not found!\nreturning\n")
+    sys.exit(1)
+try:
     import support #import support module from this directory
 except:
     raise ImportError("ERROR: support.py not found in this directory!\nreturning\n") 
     sys.exit(1)
 try:
-    import imas 
+    import context 
 except:
-    raise ImportError("ERROR: IMAS module not found!\nreturning\n")
+    raise ImportError("ERROR: context.py not found in this directory!\nreturning\n") 
     sys.exit(1)
- 
- 
+try:
+    import process_input 
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
  
@@ -524,8 +533,9 @@ def read_equilibrium_GEQDSK(input_filepath):
         #extra derived data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
-        input_data['psi_1D']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
-    
+        input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #flux grid is uniform so use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+        input_data['flux_tor']=process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
+
     return input_data
      
 def dump_equilibrium_GEQDSK(output_data,output_filepath):
@@ -635,10 +645,12 @@ def read_equilibrium_IDS(shot,run):
  
     #harder bits
     #values derived from grids and profiles
-    psi_1D=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(psi_1D) and sibry=max(psi_1D)
+    flux_pol=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(flux_pol) and sibry=max(flux_pol)
+    flux_tor=input_IDS.equilibrium.time_slice[0].profiles_1d.phi
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
-    input_data['psi_1D']=np.asarray(psi_1D)
+    input_data['flux_pol']=np.asarray(flux_pol)
+    input_data['flux_tor']=np.asarray(flux_tor)
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
@@ -697,12 +709,13 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zbbbs']
      
     #write out the uniform flux grid output_data
-    output_IDS.equilibrium.time_slice[0].profiles_1d.psi=output_data['psi_1D']
     output_IDS.equilibrium.time_slice[0].profiles_1d.f=output_data['fpol'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.pressure=output_data['pres'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi=output_data['ffprime'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi=output_data['pprime'] 
     output_IDS.equilibrium.time_slice[0].profiles_1d.q=output_data['qpsi'] 
+    output_IDS.equilibrium.time_slice[0].profiles_1d.psi=output_data['flux_pol']
+    output_IDS.equilibrium.time_slice[0].profiles_1d.phi=output_data['flux_tor']
  
     #now define the R,Z simulation grid
     output_IDS.equilibrium.time_slice[0].profiles_2d.resize(1) #add an element onto the profiles_2d struct_array to define this grid
