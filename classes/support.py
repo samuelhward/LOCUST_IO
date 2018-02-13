@@ -7,7 +7,6 @@ Samuel Ward
 File which holds supporting functions and variables for the LOCUST-IO package
 ---
 notes: 
-	TODO this could hold all the read/write functions as well as their supporting functions? 
 ---
 '''
 
