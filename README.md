@@ -232,7 +232,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol/-/...profiles_1d.psi/                                  #poloidal flux (Weber / rad)
         flux_tor/-/...profiles_1d.phi/                                  #toroidal flux (Weber / rad)                  
     2D data
-        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad)   
+        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad) 
 
 
 #### Beam Deposition:

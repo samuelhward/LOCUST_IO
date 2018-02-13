@@ -54,7 +54,7 @@ except:
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
- 
+pi=np.pi
  
  
  
@@ -625,8 +625,8 @@ def read_equilibrium_IDS(shot,run):
     input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0)
     input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r)
     input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z)
-    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis)
-    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary)
+    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis)/(2*pi) #convert to Wb/rad
+    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary)/(2*pi) #convert to Wb/rad
     input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip)
  
     #1D data
@@ -641,7 +641,7 @@ def read_equilibrium_IDS(shot,run):
     input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
 
     #2D data    
-    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)
+    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2*pi) #convert to Wb/rad
  
     #harder bits
     #values derived from grids and profiles
@@ -649,8 +649,8 @@ def read_equilibrium_IDS(shot,run):
     flux_tor=input_IDS.equilibrium.time_slice[0].profiles_1d.phi
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
-    input_data['flux_pol']=np.asarray(flux_pol)
-    input_data['flux_tor']=np.asarray(flux_tor)
+    input_data['flux_pol']=np.asarray(flux_pol)/(2*pi) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(flux_tor)/(2*pi) #convert to Wb/rad
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
