@@ -1394,7 +1394,7 @@ def read_number_density_IDS(shot,run,properties):
         print("cannot read_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
 
     #additional data
-    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))/(2*pi) #convert to Wb/rad
+    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor)/(2*pi)) #convert to Wb/rad
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
 
     input_IDS.close()
