@@ -253,10 +253,10 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Core_Profiles IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/core_profiles.html))
 
     1D data
-        flux_pol/column 1/...profiles_1d[0].grid.psi                    #normalised poloidal flux coordinate
+        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux
         T/column 2/...profiles_1d[0].ion[0].temperature                 #ion temperature
         T/column 2/...profiles_1d[0].electrons.temperature              #electron temperature
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #normalised toroidal flux coordinate
+        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (IDS needs normalising)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 
@@ -265,10 +265,10 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Core_Profiles IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/core_profiles.html))
 
     1D data
-        flux_pol/column 1/...profiles_1d[0].grid.psi                    #normalised poloidal flux coordinate
+        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux
         n/column 2/...profiles_1d[0].ion[0].density                     #ion number density
         n/column 2/...profiles_1d[0].electrons.density                  #electron number density
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #normalised toroidal flux coordinate
+        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (IDS needs normalising)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 #### Orbits:

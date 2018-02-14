@@ -530,7 +530,7 @@ def read_equilibrium_GEQDSK(input_filepath):
      
         input_data['rbbbs'],input_data['zbbbs'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['nbbbs'],input_data['limitr'])
         
-        #extra derived data
+        #additional data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
         input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #flux grid is uniform so use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
@@ -1161,7 +1161,7 @@ def read_temperature_IDS(shot,run,properties):
     else:
         print("cannot read_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
  
-    #read optional quantities
+    #additional data
     dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
 
@@ -1198,7 +1198,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     else:
         print("cannot dump_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
 
-    #dump optional quantities
+    #additional data   
     safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
     safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
 
@@ -1393,7 +1393,7 @@ def read_number_density_IDS(shot,run,properties):
     else:
         print("cannot read_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
 
-    #read optional quantities
+    #additional data
     dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
 
@@ -1430,7 +1430,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     else:
         print("cannot dump_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
 
-    #dump optional quantities
+    #additional data
     safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
     safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
 
