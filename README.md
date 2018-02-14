@@ -222,7 +222,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         pres/pres/...profiles_1d.pressure/PRES                          #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
         ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where psi is poloidal flux per radian and  F=diamagnetic function=R*B_Phi 
         pprime/pprime/...profiles_1d.dpressure_dpsi/PPRIM               #plasma pressure * d(plasma pressure)/d(psi) (check papers)
-        qpsi/qpsi/...profiles_1d.q/QPSI                                 #q values on uniform flux grid
+        qpsi/qpsi/...profiles_1d.q/QPSI                                 #q profile (function of flux_pol)
         rlim/rlim/...boundary.outline.r/                                #r coordinates of wall boundary
         zlim/zlim/...boundary.outline.z/                                #z coordinates of wall boundary
         rbbbs/rbbbs/...boundary.lcfs.r/Rp                               #r coordinates of plasma boundary
@@ -230,7 +230,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         R_1D/-/...profiles_2d[0].grid.dim1/                             #R dimension (m)
         Z_1D/-/...profiles_2d[0].grid.dim2/                             #Z dimension (m)
         flux_pol/-/...profiles_1d.psi/                                  #poloidal flux (Weber / rad)
-        flux_tor/-/...profiles_1d.phi/                                  #toroidal flux (Weber / rad)                  
+        flux_tor/-/...profiles_1d.phi/                                  #toroidal flux (Weber / rad)
     2D data
         psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad) 
 
@@ -253,10 +253,10 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Core_Profiles IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/core_profiles.html))
 
     1D data
-        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux
+        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux (Weber / rad)
         T/column 2/...profiles_1d[0].ion[0].temperature                 #ion temperature
         T/column 2/...profiles_1d[0].electrons.temperature              #electron temperature
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (IDS needs normalising)
+        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (Weber / rad)(IDS needs converting)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 
@@ -265,10 +265,10 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/ASCII/[Core_Profiles IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/core_profiles.html))
 
     1D data
-        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux
+        flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux (Weber / rad)
         n/column 2/...profiles_1d[0].ion[0].density                     #ion number density
         n/column 2/...profiles_1d[0].electrons.density                  #electron number density
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (IDS needs normalising)
+        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (Weber / rad)(IDS needs converting)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 #### Orbits:
