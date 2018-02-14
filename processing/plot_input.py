@@ -116,9 +116,11 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
         X=some_equilibrium['R_1D'] #make a mesh
         Y=some_equilibrium['Z_1D'] 
         X,Y=np.meshgrid(X,Y)
-        Z=some_equilibrium['psirz'].T 
-        plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+        Z=some_equilibrium['psirz'].T
+        contour=plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
         #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+        for c in contour.collections:
+                c.set_edgecolor("face") 
 
         plt.colorbar()
 
@@ -143,8 +145,10 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
             Z=some_equilibrium['psirz'].T #2D array (nw,nh) of poloidal flux
             
             #2D plot
-            plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+            contour=plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
             #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+            for c in contour.collections:
+                c.set_edgecolor("face")
 
             #3D plot
             #ax=plt.axes(projection='3d')
