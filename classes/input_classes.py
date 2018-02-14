@@ -1151,7 +1151,7 @@ def read_temperature_IDS(shot,run,properties):
  
     input_data = {} #initialise blank dictionary to hold the data
     
-    input_data['flux_pol']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi) #convert to Wb/rad
+    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi)) #convert to Wb/rad
  
     #read in temperature depending on species
     if properties=='electrons':
@@ -1162,7 +1162,7 @@ def read_temperature_IDS(shot,run,properties):
         print("cannot read_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
  
     #additional data
-    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))/(2*pi) #convert to Wb/rad
+    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor)/(2*pi)) #convert to Wb/rad
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
 
     input_IDS.close()
@@ -1383,7 +1383,7 @@ def read_number_density_IDS(shot,run,properties):
  
     input_data = {} #initialise blank dictionary to hold the data
     
-    input_data['flux_pol']=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi) #convert to Wb/rad
+    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi)) #convert to Wb/rad
 
     #read in number density depending on species
     if properties=='electrons':
