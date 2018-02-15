@@ -952,10 +952,18 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
  
     #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_phi in this case
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r, phi, z" #add some description here
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 #set arbitrarily here
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="r, phi, z, v_r, v_phi, v_z coordinate system"
-     
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r" #name of coordinate
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius [m]]" #description of coordinate
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].name="phi" 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].index=1 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle [rad]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical position [m]"
+
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['r'].size) #define the weights, i.e. number of particles per marker 
     positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_phi'],output_data['v_z']]) #create 2D array of positions
