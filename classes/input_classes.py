@@ -908,7 +908,8 @@ def read_beam_depo_IDS(shot,run):
     reads relevant LOCUST neutral beam data from a distribution_sources IDS and returns as a dictionary
  
     notes:
-        currently assumes that all sources have the same coordinate structure        
+        currently assumes that all sources have the same coordinate structure
+        assumes markers hold only one time slice at ...markers[0]        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -922,23 +923,16 @@ def read_beam_depo_IDS(shot,run):
     for source in input_IDS.distribution_sources.source: #cycle through all possible sources
         if len(source.markers[0].positions)>0:
 
-            for coordinate_index in range(len(source.markers[0].positions[0,:])) #loop over the possible coordinate types e.g. r, phi, z
+            for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
                 coordinate_name=str(source.markers[0].coordinate_identifier[coordinate_index].name)
 
-                for marker in range(len(source.markers[0].positions[0,:]))
+                for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
                     
-                    source.markers[0].coordinate_identifier.name
+                    input_data[coordinate_name].extend(marker)    
 
 
-    #extract the 2D positions array
-    positions=input_IDS.distribution_sources.source[0].markers[0].positions #assume everything is stored in the first source, and first marker type
- 
-    input_data['r']=np.asarray(positions[:,0])
-    input_data['phi']=np.asarray(positions[:,1])
-    input_data['z']=np.asarray(positions[:,2])
-    input_data['v_r']=np.asarray(positions[:,3])
-    input_data['v_phi']=np.asarray(positions[:,4])
-    input_data['v_z']=np.asarray(positions[:,5])
+    for key in input_data: #convert to numpy arrays
+        input_data[key]=np.asarray(input_data[key])
  
     input_IDS.close()
  
