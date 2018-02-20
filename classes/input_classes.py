@@ -925,11 +925,10 @@ def read_beam_depo_IDS(shot,run):
 
             for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
                 coordinate_name=str(source.markers[0].coordinate_identifier[coordinate_index].name)
-                print(coordinate_name)
 
                 for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
-                        
-                    input_data[coordinate_name].extend(marker)    
+
+                    input_data[coordinate_name].extend([marker])    
 
 
     for key in input_data: #convert to numpy arrays
