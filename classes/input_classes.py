@@ -908,17 +908,31 @@ def read_beam_depo_IDS(shot,run):
     reads relevant LOCUST neutral beam data from a distribution_sources IDS and returns as a dictionary
  
     notes:
-        
+        currently assumes that all sources have the same coordinate structure        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
     input_IDS.distribution_sources.get() #open the file and get all the data from it
- 
+
+    input_data = {} #initialise blank dictionary to hold the data
+    for coordinate in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
+        input_data[str(coordinate.name)]=[]
+
+    for source in input_IDS.distribution_sources.source: #cycle through all possible sources
+        if len(source.markers[0].positions)>0:
+
+            for coordinate_index in range(len(source.markers[0].positions[0,:])) #loop over the possible coordinate types e.g. r, phi, z
+                coordinate_name=str(source.markers[0].coordinate_identifier[coordinate_index].name)
+
+                for marker in range(len(source.markers[0].positions[0,:]))
+                    
+                    source.markers[0].coordinate_identifier.name
+
+
     #extract the 2D positions array
     positions=input_IDS.distribution_sources.source[0].markers[0].positions #assume everything is stored in the first source, and first marker type
  
-    input_data = {} #initialise blank dictionary to hold the data
     input_data['r']=np.asarray(positions[:,0])
     input_data['phi']=np.asarray(positions[:,1])
     input_data['z']=np.asarray(positions[:,2])
