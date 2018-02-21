@@ -229,8 +229,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         zbbbs/zbbbs/...boundary.lcfs.z/Zp                               #z coordinates of plasma boundary
         R_1D/-/...profiles_2d[0].grid.dim1/                             #R dimension (m)
         Z_1D/-/...profiles_2d[0].grid.dim2/                             #Z dimension (m)
-        flux_pol/-/...profiles_1d.psi/                                  #poloidal flux (Weber / rad)
-        flux_tor/-/...profiles_1d.phi/                                  #toroidal flux (Weber / rad)
+        flux_pol/-/...profiles_1d.psi/                                  #poloidal flux from magnetic axis up to the plasma boundary (Weber / rad)
+        flux_tor/-/...profiles_1d.phi/                                  #toroidal flux from magnetic axis up to the plasma boundary (Weber / rad)
     2D data
         psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad) 
 
