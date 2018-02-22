@@ -38,7 +38,6 @@ Table of Contents
 * [Appendix](#appendix)
     * [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
     * [Processing Routines](#processing-routines) 
-    * [Installing IMAS](#installing-imas) 
 * [Licence](#licence)
 
 
@@ -309,36 +308,6 @@ LOCUST_IO contains a few simple physics routines to process data:
 
 
 
-
-
-
-
-
-### Installing IMAS:
-
-    echo 'deb http://www.mdsplus.org/dist/Ubuntu16/repo MDSplus stable' | sudo tee --append /etc/apt/sources.list
-    cd /tmp
-    wget http://www.mdsplus.org/dist/mdsplus.gpg.key
-    sudo apt-key add mdsplus.gpg.key
-    sudo apt-get update
-    sudo apt-get install mdsplus mdsplus-devel libsaxonhe-java libblitz0-dev cython cython3
-    sudo ln -s /usr/share/java/Saxon-HE-9.5.1.1.jar /usr/share/java/saxon9he.jar
-    [add SSH key access using ssh-agent if necessary]
-    export MDSPLUS_DIR=/usr/local/mdsplus
-    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    export LD_LIBRARY_PATH=/usr/local/mdsplus/lib
-    export CLASSPATH=/usr/share/java/saxon9he.jar
-    export PKG_CONFIG_PATH=/usr/lib/pkgconfig
-    export IMAS_HOME=/scratch/IMAS
-    module load /usr/local/pgi/modulefiles/pgi64/17.4
-    mkdir /scratch/IMAS_SRC
-    cd /scratch/IMAS_SRC
-    git clone url_to_imas
-    cd installer
-    make
-    make install
-    sudo cp $IMAS_HOME /usr/local/
-    sudo rm -rf $IMAS_HOME
 
 
 
