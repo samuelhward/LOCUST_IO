@@ -33,7 +33,7 @@ def plot_number_density(some_number_density,axis=None):
     """
 
     if axis is None:
-        plt.plot(some_number_density['flux_pol'],some_number_density['n'])
+        plot_number_density(some_number_density=some_number_density,axis='flux_pol') #default plot
     else:
         plt.plot(some_number_density[axis],some_number_density['n'])
 
@@ -50,7 +50,7 @@ def plot_temperature(some_temperature,axis=None):
     """
 
     if axis is None:
-        plt.plot(some_temperature['flux_pol'],some_temperature['T'])
+        plot_temperature(some_temperature=some_temperature,axis='flux_pol') #default plot
     else:
         plt.plot(some_temperature[axis],some_temperature['T'])
 
@@ -69,10 +69,11 @@ def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None):
     """
     
     if ndim==1:
+
         if axes is None:
-            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo['r'],bins=number_bins)
-            some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
-            plt.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
+
+            plot_beam_deposition(some_beam_depo=some_beam_depo,ndim=ndim,number_bins=number_bins,axes='r') #default plot
+
         else:
             some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes],bins=number_bins)
             some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
@@ -80,15 +81,11 @@ def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None):
 
     elif ndim==2:
 
-        if axes is None: #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
-            some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo['r'],some_beam_depo['z'],bins=number_bins) 
-            some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
-            some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
-            some_beam_depo_binned_x,some_beam_depo_binned_y=np.meshgrid(some_beam_depo_binned_x,some_beam_depo_binned_y)
-            plt.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(some_beam_depo_binned),vmax=1.01*np.amax(some_beam_depo_binned))
-            #plt.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(0.99*np.amin(some_beam_depo_binned),1.01*np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(some_beam_depo_binned),vmax=1.01*np.amax(some_beam_depo_binned))
+        if axes is None: 
 
-        else:
+            plot_beam_deposition(some_beam_depo=some_beam_depo,ndim=ndim,number_bins=number_bins,axes=['r','z']) #default plot
+
+        else: #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
             some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
@@ -111,18 +108,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
     #default plot mode (plot psirz grid)
     if key==None:
 
-        fig=plt.figure()
-
-        X=some_equilibrium['R_1D'] #make a mesh
-        Y=some_equilibrium['Z_1D'] 
-        X,Y=np.meshgrid(X,Y)
-        Z=some_equilibrium['psirz'].T
-        contour=plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
-        #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
-        for c in contour.collections:
-                c.set_edgecolor("face") 
-
-        plt.colorbar()
+        plot_equilibrium(some_equilibrium,key=psirz,boundary=boundary,number_contours=number_contours)
 
     else:
         
@@ -156,6 +142,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
             #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
             
             plt.colorbar()
+            plt.axis('scaled')
 
     if boundary is not None:
         #add boundaries if requested
