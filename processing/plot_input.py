@@ -108,7 +108,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
     #default plot mode (plot psirz grid)
     if key==None:
 
-        plot_equilibrium(some_equilibrium,key=psirz,boundary=boundary,number_contours=number_contours)
+        plot_equilibrium(some_equilibrium,key='psirz',boundary=boundary,number_contours=number_contours)
 
     else:
         

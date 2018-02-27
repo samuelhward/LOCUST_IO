@@ -28,6 +28,7 @@ try:
     import re
     import time
     import itertools
+    import fortranformat
 except:
     raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
@@ -460,8 +461,10 @@ def read_equilibrium_GEQDSK(input_filepath):
         input_data['nh'] = np.asarray(int(conts[-1])) #same as nyefit or height dimension
         input_data['nw'] = np.asarray(int(conts[-2])) #same as nxefit or width dimension
         input_data['idum'] = np.asarray(int(conts[-3]))
-        flags = {}
-        flags['case'] = conts[0:-4]
+        #input_data['time'] = np.asarray(int(consts[-4])) #time slice time (in ms)
+
+        flags = {} #read the case in (basically just ID data)
+        flags['case'] = conts[0:-4] 
      
         #now use generator to read numbers from remaining lines in file
         token = file_numbers(file) #token now holds all lines in the file, containing all values. each get_next() call will grab the next number in a line (since get_next() returns the next value in the yield loop? check this plz)
@@ -544,20 +547,17 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
     generic function for writing G-EQDSK-formatted data to file
  
     notes:
-        originally written by Ben Dudson and edited by Nick Walkden
-        does not write out idum
- 
-        
+        originally written by Ben Dudson and edited by Nick Walkden        
     """
  
     cnt = itertools.cycle([0,1,2,3,4]) #counter
  
     def write_number(file,number,counter):
         if number < 0:
-            seperator = "-"
+            separator = " -"
             number = np.abs(number)
         else:
-            seperator = " "
+            separator = "  "
         if get_next(counter) == 4:
             last = "\n"
         else:
@@ -565,7 +565,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
          
         string = '%.10E'%number
         #mant,exp = string.split('E')
-        file.write(seperator+string+last)
+        file.write(separator+string+last)
  
     def write_1d(file,array,counter):
         for num in array:
@@ -583,7 +583,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         file.write("\n")
      
     with open(output_filepath,'w') as file:
-        line = " LOCUST_IO "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(output_data['nw'])+" "+str(output_data['nh'])+"\n"
+        line = " LOCUST_IO "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(output_data['idum'])+" "+str(output_data['nw'])+" "+str(output_data['nh'])+"\n"
         file.write(line)
  
         float_keys = [
