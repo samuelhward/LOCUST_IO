@@ -335,7 +335,10 @@ LOCUST_IO contains a few simple physics routines to process data:
 
 
 
+## Useful Stuff:
 
+* [Fortran format guide](https://pages.mtu.edu/~shene/COURSES/cs201/NOTES/format.html)
+* [GEQDSK format](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)
 
 
 
