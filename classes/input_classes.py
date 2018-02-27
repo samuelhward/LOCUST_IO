@@ -28,7 +28,6 @@ try:
     import re
     import time
     import itertools
-    import fortranformat
 except:
     raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
     sys.exit(1)
@@ -547,7 +546,11 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
     generic function for writing G-EQDSK-formatted data to file
  
     notes:
-        originally written by Ben Dudson and edited by Nick Walkden        
+        originally written by Ben Dudson and edited by Nick Walkden
+        when writing out according to GEQDSK format (see README.md):
+            6a8,3i4=
+            5e16.9=
+            2i5=
     """
  
     cnt = itertools.cycle([0,1,2,3,4]) #counter
@@ -563,7 +566,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         else:
             last = ""
          
-        string = '%.10E'%number
+        string = '%.10e'%number
         #mant,exp = string.split('E')
         file.write(separator+string+last)
  
@@ -583,7 +586,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         file.write("\n")
      
     with open(output_filepath,'w') as file:
-        line = " LOCUST_IO "+time.strftime("%d/%m/%Y")+" # 0 0 "+str(output_data['idum'])+" "+str(output_data['nw'])+" "+str(output_data['nh'])+"\n"
+        line = "LOCUSTIO   "+time.strftime("%d/%m/%Y")+"      # 0    0             "+str(output_data['idum'])+"  "+str(output_data['nw'])+"  "+str(output_data['nh'])+"\n"
         file.write(line)
  
         float_keys = [
