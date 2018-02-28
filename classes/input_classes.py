@@ -454,8 +454,6 @@ def read_equilibrium_GEQDSK(input_filepath):
  
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
-        
- 
     """
  
     input_data = {}
@@ -472,6 +470,7 @@ def read_equilibrium_GEQDSK(input_filepath):
         input_data['nw'] = np.asarray(int(conts[-2])) #same as nxefit or width dimension
         input_data['idum'] = np.asarray(int(conts[-3]))
         #input_data['time'] = np.asarray(int(consts[-4])) #time slice time (in ms)
+        #input_data['EFITshot'] = np.asarray(int(consts[-5])) #shot number
 
         flags = {} #read the case in (basically just ID data)
         flags['case'] = conts[0:-4] 
@@ -562,10 +561,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
             6a8,3i4=
             5e16.9=
             2i5=
-    """
- 
-    cnt = itertools.cycle([0,1,2,3,4]) #counter
- 
+    """ 
     def write_number(file,number,counter):
         
         if number==0:
@@ -599,11 +595,14 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
             write_number(file,R[i],counter)
             write_number(file,Z[i],counter)
      
-    with open(output_filepath,'w') as file: #XXX need to replace these with using the fortran function written above
+
+    with open(output_filepath,'w') as file:
         
+        cnt = itertools.cycle([0,1,2,3,4]) #initialise counter
+
         EFIT_shot=19113 #just 'make up' a shot number and time (in ms) for now
         EFIT_time=23
-        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+fortran_string(EFIT_shot,6)+fortran_string(EFIT_time,6)+fortran_string(output_data['idum'],14)+fortran_string(output_data['nw'],4)+fortran_string(output_data['nh'],4)+"\n"
+        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+fortran_string(EFIT_shot,6)+fortran_string(EFIT_time,6)+fortran_string(output_data['xdum'],14)+fortran_string(output_data['nw'],4)+fortran_string(output_data['nh'],4)+"\n"
         file.write(line)
  
         float_keys = [
@@ -614,17 +613,37 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         for key in float_keys:
             write_number(file,output_data[key],cnt)
  
+        cnt = itertools.cycle([0,1,2,3,4]) #reset the counter (otherwise our newlines will be out of sync)
         write_1d(file,output_data['fpol'],cnt)
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pres'],cnt)
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again        
         write_1d(file,output_data['ffprime'],cnt)
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pprime'],cnt)
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_2d(file,output_data['psirz'],cnt)    
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['qpsi'],cnt) 
         
-        file.write(fortran_string(len(output_data['rbbbs']),5)+fortran_string(len(output_data['rlim']),5)+"\n") #write out number of limiter/plasma boundary points
+        file.write("\n"+fortran_string(len(output_data['rbbbs']),5)+fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
+        
+        file.write("\n")
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
+        
         file.write("\n") #file has a newline here
-        cnt = itertools.cycle([0,1,2,3,4]) #reset the counter (otherwise our newlines will be out of sync)
+        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
  
 def read_equilibrium_IDS(shot,run): 
