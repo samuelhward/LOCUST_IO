@@ -154,10 +154,21 @@ def safe_set(target,source):
         target=source
 
  
- 
- 
- 
+def fortran_string(output,length):
+    """
+    produces a string stream of specified length, padded with space at the start
 
+    notes:
+        supposed to be a quick fix to fortran format descriptors
+    """
+
+    output_string=str(output)
+    number_spaces=length-len(output_string) #caclulate amount of padding needed from length of the output
+    if number_spaces>=0:
+        string_stream='{}{}'.format(' '*number_spaces,output_string) #construct the string stream
+        return string_stream
+    else:
+        print('WARNING: fortran_string() must take a number with more digits than length of final stream')
 
 
 
@@ -556,7 +567,11 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
     cnt = itertools.cycle([0,1,2,3,4]) #counter
  
     def write_number(file,number,counter):
-        if number < 0:
+        
+        if number==0:
+            separator = "  "
+            number = np.abs(number)
+        elif number < 0:
             separator = " -"
             number = np.abs(number)
         else:
@@ -566,7 +581,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         else:
             last = ""
          
-        string = '%.10e'%number
+        string = '%.8e'%number #NOTE potential python3 incompatability
         #mant,exp = string.split('E')
         file.write(separator+string+last)
  
@@ -583,10 +598,12 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         for i in np.arange(len(list(R))):
             write_number(file,R[i],counter)
             write_number(file,Z[i],counter)
-        file.write("\n")
      
-    with open(output_filepath,'w') as file:
-        line = "LOCUSTIO   "+time.strftime("%d/%m/%Y")+"      # 0    0             "+str(output_data['idum'])+"  "+str(output_data['nw'])+"  "+str(output_data['nh'])+"\n"
+    with open(output_filepath,'w') as file: #XXX need to replace these with using the fortran function written above
+        
+        EFIT_shot=19113 #just 'make up' a shot number and time (in ms) for now
+        EFIT_time=23
+        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+fortran_string(EFIT_shot,6)+fortran_string(EFIT_time,6)+fortran_string(output_data['idum'],14)+fortran_string(output_data['nw'],4)+fortran_string(output_data['nh'],4)+"\n"
         file.write(line)
  
         float_keys = [
@@ -603,9 +620,11 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         write_1d(file,output_data['pprime'],cnt)
         write_2d(file,output_data['psirz'],cnt)    
         write_1d(file,output_data['qpsi'],cnt) 
-         
-        file.write("\n"+str(len(list(output_data['rbbbs'])))+"\t"+str(len(list(output_data['rlim'])))+"\n") #write out the nbbbs and limitr
+        
+        file.write(fortran_string(len(output_data['rbbbs']),5)+fortran_string(len(output_data['rlim']),5)+"\n") #write out number of limiter/plasma boundary points
         write_bndry(file,output_data['rbbbs'],output_data['zbbbs'],cnt)
+        file.write("\n") #file has a newline here
+        cnt = itertools.cycle([0,1,2,3,4]) #reset the counter (otherwise our newlines will be out of sync)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
  
 def read_equilibrium_IDS(shot,run): 
