@@ -40,8 +40,8 @@ def interpolate_2D(x,y,X_grid,Y_grid,Z_grid):
         uses Rbf - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
     """
 
-    X_grid,Y_grid=np.meshgrid(X_grid,Y_grid)
-    interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,grid,function='cubic',smooth=0)
+    #XXX need this? X_grid,Y_grid=np.meshgrid(X_grid,Y_grid)
+    interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function='cubic',smooth=0)
     interpolated_values=interpolator(x,y)
 
     return interpolated_values
@@ -54,7 +54,7 @@ def interpolate_1D(x,X_line,Y_line):
         uses Rbf - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
     """
 
-    interpolator=scipy.interpolate.Rbf(X_line,Y_line,grid,function='cubic',smooth=0)
+    interpolator=scipy.interpolate.Rbf(X_line,Y_line,function='cubic',smooth=0)
     interpolated_values=interpolator(x)
 
     return interpolated_values
@@ -147,7 +147,7 @@ def B_calc(psirz,fpolrz,R_1D,Z_1D): #XXX check all the ordering
 
     one_R=1.0/R_1D
 
-    B_z=gradient[0]*(-1.0)*one_R 
+    B_z=gradient[0]*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nw)...maybe one of these references to one_R should be transposed?
     B_r=gradient[1]*one_R
     B_tor=fpolrz*one_R
 
@@ -161,43 +161,53 @@ def transform_marker_velocities(r,phi,z,pitch,speed,R_1D,Z_1D,B_field,conversion
 
     notes:
         currently uses 2D B_field (toroidally symmetric)
+        pitch here is v|| / v
     """
 
-    R_max=np.max(R_1D) #calculate these in advance to speed up
-    R_min=np.min(R_1D)
-    Z_max=np.max(Z_1D)
-    Z_min=np.min(Z_1D)
-    escapees=[] #to hold indices of rogue particles 
+    if conversion=='guiding_centre':
 
-    if np.max(r)>R_max or np.min(r)<R_min or np.max(z)>Z_max or np.min(z)<Z_min: #check particles are within domain
-        print("WARNING: markers found outside of computational boundary - removing them from list")
+        R_max=np.max(R_1D) #calculate these in advance to speed up
+        R_min=np.min(R_1D)
+        Z_max=np.max(Z_1D)
+        Z_min=np.min(Z_1D)
+        escapees=[] #to hold indices of rogue particles 
 
-        for index,(r_particle,z_particle) in enumerate(zip(r,z)): #if some are rogue, begin search and removal
-            if r_particle>R_max or r_particle<R_min or z_particle>Z_max or z_particle<Z_min:
-            
-                escapees.extend([index]) #mark index for deletion (do not delete yet otherwise dynamically changing array length in loop!)
-            
-        r_trim=np.delete(r,escapees) #new arrays with rogue particles trimmed out (still works if escapees=[])
-        phi_trim=np.delete(phi,escapees)
-        z_trim=np.delete(z,escapees)
-        pitch_trim=np.delete(pitch,escapees)
-        speed_trim=np.delete(speed,escapees)
+        if np.max(r)>R_max or np.min(r)<R_min or np.max(z)>Z_max or np.min(z)<Z_min: #check particles are within domain
+            print("WARNING: markers found outside of computational boundary - removing them from list")
 
-    if escapees: 
-        B_field_r=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,0]) #interpolate B field components to each particle 
-        B_field_phi=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,1])
-        B_field_z=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,2])
-    else:
-        B_field_r=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,0]) #interpolate B field components to each particle 
-        B_field_phi=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,1])
-        B_field_z=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,2])
-    
-    rand_1=[random.uniform(0,1) for particle in range(len(r)-len(escapees))] #need to generate two lists of random numbers
-    rand_2=[random.uniform(0,1) for particle in range(len(r)-len(escapees))]
+            for index,(r_particle,z_particle) in enumerate(zip(r,z)): #if some are rogue, begin search and removal
+                if r_particle>R_max or r_particle<R_min or z_particle>Z_max or z_particle<Z_min:
+                
+                    escapees.extend([index]) #mark index for deletion (do not delete yet otherwise dynamically changing array length in loop!)
+                
+            r_trim=np.delete(r,escapees) #new arrays with rogue particles trimmed out (still works if escapees=[])
+            phi_trim=np.delete(phi,escapees)
+            z_trim=np.delete(z,escapees)
+            pitch_trim=np.delete(pitch,escapees)
+            speed_trim=np.delete(speed,escapees)
 
-    #XXX NEED TO CALCULATE THE INDIVIDUAL COMPONENTS HERE NOW (PARALLEL IS EASIEST TO START WITH, DON'T NEED RANDOM NUMBERS FOR THAT)
+        if escapees: 
+            B_field_r=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,0]) #interpolate B field components to each particle 
+            B_field_phi=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,1])
+            B_field_z=interpolate_2D(r_trim,z_trim,R_1D,Z_1D,B_field[:,:,2])
+        else:
+            B_field_r=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,0]) #interpolate B field components to each particle 
+            B_field_phi=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,1])
+            B_field_z=interpolate_2D(r,z,R_1D,Z_1D,B_field[:,:,2])
+        
+        #calculate velocity magnitudes (speed=magnitude of velocity)
+        v_par_magnitude=pitch*speed
+        v_perp_magnitude=np.sqrt(1-((v_par_magnitude**2)/(speed**2)))
 
-    return v_r,v_phi,v_z
+        #resolve the parallel components (V||i = some_constant * Bi for all i)
+        some_constant=
+
+        #resolve the perpendicular components (requires random sampling)
+
+        rand_1=[random.uniform(0,1) for particle in range(len(r)-len(escapees))] #need to generate two random numbers per particle
+        rand_2=[random.uniform(0,1) for particle in range(len(r)-len(escapees))]
+
+        return v_r,v_phi,v_z
 
 #################################
 
