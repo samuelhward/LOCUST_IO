@@ -61,6 +61,7 @@ Table of Contents
 * Python ≥v2.7
 * numpy module ≥v1.14
 * matplotlib module
+* scipy module ≥v1.0
 * copy, re, itertools and time modules in the standard library 
 
 
@@ -202,7 +203,7 @@ Since this package aims to bridge the gap between various file formats for diffe
     0D data
         nw/nw/-/nEQ_R                                                   #number of points in R (x or width)
         nh/nh/-/nEQ_Z                                                   #number of points in Z (y or height)
-        idum/idum/-/IDUM                                                #number of spatial dimensions?
+        idum/idum/-/IDUM                                                #dummy variable
         rdim/rdim/-/RDIM                                                #size of the R dimension in m
         zdim/zdim/-/ZDIM                                                #size of the Z dimension in m
         rcentr/rcentr/...vacuum_toroidal_field.r0/RCENTR                #reference value of R
@@ -214,11 +215,11 @@ Since this package aims to bridge the gap between various file formats for diffe
         simag/simag/...global_quantities.psi_axis/PSI_magh              #poloidal flux psi at magnetic axis (Weber / rad)
         sibry/sibry/...global_quantities.psi_boundary/SIBRY             #poloidal flux psi at plasma boundary (Weber / rad)
         current/current/...global_quantities.ip/CURRENT                 #plasma current [Amps]   
-        xdum/xdum/-/XDUM                                                #dummy variable - just contains zero
+        xdum/xdum/-/XDUM                                                #dummy variable - just contains int(zero)
         nbbbs/nbbbs/-/nb                                                #number of points in the plasma boundary
         limitr/limitr/-/IDUM                                            #number of points in the wall boundary
     1D data
-        fpol/fpol/...profiles_1d.f/RBphih                               #poloidal current function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla]) (negative for positive plasma current in GEQDSK)
+        fpol/fpol/...profiles_1d.f/RBphih                               #poloidal flux function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla]) (negative for positive plasma current in GEQDSK)
         pres/pres/...profiles_1d.pressure/PRES                          #plasma pressure in nt/m^2 on uniform flux grid (1D array of p(psi) [Pascals])
         ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where psi is poloidal flux per radian and  F=diamagnetic function=R*B_Phi 
         pprime/pprime/...profiles_1d.dpressure_dpsi/PPRIM               #plasma pressure * d(plasma pressure)/d(psi) (check papers)
@@ -294,15 +295,25 @@ Since this package aims to bridge the gap between various file formats for diffe
 LOCUST_IO contains a few simple physics routines to process data: 
 
 ```python
-    #input_processing
+    #process_input
 
-        calc_Q_tor_pol(Q=None,T=None,P=None)   #calculates the missing quantity out of Q, toroidal or poloidal flux
-        
-    #output_processing
+        calc_Q_tor_pol(Q=None,T=None,P=None)    #calculates the missing quantity out of Q, toroidal or poloidal flux
+        fpolrz_calc                             #interpolates the 1D flux function onto the 2D computational grid
+        B_calc                                  #interpolates the components of the axisymmetric magnetic field on the 2D computational grid
+        transform_marker_velocities             #transforms marker phase space velocities to LOCUST r,phi,z format
 
-    #input_plotting
+    #process_output
 
-    #output_plotting
+    #plot_input
+
+        plot_number_density                     #plots the number density
+        plot_temperature                        #plots the temperature
+        plot_beam_deposition                    #plot a histogram of the beam deposition profile
+        plot_equilibrium                        #plots the equilibrium
+        plot_field_line                         #plots a single field line in 3D
+        plot_B_field                            #plots the 2D poloidal magnetic vector field
+
+    #plot_output
 
 ```
 
