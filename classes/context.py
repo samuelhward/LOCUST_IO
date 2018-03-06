@@ -7,7 +7,7 @@ Samuel Ward
 Add this file to any LOCUST_IO/sub_dirs so that context and module importing is automatically handled
 ---
 notes:
-	when using a project interactively, just import this module before importing any classes
+    when using a project interactively, just import this module before importing any classes
 ---
 '''
 
@@ -21,7 +21,6 @@ import os
 
 ##################################################################
 #Main
-
 
 #append Python sys path
 thisdirectory=os.path.dirname(os.path.abspath(__file__)) #get the directory this script is in
