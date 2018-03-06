@@ -577,7 +577,7 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         else:
             last = ""
          
-        string = '%.8e'%number #NOTE potential python3 incompatability
+        string = '{:.8e}'.format(number)
         #mant,exp = string.split('E')
         file.write(separator+string+last)
  
