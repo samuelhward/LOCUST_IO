@@ -160,12 +160,12 @@ def fortran_string(number_out,length,decimals=None):
 
     notes:
         supposed to be a quick fix to fortran format descriptors
-        decimals controls how many decimal places the number is written to (assumes exponential format)
+        decimals (required for non-ints) controls how many decimal places the number is written to (assumes exponential format)
     """
 
     if decimals is not None:
         output_string='{:.{decimals}e}'.format(number_out,decimals=decimals)        
-    else:
+    else: #assume integer if decimals not specified
         output_string=str(number_out)
 
     number_spaces=length-len(output_string) #caclulate amount of padding needed from length of the number_out
@@ -173,7 +173,7 @@ def fortran_string(number_out,length,decimals=None):
         string_stream='{}{}'.format(' '*number_spaces,output_string) #construct the string stream
         return string_stream
     else:
-        print('WARNING: fortran_string() must take a number with more digits than length of final stream')
+        print('WARNING: fortran_string() must not take a number with more digits than desired length of output stream')
 
 
 
@@ -930,8 +930,8 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("1.0\n") #re-insert junk lines
-        file.write("1.0\n")
+        file.write("{}\n".format(fortran_string(1.0,13))) #re-insert junk lines
+        file.write("{}\n".format(fortran_string(1.0,13)))
  
         for this_particle in range(output_data['r'].size): #iterate through all particles i.e. length of our dictionary's arrays
  
@@ -942,7 +942,7 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
             v_phi_out=output_data['v_phi'][this_particle]
             v_z_out=output_data['v_z'][this_particle]
  
-            file.write("{r} {phi} {z} {v_r} {v_phi} {v_z}\n".format(r=r_out,phi=phi_out,z=z_out,v_r=v_r_out,v_phi=v_phi_out,v_z=v_z_out))
+            file.write("{r}{phi}{z}{v_r}{v_phi}{v_z}\n".format(r=fortran_string(r_out,14,6),phi=fortran_string(phi_out,14,6),z=fortran_string(z_out,14,6),v_r=fortran_string(v_r_out,14,6),v_phi=fortran_string(v_phi_out,14,6),v_z=fortran_string(v_z_out,14,6)))
  
  
 def read_beam_depo_IDS(shot,run):
@@ -1198,14 +1198,14 @@ def dump_temperature_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(output_data['flux_pol'].size)) #re-insert line containing length
+        file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,12))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
             flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             T_out=output_data['T'][point]
              
-            file.write("{flux_pol} {T}\n".format(flux_pol=flux_pol_out,T=T_out))
+            file.write("{flux_pol}{T}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),T=fortran_string(T_out,16,8)))
  
 def read_temperature_IDS(shot,run,properties):
     """
@@ -1430,14 +1430,14 @@ def dump_number_density_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
  
-        file.write("{}\n".format(output_data['flux_pol'].size)) #re-insert line containing length
+        file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,12))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
             flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             n_out=output_data['n'][point]
              
-            file.write("{flux_pol} {n}\n".format(flux_pol=flux_pol_out,n=n_out))
+            file.write("{flux_pol}{n}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),n=fortran_string(n_out,16,8)))
  
 def read_number_density_IDS(shot,run,properties):
     """
