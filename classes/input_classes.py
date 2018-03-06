@@ -154,16 +154,21 @@ def safe_set(target,source):
         target=source
 
  
-def fortran_string(output,length):
+def fortran_string(number_out,length,decimals=None):
     """
     produces a string stream of specified length, padded with space at the start
 
     notes:
         supposed to be a quick fix to fortran format descriptors
+        decimals controls how many decimal places the number is written to (assumes exponential format)
     """
 
-    output_string=str(output)
-    number_spaces=length-len(output_string) #caclulate amount of padding needed from length of the output
+    if decimals is not None:
+        output_string='{:.{decimals}e}'.format(number_out,decimals=decimals)        
+    else:
+        output_string=str(number_out)
+
+    number_spaces=length-len(output_string) #caclulate amount of padding needed from length of the number_out
     if number_spaces>=0:
         string_stream='{}{}'.format(' '*number_spaces,output_string) #construct the string stream
         return string_stream
