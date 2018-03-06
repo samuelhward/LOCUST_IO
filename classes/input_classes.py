@@ -371,7 +371,7 @@ class LOCUST_input:
 
         if not self.data:
             if verbose is True:
-                print("no data:")
+                print("no data")
             return False
 
         if self.LOCUST_input_type=='equilibrium':
@@ -546,7 +546,7 @@ def read_equilibrium_GEQDSK(input_filepath):
         #additional data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nw'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nh']) 
-        input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #flux grid is uniform so use any of fpol, pres, ffprime, pprime, qpsi for final linspace field - they're all the same length
+        input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #all 1D profiles are defined against a flux grid, so use any 1D profile's length
         input_data['flux_tor']=process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
 
     return input_data
@@ -652,7 +652,7 @@ def read_equilibrium_IDS(shot,run):
  
     notes:
         idum not read
-        
+        assumes dim1, dim2 of IDS are R,Z
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -681,22 +681,17 @@ def read_equilibrium_IDS(shot,run):
     input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
     input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
     input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
+    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi)/(2*pi) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi)/(2*pi) #convert to Wb/rad
+    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
+    Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
+    input_data['R_1D']=np.asarray(R_1D)
+    input_data['Z_1D']=np.asarray(Z_1D)
 
     #2D data    
     input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2*pi) #convert to Wb/rad
  
-    #harder bits
-    #values derived from grids and profiles
-    flux_pol=input_IDS.equilibrium.time_slice[0].profiles_1d.psi  #where simag=min(flux_pol) and sibry=max(flux_pol)
-    flux_tor=input_IDS.equilibrium.time_slice[0].profiles_1d.phi
-    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
-    Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
-    input_data['flux_pol']=np.asarray(flux_pol)/(2*pi) #convert to Wb/rad
-    input_data['flux_tor']=np.asarray(flux_tor)/(2*pi) #convert to Wb/rad
-    input_data['R_1D']=np.asarray(R_1D)
-    input_data['Z_1D']=np.asarray(Z_1D)
-
-    #0D data
+    #harder bits (values derived from grids and profiles)
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z))
     input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z))
     input_data['nw']=np.asarray(len(R_1D))
@@ -951,7 +946,7 @@ def read_beam_depo_IDS(shot,run):
  
     notes:
         currently assumes that all sources have the same coordinate structure
-        assumes markers hold only one time slice at ...markers[0]        
+        assumes markers hold only one time slice, at ...markers[0]        
     """
  
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
@@ -960,13 +955,13 @@ def read_beam_depo_IDS(shot,run):
 
     input_data = {} #initialise blank dictionary to hold the data
     for coordinate in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
-        input_data[str(coordinate.name)]=[]
+        input_data[coordinate.name.replace('\x00','').encode('utf-8').strip()]=[] #need to remove the unicode bits
 
     for source in input_IDS.distribution_sources.source: #cycle through all possible sources
         if len(source.markers[0].positions)>0:
 
             for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
-                coordinate_name=str(source.markers[0].coordinate_identifier[coordinate_index].name)
+                coordinate_name=source.markers[0].coordinate_identifier[coordinate_index].name.replace('\x00','').encode('utf-8').strip()
 
                 for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
 
@@ -1013,6 +1008,18 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="z"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical position [m]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_r"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="radial velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=4
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="toroidal velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=5
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical velocity [m/s]"
 
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['r'].size) #define the weights, i.e. number of particles per marker 
