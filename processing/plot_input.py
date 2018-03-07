@@ -193,20 +193,26 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         number_points - the number of points to plot the field line over
     """
 
-    dl=mag_axis_R*0.5*pi/number_points #set integration path step size
-
-    R_points=np.array([])
-    Z_points=np.array([])
-    tor_points=np.array([])
+    dl=mag_axis_R*pi/number_points #set integration path step size
+    number_marker_points=[] #list to hold number of markers in each field line trace
 
     print('dl={}'.format(dl)) #XXX diagnostics
 
     R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate the B field interpolater 
+    print('generating B-field interpolation')
     B_field_R_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,0],function='cubic',smooth=0)
     B_field_Z_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,2],function='cubic',smooth=0)
     B_field_tor_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,1],function='cubic',smooth=0)
+    print('finished B-field interpolation')
+
+    fig = plt.figure() #initialise plot
+    ax = fig.gca(projection='3d')
 
     for line in range(number_field_lines): 
+
+        R_points=np.array([]) #reset the arrays that will hold marker coordinates along a single field line
+        Z_points=np.array([])
+        tor_points=np.array([])
 
         R_point=np.random.uniform(mag_axis_R,0.5*max(plasma_boundary_r))    #pick a random starting point
         Z_point=np.random.uniform(mag_axis_Z,0.5*max(plasma_boundary_z))    #NOTE : more rigorous check to see if we are in plasma boundary is needed
@@ -216,9 +222,9 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         Z_points=np.append(Z_points,Z_point)
         tor_points=np.append(tor_points,tor_point)     
 
-        tor_point_start=tor_point
+        tor_point_start=tor_point #remember where we started toroidally
 
-        while np.abs(tor_point-tor_point_start)<mag_axis_R*0.5*pi: #keep going until we rotate pi/2 radians around the tokamak
+        while np.abs(tor_point-tor_point_start)<mag_axis_R*pi: #keep going until we rotate pi radians around the tokamak
             
             B_field_R=B_field_R_interp(R_point,Z_point)
             B_field_Z=B_field_Z_interp(R_point,Z_point)
@@ -237,28 +243,13 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
             Z_points=np.append(Z_points,Z_point)
             tor_points=np.append(tor_points,tor_point)    
 
-            print('advanced marker') #XXX diagnostics       
+            print('advanced marker') #XXX diagnostics
 
-    X_points=R_points*np.cos(tor_points)
-    Y_points=R_points*np.sin(tor_points)
+        X_points=R_points*np.cos(tor_points) #transform to cartesian
+        Y_points=R_points*np.sin(tor_points)
 
-    X_points=X_points.reshape(number_field_lines,len(X_points)/number_field_lines)
-    Y_points=Y_points.reshape(number_field_lines,len(Y_points)/number_field_lines)
-    Z_points=Z_points.reshape(number_field_lines,len(Z_points)/number_field_lines)
-
-    print(X_points) #XXX diagnostics (write to file?)
-    print(Y_points)
-    print(Z_points)
-
-    print('X_points')
-    print('Y_points')
-    print('Z_points')
-
-
-    fig = plt.figure()
-    ax = fig.gca(projection='3d') #plot the result
-    for line in range(number_field_lines):
-        ax.plot(X_points[line,:],Y_points[line,:],Z_points[line,:],color=cm.viridis(np.random.uniform()))
+        ax.plot(X_points,Y_points,Z_points,color=cm.viridis(np.random.uniform()))
+    
     plt.show()
 
 
@@ -273,6 +264,10 @@ def plot_B_field_stream(B_field,R_1D,Z_1D):
     B_mag=np.sqrt(B_field[:,:,0]**2+B_field[:,:,2]**2) #calculate poloidal field magnitude
     strm = plt.streamplot(R_2D,Z_2D,B_field[:,:,0],B_field[:,:,2], color=B_mag, linewidth=1, cmap='viridis')
     plt.colorbar(strm.lines)
+    plt.axis('scaled')
+    plt.xlim(np.min(R_1D),np.max(R_1D))
+    plt.ylim(np.min(Z_1D),np.max(Z_1D))
+    plt.show()
 
 #################################
 
