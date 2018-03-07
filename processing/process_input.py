@@ -14,14 +14,15 @@ notes:
 ###################################################################################################
 #Preamble
 
-import random
-import scipy.interpolate
-import scipy.integrate
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits import mplot3d #import 3D plotting axes
-from matplotlib import cm #get colourmaps
-
+try:
+    import random
+    import scipy.interpolate
+    import scipy.integrate
+    import numpy as np
+except:
+    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
+    sys.exit(1)
+    
 pi=np.pi
 
 
