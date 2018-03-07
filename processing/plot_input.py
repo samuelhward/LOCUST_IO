@@ -200,6 +200,11 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
 
     print('dl={}'.format(dl)) #XXX diagnostics
 
+    R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate the B field interpolater 
+    B_field_R_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,0],function='cubic',smooth=0)
+    B_field_Z_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,2],function='cubic',smooth=0)
+    B_field_tor_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,1],function='cubic',smooth=0)
+
     for line in range(number_field_lines): 
 
         R_point=np.random.uniform(mag_axis_R,0.5*max(plasma_boundary_r))    #pick a random starting point
@@ -213,11 +218,19 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         tor_point_start=tor_point
 
         while np.abs(tor_point-tor_point_start)<mag_axis_R*0.5*pi: #keep going until we rotate pi/2 radians around the tokamak
-        
-            B_field_R=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,0])  #calculate the B field at this point
-            B_field_Z=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,2])  #NOTE need only generate the interpolaters once --> big speed increase
-            B_field_tor=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,1])
+            
+            B_field_R=B_field_R_interp(R_point,Z_point)
+            B_field_z=B_field_R_interp(R_point,Z_point)
+            B_field_tor=B_field_R_interp(R_point,Z_point)
+            B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #calculate the magnitude
+            
+            B_field_R/=B_field_mag #normalise the vector magnetic field
+            B_field_Z/=B_field_mag
+            B_field_tor/=B_field_mag
 
+            R_point+=B_field_R*dl
+            Z_point+=B_field_Z*dl
+            tor_point+=B_field_tor*dl
 
             R_points=np.append(R_points,R_point)
             Z_points=np.append(Z_points,Z_point)
@@ -230,14 +243,6 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
 
     X_points=X_points.reshape(number_field_lines,len(X_points)/number_field_lines)
     Y_points=Y_points.reshape(number_field_lines,len(Y_points)/number_field_lines)
-            B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #normalise the vector magnetic field
-            B_field_R/=B_field_mag
-            B_field_Z/=B_field_mag
-            B_field_tor/=B_field_mag
-
-            R_point+=B_field_R*dl
-            Z_point+=B_field_Z*dl
-            tor_point+=B_field_tor*dl
     Z_points=Z_points.reshape(number_field_lines,len(Z_points)/number_field_lines)
 
     print(X_points) #XXX diagnostics (write to file?)
