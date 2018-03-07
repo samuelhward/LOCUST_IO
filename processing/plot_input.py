@@ -221,8 +221,8 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         while np.abs(tor_point-tor_point_start)<mag_axis_R*0.5*pi: #keep going until we rotate pi/2 radians around the tokamak
             
             B_field_R=B_field_R_interp(R_point,Z_point)
-            B_field_Z=B_field_R_interp(R_point,Z_point)
-            B_field_tor=B_field_R_interp(R_point,Z_point)
+            B_field_Z=B_field_Z_interp(R_point,Z_point)
+            B_field_tor=B_field_tor_interp(R_point,Z_point)
             B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #calculate the magnitude
             
             B_field_R/=B_field_mag #normalise the vector magnetic field
