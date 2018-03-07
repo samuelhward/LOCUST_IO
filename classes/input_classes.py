@@ -315,7 +315,7 @@ class LOCUST_input:
         """
         keys=kwargs.keys()
         values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
+        allkeysvalues=keys+values #NOTE this needs to be changed in python v3 since ..keys() returns a view object
         if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
             pass
         else:
@@ -668,13 +668,13 @@ def read_equilibrium_IDS(shot,run):
  
     #easy bits
     #0D data
-    input_data['rcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.r0)
-    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0)
-    input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r)
-    input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z)
-    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis)/(2*pi) #convert to Wb/rad
-    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary)/(2*pi) #convert to Wb/rad
-    input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip)
+    input_data['rcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.r0).reshape([]) #need reshape to ensure shape consistency
+    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
+    input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
+    input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
+    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2*pi)).reshape([]) #convert to Wb/rad
+    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2*pi)).reshape([]) #convert to Wb/rad
+    input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
  
     #1D data
     input_data['fpol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f) #flux grid data
@@ -686,25 +686,25 @@ def read_equilibrium_IDS(shot,run):
     input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
     input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
     input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
-    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi)/(2*pi) #convert to Wb/rad
-    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi)/(2*pi) #convert to Wb/rad
+    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2*pi)) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2*pi)) #convert to Wb/rad
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
     #2D data    
-    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2*pi) #convert to Wb/rad
+    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi/(2*pi)) #convert to Wb/rad
  
     #harder bits (values derived from grids and profiles)
-    input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z))
-    input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z))
-    input_data['nw']=np.asarray(len(R_1D))
-    input_data['nh']=np.asarray(len(Z_1D))
-    input_data['rleft']=np.asarray(min(R_1D))
-    input_data['rdim']=np.asarray(abs(max(R_1D)-min(R_1D)))
-    input_data['zdim']=np.asarray(abs(max(Z_1D)-min(Z_1D)))
-    input_data['zmid']=np.asarray(0.5*(max(Z_1D)+min(Z_1D)))
+    input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
+    input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)).reshape([])
+    input_data['nw']=np.asarray(len(R_1D)).reshape([])
+    input_data['nh']=np.asarray(len(Z_1D)).reshape([])
+    input_data['rleft']=np.asarray(min(R_1D)).reshape([])
+    input_data['rdim']=np.asarray(abs(max(R_1D)-min(R_1D))).reshape([])
+    input_data['zdim']=np.asarray(abs(max(Z_1D)-min(Z_1D))).reshape([])
+    input_data['zmid']=np.asarray(0.5*(max(Z_1D)+min(Z_1D))).reshape([])
  
     input_IDS.close()
  
@@ -1197,12 +1197,15 @@ def dump_temperature_ASCII(output_data,output_filepath):
     """
  
     with open(output_filepath,'w') as file: #open file
+
+        noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
+        normalised_flux=output_data['flux_pol']*noramlising_factor
  
-        file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,12))) #re-insert line containing length
+        file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,8))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
-            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
             T_out=output_data['T'][point]
              
             file.write("{flux_pol}{T}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),T=fortran_string(T_out,16,8)))
@@ -1429,12 +1432,15 @@ def dump_number_density_ASCII(output_data,output_filepath):
     """
  
     with open(output_filepath,'w') as file: #open file
+
+        noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
+        normalised_flux=output_data['flux_pol']*noramlising_factor
  
         file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,12))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
-            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
             n_out=output_data['n'][point]
              
             file.write("{flux_pol}{n}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),n=fortran_string(n_out,16,8)))
