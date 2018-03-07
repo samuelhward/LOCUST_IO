@@ -12,12 +12,22 @@ notes:
 
 ##################################################################
 #Preamble
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits import mplot3d #import 3D plotting axes
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm #get colourmaps
+
+try:
+    import numpy as np
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from matplotlib import cm #get colourmaps
+    from mpl_toolkits import mplot3d #import 3D plotting axes
+    from mpl_toolkits.mplot3d import Axes3D
+except:
+    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
+    sys.exit(1)
+try:
+    import process_input
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+    sys.exit(1)
 
 pi=np.pi #define pi
 
@@ -182,7 +192,7 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
         number_points - the number of points to plot the field line over
     """
 
-    dl=mag_axis_R*pi/number_points #set integration path step size
+    dl=mag_axis_R*0.5*pi/number_points #set integration path step size
 
     R_points=np.array([])
     Z_points=np.array([])
@@ -198,11 +208,13 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
         Z_points=np.append(Z_points,Z_point)
         tor_points=np.append(tor_points,tor_point)     
 
-        while np.abs(tor_point)<pi: #keep going until we rotate half way around the tokamak
+        tor_point_start=tor_point
+
+        while np.abs(tor_point-tor_point_start)<pi*0.5: #keep going until we rotate quarter way around the tokamak
         
-            B_field_R=interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,0])  #calculate the B field at this point
-            B_field_Z=interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,2])
-            B_field_tor=interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,1])
+            B_field_R=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,0])  #calculate the B field at this point
+            B_field_Z=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,2])
+            B_field_tor=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,1])
 
             B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #normalise the vector magnetic field
             B_field_R/=B_field_mag
@@ -223,6 +235,15 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
     X_points=X_points.reshape(number_field_lines,len(X_points)/number_field_lines)
     Y_points=Y_points.reshape(number_field_lines,len(Y_points)/number_field_lines)
     Z_points=Z_points.reshape(number_field_lines,len(Z_points)/number_field_lines)
+
+    print(X_points) #XXX diagnostics (write to file?)
+    print(Y_points)
+    print(Z_points)
+
+    print('X_points')
+    print('Y_points')
+    print('Z_points')
+
 
     fig = plt.figure()
     ax = fig.gca(projection='3d') #plot the result
