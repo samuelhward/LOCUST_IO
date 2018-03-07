@@ -14,6 +14,7 @@ notes:
 #Preamble
 
 try:
+    import scipy
     import numpy as np
     import matplotlib
     import matplotlib.pyplot as plt
