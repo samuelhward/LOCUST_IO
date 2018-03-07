@@ -182,7 +182,7 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
     plt.show()
 
 
-def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,plasma_boundary_z,number_field_lines=1,number_points=100):
+def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,plasma_boundary_z,number_field_lines=1,number_points=100):
     """
     plots random field lines for pi radians around the tokamak
 
@@ -198,6 +198,8 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
     Z_points=np.array([])
     tor_points=np.array([])
 
+    print('dl={}'.format(dl)) #XXX diagnostics
+
     for line in range(number_field_lines): 
 
         R_point=np.random.uniform(mag_axis_R,0.5*max(plasma_boundary_r))    #pick a random starting point
@@ -210,12 +212,24 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
 
         tor_point_start=tor_point
 
-        while np.abs(tor_point-tor_point_start)<pi*0.5: #keep going until we rotate quarter way around the tokamak
+        while np.abs(tor_point-tor_point_start)<mag_axis_R*0.5*pi: #keep going until we rotate pi/2 radians around the tokamak
         
             B_field_R=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,0])  #calculate the B field at this point
-            B_field_Z=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,2])
+            B_field_Z=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,2])  #NOTE need only generate the interpolaters once --> big speed increase
             B_field_tor=process_input.interpolate_2D(R_point,Z_point,R_1D,Z_1D,B_field[:,:,1])
 
+
+            R_points=np.append(R_points,R_point)
+            Z_points=np.append(Z_points,Z_point)
+            tor_points=np.append(tor_points,tor_point)    
+
+            print('advanced marker') #XXX diagnostics       
+
+    X_points=R_points*np.cos(tor_points)
+    Y_points=R_points*np.sin(tor_points)
+
+    X_points=X_points.reshape(number_field_lines,len(X_points)/number_field_lines)
+    Y_points=Y_points.reshape(number_field_lines,len(Y_points)/number_field_lines)
             B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #normalise the vector magnetic field
             B_field_R/=B_field_mag
             B_field_Z/=B_field_mag
@@ -224,16 +238,6 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
             R_point+=B_field_R*dl
             Z_point+=B_field_Z*dl
             tor_point+=B_field_tor*dl
-
-            R_points=np.append(R_points,R_point)
-            Z_points=np.append(Z_points,Z_point)
-            tor_points=np.append(tor_points,tor_point)           
-
-    X_points=R_points*np.cos(tor_points)
-    Y_points=R_points*np.sin(tor_points)
-
-    X_points=X_points.reshape(number_field_lines,len(X_points)/number_field_lines)
-    Y_points=Y_points.reshape(number_field_lines,len(Y_points)/number_field_lines)
     Z_points=Z_points.reshape(number_field_lines,len(Z_points)/number_field_lines)
 
     print(X_points) #XXX diagnostics (write to file?)
@@ -252,7 +256,7 @@ def plot_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,pl
     plt.show()
 
 
-def plot_B_field(B_field,R_1D,Z_1D):
+def plot_B_field_stream(B_field,R_1D,Z_1D):
     """
     stream plot of magnetic field in R,Z plane
 
@@ -261,8 +265,8 @@ def plot_B_field(B_field,R_1D,Z_1D):
 
     R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #set up domain
     B_mag=np.sqrt(B_field[:,:,0]**2+B_field[:,:,2]**2) #calculate poloidal field magnitude
-
-
+    strm = plt.streamplot(R_2D,Z_2D,B_field[:,:,0],B_field[:,:,2], color=B_mag, linewidth=1, cmap='viridis')
+    plt.colorbar(strm.lines)
 
 #################################
 
