@@ -39,80 +39,62 @@ except:
 	raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
 	sys.exit(1)
 
-
+pi=np.pi
 
 ##################################################################
 #Main Code
 
 
-#################################first test is to open an Equilibrium GEQDSK and test that reading in upon initialisation is OK and that all member data is set correctly
-test1_ID='test1_ID'
-test1_input_filename='test.eqdsk'
-test1_data_format='GEQDSK'
-test_1=ic.Equilibrium(test1_ID,test1_input_filename,test1_data_format)
-print(test_1.input_filename)
-print(test_1.data_format)
-print(test_1.LOCUST_input_type)
-print(test_1.ID)
-
-
-#################################next test to see if we can initialise a blank Equilibrium before populating with GEQDSK formatted data using read_data
-test2_ID='test2_ID'
-test2_input_filename='test.eqdsk'
-test2_data_format='GEQDSK'
-test_2=ic.Equilibrium(test2_ID)
-test_2.read_data(test2_input_filename,test2_data_format)
-print(test_2.input_filename)
-print(test_2.data_format)
-print(test_2.LOCUST_input_type)
-print(test_2.ID)
-
-
-#################################next test to see if we can dump an Equilibrium to GEQDSK
-test3_ID='test3_ID'
-test3_input_filename='test.eqdsk'
-test3_data_format='GEQDSK'
-test3=ic.Equilibrium(test3_ID,test3_input_filename,test3_data_format)
-test3.dump_data('test3_output.eqdsk','GEQDSK')
-
-
-#################################now need to check the data we just outputted in test 3 to see if it's the same - subtract all the member data away from eachother to see if it's = 0
-test4_ID='test4_ID'
-test4_input_filename='test3_output.eqdsk'
-test4_data_format='GEQDSK'
-test4=ic.Equilibrium(test4_ID,test4_input_filename,test4_data_format)
-print(np.subtract(test4.data['fpol'],test3.data['fpol']))
+################################# test basic functionality
 
 
 
 
+################################# test calculator functions with analytical cases
 #QTP_calc()
 
-#define an analytical solution
-P=np.linspace(0,8,num=1000) 
-T=np.sin(P)
-Q=np.cos(P)
+	#define an analytical solution
+	P=np.linspace(0,8,num=1000) 
+	T=np.sin(P)
+	Q=np.cos(P)
 
-#QTP results
-P_recover=QTP_calc(T=T,Q=Q)
-Q_recover=QTP_calc(T=T,P=P)
-T_recover=QTP_calc(Q=Q,P=P)
+	#QTP results
+	P_recover=QTP_calc(T=T,Q=Q)
+	Q_recover=QTP_calc(T=T,P=P)
+	T_recover=QTP_calc(Q=Q,P=P)
 
-plt.plot(P,'r-')
-plt.plot(Q,'g-')
-plt.plot(T,'b-')
-plt.show()
+	plt.plot(P,'r-')
+	plt.plot(Q,'g-')
+	plt.plot(T,'b-')
+	plt.show()
 
-plt.plot(P_recover,'r-')
-plt.plot(Q_recover,'g-')
-plt.plot(T_recover,'b-')
-plt.show()
+	plt.plot(P_recover,'r-')
+	plt.plot(Q_recover,'g-')
+	plt.plot(T_recover,'b-')
+	plt.show()
 
-#residuals
-plt.plot(P_recover-P,'r-')
-plt.plot(Q_recover-Q,'g-')
-plt.plot(T_recover-T,'b-')
-plt.show()
+	#residuals
+	plt.plot(P_recover-P,'r-')
+	plt.plot(Q_recover-Q,'g-')
+	plt.plot(T_recover-T,'b-')
+	plt.show()
+
+#interp1D()
+
+	x=np.linspace(0,10,9)
+	y=x+5.0
+	x_new=pi
+	y_new=prin.interp1D(x_new,x,y)
+	print('y_new={}'.format(y_new))
+
+#interp2D()
+
+#fpolrz_calc()
+
+#B_calc()
+
+#transform_marker_velocities()
+
 
 #################################
 
