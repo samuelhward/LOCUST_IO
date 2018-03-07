@@ -1198,14 +1198,14 @@ def dump_temperature_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
 
-        noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
-        normalised_flux=output_data['flux_pol']*noramlising_factor
+        #noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
+        #normalised_flux=output_data['flux_pol']*noramlising_factor
  
         file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,8))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
-            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             T_out=output_data['T'][point]
              
             file.write("{flux_pol}{T}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),T=fortran_string(T_out,16,8)))
@@ -1433,14 +1433,14 @@ def dump_number_density_ASCII(output_data,output_filepath):
  
     with open(output_filepath,'w') as file: #open file
 
-        noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
-        normalised_flux=output_data['flux_pol']*noramlising_factor
+        #noramlising_factor=1/np.max(np.abs(output_data['flux_pol']))
+        #normalised_flux=output_data['flux_pol']*noramlising_factor
  
         file.write("{}\n".format(fortran_string(output_data['flux_pol'].size,12))) #re-insert line containing length
  
         for point in range(output_data['flux_pol'].size): #iterate through all points i.e. length of our dictionary's arrays
  
-            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
+            flux_pol_out=output_data['flux_pol'][point] #briefly set to a temporary variable to improve readability
             n_out=output_data['n'][point]
              
             file.write("{flux_pol}{n}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),n=fortran_string(n_out,16,8)))
