@@ -30,6 +30,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
     sys.exit(1)
 
+cmap_viridis=matplotlib.cm.get_cmap('viridis') #set colourmap
 pi=np.pi #define pi
 
 ##################################################################
@@ -198,12 +199,11 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
 
     print('dl={}'.format(dl)) #XXX diagnostics
 
-    R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #generate the B field interpolater 
-    print('generating B-field interpolation')
-    B_field_R_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,0],function='cubic',smooth=0)
-    B_field_Z_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,2],function='cubic',smooth=0)
-    B_field_tor_interp=scipy.interpolate.Rbf(R_2D,Z_2D,B_field[:,:,1],function='cubic',smooth=0)
-    print('finished B-field interpolation')
+    print('plot_B_field_line - generating B field interpolators')
+    B_field_R_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,0])
+    B_field_Z_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
+    B_field_tor_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
+    print('plot_B_field_line - finished generating B field interpolators')
 
     fig = plt.figure() #initialise plot
     ax = fig.gca(projection='3d')
@@ -215,7 +215,7 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         tor_points=np.array([])
 
         R_point=np.random.uniform(mag_axis_R,0.5*max(plasma_boundary_r))    #pick a random starting point
-        Z_point=np.random.uniform(mag_axis_Z,0.5*max(plasma_boundary_z))    #NOTE : more rigorous check to see if we are in plasma boundary is needed
+        Z_point=np.random.uniform(mag_axis_Z,0.5*max(plasma_boundary_z))    #NOTE : more rigorous check to see if we are in plasma boundary could be needed
         tor_point=np.random.uniform(0.0,2.0*pi*R_point)
 
         R_points=np.append(R_points,R_point) #add this position to our array of points along trajectory
@@ -226,9 +226,9 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
 
         while np.abs(tor_point-tor_point_start)<mag_axis_R*pi: #keep going until we rotate pi radians around the tokamak
             
-            B_field_R=B_field_R_interp(R_point,Z_point)
-            B_field_Z=B_field_Z_interp(R_point,Z_point)
-            B_field_tor=B_field_tor_interp(R_point,Z_point)
+            B_field_R=B_field_R_interpolator(R_point,Z_point)
+            B_field_Z=B_field_Z_interpolator(R_point,Z_point)
+            B_field_tor=B_field_tor_interpolator(R_point,Z_point)
             B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #calculate the magnitude
             
             B_field_R/=B_field_mag #normalise the vector magnetic field
@@ -248,7 +248,7 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         X_points=R_points*np.cos(tor_points) #transform to cartesian
         Y_points=R_points*np.sin(tor_points)
 
-        ax.plot(X_points,Y_points,Z_points,color=cm.viridis(np.random.uniform()))
+        ax.plot(X_points,Y_points,Z_points,color=cmap_viridis(np.random.uniform()))
     
     plt.show()
 
