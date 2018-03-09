@@ -223,20 +223,21 @@ class LOCUST_output:
      
     def set(self,**kwargs):
         """
-        set output object data 
-
+        set input object data 
+ 
         notes:
             specific to LOCUST_IO classes due to none_check call - see safe_set() for more general function
 
         usage:
-            my_output.set(some_key=5,some_other_key=[1,2,3,4]) to set multiple values simultaneously
-            my_output.set(**{'some_key':100,'some_other_key':200}) equally
+            my_input.set(some_key=5,some_other_key=[1,2,3,4]) to set multiple values simultaneously
+            my_input.set(**{'some_key':100,'some_other_key':200}) equally
         """
 
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE can avoid having to do this in python version 3.5
-        if none_check(self.ID,self.LOCUST_output_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
+        keys=list(kwargs.keys())
+        values=list(kwargs.values())
+        allkeysvalues=keys+values
+
+        if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
             pass
         else:
             for key,value in zip(keys,values): #loop through kwargs

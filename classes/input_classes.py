@@ -133,7 +133,7 @@ def get_next(obj):
 def dict_set(data,**kwargs):
     """
     generalised function (based upon safe_set) to set values in dictionary 'data' after checking source data exists 
-
+    notes:
     usage:
         dict_set(data,some_key=some_source,some_other_key=[1,2,3,4]) to set multiple values simultaneously
         dict_set(data,**{'some_key':100,'some_other_key':200}) equally
@@ -148,7 +148,7 @@ def dict_set(data,**kwargs):
 def safe_set(target,source):
     """
     generalised function to set a target value to source if it exists
-    
+    notes:
     """
     if source is not None:
         target=source
@@ -331,9 +331,11 @@ class LOCUST_input:
             my_input.set(some_key=5,some_other_key=[1,2,3,4]) to set multiple values simultaneously
             my_input.set(**{'some_key':100,'some_other_key':200}) equally
         """
-        keys=kwargs.keys()
-        values=kwargs.values()
-        allkeysvalues=keys+values #NOTE this needs to be changed in python v3 since ..keys() returns a view object
+
+        keys=list(kwargs.keys())
+        values=list(kwargs.values())
+        allkeysvalues=keys+values
+
         if none_check(self.ID,self.LOCUST_input_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
             pass
         else:
