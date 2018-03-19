@@ -72,30 +72,35 @@ def plot_temperature(some_temperature,axis=None):
 
 
 
-def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None,plasma=False,plasma_r=None,plasma_z=None,real_scale=False,R_1D=None,Z_1D=None):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,number_bins=50,axes=None,plasma=False,real_scale=False):
     """
     plots beam deposition
 
     notes:
-        ndim - set number of dimensions to plot
         number_bins - set bin for histogram
-        axes - list of strings specifying which axes should be plotted
         plasma - toggles whether plasma boundary is included
         real_scale - sets r,z scale to real tokamak cross section
+        axes - list of strings specifying which axes should be plotted
     """
     
+    ndim=len(axes) #infer how many dimensions user wants to plot
+
     if ndim==1:
 
         if axes is None:
 
-            plot_beam_deposition(some_beam_depo=some_beam_depo,ndim=ndim,number_bins=number_bins,axes='r') #default plot
+            plot_beam_deposition(some_beam_depo=some_beam_depo,ndim=ndim,number_bins=number_bins,axes=['r']) #default plot
 
         else:
-            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes],bins=number_bins)
+            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
             some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
             plt.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
 
     elif ndim==2:
+
+        if real_scale is True: #set x and y plot limits to real scales
+            plt.xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+            plt.ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
 
         if axes is None: 
 
@@ -105,18 +110,19 @@ def plot_beam_deposition(some_beam_depo,ndim=1,number_bins=50,axes=None,plasma=F
             some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
-            some_beam_depo_binned_x,some_beam_depo_binned_y=np.meshgrid(some_beam_depo_binned_x,some_beam_depo_binned_y)
-            plt.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(some_beam_depo_binned),vmax=1.01*np.amax(some_beam_depo_binned))
-            #plt.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(0.99*np.amin(some_beam_depo_binned),1.01*np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(some_beam_depo_binned),vmax=1.01*np.amax(some_beam_depo_binned))
+            some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x) #XXX CHECK THIS IS MESH GRIDDED CORRECTLY
+            axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
+            plt.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            #plt.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
         
-        if real_scale is True: #set x and y plot limits to real scales 
-            plt.axis('scaled')
-            plt.xlim(np.min(R_1D),np.max(R_1D))
-            plt.ylim(np.min(Z_1D),np.max(Z_1D))
-            
+        if real_scale is True: #set x and y plot limits to real scales
+            plt.xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+            plt.ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
         if plasma is True: #plot plasma boundary
-            plt.plot(plasma_r,plasma_z,'m-') 
-
+            plt.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
+    
+    plt.axis('scaled')
+    plt.colorbar()
     plt.show()
 
 
@@ -154,19 +160,19 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
 
             X=some_equilibrium['R_1D'] #make a mesh
             Y=some_equilibrium['Z_1D'] 
-            X,Y=np.meshgrid(X,Y)
-            Z=some_equilibrium[key].T #2D array (nw,nh) of poloidal flux
+            Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
+            Z=some_equilibrium[key] #2D array (nw,nh) of poloidal flux
             
             #2D plot
-            contour=plt.contourf(X,Y,Z,levels=np.linspace(0.99*np.amin(Z),1.01*np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
-            #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+            contour=plt.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #plt.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             for c in contour.collections:
                 c.set_edgecolor("face")
 
             #3D plot
             #ax=plt.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=0.99*np.amin(Z),vmax=1.01*np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             plt.colorbar()
             plt.axis('scaled')
@@ -184,29 +190,50 @@ def plot_equilibrium(some_equilibrium,key=None,boundary=None,number_contours=20)
     plt.show()
 
 
-def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,plasma_boundary_z,number_field_lines=1,number_points=100):
+def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_full=False):
     """
-    plots random field lines for pi radians around the tokamak
+    plots random field lines for 'angle' radians around the tokamak
 
     notes:
         essentially uses the Euler method of integration
         number_field_lines - the number of field lines to plot
-        number_points - the number of points to plot the field line over
+        plot_full - choose whether each field line will trace the whole plasma topology (see below also)
+        angle - plot field line for this many radians around central column
     """
 
-    dl=mag_axis_R*pi/number_points #set integration path step size
-    number_marker_points=[] #list to hold number of markers in each field line trace
-
-    print('dl={}'.format(dl)) #XXX diagnostics
-
-    print('plot_B_field_line - generating B field interpolators')
-    B_field_R_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,0])
-    B_field_Z_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
-    B_field_tor_interpolator=process_input.interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
-    print('plot_B_field_line - finished generating B field interpolators')
+    if 'B_field' not in some_equilibrium.data: #check we have a B field first
+        print("ERROR: B_field missing in equilibrium object (calculate first with B_calc)")
+        return
 
     fig = plt.figure() #initialise plot
-    ax = fig.gca(projection='3d')
+    plt.axis('scaled')
+    
+    dr=np.abs(some_equilibrium['R_1D'][1]-some_equilibrium['R_1D'][0])
+    dz=np.abs(some_equilibrium['Z_1D'][1]-some_equilibrium['Z_1D'][0])
+    
+    if plot_full is True: #set integration path step size
+        #if this option, then dl chosen to cause slight numerical drift that such that field line strays outward onto
+        #different flux surfaces - thus tracing the whole field topology
+        dl=3.0*np.sqrt(dr**2+dz**2) 
+        angle=pi*200.0
+        number_field_lines=1
+        plt.xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+        plt.ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
+    else:
+        #if this option chosen, then dl is reduced to stop numerical drift - thus a single flux surface is plotted
+        dl=0.01*np.sqrt(dr**2+dz**2)
+        ax = fig.gca(projection='3d')
+        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+        ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
+
+
+    print('plot_B_field_line - generating B field interpolators')
+    B_field_R_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
+    B_field_Z_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
+    B_field_tor_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
+    print('plot_B_field_line - finished generating B field interpolators')
+
 
     for line in range(number_field_lines): 
 
@@ -214,60 +241,73 @@ def plot_B_field_line(B_field,R_1D,Z_1D,mag_axis_R,mag_axis_Z,plasma_boundary_r,
         Z_points=np.array([])
         tor_points=np.array([])
 
-        R_point=np.random.uniform(mag_axis_R,0.5*max(plasma_boundary_r))    #pick a random starting point
-        Z_point=np.random.uniform(mag_axis_Z,0.5*max(plasma_boundary_z))    #NOTE : more rigorous check to see if we are in plasma boundary could be needed
-        tor_point=np.random.uniform(0.0,2.0*pi*R_point)
-
+        R_point=float(some_equilibrium['rcentr']) #pick some starting points                                                       
+        tor_point=np.random.uniform(0.0,2.0*pi*R_point) 
+        if plot_full is True: 
+            Z_point=float(1.05*some_equilibrium['zcentr'])
+        else:
+            Z_point=np.random.uniform(some_equilibrium['zcentr'],0.8*np.max(some_equilibrium['zbbbs']))      
+            
         R_points=np.append(R_points,R_point) #add this position to our array of points along trajectory
         Z_points=np.append(Z_points,Z_point)
         tor_points=np.append(tor_points,tor_point)     
 
         tor_point_start=tor_point #remember where we started toroidally
 
-        while np.abs(tor_point-tor_point_start)<mag_axis_R*pi: #keep going until we rotate pi radians around the tokamak
+        while np.abs(tor_point-tor_point_start)<some_equilibrium['rcentr']*angle: #keep going until we rotate 'angle' radians around the tokamak
             
             B_field_R=B_field_R_interpolator(R_point,Z_point)
-            B_field_Z=B_field_Z_interpolator(R_point,Z_point)
             B_field_tor=B_field_tor_interpolator(R_point,Z_point)
+            B_field_Z=B_field_Z_interpolator(R_point,Z_point)
             B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #calculate the magnitude
             
             B_field_R/=B_field_mag #normalise the vector magnetic field
             B_field_Z/=B_field_mag
             B_field_tor/=B_field_mag
 
-            R_point+=B_field_R*dl
             Z_point+=B_field_Z*dl
             tor_point+=B_field_tor*dl
+            R_point+=B_field_R*dl 
 
             R_points=np.append(R_points,R_point)
             Z_points=np.append(Z_points,Z_point)
             tor_points=np.append(tor_points,tor_point)    
 
-            print('advanced marker') #XXX diagnostics
+        R_points=R_points[1::2] #take every other value to help the visuals
+        Z_points=Z_points[1::2]
+        tor_points=tor_points[1::2]
+        X_points=R_points*np.cos(tor_points/R_points) #transform to cartesian
+        Y_points=R_points*np.sin(tor_points/R_points) 
 
-        X_points=R_points*np.cos(tor_points) #transform to cartesian
-        Y_points=R_points*np.sin(tor_points)
+        if plot_full is True: #if wanting to trace the flux surfaces, then plot in r,z plane
+            plt.plot(R_points,Z_points,color=cmap_viridis(np.random.uniform()))
 
-        ax.plot(X_points,Y_points,Z_points,color=cmap_viridis(np.random.uniform()))
-    
+        else:
+            ax.plot(X_points,Y_points,zs=Z_points,color=cmap_viridis(np.random.uniform()))
+
     plt.show()
 
 
-def plot_B_field_stream(B_field,R_1D,Z_1D):
+def plot_B_field_stream(some_equilibrium):
     """
     stream plot of magnetic field in R,Z plane
 
     notes:
+        take transpose due to streamplot index convention
     """
 
-    R_2D,Z_2D=np.meshgrid(R_1D,Z_1D) #set up domain
-    B_mag=np.sqrt(B_field[:,:,0]**2+B_field[:,:,2]**2) #calculate poloidal field magnitude
-    strm = plt.streamplot(R_2D,Z_2D,B_field[:,:,0],B_field[:,:,2], color=B_mag, linewidth=1, cmap='viridis')
+    if 'B_field' not in some_equilibrium.data: #check we have a B field first
+        print("ERROR: B_field missing in equilibrium object (calculate first with B_calc)")
+        return
+
+    B_mag=np.sqrt(some_equilibrium['B_field'][:,:,0]**2+some_equilibrium['B_field'][:,:,2]**2) #calculate poloidal field magnitude
+    strm = plt.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap='viridis')
     plt.colorbar(strm.lines)
     plt.axis('scaled')
-    plt.xlim(np.min(R_1D),np.max(R_1D))
-    plt.ylim(np.min(Z_1D),np.max(Z_1D))
+    plt.xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+    plt.ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
     plt.show()
+    
 
 #################################
 
