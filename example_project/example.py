@@ -66,13 +66,14 @@ print('''\n\n\n\
 88 "8a,   ,a8" "8a,   ,aa "8a,   ,a88 aa    ]8I   88,       88 "8a,   ,a8"  
 88  `"YbbdP"'   `"Ybbd8"'  `"YbbdP'Y8 `"YbbdP"'   "Y888 ____88  `"YbbdP"' \n\n\n''')
 
+
+
+
 #read in the sample input data
 my_Ne=input_classes.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='ASCII',input_filename='sample_ne_profile.file',properties='electrons')
 
 #see what it looks like
 plot_input.plot_number_density(my_Ne)
-
-
 
 #read in the sample output data
 my_orbits=output_classes.Orbits(ID='LOCUST_IO sample orbits',data_format='ASCII',input_filename='sample_orbits.file')
