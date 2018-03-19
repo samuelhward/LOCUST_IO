@@ -42,14 +42,15 @@ def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS'):
         RBF - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
             - high memory overhead, most accurate
         RBS - https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline
+              https://scipython.com/book/chapter-8-scipy/examples/two-dimensional-interpolation-with-scipyinterpolaterectbivariatespline/
     """
     
     if type=='RBF':
-        X_grid,Y_grid=np.meshgrid(X_axis,Y_axis)
+        Y_grid,X_grid=np.meshgrid(Y_axis,X_axis) #swap since things are defined r,z 
         interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function='cubic',smooth=0)
     
     elif type=='RBS':
-        interpolator=scipy.interpolate.RectBivariateSpline(Y_axis,X_axis,Z_grid)
+        interpolator=scipy.interpolate.RectBivariateSpline(X_axis,Y_axis,Z_grid) #normally order is other way in RBS but I have swapped my axes
 
     return interpolator
 
@@ -113,38 +114,35 @@ def QTP_calc(Q=None,T=None,P=None):
         print("QTP_calc - finished calculating poloidal flux")
         return P
 
-def fpolrz_calc(pol_flux_1d,pol_flux_func_1d,psirz,B_vacuum_toroidal_centre,R_centre):
+def fpolrz_calc(some_equilibrium):
     """
-    interpolates 1D poloidal flux function 'pol_flux_func_1d' onto an r,z grid given  
+    interpolates 1D poloidal flux function fpol onto an r,z grid given  
 
     notes:
-        pol_flux_func_1d is defined over the poloidal flux points 'pol_flux_1d'
+        fpol is defined over the poloidal flux points flux_pol
 
-        assumes pol_flux_1d and pol_flux_func_1d are defined from magnetic axis to plasma boundary
+        assumes flux_pol and fpol are defined from magnetic axis to plasma boundary
         
         if the grid extends outside of the plasma radius, where poloidal flux function is not defined, then use a given vacuum toroidal field and work
         backwards to get the value of the flux function (since f is constant in vacuum)
     """
     print("fpolrz_calc - calculating 2D flux function")
 
-    nw=len(psirz[:,0]) #determine size of computational domain
-    nh=len(psirz[1,:])
+    fpolrz=np.zeros((some_equilibrium['nw'],some_equilibrium['nh'])) #initialise 2D grid
+    fpolrz_interpolator=interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
 
-    fpolrz=np.zeros((nw,nh)) #initialise 2D grid
-    fpolrz_interpolator=interpolate_1D(pol_flux_1d,pol_flux_func_1d) #generate the interpolator
-
-    for w in np.arange(nw): #loop over 2D grid
-        for h in np.arange(nh):
+    for w in np.arange(some_equilibrium['nw']): #loop over 2D grid
+        for h in np.arange(some_equilibrium['nh']):
             
-            if np.abs(psirz[w,h])<=np.max(np.abs(pol_flux_1d)) and np.abs(psirz[w,h])>=np.min(np.abs(pol_flux_1d)): #if the poloidal flux function is defined for this poloidal flux
-                fpolrz[w,h]=fpolrz_interpolator(psirz[w,h])
+            if np.abs(some_equilibrium['psirz'][w,h])<=np.max(np.abs(some_equilibrium['flux_pol'])) and np.abs(some_equilibrium['psirz'][w,h])>=np.min(np.abs(some_equilibrium['flux_pol'])): #if the poloidal flux function is defined for this poloidal flux
+                fpolrz[w,h]=fpolrz_interpolator(some_equilibrium['psirz'][w,h])
             else:
-                fpolrz[w,h]=B_vacuum_toroidal_centre*R_centre
+                fpolrz[w,h]=some_equilibrium['bcentr']*some_equilibrium['rcentr']
 
     print("fpolrz_calc - finished calculating 2D flux function")
     return fpolrz
 
-def B_calc(psirz,fpolrz,R_1D,Z_1D): #XXX check all the ordering- if i swap ordering in B_field_i calcs with that break things? I think the order is bad - but our data is 101x101 so need a GEQDSK which is rectangular in domain to test this
+def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in B_field_i calcs with that break things? I think the order is bad - but our data is 101x101 so need a GEQDSK which is rectangular in domain to test this
     """
     calculates r, phi, z axisymmetric magnetic field at coordinates R_1D, Z_1D
 
@@ -153,20 +151,27 @@ def B_calc(psirz,fpolrz,R_1D,Z_1D): #XXX check all the ordering- if i swap order
         i=0 - B_r
         i=1 - B_toroidal
         i=2 - B_z
+
+        remember - A[i,j,k] is an array nested such as i*[j*[k*[some_number]]]
+                 - [row,column] in numpy
     """
     
+    if 'fpolrz' not in some_equilibrium.data:
+        print("ERROR: fpolrz missing in equilibrium object (calculate first with fpolrz_calc)")
+        return
+
     print("B_calc - calculating 2D magnetic field")
 
-    gradient=np.gradient(psirz,R_1D,Z_1D) #calculate gradient along both axes (gradient[i] is 2D) XXX is R_1D and Z_1D in the right order?
+    gradient=np.gradient(some_equilibrium['psirz'],some_equilibrium['R_1D'],some_equilibrium['Z_1D']) #calculate gradient along both axes (gradient[i] is 2D) XXX is R_1D and Z_1D in the right order? IF I SWAP IT SHOULD BREAK?
 
-    one_R=1.0/R_1D
-    one_R=one_R[np.newaxis,:].T
+    one_R=1.0/some_equilibrium['R_1D']
+    one_R=one_R[:,np.newaxis]
 
-    B_field_z=gradient[0]*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nw)...maybe one of these references to one_R should be transposed?
-    B_field_r=gradient[1]*one_R
-    B_field_tor=fpolrz*one_R
+    B_field_Z=(gradient[0])*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nw)...maybe one of these references to one_R should be transposed?
+    B_field_R=(gradient[1])*one_R
+    B_field_tor=some_equilibrium['fpolrz']*one_R
 
-    B_field=np.array([[[B_field_r[w,h],B_field_tor[w,h],B_field_z[w,h]] for w in range(len(R_1D))] for h in range(len(Z_1D))],ndmin=3)
+    B_field=np.array([[[B_field_R[w,h],B_field_tor[w,h],B_field_Z[w,h]] for h in range(len(some_equilibrium['Z_1D']))] for w in range(len(some_equilibrium['R_1D']))],ndmin=3)
     
     print("B_calc - finished calculating 2D magnetic field")
     
