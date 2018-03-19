@@ -2,14 +2,13 @@
 
 This "package" is designed to process input and output for the LOCUST-GPU code, developed by Rob Akers at CCFE. There are two class sub-modules - input and output - which contain python objects, each representing the types of data that LOCUST handles.
 
-The code is...
+The code aims to be...
 
-* __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines! Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
+* __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines. Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
 
-* __extensible__ - Contributing to the project is simple, since most of the project is copypaste! To add a new filetype, simply copypaste the read/write functions and use the [data dictionary](#global-data-definitions-and-variable-names) to match up your variables. Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
+* __extensible__ - Contributing to the project is simple: to add a new filetype, for example, simply copypaste the read/write functions and use the [data dictionary](#global-data-definitions-and-variable-names) to match up your variables. Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
 
 * __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the *example_project/* with the sample input/output files. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
-
 
 
 Got any burning questions? Want to feedback? Please raise an issue here on github!
@@ -57,7 +56,7 @@ Table of Contents
 
 ## Requirements
 
-* IMAS (with imasdb environment variable set)
+* IMAS ≥3.16.0 (with imasdb set)
 * Python ≥v2.7
 * numpy module ≥v1.14
 * matplotlib module
@@ -87,8 +86,8 @@ Table of Contents
 * Copy a context.py file from *LOCUST_IO/testing* or *LOCUST_IO/example_project* to *LOCUST_IO/my_project* (this sets up your paths etc)
 * Copy the files which you want to manipulate to *LOCUST_IO/input_files* and *LOCUST_IO/output_files* (former/latter for inputs/outputs to/from LOCUST)
 
-* Import context in your python session
-* Import input_classes or output_classes in your python session
+* Import context into your python session
+* Import input_classes or output_classes into your python session
 * You're good to go!
 
 
@@ -136,7 +135,8 @@ my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) #you've now writ
 
 ```python
 my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
-myeq.set(**some_dict)                               #equally
+my_equilibrium.set(**some_dict)                     #equally
+
 ```
 
 * Your input/output objects can also be copied using the .copy() method:
@@ -166,8 +166,12 @@ my_equilibrium.compare(another_equilibrium,verbose=True)                        
 my_equilibrium.run_check(verbose=True)                                              #returns true if data contains correct fields
 ```
 
+* You can also calculate new pieces of data using methods in the processing folder
 
-
+```python
+import process_input
+my_equilibrium.set(B_field=process_input.B_calc(myeq))        #calculate and set the magnetic field
+```
 
 
 
@@ -206,7 +210,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         idum/idum/-/IDUM                                                #dummy variable
         rdim/rdim/-/RDIM                                                #size of the R dimension in m
         zdim/zdim/-/ZDIM                                                #size of the Z dimension in m
-        rcentr/rcentr/...vacuum_toroidal_field.r0/RCENTR                #reference value of R
+        rcentr/rcentr/...vacuum_toroidal_field.r0/RCENTR                #reference value of R at magnetic axis
+        zcentr/-/-/-                                                    #reference value of Z at magnetic axis
         bcentr/bcentr/...vacuum_toroidal_field.b0/BCENTR                #vacuum toroidal magnetic field at rcentr
         rleft/rleft/-/RLEFT                                             #R at left (inner) boundary
         zmid/zmid/-/ZMID                                                #Z at middle of domain (from origin)
@@ -257,7 +262,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux (Weber / rad)
         T/column 2/...profiles_1d[0].ion[0].temperature                 #ion temperature
         T/column 2/...profiles_1d[0].electrons.temperature              #electron temperature
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (Weber / rad)(IDS needs converting)
+        flux_tor_coord/-/...profiles_1d[0].grid.rho_tor                 #toroidal flux coordinate
+        flux_tor/-/-                                                    #toroidal flux (Weber / rad)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 
@@ -269,7 +275,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol/column 1/...profiles_1d[0].grid.psi                    #poloidal flux (Weber / rad)
         n/column 2/...profiles_1d[0].ion[0].density                     #ion number density
         n/column 2/...profiles_1d[0].electrons.density                  #electron number density
-        flux_tor/-/...profiles_1d[0].grid.rho_tor                       #toroidal flux (Weber / rad)(IDS needs converting)
+        flux_tor_coord/-/...profiles_1d[0].grid.rho_tor                 #toroidal flux coordinate
+        flux_tor/-/-                                                    #toroidal flux (Weber / rad)
         q/-/...profiles_1d[0].q                                         #safety factor
 
 #### Orbits:
@@ -297,10 +304,12 @@ LOCUST_IO contains a few simple physics routines to process data:
 ```python
     #process_input
 
-        calc_Q_tor_pol(Q=None,T=None,P=None)    #calculates the missing quantity out of Q, toroidal or poloidal flux
-        fpolrz_calc                             #interpolates the 1D flux function onto the 2D computational grid
-        B_calc                                  #interpolates the components of the axisymmetric magnetic field on the 2D computational grid
+        QTP_calc(Q=None,T=None,P=None)          #calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
+        fpolrz_calc                             #calculates the 1D flux function on the 2D computational grid
+        B_calc                                  #calculates the components of the axisymmetric magnetic field on the 2D computational grid
         transform_marker_velocities             #transforms marker phase space velocities to LOCUST r,phi,z format
+        interpolate_1D                          #returns a 1D interpolator (RBF)
+        interpolate_2D                          #returns a 2D interpolator (RBF/RBS)
 
     #process_output
 
@@ -350,10 +359,3 @@ LOCUST_IO contains a few simple physics routines to process data:
 
 * [Fortran format guide](https://pages.mtu.edu/~shene/COURSES/cs201/NOTES/format.html)
 * [GEQDSK format](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)
-
-
-
-
-
-
-
