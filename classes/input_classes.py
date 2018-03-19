@@ -234,11 +234,11 @@ class LOCUST_input:
  
     LOCUST_input_type='base_input'
  
-    def __init__(self,ID,data_format=None,input_filename=None,shot=None,run=None,properties=None): #this is common to all children (not overloaded), must have ID
+    def __init__(self,ID,data_format=None,filename=None,shot=None,run=None,properties=None): #this is common to all children (not overloaded), must have ID
  
         self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
         if not none_check(self.ID,self.LOCUST_input_type,"read_data requires data_format, blank input initialised \n",data_format):
-            self.read_data(data_format,input_filename,shot,run,properties)
+            self.read_data(data_format,filename,shot,run,properties)
  
     def __getitem__(self,key):
         """
@@ -252,7 +252,7 @@ class LOCUST_input:
         """
         self.data[key]=value
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
         """
         read data to be overloaded in all children classes
         """
@@ -274,8 +274,8 @@ class LOCUST_input:
         if hasattr(self,'data_format'):
             print("Data Format - {data_format}".format(data_format=self.data_format))
         
-        if hasattr(self,'input_filename'):
-            print("Input Filename - {input_filename}".format(input_filename=self.input_filename))
+        if hasattr(self,'filename'):
+            print("Input Filename - {filename}".format(filename=self.filename))
         
         if hasattr(self,'shot'):
             print("Shot - {shot}".format(shot=self.shot))
@@ -473,7 +473,7 @@ class LOCUST_input:
  
 ################################################################## Equilibrium functions
  
-def read_equilibrium_GEQDSK(input_filepath): 
+def read_equilibrium_GEQDSK(filepath): 
     """ 
     generic function for reading a G-EQDSK-formatted equilibrium file
  
@@ -483,11 +483,13 @@ def read_equilibrium_GEQDSK(input_filepath):
  
     input_data = {}
 
-    with open(input_filepath,'r') as file: #open file
-     
+    print("reading equilibrium from GEQDSK")
+    
+    with open(filepath,'r') as file: #open file
+ 
         line = file.readline() #first line should be case, id number and dimensions
         if not line:
-            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+input_filepath)
+            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+filepath)
          
         #extract case, id number and dimensions  
         conts = line.split()    #split by white space (no argument in .split())
@@ -540,8 +542,8 @@ def read_equilibrium_GEQDSK(input_filepath):
         input_data['qpsi'] = read_1d(input_data['nw'])
      
         #now deal with boundaries
-        input_data['nbbbs'] = np.asarray(int(get_next(token)))
-        input_data['limitr'] = np.asarray(int(get_next(token)))
+        input_data['nbbbs'] = np.array(int(get_next(token)))
+        input_data['limitr'] = np.array(int(get_next(token)))
      
         def read_bndy(nb,nl): #number of boundaries and limiters
             if nb > 0: #read in boundaries
@@ -551,8 +553,8 @@ def read_equilibrium_GEQDSK(input_filepath):
                     rb[i] = float(get_next(token)) #read in R,Z pairs
                     zb[i] = float(get_next(token))
             else:
-                rb = np.asarray(0,ndlim=0)
-                zb = np.asarray(0,ndlim=0)
+                rb = np.array(0)
+                zb = np.array(0)
          
             if nl > 0: #read in limiters
                 rl = np.zeros(nl)
@@ -561,8 +563,8 @@ def read_equilibrium_GEQDSK(input_filepath):
                     rl[i] = float(get_next(token))
                     zl[i] = float(get_next(token))
             else:
-                rl = np.asarray(0,ndlim=0)
-                zl = np.asarray(0,ndlim=0)
+                rl = np.array(0)
+                zl = np.array(0)
      
             return rb,zb,rl,zl
      
@@ -574,18 +576,16 @@ def read_equilibrium_GEQDSK(input_filepath):
         input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #all 1D profiles are defined against a flux grid, so use any 1D profile's length
         input_data['flux_tor']=process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
 
+        print("finished reading equilibrium from GEQDSK")
+
     return input_data
      
-def dump_equilibrium_GEQDSK(output_data,output_filepath):
+def dump_equilibrium_GEQDSK(output_data,filepath):
     """
     generic function for writing G-EQDSK-formatted data to file
  
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
-        when writing out according to GEQDSK format (see README.md):
-            6a8,3i4=
-            5e16.9=
-            2i5=
     """ 
     def write_number(file,number,counter):
         
@@ -621,7 +621,9 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
             write_number(file,Z[i],counter)
      
 
-    with open(output_filepath,'w') as file:
+    print("writing equilibrium to GEQDSK")
+    
+    with open(filepath,'w') as file:
         
         cnt = itertools.cycle([0,1,2,3,4]) #initialise counter
 
@@ -670,6 +672,8 @@ def dump_equilibrium_GEQDSK(output_data,output_filepath):
         file.write("\n") #file has a newline here
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
+
+        print("finished writing equilibrium to GEQDSK")
  
 def read_equilibrium_IDS(shot,run): 
     """
@@ -677,9 +681,11 @@ def read_equilibrium_IDS(shot,run):
  
     notes:
         idum not read
-        assumes dim1, dim2 of IDS are R,Z
+        assumes dim1, dim2 of IDS are R,Z respectively
     """
  
+    print("reading equilibrium from IDS")
+
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
     input_IDS.equilibrium.get() #open the file and get all the data from it
@@ -692,8 +698,8 @@ def read_equilibrium_IDS(shot,run):
     input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
     input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
     input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
-    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2*pi)).reshape([]) #convert to Wb/rad
-    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2*pi)).reshape([]) #convert to Wb/rad
+    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*pi)).reshape([]) #convert to Wb/rad
+    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*pi)).reshape([]) #convert to Wb/rad
     input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
  
     #1D data
@@ -706,15 +712,15 @@ def read_equilibrium_IDS(shot,run):
     input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
     input_data['rbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
     input_data['zbbbs']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
-    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2*pi)) #convert to Wb/rad
-    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2*pi)) #convert to Wb/rad
-    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values/dim2=Z values
+    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*pi)) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*pi)) #convert to Wb/rad
+    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values,dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
     #2D data    
-    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi/(2*pi)) #convert to Wb/rad
+    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*pi) #convert to Wb/rad
  
     #harder bits (values derived from grids and profiles)
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
@@ -727,7 +733,8 @@ def read_equilibrium_IDS(shot,run):
     input_data['zmid']=np.asarray(0.5*(max(Z_1D)+min(Z_1D))).reshape([])
  
     input_IDS.close()
- 
+    print("finished reading equilibrium from IDS")
+
     return input_data
  
 def dump_equilibrium_IDS(ID,output_data,shot,run):
@@ -741,6 +748,8 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
  
     """
  
+    print("writing equilibrium to IDS")
+
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
  
@@ -765,10 +774,10 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.time_slice[0].global_quantities.ip=output_data['current']
  
     output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
-    output_IDS.equilibrium.time_slice[0].boundary.outline.r=output_data['rlim'] 
-    output_IDS.equilibrium.time_slice[0].boundary.outline.z=output_data['zlim']
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=output_data['rbbbs'] #NOTE this is apparently obsolete - need to figure out where to write to 
-    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zbbbs']
+    output_IDS.equilibrium.time_slice[0].boundary.outline.r=output_data['rbbbs'] 
+    output_IDS.equilibrium.time_slice[0].boundary.outline.z=output_data['zbbbs']
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.r=output_data['rlim'] #NOTE this is apparently obsolete - need to figure out where to write to 
+    output_IDS.equilibrium.time_slice[0].boundary.lcfs.z=output_data['zlim']
      
     #write out the uniform flux grid output_data
     output_IDS.equilibrium.time_slice[0].profiles_1d.f=output_data['fpol'] 
@@ -789,6 +798,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1=output_data['R_1D'] #dim1=R values/dim2=Z values
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2=output_data['Z_1D']
     R_2D,Z_2D=np.meshgrid(output_data['R_1D'],output_data['Z_1D']) #generate 2D arrays of R,Z values
+    R_2D,Z_2D=R_2D.T,Z_2D.T #since things are defined r,z need to take transpose here
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].r=R_2D
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].z=Z_2D
      
@@ -798,6 +808,8 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     #'put' all the output_data into the file and close
     output_IDS.equilibrium.put()
     output_IDS.close()
+
+    print("finished writing equilibrium to IDS")
  
 ################################################################## Equilibrium class
  
@@ -811,15 +823,15 @@ class Equilibrium(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
     class data
         self.data_format            data format of original data e.g. GEQDSK
-        self.input_filename         name of file in input_files folder
-        self.input_filepath         full path of file in input_files folder  
+        self.filename               name of file in input_files folder
+        self.filepath               full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
         self.properties             data to hold additional class-specific information e.g. ion species in Temperature
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
-        output_filename             name of file to write to
-        output_filepath             full path to output file in output_files folder
+        filename                    name of file to write to
+        filepath                    full path to output file in input_files folder
  
     notes:
  
@@ -827,7 +839,7 @@ class Equilibrium(LOCUST_input):
  
     LOCUST_input_type='equilibrium'
   
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): #always supply all possible arguments for reading in data, irrespective of read in type
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
  
@@ -838,12 +850,12 @@ class Equilibrium(LOCUST_input):
             pass
  
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from GEQDSK - input_filename required\n",input_filename): #check we have all info for reading GEQDSKs
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from GEQDSK - filename required\n",filename): #check we have all info for reading GEQDSKs
                 self.data_format=data_format #add to the member data
-                self.input_filename=input_filename
-                self.input_filepath=support.dir_input_files+input_filename
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_equilibrium_GEQDSK(self.input_filepath) #read the file
+                self.data=read_equilibrium_GEQDSK(self.filepath) #read the file
             
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from equilibrium IDS - shot and run data required\n",shot,run):
@@ -856,7 +868,7 @@ class Equilibrium(LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (GEQDSK/IDS)\n")
  
-    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
         write equilibrium to file
  
@@ -867,9 +879,9 @@ class Equilibrium(LOCUST_input):
             pass
          
         elif data_format=='GEQDSK':
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to GEQDSK - output_filename required\n",output_filename):
-                output_filepath=support.dir_input_files+output_filename
-                dump_equilibrium_GEQDSK(self.data,output_filepath)
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to GEQDSK - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_equilibrium_GEQDSK(self.data,filepath)
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to equilibrium IDS - shot and run required\n",shot,run):
@@ -898,17 +910,19 @@ class Equilibrium(LOCUST_input):
  
 ################################################################## Beam_Deposition functions
  
-def read_beam_depo_ASCII(input_filepath):
+def read_beam_depo_ASCII(filepath):
     """
     reads neutral beam deposition profile stored in ASCII format - r phi z v_r v_phi v_z
     """
  
  
-    with open(input_filepath,'r') as file:
-         
+    print("reading beam deposition from ASCII")
+    
+    with open(filepath,'r') as file:
+     
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_ASCII() cannot read from "+input_filepath)
+            raise IOError("ERROR: read_beam_depo_ASCII() cannot read from "+filepath)
      
     del(lines[0]) #first two lines are junk
     del(lines[0])
@@ -937,10 +951,12 @@ def read_beam_depo_ASCII(input_filepath):
     input_data['v_r']=np.asarray(input_data['v_r'])
     input_data['v_phi']=np.asarray(input_data['v_phi'])
     input_data['v_z']=np.asarray(input_data['v_z'])
+
+    print("finished reading beam deposition from ASCII")
  
     return input_data
  
-def dump_beam_depo_ASCII(output_data,output_filepath):
+def dump_beam_depo_ASCII(output_data,filepath):
     """
     writes neutral beam deposition profile to ASCII format - r z phi v_r v_z v_phi
      
@@ -948,7 +964,9 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
         writes out two headerlines
     """
  
-    with open(output_filepath,'w') as file: #open file
+    print("writing beam deposition to ASCII")
+
+    with open(filepath,'w') as file: #open file
  
         file.write("{}\n".format(fortran_string(1.0,13))) #re-insert junk lines
         file.write("{}\n".format(fortran_string(1.0,13)))
@@ -963,30 +981,33 @@ def dump_beam_depo_ASCII(output_data,output_filepath):
             v_z_out=output_data['v_z'][this_particle]
  
             file.write("{r}{phi}{z}{v_r}{v_phi}{v_z}\n".format(r=fortran_string(r_out,14,6),phi=fortran_string(phi_out,14,6),z=fortran_string(z_out,14,6),v_r=fortran_string(v_r_out,14,6),v_phi=fortran_string(v_phi_out,14,6),v_z=fortran_string(v_z_out,14,6)))
- 
+    
+    print("finished writing beam deposition to ASCII") 
  
 def read_beam_depo_IDS(shot,run):
     """
     reads relevant LOCUST neutral beam data from a distribution_sources IDS and returns as a dictionary
  
     notes:
-        currently assumes that all sources have the same coordinate structure
-        assumes markers hold only one time slice, at ...markers[0]        
+        reads in an arbitrary number of coordinates and injectors for each source        
+        assumes that all sources have the same coordinate structure
+        assumes markers hold only one time slice, at ...markers[0]
     """
- 
+    print("reading beam deposition from IDS")
+
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
     for coordinate in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
-        input_data[coordinate.name.replace('\x00','').encode('utf-8').strip()]=[] #need to remove the unicode bits
+        input_data[coordinate.name.replace('\x00','').strip()]=[] #need to remove the unicode bits
 
     for source in input_IDS.distribution_sources.source: #cycle through all possible sources
         if len(source.markers[0].positions)>0:
 
             for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
-                coordinate_name=source.markers[0].coordinate_identifier[coordinate_index].name.replace('\x00','').encode('utf-8').strip()
+                coordinate_name=source.markers[0].coordinate_identifier[coordinate_index].name.replace('\x00','').strip()
 
                 for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
 
@@ -997,6 +1018,8 @@ def read_beam_depo_IDS(shot,run):
         input_data[key]=np.asarray(input_data[key])
  
     input_IDS.close()
+
+    print("finished reading beam deposition from IDS")
  
     return input_data
  
@@ -1005,7 +1028,9 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     writes relevant LOCUST neutral beam data to a distribution_sources IDS
  
     """
- 
+    
+    print("writing beam deposition to IDS")
+
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
  
@@ -1054,6 +1079,8 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     #'put' all the output_data into the file and close
     output_IDS.distribution_sources.put()
     output_IDS.close()
+
+    print("finished writing beam deposition to IDS")
  
 ################################################################## Beam_Deposition class
  
@@ -1067,15 +1094,15 @@ class Beam_Deposition(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
     class data
         self.data_format            data format of original data e.g. ASCII
-        self.input_filename         name of file in input_files folder
-        self.input_filepath         full path of file in input_files folder  
+        self.filename         name of file in input_files folder
+        self.filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
         self.properties             data to hold additional class-specific information e.g. ion species in Temperature
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
-        output_filename             name of file to write to
-        output_filepath             full path to output file in output_files folder
+        filename             name of file to write to
+        filepath             full path to output file in input_files folder
  
     notes:
         data is stored such that the coordinate 'r' for all particles is stored in my_beam_deposition['r']
@@ -1085,7 +1112,7 @@ class Beam_Deposition(LOCUST_input):
  
     LOCUST_input_type='beam_deposition'
  
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None): 
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): 
         """
         read beam_deposition from file 
  
@@ -1096,13 +1123,13 @@ class Beam_Deposition(LOCUST_input):
             pass
  
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - input_filename required\n",input_filename): #must check we have all info required for reading GEQDSKs
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - filename required\n",filename): #must check we have all info required for reading GEQDSKs
  
                 self.data_format=data_format #add to the member data
-                self.input_filename=input_filename
-                self.input_filepath=support.dir_input_files+input_filename
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_beam_depo_ASCII(self.input_filepath) #read the file
+                self.data=read_beam_depo_ASCII(self.filepath) #read the file
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from distribution_sources IDS - shot and run data required\n",shot,run):
@@ -1116,7 +1143,7 @@ class Beam_Deposition(LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
  
-    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
         write beam_deposition to file
  
@@ -1127,9 +1154,9 @@ class Beam_Deposition(LOCUST_input):
             pass
          
         elif data_format=='ASCII':
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_input_files+output_filename
-                dump_beam_depo_ASCII(self.data,output_filepath)
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_beam_depo_ASCII(self.data,filepath)
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to distribution_sources IDS - shot and run required\n",shot,run):
@@ -1180,16 +1207,18 @@ class Beam_Deposition(LOCUST_input):
  
 ################################################################## Temperature functions
  
-def read_temperature_ASCII(input_filepath):
+def read_temperature_ASCII(filepath):
     """
-    reads temperature profile stored in ASCII format - flux_pol T(ev)
+    reads temperature profile stored in ASCII format - normalised_flux_pol T(ev)
     """
- 
-    with open(input_filepath,'r') as file:
+    
+    print("reading temperature from ASCII")
+
+    with open(filepath,'r') as file:
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_temperature_ASCII() cannot read from "+input_filepath)
+            raise IOError("ERROR: read_temperature_ASCII() cannot read from "+filepath)
      
     del(lines[0]) #first line contains the number of points
  
@@ -1206,17 +1235,21 @@ def read_temperature_ASCII(input_filepath):
     input_data['flux_pol']=np.asarray(input_data['flux_pol']) #convert to arrays
     input_data['T']=np.asarray(input_data['T'])
     
+    print("finished reading temperature from ASCII")
+
     return input_data
  
-def dump_temperature_ASCII(output_data,output_filepath):
+def dump_temperature_ASCII(output_data,filepath):
     """
-    writes temperature profile to ASCII format - flux_pol T(ev)    
+    writes temperature profile to ASCII format - normalised_flux_pol T(ev)    
      
     notes:
         writes out a headerline for length of file
     """
+
+    print("writing temperature to ASCII")
  
-    with open(output_filepath,'w') as file: #open file
+    with open(filepath,'w') as file: #open file
 
         normalising_factor=1.0/np.max(np.abs(output_data['flux_pol'])) #normalise
         normalised_flux=np.abs(output_data['flux_pol']*normalising_factor) #take abs
@@ -1230,6 +1263,8 @@ def dump_temperature_ASCII(output_data,output_filepath):
              
             file.write("{flux_pol}{T}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),T=fortran_string(T_out,16,8)))
  
+    print("finished writing temperature to ASCII")
+
 def read_temperature_IDS(shot,run,properties):
     """
     reads relevant LOCUST temperature data from a core_profiles IDS and returns as a dictionary
@@ -1238,14 +1273,14 @@ def read_temperature_IDS(shot,run,properties):
         
     """
  
+    print("reading temperature from IDS")
+
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
     
-    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi)) #convert to Wb/rad
- 
     #read in temperature depending on species
     if properties=='electrons':
         input_data['T']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.temperature)
@@ -1254,11 +1289,16 @@ def read_temperature_IDS(shot,run,properties):
     else:
         print("cannot read_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
  
-    #additional data
-    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor)/(2*pi)) #convert to Wb/rad
+    #read in axes
+    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
+    dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
+    if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
+        dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     input_IDS.close()
+
+    print("finished reading temperature from IDS")
  
     return input_data
  
@@ -1266,6 +1306,8 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
     """
+
+    print("writing temperature to IDS")
  
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
@@ -1279,7 +1321,6 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
 
     #write out temperature depending on species
     if properties=='electrons':
@@ -1291,15 +1332,18 @@ def dump_temperature_IDS(ID,output_data,shot,run,properties):
     else:
         print("cannot dump_temperature_IDS - Temperature.properties must be set to 'electrons' or 'ions'\n")
 
-    #additional data   
-    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
+    #write out the axes
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
     safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
-
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
- 
+
+    print("finished writing temperature to IDS") 
+
+
 ################################################################## Temperature class
  
 class Temperature(LOCUST_input):
@@ -1312,15 +1356,15 @@ class Temperature(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'temperature'
     class data
         self.data_format            data format of original data e.g. ASCII
-        self.input_filename         name of file in input_files folder
-        self.input_filepath         full path of file in input_files folder  
+        self.filename         name of file in input_files folder
+        self.filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
         self.properties             data to hold additional class-specific information e.g. ion species
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
-        output_filename             name of file to write to
-        output_filepath             full path to output file in output_files folder
+        filename             name of file to write to
+        filepath             full path to output file in input_files folder
  
     notes:
         data is stored such that a reading of temperature at coordinate 'coord' is:
@@ -1329,7 +1373,7 @@ class Temperature(LOCUST_input):
  
     LOCUST_input_type='temperature'
  
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None):
         """
         read temperature from file 
  
@@ -1342,13 +1386,13 @@ class Temperature(LOCUST_input):
             pass
  
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - input_filename required\n",input_filename): #must check we have all info required for reading GEQDSKs
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - filename required\n",filename): #must check we have all info required for reading GEQDSKs
  
                 self.data_format=data_format #add to the member data
-                self.input_filename=input_filename
-                self.input_filepath=support.dir_input_files+input_filename
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_temperature_ASCII(self.input_filepath) #read the file
+                self.data=read_temperature_ASCII(self.filepath) #read the file
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
@@ -1362,7 +1406,7 @@ class Temperature(LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
  
-    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
         write temperature to file
  
@@ -1373,9 +1417,9 @@ class Temperature(LOCUST_input):
             pass
          
         elif data_format=='ASCII':
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_input_files+output_filename
-                dump_temperature_ASCII(self.data,output_filepath)
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_temperature_ASCII(self.data,filepath)
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
@@ -1412,19 +1456,21 @@ class Temperature(LOCUST_input):
  
 ################################################################## Number_Density functions
  
-def read_number_density_ASCII(input_filepath):
+def read_number_density_ASCII(filepath):
     """
-    reads number density profile stored in ASCII format - flux_pol n
+    reads number density profile stored in ASCII format - normalised_flux_pol n
  
     notes:
         reads in a headerline for length of file
     """
- 
-    with open(input_filepath,'r') as file:
+
+    print("reading number density from ASCII")
+
+    with open(filepath,'r') as file:
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_number_density_ASCII() cannot read from "+input_filepath)
+            raise IOError("ERROR: read_number_density_ASCII() cannot read from "+filepath)
      
     del(lines[0]) #first line contains the number of points
  
@@ -1440,18 +1486,22 @@ def read_number_density_ASCII(input_filepath):
  
     input_data['flux_pol']=np.asarray(input_data['flux_pol']) #convert to arrays
     input_data['n']=np.asarray(input_data['n'])
+
+    print("finished reading number density from ASCII")
     
     return input_data
  
-def dump_number_density_ASCII(output_data,output_filepath):
+def dump_number_density_ASCII(output_data,filepath):
     """
-    writes number density profile to ASCII format - flux_pol n 
+    writes number density profile to ASCII format - normalised_flux_pol n 
      
     notes:
         writes out a headerline for length of file
     """
  
-    with open(output_filepath,'w') as file: #open file
+    print("writing number density to ASCII")
+
+    with open(filepath,'w') as file: #open file
 
         normalising_factor=1.0/np.max(np.abs(output_data['flux_pol'])) #normalise
         normalised_flux=np.abs(output_data['flux_pol']*normalising_factor) #take abs
@@ -1465,6 +1515,8 @@ def dump_number_density_ASCII(output_data,output_filepath):
              
             file.write("{flux_pol}{n}\n".format(flux_pol=fortran_string(flux_pol_out,16,8),n=fortran_string(n_out,16,8)))
  
+    print("finished writing number density to ASCII")
+
 def read_number_density_IDS(shot,run,properties):
     """
     reads relevant LOCUST number density data from a core_profiles IDS and returns as a dictionary
@@ -1473,14 +1525,14 @@ def read_number_density_IDS(shot,run,properties):
         
     """
  
+    print("reading number density from IDS")
+
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
     
-    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2*pi)) #convert to Wb/rad
-
     #read in number density depending on species
     if properties=='electrons':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.density)
@@ -1489,11 +1541,15 @@ def read_number_density_IDS(shot,run,properties):
     else:
         print("cannot read_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
 
-    #additional data
-    dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor)/(2*pi)) #convert to Wb/rad
+    #read in axes
+    dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
+    dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
+    if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
+        dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     input_IDS.close()
+    print("finished reading number density from IDS")
  
     return input_data
  
@@ -1501,7 +1557,9 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     """
     writes relevant LOCUST number density data to a core_profiles IDS
     """
- 
+    
+    print("writing number density to IDS")
+
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
  
@@ -1514,7 +1572,6 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
  
     #write out number density depending on species
     if properties=='electrons':
@@ -1526,13 +1583,16 @@ def dump_number_density_IDS(ID,output_data,shot,run,properties):
     else:
         print("cannot dump_number_density_IDS - Number_Density.properties must be set to 'electrons' or 'ions'\n")
 
-    #additional data
-    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor'])
+    #write out the axes
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
+    safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
     safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
+
+    print("finished writing number density to IDS")
  
 ################################################################## Number_Density class
  
@@ -1546,15 +1606,15 @@ class Number_Density(LOCUST_input):
         self.LOCUST_input_type      string which holds this class' input type, this case = 'number density'
     class data
         self.data_format            data format of original data e.g. ASCII
-        self.input_filename         name of file in input_files folder
-        self.input_filepath         full path of file in input_files folder  
+        self.filename         name of file in input_files folder
+        self.filepath         full path of file in input_files folder  
         self.shot                   shot number
         self.run                    run number
         self.properties             data to hold additional class-specific information e.g. ion species
         key, value                  key for data dictionary to specify data entry holding value
         target                      external object to copy from
-        output_filename             name of file to write to
-        output_filepath             full path to output file in output_files folder
+        filename             name of file to write to
+        filepath             full path to output file in input_files folder
  
     notes:
         data is stored such that a reading of number density at coordinate 'coord' is:
@@ -1563,7 +1623,7 @@ class Number_Density(LOCUST_input):
  
     LOCUST_input_type='number_density'
  
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None):
         """
         read number density from file 
  
@@ -1576,13 +1636,13 @@ class Number_Density(LOCUST_input):
             pass
  
         elif data_format=='ASCII': #here are the blocks for various file types, they all follow the same pattern
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - input_filename required\n",input_filename): #must check we have all info required for reading GEQDSKs
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from ASCII - filename required\n",filename): #must check we have all info required for reading GEQDSKs
  
                 self.data_format=data_format #add to the member data
-                self.input_filename=input_filename
-                self.input_filepath=support.dir_input_files+input_filename
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_number_density_ASCII(self.input_filepath) #read the file
+                self.data=read_number_density_ASCII(self.filepath) #read the file
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
@@ -1596,7 +1656,7 @@ class Number_Density(LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
  
-    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
         write number density to file
  
@@ -1606,9 +1666,9 @@ class Number_Density(LOCUST_input):
             pass
          
         elif data_format=='ASCII':
-            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - output_filename required\n",output_filename):
-                output_filepath=support.dir_input_files+output_filename
-                dump_number_density_ASCII(self.data,output_filepath)
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to ASCII - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_number_density_ASCII(self.data,filepath)
          
         elif data_format=='IDS':
             if not none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
