@@ -1000,8 +1000,8 @@ def read_beam_depo_IDS(shot,run):
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
-    for coordinate in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
-        input_data[coordinate.name.replace('\x00','').strip()]=[] #need to remove the unicode bits
+    for identifier in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
+        input_data[identifier.name.replace('\x00','').strip()]=[] #need to remove the unicode bits
 
     for source in input_IDS.distribution_sources.source: #cycle through all possible sources
         if len(source.markers[0].positions)>0:
