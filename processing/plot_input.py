@@ -120,9 +120,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,number_bins=50,axe
             plt.ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
         if plasma is True: #plot plasma boundary
             plt.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
-    
-    plt.axis('scaled')
-    plt.colorbar()
+        
+        plt.colorbar()
+        plt.axis('scaled')
+        
     plt.show()
 
 
