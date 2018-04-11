@@ -11,9 +11,6 @@ usage:
     see README.md for usage
  
 notes:         
-    TODO need to read up on readline() to see if there is some global counter keeps track of which file line the entire script is currently on
-    i.e. whether two separate calls to readline() will read the same line or different line due to some global current line tracker. That will help explain
-    the file_numbers function somewhat and whether all file lines are held by the thing that it returns when its called in the main code body
 ---
 """
 
@@ -257,7 +254,7 @@ class LOCUST_input:
         read data to be overloaded in all children classes
         """
 
-        self.data=None 
+        self.data={} 
  
     def look(self):
         """
