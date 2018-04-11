@@ -287,7 +287,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         number_particles/first line                                     #total number of particles
         number_timesteps/last line                                      #total number of timesteps
     3D data
-        orbits[t,p,i]/column=r,phi,z row=particle                       #spatial coordinate i for particle p at time step t
+        orbits[t,i,p]/orbit at t,i,p in 3 columns                       #spatial coordinate i for particle p at time step t
 
 
 
@@ -299,7 +299,7 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 ### Processing Routines
 
-LOCUST_IO contains a few simple physics routines to process data: 
+LOCUST_IO contains a few simple physics routines to process data (please refer to source code for instructions): 
 
 ```python
     #process_input
@@ -323,6 +323,8 @@ LOCUST_IO contains a few simple physics routines to process data:
         plot_B_field                            #plots the 2D poloidal magnetic vector field
 
     #plot_output
+
+        plot_orbits                             #plots particle orbit trails
 
 ```
 
