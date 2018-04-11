@@ -158,7 +158,7 @@ class LOCUST_output:
         read data to be overloaded in all children classes
         """
 
-        self.data=None #read_data definition is designed to be overloaded in children classes 
+        self.data={} #read_data definition is designed to be overloaded in children classes 
 
     def look(self):
         """
@@ -313,8 +313,8 @@ def read_orbits_ASCII(filepath):
     reads orbits stored in ASCII format - r phi z
 
     notes:
-    reads in a headerline for number of particles
-    reads in a footerline for number of time steps
+        reads in a headerline for number of particles
+        reads in a footerline for number of time steps
     """
 
     print("reading orbits from ASCII")
@@ -327,12 +327,13 @@ def read_orbits_ASCII(filepath):
     
     number_particles=int(lines[0]) #extract number of particles
     number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
+    number_coords=int(3)
 
     del(lines[0])
     del(lines[-1])
 
-    input_data = {} #initialise the dictionary to hold the data
-    input_data['orbits']=np.array([[[float(coord) for coord in particle.split()] for particle in lines[number_particles*timestep:(timestep+1)*number_particles]] for timestep in range(number_timesteps)],ndmin=3)  #read in the data in one line using list comprehension again! (see dump_orbits_ASCII for a more digestable version of this)
+    input_data = {} #initialise the dictionary to hold the dat
+    input_data['orbits']=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
     input_data['number_particles']=np.asarray(number_particles)
     input_data['number_timesteps']=np.asarray(number_timesteps)
    
@@ -385,8 +386,8 @@ class Orbits(LOCUST_output):
         filepath             full path to output file in output_files folder
 
     notes:
-        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][t,p,i]
-        in this way, a single particle's trajectory is my_orbit['orbits'][:,p,i]
+        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][t,i,p]
+        in this way, a single particle's trajectory is my_orbit['orbits'][:,i,p] where i=0,1,2=r,phi,z
     """
 
     LOCUST_output_type='orbits'
@@ -454,7 +455,7 @@ class Orbits(LOCUST_output):
 
 
 
-
+'''
 
 ################################################################## Distribution_Function functions
 
@@ -475,15 +476,15 @@ def read_distribution_function_bin(filepath,DTYPE=3,ITER=False,wtot=False,WIPE=F
     file=FortranFile(filepath,'r')
 
     DFN_HEAD=filepath[0] #infer IDFTYP from first character of file name
-    if DFN_HEAD=='F' 
+    if DFN_HEAD=='F': 
         IDFTYP=1
-    elif DFN_HEAD=='H'    
+    elif DFN_HEAD=='H':    
         IDFTYP=2
-    elif DFN_HEAD=='X'
+    elif DFN_HEAD=='X':
         IDFTYP=3
-    elif DFN_HEAD=='I' 
+    elif DFN_HEAD=='I':
         IDFTYP=4
-    else
+    else:
         pass
     
     input_data={} #initialise blank dictionary
@@ -771,7 +772,7 @@ class Distribution_Function(LOCUST_output):
 
 
 
-
+'''
 
 
 #################################
