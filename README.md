@@ -251,10 +251,10 @@ LOCUST reads an equilibrium in GEQDSK format.
         phi/...source[0].markers[0].positions[1][p]/                    #phi coordinates of particle p
         z/...source[0].markers[0].positions[2][p]/                      #z coordinates of particle p
         v_r/...source[0].markers[0].positions[3][p]/                    #r component of v of particle p
-        v_phi/...source[0].markers[0].positions[4][p]/                  #phi component of v of particle p
+        v_tor/...source[0].markers[0].positions[4][p]/                  #phi component of v of particle p
         v_z/...source[0].markers[0].positions[5][p]/                    #z component of v of particle p
 
-LOCUST reads a birth profile in ASCII format as (r | phi | z | v_r | v_phi | v_z) .
+LOCUST reads a birth profile in ASCII format as (r | phi | z | v_r | v_tor | v_z) .
 
 #### Temperature:
 
@@ -313,10 +313,10 @@ LOCUST dumps orbits in ASCII format as (number_particles \n r | phi | z \n numbe
         phi/                                                            #phi coordinate of particle
         z/                                                              #z coordinate of particle
         v_r/                                                            #v_r coordinate of particle
-        v_phi/                                                          #v_phi coordinate of particle
+        v_tor/                                                          #v_tor coordinate of particle
         v_z/                                                            #v_z coordinate of particle
         t/                                                              #time coordinate of particle
-        status_flag/                                                    #status of particle at this time
+        status_flag/                                                    #status value of particle at this time
         status_flags/                                                   #possible status flags and their associated values
 
 LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_ \n nphc \n ntri \n array[particle,npt_,nphc] )
@@ -329,7 +329,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 ```python
     #process_input
 
-        QTP_calc(Q=None,T=None,P=None)          #calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
+        QTP_calc                                #calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
         fpolrz_calc                             #calculates the 1D flux function on the 2D computational grid
         B_calc                                  #calculates the components of the axisymmetric magnetic field on the 2D computational grid
         transform_marker_velocities             #transforms marker phase space velocities to LOCUST r,phi,z format
