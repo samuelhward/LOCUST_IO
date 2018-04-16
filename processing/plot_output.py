@@ -25,9 +25,10 @@ pi=np.pi #define pi
 
 def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['r','z'],plasma=False,real_scale=False,start_mark=False,ax=False):
     """
-    simple orbits plot in the R,Z plane
+    simple orbits plot in the R,Z/X,Y planes
      
     notes:
+        some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
         particles - iterable list of particle numbers
         axes - define plot axes
         plasma - show plasma boundary outline
@@ -120,6 +121,97 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['r','z'],p
     if ax_flag is False:
         plt.show()
 
+
+def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type='histogram',number_bins=50,axes=['r','z'],plasma=False,real_scale=False,status_flags=['PFC_intercept','time_limit_reached'],ax=False):
+    """
+    plot the final particle list
+     
+    notes:
+        some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+        type - choose from scatter or histogram
+        number_bins - set bin for histogram
+        axes - define plot axes
+        plasma - show plasma boundary outline
+        real_scale - plot to Tokamak scale (requires equilibrium arguement)
+        status_flags - plot particles with these statuses
+        ax - take input axes (can be used to stack plots)
+    """
+
+    if ax is False:
+        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+    else:
+        ax_flag=True
+
+    if ax_flag is False: #if user has not externally supplied axes, generate them #initialise plot
+        fig = plt.figure() #initialise plot
+        ax = fig.add_subplot(111)
+
+    ndim=len(axes)
+    if ndim==1: #plot 1D histograms
+
+        for status in status flags:
+            p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
+            some_final_particle_list_binned,some_final_particle_list_binned_edges=np.histogram(some_final_particle_list[axes[0]][p],bins=number_bins)
+            some_final_particle_list_binned_centres=(some_final_particle_list_binned_edges[:-1]+some_final_particle_list_binned_edges[1:])*0.5
+            ax.plot(some_final_particle_list_binned_centres,some_final_particle_list_binned)
+
+            ax.set_xlabel(axes[0])
+
+    elif ndim==2: #plot 2D histograms
+
+        if axes==['r','z']: #check for common axes
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+
+        elif axes==['x','y']:          
+            if real_scale is True: 
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
+
+        for status in status flags:
+            p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
+            
+            if type=='histogram':
+
+                #some_final_particle_list_binned_x and some_final_particle_list_binned_x are first edges then converted to centres
+                some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=number_bins)
+                some_final_particle_list_binned_x=(some_final_particle_list_binned_x[:-1]+some_final_particle_list_binned_x[1:])*0.5
+                some_final_particle_list_binned_y=(some_final_particle_list_binned_y[:-1]+some_final_particle_list_binned_y[1:])*0.5
+                some_final_particle_list_binned_y,some_final_particle_list_binned_x=np.meshgrid(some_final_particle_list_binned_y,some_final_particle_list_binned_x)
+                mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
+                #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
+                plt.colorbar(mesh)
+
+            elif type=='scatter':
+                ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],color=cmap_viridis(np.random.uniform()),marker='x',s=1)
+
+        if axes==['r','z']:
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+            if plasma is True: #plot plasma boundary
+                ax.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
+
+        elif axes==['x','y']:
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
+            if plasma is True: #plot plasma boundary
+                plasma_max_R=np.max(some_equilibrium['rbbbs'])
+                plasma_min_R=np.min(some_equilibrium['rbbbs'])
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
+        
+        ax.set_xlabel(axes[0])
+        ax.set_ylabel(axes[1])
+            
+    if ax_flag is False:
+        plt.show()
 
 #################################
 
