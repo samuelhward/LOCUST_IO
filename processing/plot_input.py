@@ -85,15 +85,17 @@ def plot_temperature(some_temperature,axis='flux_pol',ax=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,number_bins=50,axes=['r','z'],plasma=False,real_scale=False,ax=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',number_bins=50,axes=['r','z'],plasma=False,real_scale=False,ax=False):
     """
     plots beam deposition
 
     notes:
+        some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+        type - choose from scatter or histogram
         number_bins - set bin for histogram
+        axes - list of strings specifying which axes should be plotted
         plasma - toggles whether plasma boundary is included
         real_scale - sets r,z scale to real tokamak cross section
-        axes - list of strings specifying which axes should be plotted
         ax - take input axes (can be used to stack plots)
     """
 
@@ -105,37 +107,64 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,number_bins=50,axe
     if ax_flag is False: #if user has not externally supplied axes, generate them
         fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
 
     ndim=len(axes) #infer how many dimensions user wants to plot
-    if ndim==1:
+    if ndim==1: #plot 1D histograms
 
-            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
-            some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
-            ax.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
+        some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
+        some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
+        ax.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
 
-    elif ndim==2:
+        ax.set_xlabel(axes[0])
 
-        if real_scale is True: #set x and y plot limits to real scales
-            ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+    elif ndim==2: #plot 2D histograms
 
-        #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
-        some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
-        some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
-        some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
-        some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x) #XXX CHECK THIS IS MESH GRIDDED CORRECTLY
-        #axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned))) #DO I NEED THIS LINE?
-        plt.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-        #plt.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+        if axes==['r','z']: #check for common axes
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+
+        elif axes==['x','y']:          
+            if real_scale is True: 
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
+
+        if type=='histogram':
+            #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
+            some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
+            some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
+            some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
+            some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
+            mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            #ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            plt.colorbar(mesh)
+
+        elif type=='scatter':
+            ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
+
+        if axes==['r','z']:
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+            if plasma is True: #plot plasma boundary
+                ax.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
+
+        elif axes==['x','y']:
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
+            if plasma is True: #plot plasma boundary
+                plasma_max_R=np.max(some_equilibrium['rbbbs'])
+                plasma_min_R=np.min(some_equilibrium['rbbbs'])
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
         
-        if real_scale is True: #set x and y plot limits to real scales
-            ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
-        if plasma is True: #plot plasma boundary
-            ax.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
-        
-        plt.colorbar()
+        ax.set_xlabel(axes[0])
+        ax.set_ylabel(axes[1])
         
     if ax_flag is False:
         plt.show()
@@ -216,8 +245,8 @@ def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_fu
     notes:
         essentially uses the Euler method of integration
         number_field_lines - the number of field lines to plot
-        plot_full - choose whether each field line will trace the whole plasma topology (see below also)
         angle - plot field line for this many radians around central column
+        plot_full - choose whether each field line will trace the whole plasma topology (see below also)
         start_mark - add marker for start of the field line
         boundary - show plasma boundary outline
         ax - take input axes (can be used to stack plots)
