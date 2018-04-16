@@ -909,7 +909,7 @@ class Equilibrium(LOCUST_input):
  
 def read_beam_depo_ASCII(filepath):
     """
-    reads birth profile stored in ASCII format - r phi z v_r v_phi v_z
+    reads birth profile stored in ASCII format - r phi z v_r v_tor v_z
 
     notes:
     """
@@ -931,7 +931,7 @@ def read_beam_depo_ASCII(filepath):
     input_data['phi']=[]
     input_data['z']=[]
     input_data['v_r']=[]
-    input_data['v_phi']=[]
+    input_data['v_tor']=[]
     input_data['v_z']=[]
  
     for line in lines:
@@ -941,14 +941,14 @@ def read_beam_depo_ASCII(filepath):
         input_data['phi'].append(float(split_line[1]))
         input_data['z'].append(float(split_line[2]))
         input_data['v_r'].append(float(split_line[3]))
-        input_data['v_phi'].append(float(split_line[4]))
+        input_data['v_tor'].append(float(split_line[4]))
         input_data['v_z'].append(float(split_line[5]))
  
     input_data['r']=np.asarray(input_data['r']) #convert to arrays
     input_data['phi']=np.asarray(input_data['phi'])
     input_data['z']=np.asarray(input_data['z'])
     input_data['v_r']=np.asarray(input_data['v_r'])
-    input_data['v_phi']=np.asarray(input_data['v_phi'])
+    input_data['v_tor']=np.asarray(input_data['v_tor'])
     input_data['v_z']=np.asarray(input_data['v_z'])
 
     print("finished reading beam deposition from ASCII")
@@ -957,7 +957,7 @@ def read_beam_depo_ASCII(filepath):
  
 def dump_beam_depo_ASCII(output_data,filepath):
     """
-    writes birth profile to ASCII format - r z phi v_r v_z v_phi
+    writes birth profile to ASCII format - r z phi v_r v_z v_tor
      
     notes:
         writes out two headerlines
@@ -976,10 +976,10 @@ def dump_beam_depo_ASCII(output_data,filepath):
             phi_out=output_data['phi'][this_particle]
             z_out=output_data['z'][this_particle]
             v_r_out=output_data['v_r'][this_particle]
-            v_phi_out=output_data['v_phi'][this_particle]
+            v_tor_out=output_data['v_tor'][this_particle]
             v_z_out=output_data['v_z'][this_particle]
  
-            file.write("{r}{phi}{z}{v_r}{v_phi}{v_z}\n".format(r=fortran_string(r_out,14,6),phi=fortran_string(phi_out,14,6),z=fortran_string(z_out,14,6),v_r=fortran_string(v_r_out,14,6),v_phi=fortran_string(v_phi_out,14,6),v_z=fortran_string(v_z_out,14,6)))
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=fortran_string(r_out,14,6),phi=fortran_string(phi_out,14,6),z=fortran_string(z_out,14,6),v_r=fortran_string(v_r_out,14,6),v_tor=fortran_string(v_tor_out,14,6),v_z=fortran_string(v_z_out,14,6)))
     
     print("finished writing beam deposition to ASCII") 
  
@@ -1045,7 +1045,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
     output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
  
-    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_phi in this case
+    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
@@ -1073,7 +1073,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
 
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['r'].size) #define the weights, i.e. number of particles per marker 
-    positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_phi'],output_data['v_z']]) #create 2D array of positions
+    positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_tor'],output_data['v_z']]) #create 2D array of positions
     output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
  
     #'put' all the output_data into the file and close
@@ -1111,7 +1111,7 @@ def read_beam_depo_TRANSP(filepath):
     input_data['v_y']=[]
     input_data['v_z']=[]
     input_data['v_r']=[]
-    input_data['v_phi']=[]
+    input_data['v_tor']=[]
 
     for line in lines:
         split_line=line.split()
@@ -1139,7 +1139,7 @@ def read_beam_depo_TRANSP(filepath):
     input_data['r']=np.asarray(np.sqrt(input_data['x']**2+input_data['y']**2)) #need to convert from x,y,z 
     input_data['v_r']=np.asarray(np.sqrt(input_data['v_x']**2+input_data['v_y']**2))
     input_data['phi']=np.asarray(np.arctan2(input_data['y'],input_data['x']))
-    input_data['v_phi']=np.asarray(input_data['v_x']*np.sin(input_data['phi']))
+    input_data['v_tor']=np.asarray(input_data['v_x']*np.sin(input_data['phi']))
 
     print("finished reading beam deposition from TRANSP format")
 
@@ -1171,7 +1171,7 @@ class Beam_Deposition(LOCUST_input):
     notes:
         data is stored such that the coordinate 'r' for all particles is stored in my_beam_deposition['r']
         therefore the phase space position of particle p is:
-            (my_beam_deposition['r'][p], my_beam_deposition['phi'][p], my_beam_deposition['z'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_phi'][p], my_beam_deposition['v_z'][p])
+            (my_beam_deposition['r'][p], my_beam_deposition['phi'][p], my_beam_deposition['z'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_tor'][p], my_beam_deposition['v_z'][p])
     """
  
     LOCUST_input_type='beam_deposition'
