@@ -175,12 +175,12 @@ def fortran_string(number_out,length,decimals=None):
 
 def sort_arrays(main_array,*args):
     """
-    sort an arbitrary number of parallel arrays (*args) according to main_array
+    sort an arbitrary number of arrays in parallel (*args) according to main_array
 
     notes:
         assumes all arrays are numpy arrays
     usage:
-        to sort according to array x, 
+        to sort ascending according to array x, 
         x_sorted,y_sorted,z_sorted,...=sort_arrays(x,y,z,...)
     """
 
@@ -909,7 +909,9 @@ class Equilibrium(LOCUST_input):
  
 def read_beam_depo_ASCII(filepath):
     """
-    reads neutral beam deposition profile stored in ASCII format - r phi z v_r v_phi v_z
+    reads birth profile stored in ASCII format - r phi z v_r v_phi v_z
+
+    notes:
     """
  
  
@@ -955,7 +957,7 @@ def read_beam_depo_ASCII(filepath):
  
 def dump_beam_depo_ASCII(output_data,filepath):
     """
-    writes neutral beam deposition profile to ASCII format - r z phi v_r v_z v_phi
+    writes birth profile to ASCII format - r z phi v_r v_z v_phi
      
     notes:
         writes out two headerlines
@@ -983,7 +985,7 @@ def dump_beam_depo_ASCII(output_data,filepath):
  
 def read_beam_depo_IDS(shot,run):
     """
-    reads relevant LOCUST neutral beam data from a distribution_sources IDS and returns as a dictionary
+    reads birth profile from a distribution_sources IDS and returns as a dictionary
  
     notes:
         reads in an arbitrary number of coordinates and injectors for each source        
@@ -1022,8 +1024,9 @@ def read_beam_depo_IDS(shot,run):
  
 def dump_beam_depo_IDS(ID,output_data,shot,run):
     """
-    writes relevant LOCUST neutral beam data to a distribution_sources IDS
+    writes birth profile to a distribution_sources IDS
  
+    notes:
     """
     
     print("writing beam deposition to IDS")
@@ -1078,7 +1081,71 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.close()
 
     print("finished writing beam deposition to IDS")
+
+def read_beam_depo_TRANSP(filepath):
+    """
+    reads birth profile from TRANSP ASCII file
  
+    notes:
+    """
+
+    print("reading beam deposition from TRANSP format")
+
+    with open(filepath,'r') as file:
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_beam_depo_TRANSP() cannot read from "+filepath)
+
+    for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
+        if str(line.split()[0])=='<start-of-data>':
+            del(lines[0:counter+1])
+            break
+
+    input_data = {} #initialise the dictionary to hold the data
+    input_data['x']=[] #initialise the arrays
+    input_data['y']=[]
+    input_data['z']=[]
+    input_data['r']=[]  
+    input_data['phi']=[]
+    input_data['v_x']=[]
+    input_data['v_y']=[]
+    input_data['v_z']=[]
+    input_data['v_r']=[]
+    input_data['v_phi']=[]
+
+    for line in lines:
+        split_line=line.split()
+        split_line[0]=float(split_line[0])
+        split_line[1]=float(split_line[1])
+        split_line[2]=float(split_line[2])
+        split_line[3]=float(split_line[3])
+        split_line[4]=float(split_line[4])
+        split_line[5]=float(split_line[5])
+
+        input_data['x'].append(split_line[0]) #only read in x,y,z with append for speed
+        input_data['y'].append(split_line[1])
+        input_data['z'].append(split_line[2])
+        input_data['v_x'].append(split_line[3])
+        input_data['v_y'].append(split_line[4])
+        input_data['v_z'].append(split_line[5])
+
+    input_data['x']=0.01*np.asarray(input_data['x']) #convert to arrays and from cm to m
+    input_data['y']=0.01*np.asarray(input_data['y'])
+    input_data['z']=0.01*np.asarray(input_data['z'])
+    input_data['v_x']=0.01*np.asarray(input_data['v_x'])
+    input_data['v_y']=0.01*np.asarray(input_data['v_y'])
+    input_data['v_z']=0.01*np.asarray(input_data['v_z'])
+    
+    input_data['r']=np.asarray(np.sqrt(input_data['x']**2+input_data['y']**2)) #need to convert from x,y,z 
+    input_data['v_r']=np.asarray(np.sqrt(input_data['v_x']**2+input_data['v_y']**2))
+    input_data['phi']=np.asarray(np.arctan2(input_data['y'],input_data['x']))
+    input_data['v_phi']=np.asarray(input_data['v_x']*np.sin(input_data['phi']))
+
+    print("finished reading beam deposition from TRANSP format")
+
+    return input_data
+
+
 ################################################################## Beam_Deposition class
  
 class Beam_Deposition(LOCUST_input):
@@ -1136,9 +1203,18 @@ class Beam_Deposition(LOCUST_input):
                 self.run=run
                 self.properties=properties
                 self.data=read_beam_depo_IDS(self.shot,self.run)
+
+        elif data_format=='TRANSP':
+            if not none_check(self.ID,self.LOCUST_input_type,"cannot read_data from TRANSP - filename required\n",filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties=properties
+                self.data=read_beam_depo_TRANSP(self.filepath) #read the file
  
         else:
-            print("cannot read_data - please specify a compatible data_format (ASCII/IDS)\n")            
+            print("cannot read_data - please specify a compatible data_format (ASCII/IDS/TRANSP)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
