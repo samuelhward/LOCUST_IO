@@ -497,12 +497,12 @@ def read_final_particle_list_ASCII(filepath='ptcl_cache.dat'):
     input_data['additional_flag7']=np.array([])
     input_data['additional_flag8']=np.array([])
     input_data['additional_flag9']=np.array([])
-    input_data['n']=n
-    input_data['ngpu']=ngpu
-    input_data['niter']=nniter
-    input_data['npt_']=npt_
-    input_data['nphc']=nphc
-    input_data['ntri']=ntri
+    input_data['n']=np.array(n)
+    input_data['ngpu']=np.array(ngpu)
+    input_data['niter']=np.array(niter)
+    input_data['npt_']=np.array(npt_)
+    input_data['nphc']=np.array(nphc)
+    input_data['ntri']=np.array(ntri)
     input_data['number_particles']=n*ngpu
 
     #get rid of white space and completely flatten IDL/FORTRAN-style

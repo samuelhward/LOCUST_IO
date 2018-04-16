@@ -149,7 +149,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
     ndim=len(axes)
     if ndim==1: #plot 1D histograms
 
-        for status in status flags:
+        for status in status_flags:
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             some_final_particle_list_binned,some_final_particle_list_binned_edges=np.histogram(some_final_particle_list[axes[0]][p],bins=number_bins)
             some_final_particle_list_binned_centres=(some_final_particle_list_binned_edges[:-1]+some_final_particle_list_binned_edges[1:])*0.5
@@ -171,7 +171,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
 
-        for status in status flags:
+        for status in status_flags:
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             
             if type=='histogram':
