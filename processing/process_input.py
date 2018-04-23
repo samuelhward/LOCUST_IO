@@ -20,7 +20,7 @@ try:
     import scipy.integrate
     import numpy as np
 except:
-    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
+    raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
     
 pi=np.pi
@@ -128,11 +128,11 @@ def fpolrz_calc(some_equilibrium):
     """
     print("fpolrz_calc - calculating 2D flux function")
 
-    fpolrz=np.zeros((some_equilibrium['nw'],some_equilibrium['nh'])) #initialise 2D grid
+    fpolrz=np.zeros((some_equilibrium['nR_1D'],some_equilibrium['nZ_1D'])) #initialise 2D grid
     fpolrz_interpolator=interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
 
-    for w in np.arange(some_equilibrium['nw']): #loop over 2D grid
-        for h in np.arange(some_equilibrium['nh']):
+    for w in np.arange(some_equilibrium['nR_1D']): #loop over 2D grid
+        for h in np.arange(some_equilibrium['nZ_1D']):
             
             if np.abs(some_equilibrium['psirz'][w,h])<=np.max(np.abs(some_equilibrium['flux_pol'])) and np.abs(some_equilibrium['psirz'][w,h])>=np.min(np.abs(some_equilibrium['flux_pol'])): #if the poloidal flux function is defined for this poloidal flux
                 fpolrz[w,h]=fpolrz_interpolator(some_equilibrium['psirz'][w,h])
@@ -167,7 +167,7 @@ def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in
     one_R=1.0/some_equilibrium['R_1D']
     one_R=one_R[:,np.newaxis]
 
-    B_field_Z=(gradient[0])*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nw)...maybe one of these references to one_R should be transposed?
+    B_field_Z=(gradient[0])*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nR_1D)...maybe one of these references to one_R should be transposed?
     B_field_R=(gradient[1])*one_R
     B_field_tor=some_equilibrium['fpolrz']*one_R
 

@@ -22,10 +22,10 @@ try:
     from mpl_toolkits import mplot3d #import 3D plotting axes
     from mpl_toolkits.mplot3d import Axes3D
 except:
-    raise ImportError("ERROR: initial imported modules not found!\nreturning\n")
+    raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    import process_input
+    from processing import process_input
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
     sys.exit(1)
@@ -38,7 +38,7 @@ pi=np.pi #define pi
 
 
 
-def plot_number_density(some_number_density,axis='flux_pol',ax=False):
+def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False):
     """
     plots number density
      
@@ -61,7 +61,7 @@ def plot_number_density(some_number_density,axis='flux_pol',ax=False):
         plt.show()
 
 
-def plot_temperature(some_temperature,axis='flux_pol',ax=False):
+def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False):
     """
     plots number density
 
@@ -85,7 +85,7 @@ def plot_temperature(some_temperature,axis='flux_pol',ax=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',number_bins=50,axes=['r','z'],plasma=False,real_scale=False,ax=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
     """
     plots beam deposition
 
@@ -94,7 +94,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
         type - choose from scatter or histogram
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
-        plasma - toggles whether plasma boundary is included
+        LCFS - toggles whether plasma boundary is included
         real_scale - sets r,z scale to real tokamak cross section
         ax - take input axes (can be used to stack plots)
     """
@@ -114,18 +114,17 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
         some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
         some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
         ax.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
-
         ax.set_xlabel(axes[0])
 
     elif ndim==2: #plot 2D histograms
 
-        if axes==['r','z']: #check for common axes
+        if axes==['R','Z']: #check for common axes
             if real_scale is True: #set x and y plot limits to real scales
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
 
-        elif axes==['x','y']:          
+        elif axes==['X','Y']:          
             if real_scale is True: 
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -138,28 +137,28 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            #ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             plt.colorbar(mesh)
 
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
 
-        if axes==['r','z']:
+        if axes==['R','Z']:
             if real_scale is True: #set x and y plot limits to real scales
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
-            if plasma is True: #plot plasma boundary
-                ax.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
+            if LCFS is True: #plot plasma boundary
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['zbbbs'],'m-') 
 
-        elif axes==['x','y']:
+        elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
-            if plasma is True: #plot plasma boundary
-                plasma_max_R=np.max(some_equilibrium['rbbbs'])
-                plasma_min_R=np.min(some_equilibrium['rbbbs'])
+            if LCFS is True: #plot plasma boundary
+                plasma_max_R=np.max(some_equilibrium['lcfs_r'])
+                plasma_min_R=np.min(some_equilibrium['lcfs_r'])
                 ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
                 ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
         
@@ -172,13 +171,14 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
 
 
 
-def plot_equilibrium(some_equilibrium,key='psirz',boundary=None,number_contours=20,ax=False):
+def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,ax=False):
     """
     plots equilibrium
      
     notes:
         key - selects which data in equilibrium to plot
-        boundary - toggles plasma boundary on/off in 2D plots
+        LCFS - toggles plasma boundary on/off in 2D plots
+        limiters - toggles limiters on/off in 2D plots
         number_contours - set fidelity of 2D contour plot
         ax - take input axes (can be used to stack plots)
     """
@@ -191,29 +191,30 @@ def plot_equilibrium(some_equilibrium,key='psirz',boundary=None,number_contours=
     #0D data
     if some_equilibrium[key].ndim==0:
         print(some_equilibrium[key])
+        return
     
+    #>0D data is plottable
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        fig = plt.figure() #initialise plot
+        ax = fig.add_subplot(111)
+
     #1D data
     elif some_equilibrium[key].ndim==1:
-        if ax_flag is False: #if user has not externally supplied axes, generate them
-            fig = plt.figure() #initialise plot
-            ax = fig.add_subplot(111)
         ax.plot(some_equilibrium[key])
+        ax.set_ylabel(key)
 
     #2D data
     elif some_equilibrium[key].ndim==2:
-        if ax_flag is False: #if user has not externally supplied axes, generate them
-            fig = plt.figure() #initialise plot
-            ax = fig.add_subplot(111)
 
         X=some_equilibrium['R_1D'] #make a mesh
         Y=some_equilibrium['Z_1D'] 
         Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
-        Z=some_equilibrium[key] #2D array (nw,nh) of poloidal flux
+        Z=some_equilibrium[key] #2D array (nR_1D,nZ_1D) of poloidal flux
         
         #2D plot
-        contour=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-        #ax.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-        for c in contour.collections:
+        mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+        #mesh=ax.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+        for c in mesh.collections: #for use in contourf
             c.set_edgecolor("face")
 
         #3D plot
@@ -221,18 +222,18 @@ def plot_equilibrium(some_equilibrium,key='psirz',boundary=None,number_contours=
         #ax.view_init(elev=90, azim=None) #rotate the camera
         #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
         
-        plt.colorbar(contour)
+        plt.colorbar(mesh)
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+        ax.set_xlabel('r')
+        ax.set_ylabel('z')
+        ax.set_title(key)
 
-        if boundary is not None:
-            #add boundaries if requested
-            if 'limiters' in boundary:
-                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
-
-            if 'plasma' in boundary:
-                ax.plot(some_equilibrium['rbbbs'],some_equilibrium['zbbbs'],'m-') 
+        if limiters is True: #add boundaries if desired
+            ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
+        if LCFS is True:
+            ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['zbbbs'],'m-') 
 
     if ax_flag is False:
         plt.show()
@@ -350,8 +351,8 @@ def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_fu
     if boundary: #plot periodic poloidal cross-sections in 3D
         print('plot_B_field_line - plotting plasma boundary')
         for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
-            x_points=some_equilibrium['rbbbs']*np.cos(angle)
-            y_points=some_equilibrium['rbbbs']*np.sin(angle)
+            x_points=some_equilibrium['lcfs_r']*np.cos(angle)
+            y_points=some_equilibrium['lcfs_r']*np.sin(angle)
             z_points=some_equilibrium['zbbbs']
             ax.plot(x_points,y_points,zs=z_points,color='m')
 
