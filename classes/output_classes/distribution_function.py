@@ -235,9 +235,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         nEQ=file.read_ints() 
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
         input_data['nZ_1D']=np.array(nEQ[1]) #2D field grid Z dimension
-        input_data['R_1D']=file.read_reals(dtype=np.float64) #Eqm. R grid. (nEQ_R long) 
-        input_data['Z_1D']=file.read_reals(dtype=np.float64) #Eqm. Z grid. (nEQ_Z long)
-        input_data['psirz']=file.read_reals(dtype=np.float64).reshape(input_data['nEQ_R'],input_data['nEQ_Z'],order='F') #PSIrz
+        input_data['R_1D']=file.read_reals(dtype=np.float64) #Eqm. R grid. (nR_1D long) 
+        input_data['Z_1D']=file.read_reals(dtype=np.float64) #Eqm. Z grid. (nZ_1D long)
+        input_data['psirz']=file.read_reals(dtype=np.float64).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
 
         if IDFTYP==4:
 
