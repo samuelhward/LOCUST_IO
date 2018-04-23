@@ -39,7 +39,7 @@ def dfn_integrate(some_dfn):
 
     for p in range(int(some_dfn['nP'])): #denormalise the velocity dimension
         for v in range(int(some_dfn['nV'])):
-            dfn[p,v,:,:,:]*=some_dfn['v'][v]**2
+            dfn[p,v,:,:,:]*=some_dfn['V'][v]**2
 
     for r in range(int(some_dfn['nR'])): #convert from markers per s^3/m^6 to markers per cell
         if some_dfn['nP']>1:

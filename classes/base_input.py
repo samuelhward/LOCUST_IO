@@ -90,7 +90,7 @@ class LOCUST_input:
 
         print("\n-----------------------")
         print("ID - {ID}".format(ID=self.ID))  
-        print("Output Type - {LOCUST_output_type}".format(LOCUST_output_type=self.LOCUST_output_type))
+        print("Output Type - {LOCUST_input_type}".format(LOCUST_input_type=self.LOCUST_input_type))
 
         if hasattr(self,'data_format'):
             print("Data Format - {data_format}".format(data_format=self.data_format))
