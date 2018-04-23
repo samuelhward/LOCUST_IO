@@ -56,12 +56,14 @@ Table of Contents
 
 ## Requirements
 
-* IMAS ≥3.16.0 (with imasdb set)
-* Python ≥v2.7
-* numpy module ≥v1.14
-* matplotlib module
-* scipy module ≥v1.0
-* copy, re, itertools, math and time modules in the standard library 
+Tested on:
+
+* IMAS ≥3.16.0
+* Python ≥v3.5.1
+    * copy, re, itertools, math and time modules in the standard library 
+    * numpy ≥v1.14.2
+    * matplotlib ≥v2.0.0
+    * scipy module ≥v0.17.0
 
 
 
@@ -116,61 +118,56 @@ Table of Contents
 As well as the included *example_project/*, some basic usage is outlined below:
 
 ```python
+#start by setting up python paths and import classes which hold LOCUST inputs:
 import context
 import input_classes
 
-my_equilibrium=input_classes.Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') #my_equilibrium now holds all the data in one object
-my_equilibrium.look()                               #quick look at the equilibrium and its data
-```
+my_equilibrium=input_classes.Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') 
+#my_equilibrium now holds all the data in one object
+#take a quick look at the equilibrium and its data
+my_equilibrium.look()                               
 
-```python
-my_equilibrium=input_classes.Equilibrium('some_identification') #you can initialise an empty equilibrium this way which you can then fill later with the read_data() method as below (must always specify an ID)
 
+#to initialise empty equilibrium to fill later with the read_data() (must always specify an ID):
+my_equilibrium=input_classes.Equilibrium('some_identification') 
+#read data from GEQDSK
 my_equilibrium.read_data(data_format='GEQDSK',input_filename='some.eqdsk')
+#dump equilibrium to IDS format 
+my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) 
 
-my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) #you've now written out your equilibrium to IDS format
-```
 
-* You can set individual pieces of data with the .set() method. This will overwrite the default data format, which is numpy array:
+#you can set individual pieces of data with the .set() method. This will overwrite the default data format, which is numpy array:
+#set multiple values simultaneously
+my_equilibrium.set(nw=5,fpol=[1,2,3,4])  
+#equally
+my_equilibrium.set(**some_dict)                     
 
-```python
-my_equilibrium.set(nw=5,fpol=[1,2,3,4])             #to set multiple values simultaneously
-my_equilibrium.set(**some_dict)                     #equally
 
-```
+#your input/output objects can also be copied using the .copy() method:
+#copy all data from one object to another
+my_equilibrium.copy(some_other_equilibrium)
+#copy specific fields                                        
+my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key')  
 
-* Your input/output objects can also be copied using the .copy() method:
 
-```python
-my_equilibrium.copy(some_other_equilibrium)                                        #copy all data from one object to another
-my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key')  #copy specific fields
-```
-
-* To get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data using the methods in the *processing/* directory:
-
-```python
+#to get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data: 
 import plot_input
+plot_input.plot_equilibrium(my_equilibrium)                                         
+#(you can also stack plots onto the same axis object with the ax arguement)
 
-plot_input.plot_equilibrium(my_equilibrium)                                         #default psirz data plot
-```
 
-* To check if two objects share the same data, use .compare()
+#to check what data two objects share, use .compare():
+my_equilibrium.compare(another_equilibrium,verbose=True)               
 
-```python
-my_equilibrium.compare(another_equilibrium,verbose=True)                            #returns true if my_equilibrium contains all data in another_equilibrium and that data is the same, verbose prints a summary
-```
 
-* To check if your object contains enough information to input into a LOCUST run, use .run_check()
+#to check if your object contains enough information for running LOCUST, use .run_check():
+my_equilibrium.run_check(verbose=True)                                            
 
-```python
-my_equilibrium.run_check(verbose=True)                                              #returns true if data contains correct fields
-```
 
-* You can also calculate new pieces of data using methods in the processing folder
-
-```python
+#you can also calculate new pieces of data using methods in the processing folder:
 import process_input
-my_equilibrium.set(B_field=process_input.B_calc(myeq))        #calculate and set the magnetic field
+#calculate and set the magnetic field
+my_equilibrium.set(B_field=process_input.B_calc(myeq))        
 ```
 
 
@@ -205,8 +202,8 @@ Since this package aims to bridge the gap between various file formats for diffe
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[GEQDSK](http://nstx.pppl.gov/nstx/Software/Applications/a-g-file-variables.txt)/[Equilibrium IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/equilibrium.html)/LOCUST)
 
     0D data
-        nw/nw/-/nEQ_R                                                   #number of points in R (x or width)
-        nh/nh/-/nEQ_Z                                                   #number of points in Z (y or height)
+        nR_1D/nw/-/nEQ_R                                                #number of points in R (x or width)
+        nZ_1D/nh/-/nEQ_Z                                                #number of points in Z (y or height)
         idum/idum/-/IDUM                                                #dummy variable
         rdim/rdim/-/RDIM                                                #size of the R dimension in m
         zdim/zdim/-/ZDIM                                                #size of the Z dimension in m
@@ -221,7 +218,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         sibry/sibry/...global_quantities.psi_boundary/SIBRY             #poloidal flux psi at plasma boundary (Weber / rad)
         current/current/...global_quantities.ip/CURRENT                 #plasma current [Amps]   
         xdum/xdum/-/XDUM                                                #dummy variable - just contains int(zero)
-        nbbbs/nbbbs/-/nb                                                #number of points in the plasma boundary
+        lcfs_n/nbbbs/-/nb                                               #number of points in the plasma boundary
         limitr/limitr/-/IDUM                                            #number of points in the wall boundary
     1D data
         fpol/fpol/...profiles_1d.f/RBphih                               #poloidal flux function on uniform flux grid (1D array of f(psi)=R*B_toroidal [meter-Tesla]) (negative for positive plasma current in GEQDSK)
@@ -229,16 +226,16 @@ Since this package aims to bridge the gap between various file formats for diffe
         ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where psi is poloidal flux per radian and  F=diamagnetic function=R*B_Phi 
         pprime/pprime/...profiles_1d.dpressure_dpsi/PPRIM               #plasma pressure * d(plasma pressure)/d(psi) (check papers)
         qpsi/qpsi/...profiles_1d.q/QPSI                                 #q profile (function of flux_pol)
-        rlim/rlim/...boundary.outline.r/                                #r coordinates of wall boundary
+        rlim/rlim/...boundary.outline.r/                                #r coordinates` of wall boundary
         zlim/zlim/...boundary.outline.z/                                #z coordinates of wall boundary
-        rbbbs/rbbbs/...boundary.lcfs.r/Rp                               #r coordinates of plasma boundary
-        zbbbs/zbbbs/...boundary.lcfs.z/Zp                               #z coordinates of plasma boundary
+        lcfs_r/rbbbs/...boundary.lcfs.r/Rp                              #r coordinates of plasma boundary
+        lcfs_z/zbbbs/...boundary.lcfs.z/Zp                              #z coordinates of plasma boundary
         R_1D/-/...profiles_2d[0].grid.dim1/                             #R dimension (m)
         Z_1D/-/...profiles_2d[0].grid.dim2/                             #Z dimension (m)
         flux_pol/-/...profiles_1d.psi/                                  #poloidal flux from magnetic axis up to the plasma boundary (Weber / rad)
         flux_tor/-/...profiles_1d.phi/                                  #toroidal flux from magnetic axis up to the plasma boundary (Weber / rad)
     2D data
-        psirz[r,z]/psirz/...profiles_2d[0].psi/psi_equil_h              #poloidal flux at coordinate r,z in (Weber / rad) 
+        psirz/psirz/...profiles_2d[0].psi/psi_equil_h                   #poloidal flux at coordinate [r,z] in (Weber / rad) 
 
 LOCUST reads an equilibrium in GEQDSK format.
 
@@ -262,6 +259,7 @@ LOCUST reads a birth profile in ASCII format as (r | phi | z | v_r | v_tor | v_z
 
     1D data
         flux_pol/...profiles_1d[0].grid.psi/                           #poloidal flux (Weber / rad)
+        flux_pol_norm/-/-                                              #normalised poloidal flux
         T/...profiles_1d[0].ion[0].temperature/                        #ion temperature
         T/...profiles_1d[0].electrons.temperature/                     #electron temperature
         flux_tor_coord/...profiles_1d[0].grid.rho_tor/                 #toroidal flux coordinate
@@ -276,6 +274,7 @@ LOCUST reads a temperature profile in ASCII format as (normalised poloidal flux 
 
     1D data
         flux_pol/...profiles_1d[0].grid.psi/                            #poloidal flux (Weber / rad)
+        flux_pol_norm/-/-                    c                          #normalised poloidal flux
         n/...profiles_1d[0].ion[0].density/                             #ion number density
         n/...profiles_1d[0].electrons.density/                          #electron number density
         flux_tor_coord/-/...profiles_1d[0].grid.rho_tor/                #toroidal flux coordinate
@@ -321,6 +320,85 @@ LOCUST dumps orbits in ASCII format as (number_particles \n r | phi | z \n numbe
 
 LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_ \n nphc \n ntri \n array[particle,npt_,nphc] )
 
+#### Distribution Function:
+
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/LOCUST)
+
+    0D data
+        IDFTYP/                                                         #dfn structure ID (= IDFTYP LOCUST flag)
+        EQBM_MD5/                                                       #checksum ID of the equilibrium
+        nE/                                                             #number of points in energy dimension
+        nV/                                                             #number of points in velocity dimension
+        nR/nF                                                           #number of R points on Dfn grid
+        nZ/nF                                                           #number of Z points on Dfn grid
+        nL/                                                             #number of points in Vphi/V dimension
+        nPP/                                                            #number of points in Pphi dimension
+        nMU/                                                            #number of points in Mu dimension
+        nPSI/nPSIF                                                      #number of poloidal flux surface contours
+        nPOL/nPOLF                                                      #number of poloidal cells for volume calculation
+        nP/nPF                                                          #poloidal gyro-phase cell boundaries
+        dEh/                                                            #energy bin width
+        dVh/                                                            #velocity bin width
+        dPPh/                                                           #Pphi bin width
+        dMUh/                                                           #Mu bin width
+        cpu_time/                                                       #
+        0_1/                                                            #zero indicates fast ions only
+        nc/                                                             #number of slices that Dfn is written to file in
+        nR_1D/nEQ_R                                                     #number of R points on field grid
+        nZ_1D/nEQ_Z                                                     #number of Z points on field grid
+        Ai_1                                                            #first value of Ab
+        Zi_1                                                            #first value of Zb
+        Vsclh                                                           #velocity grid upper limit
+        Vnrm                                                            #normalising velocity
+        icoll                                                           #collisions (1=on 0=off)
+        iscat                                                           #scattering (1=on 0=off)
+        idiff                                                           #energy diffusion (1=on 0=off)
+        iloss                                                           #charge exchange events (1=on 0=off)
+        iterm                                                           #terminate if ptcl. leaves plasma
+        niter                                                           #number of iterations for isym=1 simulation
+        integrator/LEIID                                                #integrator type
+        npnt                                                            #points per gyration
+        0_2                                                             #the maximum integrator step size
+        dt0                                                             #
+        threads_per_block/threadsPerBlock                               #gpu threads per block
+        blocks_per_grid/blocksPerGrid                                   #gpu blocks per grid
+    1D data
+        E/EF                                                            #energy dimension of Dfn grid
+        V/VF                                                            #velocity dimension of Dfn grid
+        PP/                                                             #Pphi dimension of Dfn grid
+        MU/                                                             #Mu dimension of Dfn grid
+        Jh/                                                             #Jacobian
+        Jh_s/                                                           #Jacobian error
+        R_1D/R_equil_h                                                  #R dimension of field grid
+        Z_1D/Z_equil_h                                                  #Z dimension of field grid
+        npolh                                                           #
+        R/R                                                             #R dimension of Dfn grid
+        Z/Z                                                             #Z dimension of Dfn grid
+        L/L                                                             #pitch dimension of Dfn grid
+        PP/PP                                                           #Pphi dimension of Dfn grid
+        V/VF                                                            #velocity dimension of Dfn grid
+        P/PG                                                            #special dimension - simulation specific
+        Ab                                                              #fast ion masses
+        Zb                                                              #trace particle Z
+        Pdep/E0                                                         #normalised injected power
+        tau_s                                                           #zeroth order slowing-down time
+        E0                                                              #energy (plasma frame)
+        EC                                                              #zeroth order critical energy
+        rho                                                             #
+        siglg                                                           ##r.m.s. width of test src         
+    2D data
+        psirz/psi_equil_h*PSI_sclh                                      #poloidal flux field [r,z] grid
+        dVOL                                                            #
+    3D data        
+        dfn/Fh                                                          #Dfn grid (for IDFTYP=3)
+        dfn_s/Fh_s                                                      #Dfn grid error (for IDFTYP=3)
+    4D data
+        csb/                                                            #volume element data
+    5D data
+        dfn/Fh                                                          #Dfn grid (for IDFTYP!=3)
+        dfn_s/Fh_s                                                      #Dfn grid error (for IDFTYP!=3)
+
+LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. 
     
 ### Processing Routines
 
@@ -338,6 +416,9 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 
     #process_output
 
+        dfn_integrate                           #integrate a LOCUST dfn to from s^3/m^6 to /bin
+        dfn_collapse                            #collapse a LOCUST dfn to the specified dimensions by summing
+
     #plot_input
 
         plot_number_density                     #plots the number density
@@ -349,9 +430,16 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 
     #plot_output
 
-        plot_orbits                             #plot particle orbit trails
+        plot_orbits                             #plot particle orbits
         plot_final_particle_list                #plot a histogram/scatter of the final particle list
+        plot_distribution_function              #plot the final distribution function
 ```
+
+
+
+
+
+
 
 
 
@@ -377,6 +465,11 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 
     You should have received a copy of the GNU General Public Licence
     along with this program. If not, see [http://www.gnu.org/licences/](http://www.gnu.org/licences/).
+
+
+
+
+
 
 
 
