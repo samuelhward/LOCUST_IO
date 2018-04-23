@@ -89,7 +89,7 @@ Tested on:
 * Copy the files which you want to manipulate to *LOCUST_IO/input_files* and *LOCUST_IO/output_files* (former/latter for inputs/outputs to/from LOCUST)
 
 * Import context into your python session
-* Import input_classes or output_classes into your python session
+* Import some classes from classes.input_classes or classes.output_classes
 * You're good to go!
 
 
@@ -120,16 +120,16 @@ As well as the included *example_project/*, some basic usage is outlined below:
 ```python
 #start by setting up python paths and import classes which hold LOCUST inputs:
 import context
-import input_classes
+from classes.input_classes.equilibrium import Equilibrium
 
-my_equilibrium=input_classes.Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') 
+my_equilibrium=Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') 
 #my_equilibrium now holds all the data in one object
 #take a quick look at the equilibrium and its data
 my_equilibrium.look()                               
 
 
 #to initialise empty equilibrium to fill later with the read_data() (must always specify an ID):
-my_equilibrium=input_classes.Equilibrium('some_identification') 
+my_equilibrium=Equilibrium('some_identification') 
 #read data from GEQDSK
 my_equilibrium.read_data(data_format='GEQDSK',input_filename='some.eqdsk')
 #dump equilibrium to IDS format 
@@ -151,7 +151,7 @@ my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key'
 
 
 #to get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data: 
-import plot_input
+from processing import plot_input
 plot_input.plot_equilibrium(my_equilibrium)                                         
 #(you can also stack plots onto the same axis object with the ax arguement)
 
@@ -165,7 +165,7 @@ my_equilibrium.run_check(verbose=True)
 
 
 #you can also calculate new pieces of data using methods in the processing folder:
-import process_input
+from processing import process_input
 #calculate and set the magnetic field
 my_equilibrium.set(B_field=process_input.B_calc(myeq))        
 ```
@@ -404,36 +404,36 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
 
 LOCUST_IO contains a few simple physics routines to process data (please refer to source code for instructions): 
 
-```python
-    #process_input
 
-        QTP_calc                                #calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
-        fpolrz_calc                             #calculates the 1D flux function on the 2D computational grid
-        B_calc                                  #calculates the components of the axisymmetric magnetic field on the 2D computational grid
-        transform_marker_velocities             #transforms marker phase space velocities to LOCUST r,phi,z format
-        interpolate_1D                          #returns a 1D interpolator (RBF)
-        interpolate_2D                          #returns a 2D interpolator (RBF/RBS)
+     process_input
 
-    #process_output
+        QTP_calc                                 calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
+        fpolrz_calc                              calculates the 1D flux function on the 2D computational grid
+        B_calc                                   calculates the components of the axisymmetric magnetic field on the 2D computational grid
+        transform_marker_velocities              transforms marker phase space velocities to LOCUST r,phi,z format
+        interpolate_1D                           returns a 1D interpolator (RBF)
+        interpolate_2D                           returns a 2D interpolator (RBF/RBS)
 
-        dfn_integrate                           #integrate a LOCUST dfn to from s^3/m^6 to /bin
-        dfn_collapse                            #collapse a LOCUST dfn to the specified dimensions by summing
+     process_output
 
-    #plot_input
+        dfn_integrate                            integrate a LOCUST dfn from s^3/m^6 to /bin
+        dfn_collapse                             collapse a LOCUST dfn to the specified dimensions by summing
 
-        plot_number_density                     #plots the number density
-        plot_temperature                        #plots the temperature
-        plot_beam_deposition                    #plot a histogram/scatter of the beam deposition profile
-        plot_equilibrium                        #plot the equilibrium
-        plot_B_field_stream                     #plot the 2D poloidal magnetic vector field
-        plot_B_field_line                       #plot a single field line in 3D
+     plot_input
 
-    #plot_output
+        plot_number_density                      plots the number density
+        plot_temperature                         plots the temperature
+        plot_beam_deposition                     plot a histogram/scatter of the beam deposition profile
+        plot_equilibrium                         plot the equilibrium
+        plot_B_field_stream                      plot the 2D poloidal magnetic vector field
+        plot_B_field_line                        plot a single field line in 3D
 
-        plot_orbits                             #plot particle orbits
-        plot_final_particle_list                #plot a histogram/scatter of the final particle list
-        plot_distribution_function              #plot the final distribution function
-```
+     plot_output
+
+        plot_orbits                              plot particle orbits
+        plot_final_particle_list                 plot a histogram/scatter of the final particle list
+        plot_distribution_function               plot the final distribution function
+
 
 
 
