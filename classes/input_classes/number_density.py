@@ -71,20 +71,20 @@ def read_number_density_LOCUST(filepath):
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_number_density_LOCUST() cannot read from "+filepath)
      
-    del(lines[0]) #first line contains the number of points
- 
-    input_data = {} #initialise the dictionary to hold the data
-    input_data['flux_pol_norm']=[] #initialise the arrays 
-    input_data['n']=[]
- 
-    for line in lines:
- 
-        split_line=line.split()
-        input_data['flux_pol_norm'].append(float(split_line[0]))
-        input_data['n'].append(float(split_line[1]))
- 
-    input_data['flux_pol_norm']=np.asarray(input_data['flux_pol_norm']) #convert to arrays
-    input_data['n']=np.asarray(input_data['n'])
+        del(lines[0]) #first line contains the number of points
+     
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['flux_pol_norm']=[] #initialise the arrays 
+        input_data['n']=[]
+     
+        for line in lines:
+     
+            split_line=line.split()
+            input_data['flux_pol_norm'].append(float(split_line[0]))
+            input_data['n'].append(float(split_line[1]))
+     
+        input_data['flux_pol_norm']=np.asarray(input_data['flux_pol_norm']) #convert to arrays
+        input_data['n']=np.asarray(input_data['n'])
 
     print("finished reading number density from LOCUST")
     
@@ -198,7 +198,7 @@ class Number_Density(base_input.LOCUST_input):
     """
     class describing number density profile input for LOCUST
  
-    inZ_1Derited from LOCUST_input:
+    inheritedfrom LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'number density'

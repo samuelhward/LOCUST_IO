@@ -405,7 +405,7 @@ class Equilibrium(base_input.LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
  
-    inZ_1Derited from LOCUST_input:
+    inheritedfrom LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
