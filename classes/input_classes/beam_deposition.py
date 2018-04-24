@@ -57,7 +57,7 @@ pi=np.pi
  
 def read_beam_depo_LOCUST(filepath):
     """
-    reads birth profile stored in LOCUST format - r phi z v_r v_tor v_z
+    reads birth profile stored in LOCUST format - R Z phi V_R V_Z V_tor
 
     notes:
     """
@@ -75,29 +75,29 @@ def read_beam_depo_LOCUST(filepath):
     del(lines[0])
  
     input_data = {} #initialise the dictionary to hold the data
-    input_data['r']=[] #initialise the arrays 
+    input_data['R']=[] #initialise the arrays 
     input_data['phi']=[]
-    input_data['z']=[]
-    input_data['v_r']=[]
-    input_data['v_tor']=[]
-    input_data['v_z']=[]
+    input_data['Z']=[]
+    input_data['V_R']=[]
+    input_data['V_tor']=[]
+    input_data['V_Z']=[]
  
     for line in lines:
  
         split_line=line.split()
-        input_data['r'].append(float(split_line[0]))
+        input_data['R'].append(float(split_line[0]))
         input_data['phi'].append(float(split_line[1]))
-        input_data['z'].append(float(split_line[2]))
-        input_data['v_r'].append(float(split_line[3]))
-        input_data['v_tor'].append(float(split_line[4]))
-        input_data['v_z'].append(float(split_line[5]))
+        input_data['Z'].append(float(split_line[2]))
+        input_data['V_R'].append(float(split_line[3]))
+        input_data['V_tor'].append(float(split_line[4]))
+        input_data['V_Z'].append(float(split_line[5]))
  
-    input_data['r']=np.asarray(input_data['r']) #convert to arrays
+    input_data['R']=np.asarray(input_data['R']) #convert to arrays
     input_data['phi']=np.asarray(input_data['phi'])
-    input_data['z']=np.asarray(input_data['z'])
-    input_data['v_r']=np.asarray(input_data['v_r'])
-    input_data['v_tor']=np.asarray(input_data['v_tor'])
-    input_data['v_z']=np.asarray(input_data['v_z'])
+    input_data['Z']=np.asarray(input_data['Z'])
+    input_data['V_R']=np.asarray(input_data['V_R'])
+    input_data['V_tor']=np.asarray(input_data['V_tor'])
+    input_data['V_Z']=np.asarray(input_data['V_Z'])
 
     print("finished reading beam deposition from LOCUST")
  
@@ -105,7 +105,7 @@ def read_beam_depo_LOCUST(filepath):
  
 def dump_beam_depo_LOCUST(output_data,filepath):
     """
-    writes birth profile to LOCUST format - r z phi v_r v_z v_tor
+    writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor
      
     notes:
         writes out two headerlines
@@ -118,14 +118,14 @@ def dump_beam_depo_LOCUST(output_data,filepath):
         file.write("{}\n".format(utils.fortran_string(1.0,13))) #re-insert junk lines
         file.write("{}\n".format(utils.fortran_string(1.0,13)))
  
-        for this_particle in range(output_data['r'].size): #iterate through all particles i.e. length of our dictionary's arrays
+        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
  
-            r_out=output_data['r'][this_particle] #briefly set to a temporary variable to improve readability
+            R_out=output_data['R'][this_particle] #briefly set to a temporary variable to improve readability
             phi_out=output_data['phi'][this_particle]
-            z_out=output_data['z'][this_particle]
-            v_r_out=output_data['v_r'][this_particle]
-            v_tor_out=output_data['v_tor'][this_particle]
-            v_z_out=output_data['v_z'][this_particle]
+            Z_out=output_data['Z'][this_particle]
+            V_R_out=output_data['V_R'][this_particle]
+            V_tor_out=output_data['V_tor'][this_particle]
+            V_Z_out=output_data['V_Z'][this_particle]
  
             file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(r_out,14,6),phi=utils.fortran_string(phi_out,14,6),z=utils.fortran_string(z_out,14,6),v_r=utils.fortran_string(v_r_out,14,6),v_tor=utils.fortran_string(v_tor_out,14,6),v_z=utils.fortran_string(v_z_out,14,6)))
     
@@ -195,7 +195,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
  
     #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="r" #name of coordinate
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius [m]]" #description of coordinate
 
@@ -203,25 +203,25 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].index=1 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle [rad]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="Z"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical position [m]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_r"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_R"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="radial velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_tor"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=4
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="toroidal velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="v_z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_Z"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=5
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical velocity [m/s]"
 
     #start storing particle data
-    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['r'].size) #define the weights, i.e. number of particles per marker 
-    positions=np.array([output_data['r'],output_data['phi'],output_data['z'],output_data['v_r'],output_data['v_tor'],output_data['v_z']]) #create 2D array of positions
+    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['R'].size) #define the weights, i.e. number of particles per marker 
+    positions=np.array([output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']]) #create 2D array of positions
     output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
  
     #'put' all the output_data into the file and close
@@ -250,16 +250,16 @@ def read_beam_depo_TRANSP(filepath):
             break
 
     input_data = {} #initialise the dictionary to hold the data
-    input_data['x']=[] #initialise the arrays
-    input_data['y']=[]
-    input_data['z']=[]
-    input_data['r']=[]  
+    input_data['X']=[] #initialise the arrays
+    input_data['Y']=[]
+    input_data['Z']=[]
+    input_data['R']=[]  
     input_data['phi']=[]
-    input_data['v_x']=[]
-    input_data['v_y']=[]
-    input_data['v_z']=[]
-    input_data['v_r']=[]
-    input_data['v_tor']=[]
+    input_data['v_X']=[]
+    input_data['v_Y']=[]
+    input_data['V_Z']=[]
+    input_data['V_R']=[]
+    input_data['V_tor']=[]
 
     for line in lines:
         split_line=line.split()
@@ -270,24 +270,24 @@ def read_beam_depo_TRANSP(filepath):
         split_line[4]=float(split_line[4])
         split_line[5]=float(split_line[5])
 
-        input_data['x'].append(split_line[0]) #only read in x,y,z with append for speed
-        input_data['y'].append(split_line[1])
-        input_data['z'].append(split_line[2])
-        input_data['v_x'].append(split_line[3])
-        input_data['v_y'].append(split_line[4])
-        input_data['v_z'].append(split_line[5])
+        input_data['X'].append(split_line[0]) #only read in x,y,z with append for speed
+        input_data['Y'].append(split_line[1])
+        input_data['Z'].append(split_line[2])
+        input_data['v_X'].append(split_line[3])
+        input_data['v_Y'].append(split_line[4])
+        input_data['V_Z'].append(split_line[5])
 
-    input_data['x']=0.01*np.asarray(input_data['x']) #convert to arrays and from cm to m
-    input_data['y']=0.01*np.asarray(input_data['y'])
-    input_data['z']=0.01*np.asarray(input_data['z'])
-    input_data['v_x']=0.01*np.asarray(input_data['v_x'])
-    input_data['v_y']=0.01*np.asarray(input_data['v_y'])
-    input_data['v_z']=0.01*np.asarray(input_data['v_z'])
+    input_data['X']=0.01*np.asarray(input_data['x']) #convert to arrays and from cm to m
+    input_data['Y']=0.01*np.asarray(input_data['y'])
+    input_data['Z']=0.01*np.asarray(input_data['z'])
+    input_data['V_X']=0.01*np.asarray(input_data['v_x'])
+    input_data['V_Y']=0.01*np.asarray(input_data['v_y'])
+    input_data['V_Z']=0.01*np.asarray(input_data['v_z'])
     
-    input_data['r']=np.asarray(np.sqrt(input_data['x']**2+input_data['y']**2)) #need to convert from x,y,z 
-    input_data['v_r']=np.asarray(np.sqrt(input_data['v_x']**2+input_data['v_y']**2))
-    input_data['phi']=np.asarray(np.arctan2(input_data['y'],input_data['x']))
-    input_data['v_tor']=np.asarray(input_data['v_x']*np.sin(input_data['phi']))
+    input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
+    input_data['V_R']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2))
+    input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
+    input_data['V_tor']=np.asarray(input_data['V_X']*np.sin(input_data['phi']))
 
     print("finished reading beam deposition from TRANSP format")
 
@@ -300,7 +300,7 @@ class Beam_Deposition(base_input.LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
  
-    inZ_1Derited from LOCUST_input:
+    inheritedfrom LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
@@ -317,9 +317,9 @@ class Beam_Deposition(base_input.LOCUST_input):
         filepath                    full path to output file in input_files folder
  
     notes:
-        data is stored such that the coordinate 'r' for all particles is stored in my_beam_deposition['r']
+        data is stored such that the coordinate 'R' for all particles is stored in my_beam_deposition['R']
         therefore the phase space position of particle p is:
-            (my_beam_deposition['r'][p], my_beam_deposition['phi'][p], my_beam_deposition['z'][p], my_beam_deposition['v_r'][p], my_beam_deposition['v_tor'][p], my_beam_deposition['v_z'][p])
+            (my_beam_deposition['R'][p], my_beam_deposition['phi'][p], my_beam_deposition['Z'][p], my_beam_deposition['V_R'][p], my_beam_deposition['V_tor'][p], my_beam_deposition['V_Z'][p])
     """
  
     LOCUST_input_type='beam_deposition'

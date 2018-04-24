@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name=LOCUST
+#SBATCH --gres=gpu:kepler:1
+#SBATCH --partition=gpus
+#SBATCH -t 30
+#SBATCH --cpus-per-task=1
+#SBATCH --mail-user samuel.ward@york.ac.uk 
+#SBATCH --mail-type=END,FAIL,TIME_LIMIT
+#SBATCH -o ../output_files/LOCUST_SLURM.out
+#SBATCH -e ../output_files/LOCUST_SLURM.err
+date_time=$(date +'%d-%m--%Y:%H:%M:%S')
+
+#system-specific module loads and paths
+module purge
+module load pgf/18.3 #load compilers + HDF for output
+module load hdf5/1.8.19-mpich3.2-pgf18.3
+export FFLAGS="-I$HDF5_DIR/include" #set up some variables to point makefile to PGfortran/CUDA compiler HDF5-linker libraries
+export LDFLAGS="-L$HDF5_DIR/lib"
+
+#RUN
+./locust_run $(FLAGS)
+
+
+
+
+
+#USAGE:
+#srun --export=FLAGS='-Dsome_flag -Danother_flag' ./LOCUST_SLURM

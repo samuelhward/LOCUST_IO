@@ -104,7 +104,7 @@ class LOCUST_output:
         if hasattr(self,'properties') and self.properties:
             print("Properties:".format(properties=self.properties))
             for key in self.properties:
-                if self.properties[key]==0 or self.properties[key]: #do not print if the data is empty
+                if any(self.properties[key]): #do not print if the data is empty
                     print("{key} - {value}".format(key=key,value=self.properties[key])) 
         
         print("|")
@@ -112,7 +112,9 @@ class LOCUST_output:
 
         if hasattr(self,'data') and self.data:
             for key in self.data:
-                if self.data[key].size!=0 or self.data[key]==0.0: #do not print if the data is empty
+                if self.data[key]: #do not print if the data is empty
+                    print("{key} - {value}".format(key=key,value=self.data[key]))
+                elif self.data[key]==0:
                     print("{key} - {value}".format(key=key,value=self.data[key]))
         
         print("-----------------------\n")

@@ -274,6 +274,9 @@ def plot_distribution_function(some_distribution_function,some_equilbrium=None,k
         Y=dfn_copy[axes[1]]
         Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
         mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+        '''for c in mesh.collections: #for use in contourf
+            c.set_edgecolor("face")'''        
         plt.colorbar(mesh)
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])

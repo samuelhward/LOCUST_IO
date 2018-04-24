@@ -226,8 +226,8 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
-        ax.set_xlabel('r')
-        ax.set_ylabel('z')
+        ax.set_xlabel('R [m]')
+        ax.set_ylabel('Z [m]')
         ax.set_title(key)
 
         if limiters is True: #add boundaries if desired

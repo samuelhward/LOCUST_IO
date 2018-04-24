@@ -69,17 +69,17 @@ def read_orbits_LOCUST(filepath):
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_orbits_LOCUST() cannot read from "+filepath)
     
-    number_particles=int(lines[0]) #extract number of particles
-    number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
-    number_coords=int(3)
+        number_particles=int(lines[0]) #extract number of particles
+        number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
+        number_coords=int(3)
 
-    del(lines[0])
-    del(lines[-1])
+        del(lines[0])
+        del(lines[-1])
 
-    input_data = {} #initialise the dictionary to hold the dat
-    input_data['orbits']=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
-    input_data['number_particles']=np.asarray(number_particles)
-    input_data['number_timesteps']=np.asarray(number_timesteps)
+        input_data = {} #initialise the dictionary to hold the dat
+        input_data['orbits']=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
+        input_data['number_particles']=np.asarray(number_particles)
+        input_data['number_timesteps']=np.asarray(number_timesteps)
    
     print("finished reading orbits from LOCUST")
 
@@ -131,7 +131,7 @@ class Orbits(base_output.LOCUST_output):
     """
     class describing orbits output for LOCUST
     
-    inZ_1Derited from LOCUST_output:
+    inheritedfrom LOCUST_output:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all output data in dictionary object
         self.LOCUST_output_type     string which holds this class' output type, this case = 'orbits'

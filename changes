@@ -1,6 +1,0 @@
-changes:
-
-
-	fixed data dict error in read_dfn
-	fixed bug in plot_dfn for default key
-	fixed data dict error in integrate_dfn 

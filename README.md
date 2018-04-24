@@ -244,14 +244,14 @@ LOCUST reads an equilibrium in GEQDSK format.
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[Distribution_Sources IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/distribution_sources.html)/LOCUST)
 
     1D data
-        r/...source[0].markers[0].positions[0][p]/                      #r coordinates of particle p
-        phi/...source[0].markers[0].positions[1][p]/                    #phi coordinates of particle p
-        z/...source[0].markers[0].positions[2][p]/                      #z coordinates of particle p
-        v_r/...source[0].markers[0].positions[3][p]/                    #r component of v of particle p
-        v_tor/...source[0].markers[0].positions[4][p]/                  #phi component of v of particle p
-        v_z/...source[0].markers[0].positions[5][p]/                    #z component of v of particle p
+        R/...source[0].markers[0].positions[0][p]/                      #R coordinates of particle p
+        phi/...source[0].markers[0].positions[1][p]/                    #toroidal angle of particle p
+        Z/...source[0].markers[0].positions[2][p]/                      #Z coordinates of particle p
+        V_R/...source[0].markers[0].positions[3][p]/                    #R component of v of particle p
+        V_tor/...source[0].markers[0].positions[4][p]/                  #toroidal component of v of particle p
+        V_Z/...source[0].markers[0].positions[5][p]/                    #Z component of v of particle p
 
-LOCUST reads a birth profile in ASCII format as (r | phi | z | v_r | v_tor | v_z) .
+LOCUST reads a birth profile in ASCII format as (R | phi | Z | V_R | V_tor | V_Z) .
 
 #### Temperature:
 
@@ -274,7 +274,7 @@ LOCUST reads a temperature profile in ASCII format as (normalised poloidal flux 
 
     1D data
         flux_pol/...profiles_1d[0].grid.psi/                            #poloidal flux (Weber / rad)
-        flux_pol_norm/-/-                    c                          #normalised poloidal flux
+        flux_pol_norm/-/-                                               #normalised poloidal flux
         n/...profiles_1d[0].ion[0].density/                             #ion number density
         n/...profiles_1d[0].electrons.density/                          #electron number density
         flux_tor_coord/-/...profiles_1d[0].grid.rho_tor/                #toroidal flux coordinate
@@ -293,11 +293,11 @@ LOCUST reads a density profile in ASCII format as (normalised poloidal flux | nu
     3D data
         orbits[t,i,p]/                                                  #spatial coordinate i for particle p at time step t
 
-LOCUST dumps orbits in ASCII format as (number_particles \n r | phi | z \n number_timesteps)
+LOCUST dumps orbits in ASCII format as (number_particles \n R | phi | Z \n number_timesteps)
 
 #### Final Particle List:
 
-([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/LOCUST)
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/TRANSP/LOCUST)
 
     0D data
         n/                                                              #number of particles per GPU (blocks per grid * threads per block)
@@ -306,17 +306,19 @@ LOCUST dumps orbits in ASCII format as (number_particles \n r | phi | z \n numbe
         npt_/                                                           #number of particle info slots
         nphc/                                                           #
         ntri/                                                           #
-        number_particles/                                               #total number of particles = n*ngpu
+        number_particles/-/-                                            #total number of particles = n*ngpu
     1D data
-        r/                                                              #r coordinate of particle
-        phi/                                                            #phi coordinate of particle
-        z/                                                              #z coordinate of particle
-        v_r/                                                            #v_r coordinate of particle
-        v_tor/                                                          #v_tor coordinate of particle
-        v_z/                                                            #v_z coordinate of particle
-        t/                                                              #time coordinate of particle
-        status_flag/                                                    #status value of particle at this time
-        status_flags/                                                   #possible status flags and their associated values
+        r/R/                                                            #r coordinate of particle
+        phi/-/                                                          #phi coordinate of particle
+        z/Z/                                                            #z coordinate of particle
+        v_r/-/                                                          #v_r coordinate of particle
+        v_tor/-/                                                        #v_tor coordinate of particle
+        v_z/-/                                                          #v_z coordinate of particle
+        v_pitch/vpll_v/                                                 #v_parallel/v
+        energy/E/                                                       #energy of particle
+        t///                                                            #time coordinate of particle
+        status_flag//                                                   #status value of particle at this time
+        status_flags//                                                  #possible status flags and their associated values
 
 LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_ \n nphc \n ntri \n array[particle,npt_,nphc] )
 
