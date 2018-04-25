@@ -149,7 +149,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             if LCFS is True: #plot plasma boundary
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['zbbbs'],'m-') 
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
@@ -199,7 +199,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         ax = fig.add_subplot(111)
 
     #1D data
-    elif some_equilibrium[key].ndim==1:
+    if some_equilibrium[key].ndim==1:
         ax.plot(some_equilibrium[key])
         ax.set_ylabel(key)
 
@@ -233,7 +233,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         if limiters is True: #add boundaries if desired
             ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
         if LCFS is True:
-            ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['zbbbs'],'m-') 
+            ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
     if ax_flag is False:
         plt.show()
@@ -306,7 +306,7 @@ def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_fu
         if plot_full is True: 
             Z_point=float(1.05*some_equilibrium['zmaxis'])
         else:
-            Z_point=np.random.uniform(1.05*some_equilibrium['zmaxis'],0.9*np.max(some_equilibrium['zbbbs']))      
+            Z_point=np.random.uniform(1.05*some_equilibrium['zmaxis'],0.9*np.max(some_equilibrium['lcfs_z']))      
             
         R_points=np.append(R_points,R_point) #add this position to our array of points along trajectory
         Z_points=np.append(Z_points,Z_point)
@@ -353,7 +353,7 @@ def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_fu
         for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
             x_points=some_equilibrium['lcfs_r']*np.cos(angle)
             y_points=some_equilibrium['lcfs_r']*np.sin(angle)
-            z_points=some_equilibrium['zbbbs']
+            z_points=some_equilibrium['lcfs_z']
             ax.plot(x_points,y_points,zs=z_points,color='m')
 
     if ax_flag is False:

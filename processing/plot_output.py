@@ -225,7 +225,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilbrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
     """
     plot the distribution function
 

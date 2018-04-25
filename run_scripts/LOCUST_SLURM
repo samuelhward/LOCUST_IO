@@ -18,7 +18,7 @@ export FFLAGS="-I$HDF5_DIR/include" #set up some variables to point makefile to 
 export LDFLAGS="-L$HDF5_DIR/lib"
 
 #RUN
-./locust_run $(FLAGS)
+./LOCUST_run $(FLAGS)
 
 
 
