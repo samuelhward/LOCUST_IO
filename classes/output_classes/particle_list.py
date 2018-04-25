@@ -201,7 +201,7 @@ def read_final_particle_list_TRANSP(filepath):
         input_data['Z']=[]
         input_data['V_pitch']=[]
         input_data['energy']=[]    
-        input_data['number_particles']=np.array(len(lines))
+        input_data['number_particles']=0.0
 
         for line in lines:
             split_line=line.split()
@@ -209,6 +209,8 @@ def read_final_particle_list_TRANSP(filepath):
             split_line[1]=float(split_line[1])
             split_line[2]=float(split_line[2])
             split_line[3]=float(split_line[3])
+            if split_line: #try ignore whitespace at the end
+                input_data['number_particles']+=1
 
             input_data['R'].append(split_line[0]) 
             input_data['Z'].append(split_line[1])
@@ -220,6 +222,7 @@ def read_final_particle_list_TRANSP(filepath):
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
         input_data['energy']=np.asarray(input_data['energy'])
 
+        input_data['number_particles']=np.array(input_data['number_particles'])
         input_data['status_flags']={} #initialise status_flags for use with plotting (but do not set to help memory)
 
     print("finished reading final particle list from TRANSP")

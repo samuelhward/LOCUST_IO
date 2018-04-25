@@ -127,7 +127,7 @@ def dump_beam_depo_LOCUST(output_data,filepath):
             V_tor_out=output_data['V_tor'][this_particle]
             V_Z_out=output_data['V_Z'][this_particle]
  
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(r_out,14,6),phi=utils.fortran_string(phi_out,14,6),z=utils.fortran_string(z_out,14,6),v_r=utils.fortran_string(v_r_out,14,6),v_tor=utils.fortran_string(v_tor_out,14,6),v_z=utils.fortran_string(v_z_out,14,6)))
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(R_out,14,6),phi=utils.fortran_string(phi_out,14,6),z=utils.fortran_string(Z_out,14,6),v_r=utils.fortran_string(V_R_out,14,6),v_tor=utils.fortran_string(V_tor_out,14,6),v_z=utils.fortran_string(V_Z_out,14,6)))
     
     print("finished writing beam deposition to LOCUST") 
  
@@ -255,8 +255,8 @@ def read_beam_depo_TRANSP(filepath):
     input_data['Z']=[]
     input_data['R']=[]  
     input_data['phi']=[]
-    input_data['v_X']=[]
-    input_data['v_Y']=[]
+    input_data['V_X']=[]
+    input_data['V_Y']=[]
     input_data['V_Z']=[]
     input_data['V_R']=[]
     input_data['V_tor']=[]
@@ -273,16 +273,16 @@ def read_beam_depo_TRANSP(filepath):
         input_data['X'].append(split_line[0]) #only read in x,y,z with append for speed
         input_data['Y'].append(split_line[1])
         input_data['Z'].append(split_line[2])
-        input_data['v_X'].append(split_line[3])
-        input_data['v_Y'].append(split_line[4])
+        input_data['V_X'].append(split_line[3])
+        input_data['V_Y'].append(split_line[4])
         input_data['V_Z'].append(split_line[5])
 
-    input_data['X']=0.01*np.asarray(input_data['x']) #convert to arrays and from cm to m
-    input_data['Y']=0.01*np.asarray(input_data['y'])
-    input_data['Z']=0.01*np.asarray(input_data['z'])
-    input_data['V_X']=0.01*np.asarray(input_data['v_x'])
-    input_data['V_Y']=0.01*np.asarray(input_data['v_y'])
-    input_data['V_Z']=0.01*np.asarray(input_data['v_z'])
+    input_data['X']=0.01*np.asarray(input_data['X']) #convert to arrays and from cm to m
+    input_data['Y']=0.01*np.asarray(input_data['Y'])
+    input_data['Z']=0.01*np.asarray(input_data['Z'])
+    input_data['V_X']=0.01*np.asarray(input_data['V_X'])
+    input_data['V_Y']=0.01*np.asarray(input_data['V_Y'])
+    input_data['V_Z']=0.01*np.asarray(input_data['V_Z'])
     
     input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
     input_data['V_R']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2))

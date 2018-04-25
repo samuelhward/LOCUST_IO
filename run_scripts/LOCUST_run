@@ -23,6 +23,12 @@ dir_output_files=${dir_locust_io}/output_files
 dir_cache_files=${dir_locust_io}/cache_files
 dir_LOCUST=${dir_locust_io}/LOCUST
 
+mkdir -p "/tmp/${USER}/locust.${tokamak}/InputFiles/" #create the folder structure if not there already
+mkdir -p "/tmp/${USER}/locust.${tokamak}/OutputFiles/" #create the folder structure if not there already
+mkdir -p "/tmp/${USER}/locust.${tokamak}/CacheFiles/" #create the folder structure if not there already
+
+#AT THIS POINT JUST LINK BLANK FILES IN /TMP TO THE FILES IN LOCUST_IO TO MAKE IT RUN
+
 ln -s "${dir_input_files}/${LOCUST_input_equilibrium}" "/tmp/${USER}/locust.${tokamak}/InputFiles/g157418.03000" #symlink LOCUST to data stored in LOCUST_IO
 ln -s "${dir_input_files}/${LOCUST_input_profile_ne}" "/tmp/${USER}/locust.${tokamak}/InputFiles/profile_ne.dat"
 ln -s "${dir_input_files}/${LOCUST_input_profile_Te}" "/tmp/${USER}/locust.${tokamak}/InputFiles/profile_Te.dat"
@@ -39,15 +45,15 @@ ln -s "${dir_cache_files}/" "/tmp/${USER}/locust.${tokamak}/CacheFiles/"
 ##########################
 #compile
 FLAGS="'$*'"
-make clean -C $dir_LOCUST
-make -C $dir_LOCUST "FLAGS=$FLAGS"
+(cd ${dir_LOCUST} && make clean && make "FLAGS=$FLAGS")
 ##########################
 #run
 export OMP_NUM_THREADS=1
 export OMP_STACKSIZE=102400
 export NO_AT_BRIDGE=1
 ulimit -s 2000000
-../LOCUST/locust
+(cd ${dir_LOCUST} && exec locust)
+
 
 
 
