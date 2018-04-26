@@ -115,11 +115,8 @@ class LOCUST_input:
 
         if hasattr(self,'data') and self.data:
             for key in self.data:
-                if self.data[key]: #do not print if the data is empty
-                    print("{key} - {value}".format(key=key,value=self.data[key]))
-                elif self.data[key]==0:
-                    print("{key} - {value}".format(key=key,value=self.data[key]))
-
+                print("{key} - {value}".format(key=key,value=self.data[key]))
+                
         print("-----------------------\n")
  
     def copy(self,target,*keys):
