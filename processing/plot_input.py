@@ -136,6 +136,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
+            axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             plt.colorbar(mesh)
@@ -239,7 +240,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         plt.show()
 
 
-def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,boundary=False,ax=False):
+def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,boundary=False,ax=False):
     """
     plots random field lines for 'angle' radians around the tokamak
 
@@ -344,9 +345,14 @@ def plot_B_field_line(some_equilibrium,number_field_lines=1,angle=2.0*pi,plot_fu
             if start_mark: 
                 ax.scatter(R_points[0],Z_points[0],color='red',s=10)
         else:
-            ax.plot(X_points,Y_points,zs=Z_points,color=cmap_viridis(np.random.uniform()))
             if start_mark: 
                 ax.scatter(X_points[0],Y_points[0],Z_points[0],color='red',s=10)
+            if axes==['R','Z']:
+                ax.plot(R_points,Z_points,color=cmap_viridis(np.random.uniform()))
+            elif axes==['X','Y']:
+                ax.plot(X_points,Y_points,color=cmap_viridis(np.random.uniform()))
+            else:
+                ax.plot(X_points,Y_points,zs=Z_points,color=cmap_viridis(np.random.uniform()))
 
     if boundary: #plot periodic poloidal cross-sections in 3D
         print('plot_B_field_line - plotting plasma boundary')

@@ -133,7 +133,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         plt.show()
 
 
-def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept','time_limit_reached'],ax=False):
+def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],ax=False):
     """
     plot the final particle list
      
@@ -182,7 +182,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
 
-        for status in status_flags:
+        for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             
             if type=='histogram':
@@ -192,6 +192,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 some_final_particle_list_binned_x=(some_final_particle_list_binned_x[:-1]+some_final_particle_list_binned_x[1:])*0.5
                 some_final_particle_list_binned_y=(some_final_particle_list_binned_y[:-1]+some_final_particle_list_binned_y[1:])*0.5
                 some_final_particle_list_binned_y,some_final_particle_list_binned_x=np.meshgrid(some_final_particle_list_binned_y,some_final_particle_list_binned_x)
+                axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
                 mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 plt.colorbar(mesh)
@@ -273,6 +274,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         X=dfn_copy[axes[0]] #make a mesh
         Y=dfn_copy[axes[1]]
         Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
+        axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
         mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         '''for c in mesh.collections: #for use in contourf
