@@ -136,7 +136,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
-            axes=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
+            ax=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             plt.colorbar(mesh)
@@ -240,17 +240,18 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         plt.show()
 
 
-def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,boundary=False,ax=False):
+def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,ax=False):
     """
     plots random field lines for 'angle' radians around the tokamak
 
     notes:
         essentially uses the Euler method of integration
+        axes - list of strings specifying which axes should be plotted
+        LCFS - show plasma boundary outline
         number_field_lines - the number of field lines to plot
         angle - plot field line for this many radians around central column
         plot_full - choose whether each field line will trace the whole plasma topology (see below also)
         start_mark - add marker for start of the field line
-        boundary - show plasma boundary outline
         ax - take input axes (can be used to stack plots)
     """
     
@@ -345,22 +346,34 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],number_field_lines=1,a
             if start_mark: 
                 ax.scatter(R_points[0],Z_points[0],color='red',s=10)
         else:
-            if start_mark: 
-                ax.scatter(X_points[0],Y_points[0],Z_points[0],color='red',s=10)
-            if axes==['R','Z']:
+            
+            if axes==['R','Z']: #poloidal plot
                 ax.plot(R_points,Z_points,color=cmap_viridis(np.random.uniform()))
-            elif axes==['X','Y']:
+                if start_mark: 
+                    ax.scatter(X_points[0],Y_points[0],color='red',s=10)
+                if LCFS is True: #plot plasma boundary
+                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+            
+            elif axes==['X','Y']: #top-down plot
                 ax.plot(X_points,Y_points,color=cmap_viridis(np.random.uniform()))
-            else:
+                if start_mark: 
+                    ax.scatter(X_points[0],Y_points[0],color='red',s=10)
+                if LCFS is True: #plot plasma boundary
+                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
+                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-') 
+            
+            else: #3D plot
+                if start_mark: 
+                    ax.scatter(X_points[0],Y_points[0],Z_points[0],color='red',s=10)
+                if LCFS: #plot periodic poloidal cross-sections in 3D
+                    for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                        x_points=some_equilibrium['lcfs_r']*np.cos(angle)
+                        y_points=some_equilibrium['lcfs_r']*np.sin(angle)
+                        z_points=some_equilibrium['lcfs_z']
+                        ax.plot(x_points,y_points,zs=z_points,color='m')
                 ax.plot(X_points,Y_points,zs=Z_points,color=cmap_viridis(np.random.uniform()))
-
-    if boundary: #plot periodic poloidal cross-sections in 3D
-        print('plot_B_field_line - plotting plasma boundary')
-        for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
-            x_points=some_equilibrium['lcfs_r']*np.cos(angle)
-            y_points=some_equilibrium['lcfs_r']*np.sin(angle)
-            z_points=some_equilibrium['lcfs_z']
-            ax.plot(x_points,y_points,zs=z_points,color='m')
 
     if ax_flag is False:
         plt.show()
