@@ -43,7 +43,7 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     notes:
         message should be something specific to the section of code which called none_check
     """
-    if all(arg is True for arg in args):
+    if all(arg is not False for arg in args):
         return False
     else:
         print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))

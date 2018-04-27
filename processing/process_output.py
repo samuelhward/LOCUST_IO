@@ -29,7 +29,7 @@ pi=np.pi
 
 def dfn_integrate(some_dfn):
     """
-    integrate a distribution function to get particles/cell
+    integrate a distribution function to get particles/cell and real velocity
 
     notes:
         returns the Dfn array
@@ -64,11 +64,11 @@ def dfn_collapse(some_dfn,coordinates=['R','Z']):
         coordinate_indices.extend([4]) #then mark it as a dimension to integrate over
     if 'R' not in coordinates:
         coordinate_indices.extend([3])
-    if 'L' not in coordinates:
-        coordinate_indices.extend([2])
-    if 'V' not in coordinates:
+    if 'L' not in coordinates: #pitch
+        coordinate_indices.extend([2]) 
+    if 'V' not in coordinates: #velocity
         coordinate_indices.extend([1])
-    if 'P' not in coordinates:
+    if 'P' not in coordinates: #special s
         coordinate_indices.extend([0])
 
     for coordinate in coordinate_indices: #axis denotes which coordinate will be collapsed, so go in descending to get array shape correct
@@ -90,26 +90,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
 
     print("compressing final particle list file: "+filepath)
 
-    coordinate_indices={} #need a dictionary to refer to locations of quantities in file
-    coordinate_indices['R']=0
-    coordinate_indices['phi']=1
-    coordinate_indices['Z']=2
-    coordinate_indices['V_R']=3
-    coordinate_indices['V_tor']=4
-    coordinate_indices['V_Z']=5
-    coordinate_indices['t']=6
-    coordinate_indices['status_flag']=7
-    coordinate_indices['additional_flag1']=8
-    coordinate_indices['additional_flag2']=9
-    coordinate_indices['additional_flag3']=10
-    coordinate_indices['additional_flag4']=11
-    coordinate_indices['additional_flag5']=12
-    coordinate_indices['additional_flag6']=13
-    coordinate_indices['additional_flag7']=14
-    coordinate_indices['additional_flag8']=15
-    coordinate_indices['additional_flag9']=16
-
-    indices_coordinate={} #and need a dictionary to label the opposite way around
+    indices_coordinate={} #and need a dictionary to refer to locations of quantities in file
     indices_coordinate['0']='R'
     indices_coordinate['1']='phi'
     indices_coordinate['2']='Z'

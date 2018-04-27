@@ -70,7 +70,7 @@ print('''\n\n\n\
 
 
 #read in the sample input data
-my_Ne=number_density.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='LOCUST',filename='sample_ne_profile.file',properties='electrons')
+my_Ne=number_density.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='LOCUST',filename='sample_ne_profile.file',species='electrons')
 
 #see what it looks like
 plot_input.plot_number_density(my_Ne)
