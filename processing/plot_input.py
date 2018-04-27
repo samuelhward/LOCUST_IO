@@ -85,12 +85,13 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
     """
     plots beam deposition
 
     notes:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+        some_dfn - corresponding distribution_function for matching binning axes etc.
         type - choose from scatter or histogram
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
@@ -115,6 +116,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
         some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
         ax.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
         ax.set_xlabel(axes[0])
+        ax.set_title(some_beam_depo.ID)
 
     elif ndim==2: #plot 2D histograms
 
@@ -123,16 +125,23 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
 
         if type=='histogram':
+            if some_dfn is not None: #bin according to equilibrium grid
+                some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[some_dfn['R'],some_dfn['Z']])
+            else:
+                some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
-            some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
@@ -149,6 +158,8 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
                 ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
@@ -157,6 +168,8 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                 plasma_min_R=np.min(some_equilibrium['lcfs_r'])
@@ -165,6 +178,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,type='histogram',n
         
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
+        ax.set_title(some_beam_depo.ID)
         
     if ax_flag is False:
         plt.show()
@@ -229,7 +243,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
         ax.set_xlabel('R [m]')
         ax.set_ylabel('Z [m]')
-        ax.set_title(key)
+        ax.set_title(some_equilibrium.ID)
 
         if limiters is True: #add boundaries if desired
             ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 

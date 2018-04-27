@@ -54,7 +54,7 @@ np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
 ################################################################## Distribution_Function functions
 
-def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,TEST=False,EBASE=False,dfn_s=True,Jh=True,Jh_s=True,cpu_time=True):
+def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,TEST=False,EBASE=False,dfn_s=True,Jh=True,Jh_s=True,cpu_time=True,**args):
     """
     reads distribution function stored in unformatted fortran file
 

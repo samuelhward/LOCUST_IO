@@ -97,6 +97,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
 
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
+        ax.set_title(some_orbits.ID)
 
 
     elif ndim==3: #3D plotting
@@ -128,17 +129,19 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
         ax.set_zlabel(axes[2])
+        ax.set_title(some_orbits.ID)
 
     if ax_flag is False:
         plt.show()
 
 
-def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],ax=False):
+def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],ax=False):
     """
     plot the final particle list
      
     notes:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+        some_dfn - corresponding distribution_function for matching binning axes etc. 
         type - choose from scatter or histogram
         number_bins - set bin for histogram
         axes - define plot axes
@@ -167,6 +170,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
             ax.plot(some_final_particle_list_binned_centres,some_final_particle_list_binned)
 
             ax.set_xlabel(axes[0])
+            ax.set_title(some_final_particle_list.ID)
 
     elif ndim==2: #plot 2D histograms
 
@@ -175,24 +179,30 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
 
         for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             
             if type=='histogram':
-
+                if some_dfn is not None:
+                    some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=[some_dfn['R'],some_dfn['Z']])
+                else:  
+                    some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=number_bins)
                 #some_final_particle_list_binned_x and some_final_particle_list_binned_x are first edges then converted to centres
-                some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=number_bins)
                 some_final_particle_list_binned_x=(some_final_particle_list_binned_x[:-1]+some_final_particle_list_binned_x[1:])*0.5
                 some_final_particle_list_binned_y=(some_final_particle_list_binned_y[:-1]+some_final_particle_list_binned_y[1:])*0.5
                 some_final_particle_list_binned_y,some_final_particle_list_binned_x=np.meshgrid(some_final_particle_list_binned_y,some_final_particle_list_binned_x)
-                ax=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
+                ax=plt.axes(facecolor=cmap_viridis(np.amin(some_final_particle_list_binned)))
                 mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 plt.colorbar(mesh)
@@ -205,6 +215,8 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
                 ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
@@ -213,6 +225,8 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                 plasma_min_R=np.min(some_equilibrium['lcfs_r'])
@@ -221,16 +235,25 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,type
         
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
+        ax.set_title(some_final_particle_list.ID)
             
     if ax_flag is False:
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,integrate=True,ax=False):
     """
     plot the distribution function
 
     notes:
+        some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+        key - select which data to plot
+        axes - define plot axes
+        LCFS - show plasma boundary outline
+        real_scale - plot to Tokamak scale (requires equilibrium arguement)
+        integrate - when plotting the actual distribution function, toggle to integrate to particles/cell and un-normalise velocity
+        ax - take input axes (can be used to stack plots)
+        
         assumes that the dfn data has not been collapsed yet
     """
 
@@ -254,6 +277,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     if some_distribution_function[key].ndim==1:
         ax.plot(some_distribution_function[key])
         ax.set_xlabel(key)
+        ax.set_title(some_distribution_function.ID)
 
     #plot distribution function
     elif key=='dfn':
@@ -263,18 +287,21 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             return
         
         dfn_copy=copy.deepcopy(some_distribution_function.data) #deep copy the object data dictionary (remember dicitonaries act like classes with a __getitem__ method)
-        dfn_copy[key]=process_output.dfn_integrate(dfn_copy) #integrate dfn over space to get number of particles per bin
+        if integrate is True:
+            dfn_copy[key]=process_output.dfn_integrate(dfn_copy) #integrate dfn over space to get number of particles per bin
         dfn_copy[key]=process_output.dfn_collapse(dfn_copy,coordinates=axes) #collapse dfn down to 2D
 
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
             ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
             ax.set_aspect('equal')
+        else:
+            ax.set_aspect('auto')
 
         X=dfn_copy[axes[0]] #make a mesh
         Y=dfn_copy[axes[1]]
         Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
-        ax=plt.axes(facecolor=cmap_viridis(np.amin(some_beam_depo_binned)))
+        ax=plt.axes(facecolor=cmap_viridis(np.amin(dfn_copy[key])))
         mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         '''for c in mesh.collections: #for use in contourf
@@ -282,11 +309,14 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         plt.colorbar(mesh)
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
+        ax.set_title(some_distribution_function.ID)
         
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
             ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
             ax.set_aspect('equal')
+        else:
+                ax.set_aspect('auto')
         if LCFS is True: #plot plasma boundary
             ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
         

@@ -308,13 +308,13 @@ LOCUST dumps orbits in ASCII format as (number_particles \n R | phi | Z \n numbe
         ntri/                                                           #
         number_particles/-/-                                            #total number of particles = n*ngpu
     1D data
-        r/R/                                                            #r coordinate of particle
+        R/R/                                                            #r coordinate of particle
         phi/-/                                                          #phi coordinate of particle
-        z/Z/                                                            #z coordinate of particle
-        v_r/-/                                                          #v_r coordinate of particle
-        v_tor/-/                                                        #v_tor coordinate of particle
-        v_z/-/                                                          #v_z coordinate of particle
-        v_pitch/vpll_v/                                                 #v_parallel/v
+        Z/Z/                                                            #z coordinate of particle
+        V_R/-/                                                          #v_r coordinate of particle
+        V_tor/-/                                                        #v_tor coordinate of particle
+        V_Z/-/                                                          #v_z coordinate of particle
+        V_pitch/vpll_v/                                                 #v_parallel/v
         energy/E/                                                       #energy of particle
         t///                                                            #time coordinate of particle
         status_flag//                                                   #status value of particle at this time
@@ -400,7 +400,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         dfn/Fh                                                          #Dfn grid (for IDFTYP!=3)
         dfn_s/Fh_s                                                      #Dfn grid error (for IDFTYP!=3)
 
-LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. 
+LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. The Dfn grid is in markers m^-3 (one must integrate to get per bin for plotting).
     
 ### Processing Routines
 
