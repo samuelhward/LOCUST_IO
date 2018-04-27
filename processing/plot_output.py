@@ -264,7 +264,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         
         dfn_copy=copy.deepcopy(some_distribution_function.data) #deep copy the object data dictionary (remember dicitonaries act like classes with a __getitem__ method)
         dfn_copy[key]=process_output.dfn_integrate(dfn_copy) #integrate dfn over space to get number of particles per bin
-        dfn_copy[key]=process_output.dfn_collapse(dfn_copy,dimensions=axes) #collapse dfn down to 2D
+        dfn_copy[key]=process_output.dfn_collapse(dfn_copy,coordinates=axes) #collapse dfn down to 2D
 
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
