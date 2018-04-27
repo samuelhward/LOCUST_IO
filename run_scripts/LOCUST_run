@@ -19,13 +19,13 @@ LOCUST_input_collisions='collisions.dat'
 dir_this_script="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" #get current working directory (cannot use pwd as this is invoking shell's pwd - not script pwd)
 dir_locust_io="$(dirname "$dir_this_script")"
 dir_input_files=${dir_locust_io}/input_files
-dir_output_files=${dir_locust_io}/output_files
-dir_cache_files=${dir_locust_io}/cache_files
+dir_output_files=${dir_locust_io}/OutputFiles
+dir_cache_files=${dir_locust_io}/CacheFiles
 dir_LOCUST=${dir_locust_io}/LOCUST
 
 mkdir -p "/tmp/${USER}/locust.${tokamak}/InputFiles/" #create the folder structure if not there already
-mkdir -p "/tmp/${USER}/locust.${tokamak}/OutputFiles/" #create the folder structure if not there already
-mkdir -p "/tmp/${USER}/locust.${tokamak}/CacheFiles/" #create the folder structure if not there already
+mkdir -p "/tmp/${USER}/locust.${tokamak}/" #create the folder structure if not there already
+mkdir -p "/tmp/${USER}/locust.${tokamak}/" #create the folder structure if not there already
 
 #AT THIS POINT JUST LINK BLANK FILES IN /TMP TO THE FILES IN LOCUST_IO TO MAKE IT RUN
 
@@ -38,10 +38,10 @@ ln -s "${dir_input_files}/${LOCUST_input_ptcles}"  "/tmp/${USER}/locust.${tokama
 ln -s "${dir_input_files}/${LOCUST_input_collisions}" "/tmp/${USER}/locust.${tokamak}/InputFiles/collisions.dat"
 
 #LOCUST output
-ln -s "${dir_output_files}/" "/tmp/${USER}/locust.${tokamak}/OutputFiles/"  
+ln -s "${dir_output_files}/" "/tmp/${USER}/locust.${tokamak}/"  
 
 #LOCUST cache
-ln -s "${dir_cache_files}/" "/tmp/${USER}/locust.${tokamak}/CacheFiles/" 
+ln -s "${dir_cache_files}/" "/tmp/${USER}/locust.${tokamak}/" 
 ##########################
 #compile
 FLAGS="'$*'"

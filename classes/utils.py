@@ -43,7 +43,7 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     notes:
         message should be something specific to the section of code which called none_check
     """
-    if all(arg or arg==0 for arg in args):
+    if all(arg is True for arg in args):
         return False
     else:
         print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
@@ -148,3 +148,16 @@ def sort_arrays(main_array,*args):
         returned_arrays.append(array)
 
     return returned_arrays
+
+def angle_pol(R_major_width,R,Z):
+    """
+    returns poloidal angle
+
+    notes:
+    """
+
+    R_minor=R-R_major_width
+    angle=np.arctan2(Z,R_minor)
+
+    return angle
+

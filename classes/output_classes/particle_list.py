@@ -2,7 +2,7 @@
 
 """
 Samuel Ward
-15/01/2018
+01/04/2018
 ----
 class to handle LOCUST particle list output data
 ---
@@ -42,9 +42,14 @@ except:
     raise ImportError("ERROR: base_output.py could not be imported!\nreturning\n")
     sys.exit(1) 
 try:
-    from classes import support #import support module from this directory
+    from classes import support 
 except:
     raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from processing import process_output
+except:
+    raise ImportError("ERROR: processing/process_output.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 
@@ -53,118 +58,127 @@ np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
 ################################################################## Final_Particle_List functions
 
-def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat'):
+def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
     """
     reads final particle list stored in LOCUST format
 
     notes:
+        compression - toggle True for large files for efficient processing
+
         contains lots of references to process_ptcles.pro, written by Rob Akers
         status_flag describes each particle's final status (guide stored in status_flags, verbose guide in LOCUST/ctrk_mod.f90/ctrk_kernel) 
     """
 
     print("reading final particle list from LOCUST")
 
-    with open(filepath) as file:
-        
-        lines=file.readlines() #return lines as list
-        if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+filepath)
+    if compression is True: #for now just revert to the efficient compression version
+        input_data=process_output.particle_list_compression(filepath)
+        print("finished reading final particle list from LOCUST")
+        return input_data
 
-        #read in headerlines
-        header=lines[0].split()
-        n=int(header[0]) 
-        ngpu=int(header[1]) #n*ngpu=number of particles
-        niter=int(header[2]) #time iterations
-        npt_=int(header[3]) #info slots
-        nphc=int(header[4]) #levels in -DSPLIT split cache (always use the first)
-        ntri=int(header[5]) #triangle grid "dimension" 
+    else: #otherwise we can read the whole file - WARNING this can be huge
 
-        #initialise particle_list and data dictionary
-        input_data={}
-        input_data['R']=np.array([])
-        input_data['phi']=np.array([])
-        input_data['Z']=np.array([])
-        input_data['V_R']=np.array([])
-        input_data['V_tor']=np.array([])
-        input_data['V_Z']=np.array([])
-        input_data['t']=np.array([])
-        input_data['status_flag']=np.array([])
-        input_data['additional_flag1']=np.array([])
-        input_data['additional_flag2']=np.array([])
-        input_data['additional_flag3']=np.array([])
-        input_data['additional_flag4']=np.array([])
-        input_data['additional_flag5']=np.array([])
-        input_data['additional_flag6']=np.array([])
-        input_data['additional_flag7']=np.array([])
-        input_data['additional_flag8']=np.array([])
-        input_data['additional_flag9']=np.array([])
-        input_data['n']=np.array(n)
-        input_data['ngpu']=np.array(ngpu)
-        input_data['niter']=np.array(niter)
-        input_data['npt_']=np.array(npt_)
-        input_data['nphc']=np.array(nphc)
-        input_data['ntri']=np.array(ntri)
-        input_data['number_particles']=n*ngpu
-
-        #get rid of white space and completely flatten IDL/FORTRAN-style
-        lines=[[float(number) for number in line.split()] for line in lines]
-        lines=[number for line in lines for number  in line]
-        del(lines[0:6])
-        input_data['f']=lines[-1]
-
-        for i in range(0,niter):
+        with open(filepath) as file:
             
-            #transfer chunk from lines to file_buffer and assimilate into dictionary
-            file_buffer=np.array([lines[0:(n*ngpu)*npt_*nphc]]).reshape((n*ngpu),npt_,nphc,order='F')
-            del(lines[0:(n*ngpu)*npt_*nphc])
-            
-            input_data['R']=np.append(input_data['R'],file_buffer[:,0,0])
-            input_data['phi']=np.append(input_data['phi'],file_buffer[:,1,0])
-            input_data['Z']=np.append(input_data['Z'],file_buffer[:,2,0])
-            input_data['V_R']=np.append(input_data['V_R'],file_buffer[:,3,0])
-            input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[:,4,0])
-            input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[:,5,0])
-            input_data['t']=np.append(input_data['t'],file_buffer[:,6,0])
-            input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[:,7,0])
-            input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[:,8,0])
-            input_data['additional_flag2']=np.append(input_data['additional_flag2'],file_buffer[:,9,0])
-            input_data['additional_flag3']=np.append(input_data['additional_flag3'],file_buffer[:,10,0])
-            input_data['additional_flag4']=np.append(input_data['additional_flag4'],file_buffer[:,11,0])
-            input_data['additional_flag5']=np.append(input_data['additional_flag5'],file_buffer[:,12,0])
-            input_data['additional_flag6']=np.append(input_data['additional_flag6'],file_buffer[:,13,0])
-            input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[:,14,0])
-            input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[:,15,0])
-            input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[:,16,0])   
+            lines=file.readlines() #return lines as list
+            if not lines: #check to see if the file opened
+                raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+filepath)
 
-        input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
-        input_data['status_flags']['ok_if_greater']=0.0 
-        input_data['status_flags']['undefined']=0.0
-        input_data['status_flags']['left_space_grid']=-1.0
-        input_data['status_flags']['not_poss_on_1st_call']=-1000.0 
-        input_data['status_flags']['track_failure']=-2000.0
-        input_data['status_flags']['unresolved_hit']=-3.0
-        input_data['status_flags']['left_mesh']=-3000.0
-        input_data['status_flags']['track_problem']=-4000.0
-        input_data['status_flags']['ptcl_disconnect']=-5000.0
-        input_data['status_flags']['PFC_intercept']=-5.0
-        input_data['status_flags']['left_field_grid']=-6.0
-        input_data['status_flags']['goose_fail']=-7000.0
-        input_data['status_flags']['left_plasma']=-8.0
-        input_data['status_flags']['thermalised']=-9.0
-        input_data['status_flags']['coll_op_fail']=-10000.0
-        input_data['status_flags']['GC_calc_fail']=-10.0 
-        input_data['status_flags']['CX_loss']=-11.0
-        input_data['status_flags']['gc_init_fail']=-11000.0
-        input_data['status_flags']['bin_fail_soft']=-12.0
-        input_data['status_flags']['bin_fail_hard_1']=-13000.0
-        input_data['status_flags']['time_limit_reached']=-14.0
-        input_data['status_flags']['cross_open_face']=-15.0
-        input_data['status_flags']['bin_fail_hard_2']=-16000.0
-        input_data['status_flags']['generic_fail_hard']=-99999.0
-  
-    print("finished reading final particle list from LOCUST")
+            #read in headerlines
+            header=lines[0].split()
+            n=int(header[0]) 
+            ngpu=int(header[1]) #n*ngpu=number of particles
+            niter=int(header[2]) #time iterations
+            npt_=int(header[3]) #info slots
+            nphc=int(header[4]) #levels in -DSPLIT split cache (always use the first)
+            ntri=int(header[5]) #triangle grid "dimension" 
 
-    return input_data
+            #initialise particle_list and data dictionary
+            input_data={}
+            input_data['R']=np.array([])
+            input_data['phi']=np.array([])
+            input_data['Z']=np.array([])
+            input_data['V_R']=np.array([])
+            input_data['V_tor']=np.array([])
+            input_data['V_Z']=np.array([])
+            input_data['t']=np.array([])
+            input_data['status_flag']=np.array([])
+            input_data['additional_flag1']=np.array([])
+            input_data['additional_flag2']=np.array([])
+            input_data['additional_flag3']=np.array([])
+            input_data['additional_flag4']=np.array([])
+            input_data['additional_flag5']=np.array([])
+            input_data['additional_flag6']=np.array([])
+            input_data['additional_flag7']=np.array([])
+            input_data['additional_flag8']=np.array([])
+            input_data['additional_flag9']=np.array([])
+            input_data['n']=np.array(n)
+            input_data['ngpu']=np.array(ngpu)
+            input_data['niter']=np.array(niter)
+            input_data['npt_']=np.array(npt_)
+            input_data['nphc']=np.array(nphc)
+            input_data['ntri']=np.array(ntri)
+            input_data['number_particles']=n*ngpu
+
+            #get rid of white space and completely flatten IDL/FORTRAN-style
+            lines=[[float(number) for number in line.split()] for line in lines]
+            lines=[number for line in lines for number  in line]
+            del(lines[0:6])
+            input_data['f']=lines[-1]
+
+            for i in range(0,niter):
+                
+                #transfer chunk from lines to file_buffer and assimilate into dictionary
+                file_buffer=np.array([lines[0:(n*ngpu)*npt_*nphc]]).reshape((n*ngpu),npt_,nphc,order='F')
+                del(lines[0:(n*ngpu)*npt_*nphc])
+                
+                input_data['R']=np.append(input_data['R'],file_buffer[:,0,0])
+                input_data['phi']=np.append(input_data['phi'],file_buffer[:,1,0])
+                input_data['Z']=np.append(input_data['Z'],file_buffer[:,2,0])
+                input_data['V_R']=np.append(input_data['V_R'],file_buffer[:,3,0])
+                input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[:,4,0])
+                input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[:,5,0])
+                input_data['t']=np.append(input_data['t'],file_buffer[:,6,0])
+                input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[:,7,0])
+                input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[:,8,0])
+                input_data['additional_flag2']=np.append(input_data['additional_flag2'],file_buffer[:,9,0])
+                input_data['additional_flag3']=np.append(input_data['additional_flag3'],file_buffer[:,10,0])
+                input_data['additional_flag4']=np.append(input_data['additional_flag4'],file_buffer[:,11,0])
+                input_data['additional_flag5']=np.append(input_data['additional_flag5'],file_buffer[:,12,0])
+                input_data['additional_flag6']=np.append(input_data['additional_flag6'],file_buffer[:,13,0])
+                input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[:,14,0])
+                input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[:,15,0])
+                input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[:,16,0])   
+
+            input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
+            input_data['status_flags']['ok_if_greater']=0.0 
+            input_data['status_flags']['undefined']=0.0
+            input_data['status_flags']['left_space_grid']=-1.0
+            input_data['status_flags']['not_poss_on_1st_call']=-1000.0 
+            input_data['status_flags']['track_failure']=-2000.0
+            input_data['status_flags']['unresolved_hit']=-3.0
+            input_data['status_flags']['left_mesh']=-3000.0
+            input_data['status_flags']['track_problem']=-4000.0
+            input_data['status_flags']['ptcl_disconnect']=-5000.0
+            input_data['status_flags']['PFC_intercept']=-5.0
+            input_data['status_flags']['left_field_grid']=-6.0
+            input_data['status_flags']['goose_fail']=-7000.0
+            input_data['status_flags']['left_plasma']=-8.0
+            input_data['status_flags']['thermalised']=-9.0
+            input_data['status_flags']['coll_op_fail']=-10000.0
+            input_data['status_flags']['GC_calc_fail']=-10.0 
+            input_data['status_flags']['CX_loss']=-11.0
+            input_data['status_flags']['gc_init_fail']=-11000.0
+            input_data['status_flags']['bin_fail_soft']=-12.0
+            input_data['status_flags']['bin_fail_hard_1']=-13000.0
+            input_data['status_flags']['time_limit_reached']=-14.0
+            input_data['status_flags']['cross_open_face']=-15.0
+            input_data['status_flags']['bin_fail_hard_2']=-16000.0
+            input_data['status_flags']['generic_fail_hard']=-99999.0
+      
+        print("finished reading final particle list from LOCUST")
+
+        return input_data
 
 
 def dump_final_particle_list_LOCUST(output_data,filepath): 
@@ -275,7 +289,7 @@ class Final_Particle_List(base_output.LOCUST_output):
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading GEQDSKs
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -284,7 +298,7 @@ class Final_Particle_List(base_output.LOCUST_output):
                 self.data=read_final_particle_list_LOCUST(self.filepath) #read the file
 
         elif data_format=='TRANSP': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading GEQDSKs
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename

@@ -49,9 +49,9 @@ def dfn_integrate(some_dfn):
 
     return dfn
 
-def dfn_collapse(some_dfn,dimensions=['R','Z']):
+def dfn_collapse(some_dfn,coordinates=['R','Z']):
     """
-    integrate and collapse the dfn to the supplied to dimensions
+    integrate and collapse the dfn to the supplied to coordinates
 
     notes:
         returns the Dfn array
@@ -59,22 +59,118 @@ def dfn_collapse(some_dfn,dimensions=['R','Z']):
 
     dfn=copy.deepcopy(some_dfn['dfn'])
 
-    dimensions_indices=[] #collapse dfn along specified axes
-    if 'Z' not in dimensions:
-        dimensions_indices.extend([4])
-    if 'R' not in dimensions:
-        dimensions_indices.extend([3])
-    if 'L' not in dimensions:
-        dimensions_indices.extend([2])
-    if 'V' not in dimensions:
-        dimensions_indices.extend([1])
-    if 'P' not in dimensions:
-        dimensions_indices.extend([0])
+    coordinate_indices=[] #collapse dfn along specified axes
+    if 'Z' not in coordinates: #if Z is not in the coordinates we want to keep
+        coordinate_indices.extend([4]) #then mark it as a dimension to integrate over
+    if 'R' not in coordinates:
+        coordinate_indices.extend([3])
+    if 'L' not in coordinates:
+        coordinate_indices.extend([2])
+    if 'V' not in coordinates:
+        coordinate_indices.extend([1])
+    if 'P' not in coordinates:
+        coordinate_indices.extend([0])
 
-    for dimension in dimensions_indices: #axis denotes which dimension will be collapsed, so go in descending to get array shape correct
-        dfn=np.sum(dfn,axis=dimension)
+    for coordinate in coordinate_indices: #axis denotes which coordinate will be collapsed, so go in descending to get array shape correct
+        dfn=np.sum(dfn,axis=coordinate)
     
     return dfn
+
+def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor','V_Z','status_flag'],dump=False):
+    """
+    opens huge particle lists in memory-efficient way
+
+    notes:
+        coordinates - the particle coordinates to read in
+        dump - toggle to re-dump to ASCII afterwards (NOTE: NOT YET IMPLEMENTED)
+
+        this code will break if the file line length > number of entries for each coordinate
+        currently only reads the first phc values i.e. phc index = 0  
+    """
+
+    print("compressing final particle list file: "+filepath)
+
+    coordinate_indices={} #need a dictionary to refer to locations of quantities in file
+    coordinate_indices['R']=0
+    coordinate_indices['phi']=1
+    coordinate_indices['Z']=2
+    coordinate_indices['V_R']=3
+    coordinate_indices['V_tor']=4
+    coordinate_indices['V_Z']=5
+    coordinate_indices['t']=6
+    coordinate_indices['status_flag']=7
+    coordinate_indices['additional_flag1']=8
+    coordinate_indices['additional_flag2']=9
+    coordinate_indices['additional_flag3']=10
+    coordinate_indices['additional_flag4']=11
+    coordinate_indices['additional_flag5']=12
+    coordinate_indices['additional_flag6']=13
+    coordinate_indices['additional_flag7']=14
+    coordinate_indices['additional_flag8']=15
+    coordinate_indices['additional_flag9']=16
+
+    indices_coordinate={} #and need a dictionary to label the opposite way around
+    indices_coordinate['0']='R'
+    indices_coordinate['1']='phi'
+    indices_coordinate['2']='Z'
+    indices_coordinate['3']='V_R'
+    indices_coordinate['4']='V_tor'
+    indices_coordinate['5']='V_Z'
+    indices_coordinate['6']='t'
+    indices_coordinate['7']='status_flag'
+    indices_coordinate['8']='additional_flag1'
+    indices_coordinate['9']='additional_flag2'
+    indices_coordinate['10']='additional_flag3'
+    indices_coordinate['11']='additional_flag4'
+    indices_coordinate['12']='additional_flag5'
+    indices_coordinate['13']='additional_flag6'
+    indices_coordinate['14']='additional_flag7'
+    indices_coordinate['15']='additional_flag8'
+    indices_coordinate['16']='additional_flag9'
+    
+    input_data={} #need to initialise dictionary to hold data we read from file
+
+    for coordinate in coordinates: #set up arrays to hold the data
+        input_data[coordinate]=np.array([])
+        
+    with open(filepath) as file:
+        file_buffer=[] #to hold 1D chunks of the file 
+        dimension_counter=0 #since the file is laid out as R_1 R_2 ... R_n phi_1 phi_2 ... phi_n where n-> particle number, can keep track of which dimension we're currently reading 
+        
+        for line_number,line in enumerate(file): #read line-by-line for memory efficiency
+            line=line.split()
+            
+            if line_number==0: #we are still on the header line
+                n=int(line[0]) 
+                ngpu=int(line[1]) #n*ngpu=number of particles
+                niter=int(line[2]) #time iterations
+                npt_=int(line[3]) #info slots
+                nphc=int(line[4]) #levels in -DSPLIT split cache (always use the first)
+                ntri=int(line[5]) #triangle grid "dimension" 
+
+            else:
+                file_buffer.extend([float(number) for number in line]) #read a line and add to the file buffer 
+                if len(file_buffer) > n*ngpu: #if we have read in all values for this coordinate
+                    
+                    coordinate_completed=indices_coordinate[str(dimension_counter)] #check which coordinate we just finished reading in
+                    if coordinate_completed in coordinates: #if we want this coordinate then keep
+                        input_data[coordinate_completed]=np.append(input_data[coordinate_completed],file_buffer[0:n*ngpu])
+
+                    del(file_buffer[0:n*ngpu]) #clear the bit of the buffer which we have read in (might still contain some of next coordinate)
+                    dimension_counter+=1
+                    if dimension_counter==17: #stop after we read the first 16*number_particles values i.e. only phc=0
+
+                        input_data['n']=np.array(n)
+                        input_data['ngpu']=np.array(ngpu)
+                        input_data['niter']=np.array(niter)
+                        input_data['npt_']=np.array(npt_)
+                        input_data['nphc']=np.array(nphc)
+                        input_data['ntri']=np.array(ntri)
+                        input_data['number_particles']=n*ngpu
+
+                        print("finished compressing final particle list file: "+filepath)
+
+                        return input_data
 
 #################################
 

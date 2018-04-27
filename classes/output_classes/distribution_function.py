@@ -2,7 +2,7 @@
 
 """
 Samuel Ward
-15/01/2018
+01/04/2018
 ----
 class to handle LOCUST distribution function output data
 ---
@@ -356,7 +356,7 @@ class Distribution_Function(base_output.LOCUST_output):
     notes:
         the properties field for the distribution_function can contain a dictionary of LOCUST flags present which dictate how the dfn is written to file
 
-        DoF for Fh (in order)
+        DoF for Fh (in order of array index)
             IDFTYP=1
                 P - special, rare simulation specific (e.g. gyro phase dimension)
                 V - velocity dimension
@@ -384,7 +384,7 @@ class Distribution_Function(base_output.LOCUST_output):
                 self.input_filename=input_filename
                 self.input_filepath=support.dir_output_files+input_filename
                 self.properties=properties
-                self.data=read_distribution_function_LOCUST(self.input_filepath,properties) #read the file
+                self.data=read_distribution_function_LOCUST(self.input_filepath,**properties) #read the file
         else:
             print("cannot read_data - please specify a compatible data_format (LOCUST)\n")            
 
