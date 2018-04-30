@@ -316,7 +316,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
             ax.set_aspect('equal')
         else:
-                ax.set_aspect('auto')
+            ax.set_aspect('auto')
         if LCFS is True: #plot plasma boundary
             ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
         

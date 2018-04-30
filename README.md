@@ -420,6 +420,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 
         dfn_integrate                            integrate a LOCUST dfn from s^3/m^6 to /bin
         dfn_collapse                             collapse a LOCUST dfn to the specified dimensions by summing
+        particle_list_compression                opens and processes >>GB LOCUST particle lists in memory-efficient way
 
      plot_input
 
