@@ -27,25 +27,36 @@ pi=np.pi
 ##################################################################
 #Main Code
 
-def dfn_integrate(some_dfn):
+def dfn_integrate(some_dfn,coordinates=['space','velocity']):
     """
     integrate a distribution function to get particles/cell and real velocity
 
     notes:
-        returns the Dfn array
+        coordinates - specify the dimensions to integrate over
+        returns a Dfn array
+        LOCUST dfn is in SI units [s^3/m^6] by default
+
+        XXX need to add option for constants of motion Dfn moments (DFN_HEAD='H')
     """
 
     dfn=copy.deepcopy(some_dfn['dfn'])
 
-    for p in range(int(some_dfn['nP'])): #denormalise the velocity dimension
-        for v in range(int(some_dfn['nV'])):
-            dfn[p,v,:,:,:]*=some_dfn['V'][v]**2
+    if 'velocity' in coordinates:
+        for p in range(int(some_dfn['nP'])):
+            for v in range(int(some_dfn['nV'])):
+                dfn[p,v,:,:,:]*=some_dfn['V'][v]**2
 
-    for r in range(int(some_dfn['nR'])): #convert from markers per s^3/m^6 to markers per cell
         if some_dfn['nP']>1:
-            dfn[:,:,:,:,r]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])*(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*(some_dfn['P'][1]-some_dfn['P'][0])
+            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*(some_dfn['P'][1]-some_dfn['P'][0])
         else:
-            dfn[:,:,:,:,r]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])*(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*2.*pi
+            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*2.*pi
+
+    if 'space' in coordinates:
+        for r in range(int(some_dfn['nR'])):
+            if some_dfn['nP']>1:
+                dfn[:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])
+            else:
+                dfn[:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])
 
     return dfn
 
@@ -54,6 +65,7 @@ def dfn_collapse(some_dfn,coordinates=['R','Z']):
     integrate and collapse the dfn to the supplied to coordinates
 
     notes:
+        coordinates - specify the remaining degress of freedom
         returns the Dfn array
     """
 
@@ -63,7 +75,7 @@ def dfn_collapse(some_dfn,coordinates=['R','Z']):
     if 'Z' not in coordinates: #if Z is not in the coordinates we want to keep
         coordinate_indices.extend([4]) #then mark it as a dimension to integrate over
     if 'R' not in coordinates:
-        coordinate_indices.extend([3])
+        coordinate_indices.extend([3]) #these must stay in this order
     if 'L' not in coordinates: #pitch
         coordinate_indices.extend([2]) 
     if 'V' not in coordinates: #velocity
