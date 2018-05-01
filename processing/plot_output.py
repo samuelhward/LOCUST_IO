@@ -292,6 +292,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             dfn_copy[key]=process_output.dfn_integrate(dfn_copy,integrate) #integrate dfn over velocity to get number of particles per m^3
         dfn_copy[key]=process_output.dfn_collapse(dfn_copy,coordinates=axes) #collapse dfn down to 2D
 
+        if 'V' in axes: #convert velocity to keV if velocity if a chosen axis
+            dfn_copy['V']=(0.5*2.0*1.67e-27*dfn_copy['V']**2)/(1000.*1.6e-19)
+
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
             ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
