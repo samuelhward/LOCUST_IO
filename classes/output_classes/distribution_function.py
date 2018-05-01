@@ -29,7 +29,7 @@ except:
 try:
     import imas 
 except:
-    raise ImportError("ERROR: IMAS module could not be imported!\nreturning\n")
+    print("ERROR: IMAS module could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     from classes import utils

@@ -285,9 +285,9 @@ def read_beam_depo_TRANSP(filepath):
     input_data['V_Z']=0.01*np.asarray(input_data['V_Z'])
     
     input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
-    input_data['V_R']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2))
     input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
-    input_data['V_tor']=np.asarray(input_data['V_X']*np.sin(input_data['phi']))
+    input_data['V_R']=np.asarray(input_data['V_X']*cos(input_data['phi'])+input_data['V_Y']*sin(input_data['phi']))
+    input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
 
     print("finished reading beam deposition from TRANSP format")
 
