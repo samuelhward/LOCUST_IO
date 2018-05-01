@@ -367,7 +367,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
     1D data
         E/EF                                                            #energy dimension of Dfn grid
         V/VF                                                            #velocity dimension of Dfn grid
-        PP/                                                             #Pphi dimension of Dfn grid
+        PP/PP                                                           #Pphi dimension of Dfn grid
         MU/                                                             #Mu dimension of Dfn grid
         Jh/                                                             #Jacobian
         Jh_s/                                                           #Jacobian error
@@ -377,8 +377,6 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         R/R                                                             #R dimension of Dfn grid
         Z/Z                                                             #Z dimension of Dfn grid
         L/L                                                             #pitch dimension of Dfn grid
-        PP/PP                                                           #Pphi dimension of Dfn grid
-        V/VF                                                            #velocity dimension of Dfn grid
         P/PG                                                            #special dimension - simulation specific
         Ab                                                              #fast ion masses
         Zb                                                              #trace particle Z
@@ -400,7 +398,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         dfn/Fh                                                          #Dfn grid (for IDFTYP!=3)
         dfn_s/Fh_s                                                      #Dfn grid error (for IDFTYP!=3)
 
-LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. The Dfn grid is in markers m^-3 (one must integrate to get per bin for plotting).
+LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. The Dfn grid is in SI units [s^3/m^6] (one must integrate to get particles per bin for plotting).
     
 ### Processing Routines
 

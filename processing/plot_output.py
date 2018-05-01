@@ -135,7 +135,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         plt.show()
 
 
-def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],ax=False):
+def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,ax=False):
     """
     plot the final particle list
      
@@ -148,6 +148,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         LCFS - show plasma boundary outline
         real_scale - plot to Tokamak scale (requires equilibrium arguement)
         status_flags - plot particles with these statuses
+        weight - weight per marker (must be constant)
         ax - take input axes (can be used to stack plots)
     """
 
@@ -167,7 +168,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             some_final_particle_list_binned,some_final_particle_list_binned_edges=np.histogram(some_final_particle_list[axes[0]][p],bins=number_bins)
             some_final_particle_list_binned_centres=(some_final_particle_list_binned_edges[:-1]+some_final_particle_list_binned_edges[1:])*0.5
-            ax.plot(some_final_particle_list_binned_centres,some_final_particle_list_binned)
+            ax.plot(some_final_particle_list_binned_centres,weight*some_final_particle_list_binned)
 
             ax.set_xlabel(axes[0])
             ax.set_title(some_final_particle_list.ID)
@@ -203,7 +204,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 some_final_particle_list_binned_y=(some_final_particle_list_binned_y[:-1]+some_final_particle_list_binned_y[1:])*0.5
                 some_final_particle_list_binned_y,some_final_particle_list_binned_x=np.meshgrid(some_final_particle_list_binned_y,some_final_particle_list_binned_x)
                 ax=plt.axes(facecolor=cmap_viridis(np.amin(some_final_particle_list_binned)))
-                mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
+                mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 plt.colorbar(mesh)
 
@@ -241,7 +242,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,integrate=True,ax=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,integrate=['velocity'],ax=False):
     """
     plot the distribution function
 
@@ -251,7 +252,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         axes - define plot axes
         LCFS - show plasma boundary outline
         real_scale - plot to Tokamak scale (requires equilibrium arguement)
-        integrate - when plotting the actual distribution function, toggle to integrate to particles/cell and un-normalise velocity
+        integrate - when plotting the actual distribution function, toggle to integrate over space/velocity to get to particles/cell instead of SI units
         ax - take input axes (can be used to stack plots)
         
         assumes that the dfn data has not been collapsed yet
@@ -287,8 +288,8 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             return
         
         dfn_copy=copy.deepcopy(some_distribution_function.data) #deep copy the object data dictionary (remember dicitonaries act like classes with a __getitem__ method)
-        if integrate is True:
-            dfn_copy[key]=process_output.dfn_integrate(dfn_copy) #integrate dfn over space to get number of particles per bin
+        if integrate:
+            dfn_copy[key]=process_output.dfn_integrate(dfn_copy,integrate) #integrate dfn over velocity to get number of particles per m^3
         dfn_copy[key]=process_output.dfn_collapse(dfn_copy,coordinates=axes) #collapse dfn down to 2D
 
         if real_scale is True: #set x and y plot limits to real scales
