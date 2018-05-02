@@ -183,7 +183,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
 
         if IDFTYP==1 or IDFTYP==4:
             #nL-1 
-            input_data['nL']=file.read_ints() #Vphi/V cell boundaries
+            input_data['nV_pitch']=file.read_ints() #Vphi/V cell boundaries
         else:
             #nPP-1
             input_data['nPP']=file.read_ints() #PPhi          
@@ -203,9 +203,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                 for line in range(int(input_data['nP'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
                 
-                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F') 
-                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F')
-                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nL*nZ*nR (nZ = nR = nF)
+                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
+                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
+                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ = nR = nF)
 
             else:
                 input_data['dfn']=[] #Final combined DFn. grid  
@@ -215,9 +215,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                 for line in range(int(input_data['nP'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
-                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F') 
-                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F')
-                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nL*nZ*nR (nZ, nR = nF)
+                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
+                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
+                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         
         else:
             input_data['dfn']=[] #Final combined DFn. grid   
@@ -227,9 +227,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             for line in range(int(input_data['nP'])):
                 input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
-            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F') 
-            input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nL']),int(input_data['nZ']),int(input_data['nR']),order='F')
-            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nL*nZ*nR (nZ, nR = nF)
+            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
+            input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
+            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         
         input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z
         nEQ=file.read_ints() 
@@ -262,7 +262,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         if IDFTYP==1 or IDFTYP==4:
 
             #L+dL/2 (nL long)
-            input_data['L']=file.read_reals(dtype=np.float32) #pitch space of dfn
+            input_data['V_pitch']=file.read_reals(dtype=np.float32) #pitch space of dfn
 
         else:
 
