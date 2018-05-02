@@ -333,7 +333,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         nV/                                                             #number of points in velocity dimension
         nR/nF                                                           #number of R points on Dfn grid
         nZ/nF                                                           #number of Z points on Dfn grid
-        nL/                                                             #number of points in Vphi/V dimension
+        nV_pitch/nL                                                     #number of points in V_tor/V dimension
         nPP/                                                            #number of points in Pphi dimension
         nMU/                                                            #number of points in Mu dimension
         nPSI/nPSIF                                                      #number of poloidal flux surface contours
@@ -376,7 +376,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         npolh                                                           #
         R/R                                                             #R dimension of Dfn grid
         Z/Z                                                             #Z dimension of Dfn grid
-        L/L                                                             #pitch dimension of Dfn grid
+        V_pitch/L                                                       #pitch dimension of Dfn grid
         P/PG                                                            #special dimension - simulation specific
         Ab                                                              #fast ion masses
         Zb                                                              #trace particle Z

@@ -47,9 +47,9 @@ def dfn_integrate(some_dfn,coordinates=['space','velocity']):
                 dfn[p,v,:,:,:]*=some_dfn['V'][v]**2
 
         if some_dfn['nP']>1:
-            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*(some_dfn['P'][1]-some_dfn['P'][0])
+            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['V_pitch'][1]-some_dfn['V_pitch'][0])*(some_dfn['P'][1]-some_dfn['P'][0])
         else:
-            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['L'][1]-some_dfn['L'][0])*2.*pi
+            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['V_pitch'][1]-some_dfn['V_pitch'][0])*2.*pi
 
     if 'space' in coordinates:
         for r in range(int(some_dfn['nR'])):
@@ -76,7 +76,7 @@ def dfn_collapse(some_dfn,coordinates=['R','Z']):
         coordinate_indices.extend([4]) #then mark it as a dimension to integrate over
     if 'R' not in coordinates:
         coordinate_indices.extend([3]) #these must stay in this order
-    if 'L' not in coordinates: #pitch
+    if 'V_pitch' not in coordinates: #pitch
         coordinate_indices.extend([2]) 
     if 'V' not in coordinates: #velocity
         coordinate_indices.extend([1])
