@@ -358,11 +358,11 @@ class Distribution_Function(base_output.LOCUST_output):
 
         DoF for Fh (in order of array index)
             IDFTYP=1
-                P - special, rare simulation specific (e.g. gyro phase dimension)
-                V - velocity dimension
-                L - pitch dimension
-                R - r dimension of bin centres
-                Z - z dimension of bin centres
+                P       - special, rare simulation specific (e.g. gyro phase dimension)
+                V       - velocity dimension
+                V_pitch - pitch dimension
+                R       - r dimension of bin centres
+                Z       - z dimension of bin centres
     """
 
     LOCUST_output_type='distribution_function'

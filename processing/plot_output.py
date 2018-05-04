@@ -205,8 +205,8 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 some_final_particle_list_binned_y,some_final_particle_list_binned_x=np.meshgrid(some_final_particle_list_binned_y,some_final_particle_list_binned_x)
                 
                 if ax_flag is False:
-                    ax=plt.axes(facecolor=cmap_viridis(np.amin(some_final_particle_list_binned)))
-                mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap='viridis',edgecolor='face',linewidth=0,antialiased=True,vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
+                    ax.set_facecolor(cmap_viridis(np.amin(some_final_particle_list_binned)))
+                mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap='viridis',vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
                 plt.colorbar(mesh)
 
@@ -309,8 +309,8 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
 
         if ax_flag is False:
-            ax=plt.axes(facecolor=cmap_viridis(np.amin(dfn_copy[key])))
-        mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+            ax.set_facecolor(cmap_viridis(np.amin(dfn_copy[key])))
+        mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap='viridis',vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
         '''for c in mesh.collections: #for use in contourf
             c.set_edgecolor("face")'''        
