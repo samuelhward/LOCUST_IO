@@ -190,7 +190,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
         else:
             last = ""
          
-        string = '{:.8e}'.format(number)
+        string = '{:.8e}'.format(float(number))
         #mant,exp = string.split('E')
         file.write(separator+string+last)
  
@@ -464,7 +464,7 @@ class Equilibrium(base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run")
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
  
         if utils.none_check(self.ID,self.LOCUST_input_type,"dump_data requires self.data and data_format\n",self.data,data_format):
             pass

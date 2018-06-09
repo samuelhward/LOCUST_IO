@@ -371,7 +371,7 @@ class Beam_Deposition(base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run")
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
  
         if utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
             pass
