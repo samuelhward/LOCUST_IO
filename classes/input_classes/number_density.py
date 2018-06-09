@@ -254,7 +254,7 @@ class Number_Density(base_input.LOCUST_input):
         else:
             print("cannot read_data - please specify a compatible data_format (LOCUST/IDS)\n")            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         write number density to file
  
@@ -262,7 +262,7 @@ class Number_Density(base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run")
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
 
         if utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
             pass
@@ -274,7 +274,7 @@ class Number_Density(base_input.LOCUST_input):
          
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
-                dump_number_density_IDS(self.ID,self.data,shot,run,**self.properties)
+                dump_number_density_IDS(self.ID,self.data,shot,run,**properties)
  
         else:
             print("cannot dump_data - please specify a compatible data_format (LOCUST/IDS)\n")
