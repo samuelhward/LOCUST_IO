@@ -19,7 +19,7 @@ try:
     import scipy.interpolate
     import scipy.integrate
     import numpy as np
-    import matlotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
