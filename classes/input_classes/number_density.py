@@ -221,7 +221,7 @@ class Number_Density(base_input.LOCUST_input):
  
     LOCUST_input_type='number_density'
  
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read number density from file 
  
@@ -239,7 +239,7 @@ class Number_Density(base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_number_density_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
@@ -248,7 +248,7 @@ class Number_Density(base_input.LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_number_density_IDS(self.shot,self.run,**self.properties)
  
         else:
