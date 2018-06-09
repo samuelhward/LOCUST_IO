@@ -84,7 +84,7 @@ def QTP_calc(Q=None,T=None,P=None):
         used to calculate the missing quantity out of Q, toroidal or poloidal flux
         http://theory.ipp.ac.cn/~yj/research_notes/tokamak_equilibrium/node11.html
         returns profiles normalised to zero at origin 
-
+    args:
         Q - first order at sides, second order at in the centre
         T - second order composite trapezium rule
         P - second order composite trapezium rule
@@ -178,7 +178,7 @@ def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in
     
     return B_field
 
-def mag_axis_calc(some_equilibrium,index=True):
+def mag_axis_calc(some_equilibrium,index=False):
     """
     returns psirz index of magnetic axis 
     
@@ -206,6 +206,8 @@ def mag_axis_calc(some_equilibrium,index=True):
 def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1D=None,Z_1D=None,B_field=None,conversion='guiding_centre'):
     """
     returns 6D marker positions in r,phi,z coordinates
+
+    XXX untested
 
     notes:
         currently uses 2D B_field (toroidally symmetric)

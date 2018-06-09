@@ -160,7 +160,6 @@ def read_beam_depo_IDS(shot,run):
 
                     input_data[coordinate_name].extend([marker])    
 
-
     for key in input_data: #convert to numpy arrays
         input_data[key]=np.asarray(input_data[key])
  
