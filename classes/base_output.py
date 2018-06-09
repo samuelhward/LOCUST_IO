@@ -57,7 +57,7 @@ class LOCUST_output:
         self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
         self.data={}
         if not utils.none_check(self.ID,self.LOCUST_output_type,"read_data requires data_format, blank output initialised \n",data_format):
-            self.read_data(data_format,filename,shot,run,properties)
+            self.read_data(data_format,filename,shot,run,**properties)
 
     def __getitem__(self,key):
         """
