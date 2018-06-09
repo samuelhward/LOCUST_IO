@@ -61,7 +61,7 @@ plot_output.plot_orbits(my_orbit)
 #start by creating some axis objects
 fig,(ax1,ax2)=plt.subplots(1,2)
 #then let us add an x,y plot of the orbits to this figure on the first axis
-plot_output.plot_orbits(my_orbit,axes=['X','Y'],real_scale=True,ax=ax1,fig=fig)
+plot_output.plot_orbits(my_orbit,axes=['X','Y'],ax=ax1,fig=fig)
 #now add a plot of number density on the second axis
 plot_input.plot_number_density(my_Ne,ax=ax2,fig=fig)
 #if I do not like the default axis labels, I can always overwrite them
