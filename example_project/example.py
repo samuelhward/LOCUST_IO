@@ -20,36 +20,13 @@ notes:
 
 import sys
 import numpy
+import context
+import matplotlib.pyplot as plt
+from classes.input_classes import number_density
+from classes.output_classes import orbits
+from processing import plot_input
+from processing import plot_output
 
-try:
-    import context
-except:
-    raise ImportError("ERROR: local context.py not found - please create one and add it to this directory\nreturning\n")
-    sys.exit(1)
-
-try: 
-    from classes.input_classes import number_density
-except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/number_density.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try: 
-    from classes.output_classes import orbits
-except:
-    raise ImportError("ERROR: LOCUST_IO/classes/output_classes/orbits.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try: 
-    from processing import plot_input
-except:
-    raise ImportError("ERROR: LOCUST_IO/processing/plot_input.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try: 
-    from processing import plot_output
-except:
-    raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
-    sys.exit(1)
 
 
 
@@ -68,19 +45,29 @@ print('''\n\n\n\
 
 
 
-
 #read in the sample input data
 my_Ne=number_density.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='LOCUST',filename='sample_ne_profile.file',species='electrons')
-
-#see what it looks like
-plot_input.plot_number_density(my_Ne)
-
 #read in the sample output data
 my_orbit=orbits.Orbits(ID='LOCUST_IO sample orbits',data_format='LOCUST',filename='sample_orbits.file')
 
-#plot particle 0's trajectory in the R,Z plane
+#add some new data to our orbits object
+my_orbit.set(number_of_orbits=1)
+
+#what do the orbits look like?
 plot_output.plot_orbits(my_orbit)
 
+#what if I want to plot my orbits and the number density in one figure?
+
+#start by creating some axis objects
+fig,(ax1,ax2)=plt.subplots(1,2)
+#then let us add an x,y plot of the orbits to this figure on the first axis
+plot_output.plot_orbits(my_orbit,axes=['X','Y'],real_scale=True,ax=ax1,fig=fig)
+#now add a plot of number density on the second axis
+plot_input.plot_number_density(my_Ne,ax=ax2,fig=fig)
+#if I do not like the default axis labels, I can always overwrite them
+ax1.set_xlabel('a nice trajectory')
+#display the plot
+plt.show()
 
 #################################
 

@@ -19,6 +19,7 @@ try:
     import scipy.interpolate
     import scipy.integrate
     import numpy as np
+    import maplotlib.pyplot as plt
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -176,6 +177,31 @@ def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in
     print("B_calc - finished calculating 2D magnetic field")
     
     return B_field
+
+def mag_axis_calc(some_equilibrium,index=True):
+    """
+    returns psirz index of magnetic axis 
+    
+    args:
+        index - if True, returns index of axis otherwise return location in metres 
+    notes:
+        works by calculating a contour at 10% poloidal flux and averaging the position of the contour
+    """
+
+    Z_2D,R_2D=np.meshgrid(some_equilibrium['Z_1D'],some_equilibrium['R_1D'])
+    contour=plt.contour(R_2D,Z_2D,np.abs(some_equilibrium['psirz']),levels=np.amin(np.abs(some_equilibrium['psirz']))+0.1*np.amax(np.abs(some_equilibrium['psirz'])))  
+    contour=contour.collections[0].get_paths()[0]
+    contour=contour.vertices
+    r=contour[:,0]
+    z=contour[:,1]
+    r_av=np.mean(r)
+    z_av=np.mean(z)
+
+    if index is True: #convert to psirz indices
+        r_av=(np.abs(some_equilibrium['R_1D']-r_av)).argmin()
+        z_av=(np.abs(some_equilibrium['Z_1D']-z_av)).argmin()
+    
+    return r_av,z_av
 
 def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1D=None,Z_1D=None,B_field=None,conversion='guiding_centre'):
     """
