@@ -112,7 +112,7 @@ def dump_temperature_LOCUST(output_data,filepath):
  
     print("finished writing temperature to LOCUST")
 
-def read_temperature_IDS(shot,run,properties):
+def read_temperature_IDS(shot,run,**properties):
     """
     reads relevant LOCUST temperature data from a core_profiles IDS and returns as a dictionary
  
@@ -149,7 +149,7 @@ def read_temperature_IDS(shot,run,properties):
  
     return input_data
  
-def dump_temperature_IDS(ID,output_data,shot,run,properties):   
+def dump_temperature_IDS(ID,output_data,shot,run,**properties):   
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
     """

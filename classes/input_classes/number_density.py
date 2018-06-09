@@ -115,7 +115,7 @@ def dump_number_density_LOCUST(output_data,filepath):
  
     print("finished writing number density to LOCUST")
 
-def read_number_density_IDS(shot,run,properties):
+def read_number_density_IDS(shot,run,**properties):
     """
     reads relevant LOCUST number density data from a core_profiles IDS and returns as a dictionary
  
@@ -151,7 +151,7 @@ def read_number_density_IDS(shot,run,properties):
  
     return input_data
  
-def dump_number_density_IDS(ID,output_data,shot,run,properties):
+def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     """
     writes relevant LOCUST number density data to a core_profiles IDS
     """
