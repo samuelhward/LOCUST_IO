@@ -444,6 +444,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
         QTP_calc                                 calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
         fpolrz_calc                              calculates the 1D flux function on the 2D computational grid
         B_calc                                   calculates the components of the axisymmetric magnetic field on the 2D computational grid
+        mag_axis_calc                            calculate location of the magnetic axis
         transform_marker_velocities              transforms marker phase space velocities to LOCUST r,phi,z format
         interpolate_1D                           returns a 1D interpolator (RBF)
         interpolate_2D                           returns a 2D interpolator (RBF/RBS)
