@@ -115,7 +115,13 @@ class LOCUST_input:
 
         if hasattr(self,'data') and self.data:
             for key in self.data:
-                print("{key} - {value}".format(key=key,value=self.data[key]))
+                if type(self.data[key])==type({}): #check for dicts since these mess things up
+                    if self.data[key]: #if dict then check if dict is empty
+                        print(key+":")
+                        for sub_key in self.data[key]: 
+                            print("     {sub_key} - {value}".format(sub_key=sub_key,value=self.data[key][sub_key]))
+                elif not self.data[key].size==0: #if not a dict assume a numpy array
+                    print("{key} - {value}".format(key=key,value=self.data[key]))
                 
         print("-----------------------\n")
  

@@ -22,7 +22,6 @@ try:
     import numpy as np
     import copy
     import re
-    from scipy.io import  FortranFile
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)

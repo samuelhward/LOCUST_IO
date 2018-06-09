@@ -6,7 +6,7 @@ The code aims to be...
 
 * __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines. Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
 
-* __extensible__ - Contributing to the project is simple: to add a new filetype, for example, simply copypaste the read/write functions and use the [data dictionary](#global-data-definitions-and-variable-names) to match up your variables. Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
+* __extensible__ - Contributing to the project is simple: to add a new filetype, for example, simply copypaste the read/write functions and use the [data dictionary](#global-data-definitions-and-variable-names) to match up your variables. Many functions aren't made class methods to maximise flexibility (and those which take LOCUST_IO objects for arguements can instead take a generic dictionary due to the __ getitem __ method). Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
 
 * __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the *example_project/* with the sample input/output files. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
 
@@ -56,14 +56,15 @@ Table of Contents
 
 ## Requirements
 
-Tested on:
+Works with:
 
 * IMAS ≥3.16.0
 * Python ≥v3.5.1
     * copy, re, itertools, math and time modules in the standard library 
     * numpy ≥v1.14.2
     * matplotlib ≥v2.0.0
-    * scipy module ≥v0.17.0
+    * scipy ≥v0.17.0
+    * h5py
 
 
 
@@ -194,7 +195,7 @@ my_equilibrium.set(B_field=process_input.B_calc(myeq))
 ### Global Data Definitions And Variable Names
 
 
-Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, I've included all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways. If there are duplicates, that may be because the same class may contain data that can be written out in different ways (e.g. the temperature IDS may hold electron or ion temperature - which will dictate how the data is read/written).
+Since this package aims to bridge the gap between various file formats for different LOCUST inputs/outputs, I've included all the different variable names used by different codes and file formats for similar quantities. '-' means they are not directly written to/read from and may be derived in other ways. Blank means they're the same as in LOCUST. If there are duplicates, that may be because the same class may contain data that can be written out in different ways (e.g. the temperature IDS may hold electron or ion temperature - which will dictate how the data is read/written).
 
 
 #### Equilibrium:
@@ -226,7 +227,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         ffprime/ffprime/...profiles_1d.f_df_dpsi/FFPRIM                 #F*d(F)/d(psi) where psi is poloidal flux per radian and  F=diamagnetic function=R*B_Phi 
         pprime/pprime/...profiles_1d.dpressure_dpsi/PPRIM               #plasma pressure * d(plasma pressure)/d(psi) (check papers)
         qpsi/qpsi/...profiles_1d.q/QPSI                                 #q profile (function of flux_pol)
-        rlim/rlim/...boundary.outline.r/                                #r coordinates` of wall boundary
+        rlim/rlim/...boundary.outline.r/                                #r coordinates of wall boundary
         zlim/zlim/...boundary.outline.z/                                #z coordinates of wall boundary
         lcfs_r/rbbbs/...boundary.lcfs.r/Rp                              #r coordinates of plasma boundary
         lcfs_z/zbbbs/...boundary.lcfs.z/Zp                              #z coordinates of plasma boundary
@@ -330,17 +331,21 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         IDFTYP/                                                         #dfn structure ID (= IDFTYP LOCUST flag)
         EQBM_MD5/                                                       #checksum ID of the equilibrium
         nE/                                                             #number of points in energy dimension
+        dEh/                                                            #energy bin width
         nV/                                                             #number of points in velocity dimension
+        dV/dVFh                                                         #velocity bin width
         nR/nF                                                           #number of R points on Dfn grid
+        dR/-                                                            #R bin width
         nZ/nF                                                           #number of Z points on Dfn grid
+        dZ/-                                                            #Z bin width
         nV_pitch/nL                                                     #number of points in V_tor/V dimension
+        dV_pitch/-                                                      #pitch bin width
+        nP/nPF                                                          #poloidal gyro-phase cell boundaries
+        dP/-                                                            #special dimension bin width - simulation specific (e.g. gyrophase bin width)
         nPP/                                                            #number of points in Pphi dimension
         nMU/                                                            #number of points in Mu dimension
         nPSI/nPSIF                                                      #number of poloidal flux surface contours
         nPOL/nPOLF                                                      #number of poloidal cells for volume calculation
-        nP/nPF                                                          #poloidal gyro-phase cell boundaries
-        dEh/                                                            #energy bin width
-        dVh/                                                            #velocity bin width
         dPPh/                                                           #Pphi bin width
         dMUh/                                                           #Mu bin width
         cpu_time/                                                       #
@@ -377,7 +382,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         R/R                                                             #R dimension of Dfn grid
         Z/Z                                                             #Z dimension of Dfn grid
         V_pitch/L                                                       #pitch dimension of Dfn grid
-        P/PG                                                            #special dimension - simulation specific
+        P/PG                                                            #special dimension - simulation specific (e.g. gyrophase)
         Ab                                                              #fast ion masses
         Zb                                                              #trace particle Z
         Pdep/E0                                                         #normalised injected power
@@ -385,7 +390,8 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
         E0                                                              #energy (plasma frame)
         EC                                                              #zeroth order critical energy
         rho                                                             #
-        siglg                                                           ##r.m.s. width of test src         
+        siglg                                                           #r.m.s. width of test src
+        dfn_index/-                                                     #reference for names of each dfn dimension         
     2D data
         psirz/psi_equil_h*PSI_sclh                                      #poloidal flux field [r,z] grid
         dVOL                                                            #
@@ -400,6 +406,34 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
 
 LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. The Dfn grid is in SI units [s^3/m^6] (one must integrate to get particles per bin for plotting).
     
+##### HDF5
+
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/LOCUST [HDF5](https://support.hdfgroup.org/HDF5/))
+
+    1D data
+
+        /sqrt(PSIn)
+        /density
+        /energy
+        /J(NBCD)-raw
+        /NBI-heating-power(TOT)
+        /NBI-heating-power(e-)
+        /NBI-heating-power(i1)
+        /NBI-heating-power(i1)A
+        /NBI-heating-power(i1)Z
+        /NBI-heating-power(i2)
+        /NBI-heating-power(i2)Z
+        /NBI-heating-power(i2)A
+        /P(para)
+        /P(perp)
+        /residual-angular-momentum-density
+        /torque-density(JxB-inst)
+        /torque-density(JxB-sweep)
+        /torque-density(coll)
+        /e-source
+
+LOCUST dumps some types of data to HDF5, which are opened via h5py.
+
 ### Processing Routines
 
 LOCUST_IO contains a few simple physics routines to process data (please refer to source code for instructions): 
@@ -416,8 +450,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
 
      process_output
 
-        dfn_integrate                            integrate a LOCUST dfn from s^3/m^6 to /bin
-        dfn_collapse                             collapse a LOCUST dfn to the specified dimensions by summing
+        dfn_transform                            transform and integrate distribution function to coordinate system
         particle_list_compression                opens and processes >>GB LOCUST particle lists in memory-efficient way
 
      plot_input

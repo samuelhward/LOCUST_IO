@@ -49,6 +49,7 @@ except:
 
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
+pi=np.pi
 
 
 
@@ -71,13 +72,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         must keep an eye on the double/single GPU formats specified in LOCUST's prec_mod.f90 to ensure Dfn is read correctly from LOCUST binary format
 
         final Dfn is s^3/m^6
-    """
 
-    '''
-    from scipy.io import FortranFile
-    import numpy as np
-    filepath='F_13-04-2018_21-50-19.101_TOTL.dfn'
-    '''
+        TODO have option to read ITER,wtot,WIPE etc from **args IFF they are supplied in **args (otherwise can guess)
+    """
 
     print("reading distribution function from LOCUST")
 
@@ -120,7 +117,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             input_data['dEh']=file.read_reals(dtype=np.float32)         
         else:
             #dVFh
-            input_data['dVh']=file.read_reals(dtype=np.float32) 
+            input_data['dV']=file.read_reals(dtype=np.float32) 
         
         #dPPh
         input_data['dPPh']=file.read_reals(dtype=np.float32) #dPPh    = P_phi1h - P_phi0h
@@ -164,6 +161,10 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                 #cpuTime
                 input_data['cpu_time']=file.read_reals(dtype=np.float64) #this may not be present in the file
     
+
+        #extra derived data
+        #input_data['dfn_index']=np.array(['E','V','P','MU']) #reference for names of each dfn dimension
+
     else:
 
         #32-char checksum
@@ -231,7 +232,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
             input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         
-        input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z
+        input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z - means plotting functions can assume index order x,y
         nEQ=file.read_ints() 
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
         input_data['nZ_1D']=np.array(nEQ[1]) #2D field grid Z dimension
@@ -272,7 +273,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         #V+dV/2 (nV long)
         input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
         #PG+dPG/2 (nP long)
-        input_data['P']=file.read_reals(dtype=np.float32)
+        input_data['P']=file.read_reals(dtype=np.float32) #special dimension - simulation specific (e.g. gyrophase)
 
         input_data['Ab']=file.read_reals(dtype=np.float32) #fast ion masses
         input_data['Ai_1']=file.read_reals(dtype=np.float32) #first value of Ab
@@ -316,6 +317,18 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             if cpu_time:
                 input_data['cpu_time']=file.read_reals(dtype=np.float64)
 
+        #extra derived data
+        input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
+        input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
+        input_data['dV']=np.array(input_data['V'][1]-input_data['V'][0]) #velocity bin width
+        input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
+        if input_data['nP']>1:
+            input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
+        else:
+            input_data['dP']=np.array(2.*pi)
+        input_data['E']=np.array((0.5*2.0*mass_neutron*input_data['V']**2)/e_charge) #calculate energy [eV]
+        input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
+   
     file.close()
 
     print("finished reading distribution function from LOCUST")
@@ -356,7 +369,7 @@ class Distribution_Function(base_output.LOCUST_output):
     notes:
         the properties field for the distribution_function can contain a dictionary of LOCUST flags present which dictate how the dfn is written to file
 
-        DoF for Fh (in order of array index)
+        DoF for Fh (in order of array index i.e. my_dfn['dfn'][P,V,V_pitch,R,Z])
             IDFTYP=1
                 P       - special, rare simulation specific (e.g. gyro phase dimension)
                 V       - velocity dimension

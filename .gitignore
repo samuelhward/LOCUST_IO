@@ -25,5 +25,11 @@
 #__pycache__ file
 __pycache__
 
+#environment load files
+*env
+
+#LOCUST run script files
+*run
+
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME

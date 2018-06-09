@@ -85,6 +85,7 @@ def get_next(obj):
 def dict_set(data,**kwargs):
     """
     generalised function (based upon safe_set) to set values in dictionary 'data' after checking source data exists 
+    
     notes:
     usage:
         dict_set(data,some_key=some_source,some_other_key=[1,2,3,4]) to set multiple values simultaneously
@@ -94,15 +95,16 @@ def dict_set(data,**kwargs):
     values=kwargs.values()
     
     for key,value in zip(keys,values): #loop through kwargs
-        if key is not None and value is not None: 
+        if key is not None and value is not None: #use 'is' since we may want to set data to 0
             data[key]=value
 
 def safe_set(target,source):
     """
     generalised function to set a target value to source if it exists
+    
     notes:
     """
-    if source is not None:
+    if source is not None: #use 'is' since we may want to set data to 0
         target=source
 
  

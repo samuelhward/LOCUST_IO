@@ -30,7 +30,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
     sys.exit(1)
 
-cmap_viridis=matplotlib.cm.get_cmap('viridis') #set colourmap
+cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 pi=np.pi #define pi
 
 ##################################################################
@@ -38,13 +38,14 @@ pi=np.pi #define pi
 
 
 
-def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False):
+def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=False):
     """
     plots number density
      
     notes:
         axis - selects x axis of plot
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:
@@ -55,19 +56,24 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False):
     if ax_flag is False: #if user has not externally supplied axes, generate them
         fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
+
     ax.plot(some_number_density[axis],some_number_density['n'])
+    ax.set_xlabel('poloidal flux [arbitrary units]')
+    ax.set_ylabel('number density [m^-3]')
+    ax.set_title(some_number_density.ID)
     
     if ax_flag is False:
         plt.show()
 
 
-def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False):
+def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
     """
     plots number density
 
     notes:
         axis - selects x axis of plot
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:
@@ -78,14 +84,18 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False):
     if ax_flag is False: #if user has not externally supplied axes, generate them
         fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
+   
     ax.plot(some_temperature[axis],some_temperature['T'])
+    ax.set_xlabel('poloidal flux [arbitrary units]')
+    ax.set_ylabel('temperature [eV]')
+    ax.set_title(some_temperature.ID)
 
     if ax_flag is False:
         plt.show()
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,ax=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots beam deposition
 
@@ -95,9 +105,11 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
         type - choose from scatter or histogram
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
-        LCFS - toggles whether plasma boundary is included
+        LCFS - toggles whether plasma boundary is included (requires equilibrium arguement)
         real_scale - sets r,z scale to real tokamak cross section
+        colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:
@@ -120,7 +132,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
     elif ndim==2: #plot 2D histograms
 
-        if axes==['R','Z']: #check for common axes
+        if axes==['R','Z']: #check for commonly-used axes
             if real_scale is True: #set x and y plot limits to real scales
                 ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -137,7 +149,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
                 ax.set_aspect('auto')
 
         if type=='histogram':
-            if some_dfn is not None: #bin according to equilibrium grid
+            if some_dfn is not None: #bin according to pre-defined grid
                 some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[some_dfn['R'],some_dfn['Z']])
             else:
                 some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
@@ -146,11 +158,11 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
             some_beam_depo_binned_y,some_beam_depo_binned_x=np.meshgrid(some_beam_depo_binned_y,some_beam_depo_binned_x)
             
-            if ax_flag is False:
-                ax.set_facecolor(cmap_viridis(np.amin(some_beam_depo_binned)))
-            mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap='viridis',vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            plt.colorbar(mesh)
+            ax.set_facecolor(colmap(np.amin(some_beam_depo_binned)))
+            mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap=colmap,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
+            if fig is not None:
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
@@ -185,19 +197,19 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
     if ax_flag is False:
         plt.show()
 
-
-
-
-def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,ax=False):
+def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
     """
     plots equilibrium
      
     notes:
         key - selects which data in equilibrium to plot
-        LCFS - toggles plasma boundary on/off in 2D plots
+        LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
         limiters - toggles limiters on/off in 2D plots
         number_contours - set fidelity of 2D contour plot
+        contour_fill - whether to use contour or contourf
+        colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:
@@ -229,17 +241,21 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         Z=some_equilibrium[key] #2D array (nR_1D,nZ_1D) of poloidal flux
         
         #2D plot
-        mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-        #mesh=ax.pcolormesh(X,Y,Z,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-        for c in mesh.collections: #for use in contourf
-            c.set_edgecolor("face")
+        if contour_fill is True:
+            mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            for c in mesh.collections: #for use in contourf
+                c.set_edgecolor("face")
+        else:
+            mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_contours),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+        #mesh=ax.pcolormesh(X,Y,Z,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
         #3D plot
         #ax=ax.axes(projection='3d')
         #ax.view_init(elev=90, azim=None) #rotate the camera
-        #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap='viridis',edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+        #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
         
-        plt.colorbar(mesh)
+        if fig is not None:
+            fig.colorbar(mesh,ax=ax,orientation='horizontal')
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -256,19 +272,21 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         plt.show()
 
 
-def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,ax=False):
+def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots random field lines for 'angle' radians around the tokamak
 
     notes:
         essentially uses the Euler method of integration
         axes - list of strings specifying which axes should be plotted
-        LCFS - show plasma boundary outline
+        LCFS - show plasma boundary outline (requires equilibrium arguement)
         number_field_lines - the number of field lines to plot
         angle - plot field line for this many radians around central column
         plot_full - choose whether each field line will trace the whole plasma topology (see below also)
         start_mark - add marker for start of the field line
+        colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
     
     if ax is False:
@@ -358,20 +376,24 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
         Y_points=R_points*np.sin(tor_points/R_points) 
 
         if plot_full is True: #if wanting to trace the flux surfaces, then plot in r,z plane
-            ax.plot(R_points,Z_points,color=cmap_viridis(np.random.uniform()))
+            ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
             if start_mark: 
                 ax.scatter(R_points[0],Z_points[0],color='red',s=10)
         else:
             
             if axes==['R','Z']: #poloidal plot
-                ax.plot(R_points,Z_points,color=cmap_viridis(np.random.uniform()))
+                ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
                 if start_mark: 
                     ax.scatter(X_points[0],Y_points[0],color='red',s=10)
                 if LCFS is True: #plot plasma boundary
                     ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
-            
+        
+                ax.set_xlabel('R [m]')
+                ax.set_ylabel('Z [m]')
+                ax.set_title(some_equilibrium.ID)
+
             elif axes==['X','Y']: #top-down plot
-                ax.plot(X_points,Y_points,color=cmap_viridis(np.random.uniform()))
+                ax.plot(X_points,Y_points,color=colmap(np.random.uniform()))
                 if start_mark: 
                     ax.scatter(X_points[0],Y_points[0],color='red',s=10)
                 if LCFS is True: #plot plasma boundary
@@ -379,6 +401,10 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                     plasma_min_R=np.min(some_equilibrium['lcfs_r'])
                     ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
                     ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-') 
+                
+                ax.set_xlabel('X [m]')
+                ax.set_ylabel('Y [m]')
+                ax.set_title(some_equilibrium.ID)
             
             else: #3D plot
                 if start_mark: 
@@ -389,19 +415,21 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                         y_points=some_equilibrium['lcfs_r']*np.sin(angle)
                         z_points=some_equilibrium['lcfs_z']
                         ax.plot(x_points,y_points,zs=z_points,color='m')
-                ax.plot(X_points,Y_points,zs=Z_points,color=cmap_viridis(np.random.uniform()))
+                ax.plot(X_points,Y_points,zs=Z_points,color=colmap(np.random.uniform()))
 
     if ax_flag is False:
         plt.show()
 
 
-def plot_B_field_stream(some_equilibrium,ax=False):
+def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False):
     """
     stream plot of magnetic field in R,Z plane
 
     notes:
         take transpose due to streamplot index convention
+        colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:
@@ -419,10 +447,15 @@ def plot_B_field_stream(some_equilibrium,ax=False):
         return
 
     B_mag=np.sqrt(some_equilibrium['B_field'][:,:,0]**2+some_equilibrium['B_field'][:,:,2]**2) #calculate poloidal field magnitude
-    strm = ax.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap='viridis')
-    plt.colorbar(strm.lines)
+    strm = ax.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
+    if fig is not None:
+        fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
     ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+
+    ax.set_xlabel('R [m]')
+    ax.set_ylabel('Z [m]')
+    ax.set_title(some_equilibrium.ID)
 
     if ax_flag is False:
         plt.show()

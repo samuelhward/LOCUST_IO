@@ -7,7 +7,7 @@ Samuel Ward
 processing routines for LOCUST output data
 ---
 notes:
-	https://stackoverflow.com/questions/9455111/python-define-method-outside-of-class-definition
+    https://stackoverflow.com/questions/9455111/python-define-method-outside-of-class-definition
 ---
 '''
 
@@ -23,79 +23,81 @@ except:
     sys.exit(1)
     
 pi=np.pi
+e_charge=1.6e-19 #define electron charge
+mass_neutron=1.67e-27 #define mass of neutron
 
 ##################################################################
 #Main Code
 
-def dfn_integrate(some_dfn,coordinates=['space','velocity']):
+def dfn_transform(some_dfn,axes=['R','Z']):
     """
-    integrate a distribution function to get particles/cell and real velocity
-
-    notes:
-        coordinates - specify the dimensions to integrate over
-        returns a Dfn array
-        LOCUST dfn is in SI units [s^3/m^6] by default
-
-        XXX need to add option for constants of motion Dfn moments (DFN_HEAD='H')
-    """
-
-    dfn=copy.deepcopy(some_dfn['dfn'])
-
-    if 'velocity' in coordinates:
-        for p in range(int(some_dfn['nP'])):
-            for v in range(int(some_dfn['nV'])):
-                dfn[p,v,:,:,:]*=some_dfn['V'][v]**2
-
-        if some_dfn['nP']>1:
-            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['V_pitch'][1]-some_dfn['V_pitch'][0])*(some_dfn['P'][1]-some_dfn['P'][0])
-        else:
-            dfn*=(some_dfn['V'][1]-some_dfn['V'][0])*(some_dfn['V_pitch'][1]-some_dfn['V_pitch'][0])*2.*pi
-
-    if 'space' in coordinates:
-        for r in range(int(some_dfn['nR'])):
-            if some_dfn['nP']>1:
-                dfn[:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])
-            else:
-                dfn[:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*(some_dfn['R'][1]-some_dfn['R'][0])*(some_dfn['Z'][1]-some_dfn['Z'][0])
-
-    return dfn
-
-def dfn_collapse(some_dfn,coordinates=['R','Z']):
-    """
-    integrate and collapse the dfn to the supplied to coordinates
-
-    notes:
-        coordinates - specify the remaining degress of freedom
-        returns the Dfn array
-    """
-
-    dfn=copy.deepcopy(some_dfn['dfn'])
-
-    coordinate_indices=[] #collapse dfn along specified axes
-    if 'Z' not in coordinates: #if Z is not in the coordinates we want to keep
-        coordinate_indices.extend([4]) #then mark it as a dimension to integrate over
-    if 'R' not in coordinates:
-        coordinate_indices.extend([3]) #these must stay in this order
-    if 'V_pitch' not in coordinates: #pitch
-        coordinate_indices.extend([2]) 
-    if 'V' not in coordinates: #velocity
-        coordinate_indices.extend([1])
-    if 'P' not in coordinates: #special s
-        coordinate_indices.extend([0])
-
-    for coordinate in coordinate_indices: #axis denotes which coordinate will be collapsed, so go in descending to get array shape correct
-        dfn=np.sum(dfn,axis=coordinate)
+    transforms and integrates the distribution function according to pre-defined configurations 
     
+    args:
+        axes - the dimensions over which to transform the DFN to
+    notes:
+        remember dimensions of dfn are my_dfn['dfn'][P,V,V_pitch,R,Z]
+        always assumes the bin widths for a given dimension are constant
+        assumes deuterium in energy conversion to energy space
+        always assumes toroidal symmetry (no toroidal dimension in dfn)
+        if an array of indices is given, then slice the dfn accordingly and return without any manipulation
+            note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
+
+    axes options:
+        R,Z - integrate over pitch, gyrophase, velocity and toroidal angle [m]^-2
+        E,V_pitch - [eV]^-1[pitch bin]^-1  
+    """
+
+    dfn=copy.deepcopy(some_dfn) #make deep copy here since functions designed to repeatedly take fresh DFNs would otherwise permanently change it
+
+    #begin list of specific options
+
+    if axes==['R','Z']:
+        #integrating over the velocity space
+        for v in range(int(some_dfn['nV'])):
+            dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
+        dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
+
+        #integrating along toroidal coordinate
+        for r in range(int(some_dfn['nR'])):
+            dfn['dfn'][:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]#include *some_dfn['dR']*some_dfn['dZ'] if integrating to get number of particles per bin
+
+        #then need to collapse over the first 3 dimensions which we do not need
+        for counter in range(3):
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+
+
+    elif axes==['E','V_pitch']:
+        #integrating over gyrophase and applying velocity space Jacobian
+        for v in range(int(some_dfn['nV'])):
+            dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]
+        dfn['dfn']*=some_dfn['dP']*e_charge/(2.*mass_neutron)
+
+        #integrating over all real space
+        for r in range(int(some_dfn['nR'])):
+            dfn['dfn'][:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*some_dfn['dR']*some_dfn['dZ']
+
+        #then need to collapse over the unwanted coordinates
+        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+
+    elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice
+        dfn['dfn']=dfn['dfn'][tuple(axes)]
+        #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+    else:
+        print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
     return dfn
 
 def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor','V_Z','status_flag'],dump=False):
     """
     opens huge particle lists in memory-efficient way
 
-    notes:
+    args:
         coordinates - the particle coordinates to read in
         dump - toggle to re-dump to ASCII afterwards (NOTE: NOT YET IMPLEMENTED)
-
+    notes:
         this code will break if the file line length > number of entries for each coordinate
         currently only reads the first phc values i.e. phc index = 0  
     """
