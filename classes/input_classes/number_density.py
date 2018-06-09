@@ -249,7 +249,7 @@ class Number_Density(base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties=properties
-                self.data=read_number_density_IDS(self.shot,self.run,self.properties)
+                self.data=read_number_density_IDS(self.shot,self.run,**self.properties)
  
         else:
             print("cannot read_data - please specify a compatible data_format (LOCUST/IDS)\n")            
@@ -274,7 +274,7 @@ class Number_Density(base_input.LOCUST_input):
          
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
-                dump_number_density_IDS(self.ID,self.data,shot,run,self.properties)
+                dump_number_density_IDS(self.ID,self.data,shot,run,**self.properties)
  
         else:
             print("cannot dump_data - please specify a compatible data_format (LOCUST/IDS)\n")
