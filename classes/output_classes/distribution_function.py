@@ -50,12 +50,13 @@ except:
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 pi=np.pi
-
+e_charge=1.6e-19 #define electron charge
+mass_neutron=1.67e-27 #define mass of neutron
 
 
 ################################################################## Distribution_Function functions
 
-def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,TEST=False,EBASE=False,dfn_s=True,Jh=True,Jh_s=True,cpu_time=True,**args):
+def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,TEST=False,EBASE=False,dfn_s=True,Jh=True,Jh_s=True,cpu_time=True,**properties):
     """
     reads distribution function stored in unformatted fortran file
 
@@ -336,7 +337,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
 
 
 
-def dump_distribution_function_LOCUST(output_data,output_filepath): 
+def dump_distribution_function_LOCUST(output_data,filepath,**properties): 
     """
     writes distribution function to LOCUST
     
@@ -345,6 +346,8 @@ def dump_distribution_function_LOCUST(output_data,output_filepath):
     """
 
     pass
+
+
 
 ################################################################## Distribution_Function class
 
@@ -380,7 +383,7 @@ class Distribution_Function(base_output.LOCUST_output):
 
     LOCUST_output_type='distribution_function'
 
-    def read_data(self,data_format=None,input_filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read distribution function from file 
 
@@ -391,17 +394,17 @@ class Distribution_Function(base_output.LOCUST_output):
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - input_filename required\n",input_filename): #must check we have all info required for reading GEQDSKs
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading GEQDSKs
 
                 self.data_format=data_format #add to the member data
-                self.input_filename=input_filename
-                self.input_filepath=support.dir_output_files+input_filename
-                self.properties=properties
-                self.data=read_distribution_function_LOCUST(self.input_filepath,**properties) #read the file
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_distribution_function_LOCUST(self.filepath,**properties) #read the file
         else:
             print("cannot read_data - please specify a compatible data_format (LOCUST)\n")            
 
-    def dump_data(self,data_format=None,output_filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         write distribution function to file
 
@@ -411,9 +414,9 @@ class Distribution_Function(base_output.LOCUST_output):
             pass
         
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot dump_data to LOCUST - output_filename required\n",output_filename):
-                output_filepath=support.dir_output_files+output_filename
-                dump_distribution_function_LOCUST(self.data,output_filepath)
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot dump_data to LOCUST - filename required\n",filename):
+                filepath=support.dir_output_files+filename
+                dump_distribution_function_LOCUST(self.data,filepath,**properties)
         else:
             print("cannot dump_data - please specify a compatible data_format (LOCUST)\n")
 

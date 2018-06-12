@@ -73,7 +73,7 @@ class LOCUST_output:
 
         self.data[key]=value
 
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): #bad practice to change overridden method signatures, so retain all method arguments             
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties): #bad practice to change overridden method signatures, so retain all method arguments             
         """
         read data to be overloaded in all children classes
         """

@@ -58,7 +58,7 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
         ax = fig.add_subplot(111)
 
     ax.plot(some_number_density[axis],some_number_density['n'])
-    ax.set_xlabel('poloidal flux [arbitrary units]')
+    ax.set_xlabel('normalised poloidal flux')
     ax.set_ylabel('number density [m^-3]')
     ax.set_title(some_number_density.ID)
     
@@ -86,7 +86,7 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
         ax = fig.add_subplot(111)
    
     ax.plot(some_temperature[axis],some_temperature['T'])
-    ax.set_xlabel('poloidal flux [arbitrary units]')
+    ax.set_xlabel('normalise poloidal flux')
     ax.set_ylabel('temperature [eV]')
     ax.set_title(some_temperature.ID)
 
