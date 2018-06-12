@@ -296,7 +296,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
 
         #check resulting dimensionality of distribution function
         if dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-            pass
+            pass #XXX incomplete
         elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
 
             if len(axes)==2: #user has supplied list of chars to denote axes

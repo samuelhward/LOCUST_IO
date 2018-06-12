@@ -59,7 +59,7 @@ Table of Contents
 Works with:
 
 * IMAS ≥3.16.0
-* Python ≥v3.5.1
+* Python ≥v3.6
     * copy, re, itertools, math and time modules in the standard library 
     * numpy ≥v1.14.2
     * matplotlib ≥v2.0.0
@@ -123,7 +123,7 @@ As well as the included *example_project/*, some basic usage is outlined below:
 import context
 from classes.input_classes.equilibrium import Equilibrium
 
-my_equilibrium=Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',input_filename='some.eqdsk') 
+my_equilibrium=Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',filename='some.eqdsk') 
 #my_equilibrium now holds all the data in one object
 #take a quick look at the equilibrium and its data
 my_equilibrium.look()                               
@@ -132,7 +132,7 @@ my_equilibrium.look()
 #to initialise empty equilibrium to fill later with the read_data() (must always specify an ID):
 my_equilibrium=Equilibrium('some_identification') 
 #read data from GEQDSK
-my_equilibrium.read_data(data_format='GEQDSK',input_filename='some.eqdsk')
+my_equilibrium.read_data(data_format='GEQDSK',filename='some.eqdsk')
 #dump equilibrium to IDS format 
 my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) 
 

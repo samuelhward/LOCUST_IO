@@ -269,7 +269,7 @@ class Temperature(base_input.LOCUST_input):
         elif data_format=='LOCUST':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_temperature_ASCII(self.data,filepath)
+                dump_temperature_LOCUST(self.data,filepath)
          
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
