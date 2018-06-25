@@ -56,10 +56,16 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
     else:
         ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
     
     ndim=len(axes)
-    if ax_flag is False: #if user has not externally supplied axes, generate them #initialise plot
-        fig = plt.figure() #initialise plot
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
         ax = fig.add_subplot(111)
     ax.set_aspect('equal')
 
@@ -135,7 +141,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         ax.set_zlabel(axes[2])
         ax.set_title(some_orbits.ID)
 
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -163,8 +169,15 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
     else:
         ax_flag=True
 
-    if ax_flag is False: #if user has not externally supplied axes, generate them #initialise plot
-        fig = plt.figure() #initialise plot
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
         ax = fig.add_subplot(111)
 
     ndim=len(axes)
@@ -213,8 +226,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.set_facecolor(colmap(np.amin(some_final_particle_list_binned)))
                 mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap=colmap,vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
-                if fig is not None:
-                    fig.colorbar(mesh, ax=ax,orientation='horizontal')
+                fig.colorbar(mesh, ax=ax,orientation='horizontal')
 
             elif type=='scatter':
                 ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap(np.random.uniform()),marker='x',s=1)
@@ -246,7 +258,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         ax.set_ylabel(axes[1])
         ax.set_title(some_final_particle_list.ID)
             
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -254,17 +266,17 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     """
     plot the distribution function
 
+    notes:
+        if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
     args:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
         key - select which data to plot
-        axes - define plot axes in x,y order
+        axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
         LCFS - show plasma boundary outline (requires equilibrium arguement)
         real_scale - plot to Tokamak scale
         colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
         fig - take input fig (can be used to add colourbars etc)
-        
-        assumes that the dfn data has not been collapsed yet
     """
 
     if ax is False:
@@ -272,14 +284,21 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     else:
         ax_flag=True
 
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+
     #0D data
     if some_distribution_function[key].ndim==0:
         print(some_distribution_function[key])
         return
     
     #>0D data is plottable
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
 
     #1D data
@@ -320,8 +339,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
             '''for c in mesh.collections: #for use in contourf
                 c.set_edgecolor("face")'''    
-            if fig is not None:    
-                fig.colorbar(mesh, ax=ax,orientation='horizontal')
+            fig.colorbar(mesh,ax=ax,orientation='horizontal')
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
             ax.set_title(some_distribution_function.ID)
@@ -335,7 +353,10 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             if LCFS is True: #plot plasma boundary
                 ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
             
-    if ax_flag is False:
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 #################################

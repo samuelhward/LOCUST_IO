@@ -53,8 +53,14 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
     else:
         ax_flag=True
 
+    if fig is False:
+        fig_flag=False
+    else:
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
 
     ax.plot(some_number_density[axis],some_number_density['n'])
@@ -62,7 +68,7 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
     ax.set_ylabel('number density [m^-3]')
     ax.set_title(some_number_density.ID)
     
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -81,8 +87,10 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
     else:
         ax_flag=True
 
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
    
     ax.plot(some_temperature[axis],some_temperature['T'])
@@ -90,7 +98,7 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
     ax.set_ylabel('temperature [eV]')
     ax.set_title(some_temperature.ID)
 
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -117,8 +125,14 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
     else:
         ax_flag=True
 
+    if fig is False:
+        fig_flag=False
+    else:
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
 
     ndim=len(axes) #infer how many dimensions user wants to plot
@@ -161,8 +175,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
             ax.set_facecolor(colmap(np.amin(some_beam_depo_binned)))
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap=colmap,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            if fig is not None:
-                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
@@ -194,7 +207,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
         ax.set_ylabel(axes[1])
         ax.set_title(some_beam_depo.ID)
         
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
@@ -217,14 +230,20 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
     else:
         ax_flag=True
 
+    if fig is False:
+        fig_flag=False
+    else:
+
     #0D data
     if some_equilibrium[key].ndim==0:
         print(some_equilibrium[key])
         return
     
     #>0D data is plottable
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
 
     #1D data
@@ -254,8 +273,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         #ax.view_init(elev=90, azim=None) #rotate the camera
         #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
         
-        if fig is not None:
-            fig.colorbar(mesh,ax=ax,orientation='horizontal')
+        fig.colorbar(mesh,ax=ax,orientation='horizontal')
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -268,7 +286,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         if LCFS is True:
             ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -294,12 +312,18 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
     else:
         ax_flag=True
 
+    if fig is False:
+        fig_flag=False
+    else:
+
     if 'B_field' not in some_equilibrium.data: #check we have a B field first
         print("ERROR: 'B_field' missing in equilibrium object (calculate first with B_calc)")
         return
 
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
     if ax_flag is False: #if user has not externally supplied axes, generate them
-        fig = plt.figure() #initialise plot
         ax = fig.add_subplot(111)
     ax.set_aspect('equal')
     
@@ -417,7 +441,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                         ax.plot(x_points,y_points,zs=z_points,color='m')
                 ax.plot(X_points,Y_points,zs=Z_points,color=colmap(np.random.uniform()))
 
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
 
 
@@ -437,8 +461,14 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
     else:
         ax_flag=True
 
-    if ax_flag is False: #if user has not externally supplied axes, generate them #initialise plot
-        fig = plt.figure() #initialise plot
+    if fig is False:
+        fig_flag=False
+    else:
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
         ax = fig.add_subplot(111)
     ax.set_aspect('equal')
         
@@ -448,8 +478,8 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
 
     B_mag=np.sqrt(some_equilibrium['B_field'][:,:,0]**2+some_equilibrium['B_field'][:,:,2]**2) #calculate poloidal field magnitude
     strm = ax.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
-    if fig is not None:
-        fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
+    
+    fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
     ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
 
@@ -457,7 +487,7 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
     ax.set_ylabel('Z [m]')
     ax.set_title(some_equilibrium.ID)
 
-    if ax_flag is False:
+    if ax_flag is False and fig_flag is False:
         plt.show()
     
 
