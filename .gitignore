@@ -31,5 +31,8 @@ __pycache__
 #LOCUST run script files
 *run
 
+#changes file
+changes
+
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME
