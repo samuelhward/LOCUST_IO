@@ -23,8 +23,8 @@ except:
     sys.exit(1)
     
 pi=np.pi
-e_charge=1.6e-19 #define electron charge
-mass_neutron=1.67e-27 #define mass of neutron
+e_charge=1.602e-19 #define electron charge
+mass_neutron=1.661e-27 #define mass of neutron
 
 ##################################################################
 #Main Code
@@ -58,10 +58,6 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
         dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
 
-        #integrating along toroidal coordinate
-        for r in range(int(some_dfn['nR'])):
-            dfn['dfn'][:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]#include *some_dfn['dR']*some_dfn['dZ'] if integrating to get number of particles per bin
-
         #then need to collapse over the first 3 dimensions which we do not need
         for counter in range(3):
             dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
@@ -75,7 +71,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
         #integrating over all real space
         for r in range(int(some_dfn['nR'])):
-            dfn['dfn'][:,:,:,r,:]*=2.0*pi*some_dfn['R'][r]*some_dfn['dR']*some_dfn['dZ']
+            dfn['dfn'][:,:,:,r,:]*=some_dfn['R'][r]*2.0*pi*some_dfn['dR']*some_dfn['dZ']
 
         #then need to collapse over the unwanted coordinates
         dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
