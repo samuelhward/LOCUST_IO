@@ -182,7 +182,8 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
             ax.set_facecolor(colmap(np.amin(some_beam_depo_binned)))
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap=colmap,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
@@ -283,7 +284,8 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         #ax.view_init(elev=90, azim=None) #rotate the camera
         #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
         
-        fig.colorbar(mesh,ax=ax,orientation='horizontal')
+        if fig_flag is False:    
+            fig.colorbar(mesh,ax=ax,orientation='horizontal')
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -491,8 +493,9 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
 
     B_mag=np.sqrt(some_equilibrium['B_field'][:,:,0]**2+some_equilibrium['B_field'][:,:,2]**2) #calculate poloidal field magnitude
     strm = ax.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
-    
-    fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
+
+    if fig_flag is False:    
+        fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
     ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
 

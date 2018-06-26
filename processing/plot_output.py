@@ -227,8 +227,9 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.set_facecolor(colmap(np.amin(some_final_particle_list_binned)))
                 mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap=colmap,vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
-                fig.colorbar(mesh, ax=ax,orientation='horizontal')
-
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                    
             elif type=='scatter':
                 ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap(np.random.uniform()),marker='x',s=1)
 
@@ -345,8 +346,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
             #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
             '''for c in mesh.collections: #for use in contourf
-                c.set_edgecolor("face")'''    
-            fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                c.set_edgecolor("face")'''
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
             ax.set_title(some_distribution_function.ID)
