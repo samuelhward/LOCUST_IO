@@ -317,6 +317,8 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         #transform distribution function to the coordinates we want
         if transform is True:
             dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
+        else:
+            dfn_copy=copy.deepcopy(some_distribution_function)
 
         #check resulting dimensionality of distribution function
         if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
