@@ -25,9 +25,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import process_input
+    from processing import utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
@@ -213,8 +213,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
     """
     plots equilibrium
-     
+    
     notes:
+        
+    args:
         key - selects which data in equilibrium to plot
         LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
         limiters - toggles limiters on/off in 2D plots
@@ -296,6 +298,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
 
     notes:
         essentially uses the Euler method of integration
+    args:
         axes - list of strings specifying which axes should be plotted
         LCFS - show plasma boundary outline (requires equilibrium arguement)
         number_field_lines - the number of field lines to plot
@@ -349,9 +352,9 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
 
 
     print('plot_B_field_line - generating B field interpolators')
-    B_field_R_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
-    B_field_Z_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
-    B_field_tor_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
+    B_field_R_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
+    B_field_Z_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
+    B_field_tor_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
     print('plot_B_field_line - finished generating B field interpolators')
 
 
