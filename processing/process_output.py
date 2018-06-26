@@ -108,8 +108,8 @@ def dfn_crop(some_dfn,**kwargs):
 
             dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
 
-            i=(np.where((value[0]<dfn[key])&(dfn[key]<value[1]))) #get new indices which satisfy range
-
+            i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
+            i=i[0] #get first element of returned tuple
             dfn[key]=dfn[key][i] #crop 1D arrays accordingly
 
             dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
