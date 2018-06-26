@@ -54,7 +54,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     if axes==['R','Z']:
         #integrating over the velocity space
-        for v in range(int(some_dfn['nV'])):
+        for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
         dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
 
@@ -65,12 +65,12 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     elif axes==['E','V_pitch']:
         #integrating over gyrophase and applying velocity space Jacobian
-        for v in range(int(some_dfn['nV'])):
+        for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]
         dfn['dfn']*=some_dfn['dP']*e_charge/(2.*mass_neutron)
 
         #integrating over all real space
-        for r in range(int(some_dfn['nR'])):
+        for r in range(len(some_dfn['R'])):
             dfn['dfn'][:,:,:,r,:]*=some_dfn['R'][r]*2.0*pi*some_dfn['dR']*some_dfn['dZ']
 
         #then need to collapse over the unwanted coordinates
@@ -92,6 +92,7 @@ def dfn_crop(some_dfn,**kwargs):
     """
     notes:
         assumes full 3D dfn
+        warning! cropping by R does not reset nR for example - must be done manually
     args:
         kwargs - axes and their limits e.g R=[0,1] crops dfn between 0<R<1
     """
