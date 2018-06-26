@@ -64,7 +64,7 @@ Works with:
     * numpy ≥v1.14.2
     * matplotlib ≥v2.0.0
     * scipy ≥v0.17.0
-    * h5py
+    * h5py ≥2.6.0
 
 
 
