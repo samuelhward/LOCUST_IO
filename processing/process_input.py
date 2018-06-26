@@ -16,12 +16,16 @@ notes:
 
 try:
     import random
-    import scipy.interpolate
     import scipy.integrate
     import numpy as np
     import matplotlib.pyplot as plt
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
+    from processing import utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
     
 pi=np.pi
@@ -29,50 +33,6 @@ pi=np.pi
 
 ###################################################################################################
 #Main Code
-
-
-################################################################## Supporting functions
-
-def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS'):
-    """
-    generate a 2D grid interpolator
-
-    notes:
-        keep as separate functions so can freely swap out interpolation method
-        X_axis, Y_axis are 1D grid axes
-        RBF - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
-            - high memory overhead, most accurate
-        RBS - https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline
-              https://scipython.com/book/chapter-8-scipy/examples/two-dimensional-interpolation-with-scipyinterpolaterectbivariatespline/
-    """
-    
-    if type=='RBF':
-        Y_grid,X_grid=np.meshgrid(Y_axis,X_axis) #swap since things are defined r,z 
-        interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function='cubic',smooth=0)
-    
-    elif type=='RBS':
-        interpolator=scipy.interpolate.RectBivariateSpline(X_axis,Y_axis,Z_grid) #normally order is other way in RBS but I have swapped my axes
-
-    return interpolator
-
-    
-
-def interpolate_1D(X_axis,Y_axis):
-    """
-    generate a 1D line interpolator
-
-    notes:
-        keep as separate functions so can freely swap out interpolation method
-        uses Rbf - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
-    """
-
-    interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function='cubic',smooth=0)
-
-    return interpolator
-
-
-
-
 
 ################################################################## Specific functions
 
@@ -130,7 +90,7 @@ def fpolrz_calc(some_equilibrium):
     print("fpolrz_calc - calculating 2D flux function")
 
     fpolrz=np.zeros((some_equilibrium['nR_1D'],some_equilibrium['nZ_1D'])) #initialise 2D grid
-    fpolrz_interpolator=interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
+    fpolrz_interpolator=utils.interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
 
     for w in np.arange(some_equilibrium['nR_1D']): #loop over 2D grid
         for h in np.arange(some_equilibrium['nZ_1D']):
@@ -242,9 +202,9 @@ def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1
             speed_trim=np.delete(speed,escapees)
 
             print('transform_marker_velocities - generating B field interpolators')
-            B_field_r_interpolator=interpolate_2D(R_1D,Z_1D,B_field[:,:,0]) #generate the interpolator functions
-            B_field_tor_interpolator=interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
-            B_field_z_interpolator=interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
+            B_field_r_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,0]) #generate the interpolator functions
+            B_field_tor_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
+            B_field_z_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
             print('transform_marker_velocities - interpolating B field to particle positions')
             B_field_r=B_field_r_interpolator(r_trim,z_trim) #interpolate B field components to each particle 
             B_field_tor=B_field_tor_interpolator(r_trim,z_trim)

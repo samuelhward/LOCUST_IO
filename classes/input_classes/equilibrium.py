@@ -33,9 +33,9 @@ except:
     raise ImportError("ERROR: IMAS module could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from classes import utils
+    from processing import utils
 except:
-    raise ImportError("ERROR: utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_input 

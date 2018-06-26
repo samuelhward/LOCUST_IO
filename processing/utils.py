@@ -24,6 +24,7 @@ try:
     import re
     import time
     import itertools
+    import scipy.interpolate
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -163,3 +164,39 @@ def angle_pol(R_major_width,R,Z):
 
     return angle
 
+def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS'):
+    """
+    generate a 2D grid interpolator
+
+    notes:
+        keep as separate functions so can freely swap out interpolation method
+        X_axis, Y_axis are 1D grid axes
+        RBF - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
+            - high memory overhead, most accurate
+        RBS - https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline
+              https://scipython.com/book/chapter-8-scipy/examples/two-dimensional-interpolation-with-scipyinterpolaterectbivariatespline/
+    """
+    
+    if type=='RBF':
+        Y_grid,X_grid=np.meshgrid(Y_axis,X_axis) #swap since things are defined r,z 
+        interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function='cubic',smooth=0)
+    
+    elif type=='RBS':
+        interpolator=scipy.interpolate.RectBivariateSpline(X_axis,Y_axis,Z_grid) #normally order is other way in RBS but I have swapped my axes
+
+    return interpolator
+
+    
+
+def interpolate_1D(X_axis,Y_axis):
+    """
+    generate a 1D line interpolator
+
+    notes:
+        keep as separate functions so can freely swap out interpolation method
+        uses Rbf - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
+    """
+
+    interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function='cubic',smooth=0)
+
+    return interpolator

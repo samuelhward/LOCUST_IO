@@ -86,6 +86,38 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     return dfn
 
+def dfn_crop(some_dfn,**kwargs):
+    """
+    notes:
+        assumes full 3D dfn
+    args:
+        kwargs - axes and their limits e.g R=[0,1] crops dfn between 0<R<1
+    """
+
+    dfn=copy.deepcopy(some_dfn)
+
+    keys=list(kwargs.keys())
+    values=list(kwargs.values())
+
+    for key,value in zip(keys,values):
+        if key not in dfn['dfn_index']:
+            print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
+        else:
+
+            dimension_to_edit=dfn['dfn_index'].index(key) #figure out which dimension we are cropping over
+
+            i=(np.where((value[0]<dfn[key])&(dfn[key]<value[1]))) #get new indices which satisfy range
+
+            dfn[key]=dfn[key][i] #crop 1D arrays accordingly
+
+            dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
+
+            dfn['dfn']=dfn['dfn'][i,:,:,:,:] #crop dfn
+
+            dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
+
+    return dfn
+
 def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor','V_Z','status_flag'],dump=False):
     """
     opens huge particle lists in memory-efficient way
