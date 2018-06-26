@@ -106,7 +106,7 @@ def dfn_crop(some_dfn,**kwargs):
             print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
         else:
 
-            dimension_to_edit=dfn['dfn_index'].index(key) #figure out which dimension we are cropping over
+            dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
 
             i=(np.where((value[0]<dfn[key])&(dfn[key]<value[1]))) #get new indices which satisfy range
 
