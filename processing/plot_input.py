@@ -56,6 +56,7 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -86,6 +87,11 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
     else:
         ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -128,6 +134,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -235,6 +242,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     #0D data
     if some_equilibrium[key].ndim==0:
@@ -318,6 +326,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if 'B_field' not in some_equilibrium.data: #check we have a B field first
         print("ERROR: 'B_field' missing in equilibrium object (calculate first with B_calc)")
@@ -467,6 +476,7 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate

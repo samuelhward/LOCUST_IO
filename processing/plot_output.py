@@ -60,6 +60,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
     
     ndim=len(axes)
     if fig_flag is False:
@@ -262,12 +263,13 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
     """
     plot the distribution function
 
     notes:
         if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
+        if user supplies full set of indices, code assumes those slices are dimension to plot over i.e. please crop before plotting
     args:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
         key - select which data to plot
@@ -275,6 +277,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         LCFS - show plasma boundary outline (requires equilibrium arguement)
         real_scale - plot to Tokamak scale
         colmap - set the colour map (use get_cmap names)
+        transform - set to False if supplied dfn has already been cut down to correct dimensions
         ax - take input axes (can be used to stack plots)
         fig - take input fig (can be used to add colourbars etc)
     """
@@ -311,17 +314,21 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     elif key=='dfn':
         
         #transform distribution function to the coordinates we want
-        dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
+        if transform is True:
+            dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
 
         #check resulting dimensionality of distribution function
-        if dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
+        if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
+            print(dfn_copy['dfn'])
+        elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
             pass #XXX incomplete
         elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
 
-            if len(axes)==2: #user has supplied list of chars to denote axes
+            if all(isinstance(axis,type('_')) for axis in axes): #user has supplied list of chars to denote axes
                 pass
             else: #user has supplied full list of indices to slice DFN -> need to determine convetional axes names  
-                axes=dfn_copy['dfn_index'][np.where([isinstance(index,slice) for index in axes])] #do this by assuming that user slices over dimensions they want to plot
+                axes=dfn_copy['dfn_index'][np.where([isinstance(axis,slice) for axis in axes])] #do this by assuming that user slices over dimensions they want to plot
+                #the above line works because dfn_index is a numpy array of strings - would break for lists
 
             if real_scale is True: #set x and y plot limits to real scales
                 ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
@@ -355,6 +362,10 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
+
+        else: #user has not supplied >2D dfn
+            print("ERROR: plot_distribution_function given >2D DFN - please reduce dimensionality")
+            return 
 
     if ax_flag is False and fig_flag is False:
         plt.show()

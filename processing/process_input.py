@@ -246,7 +246,7 @@ def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1
 
         else:
             print("ERROR: insufficient data supplied to transform_marker_velocities for {} conversion".format(conversion))
-
+            return
 
 #################################
 

@@ -78,6 +78,8 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
 
+    #general option
+    
     elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice
         dfn['dfn']=dfn['dfn'][tuple(axes)]
         #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
@@ -111,9 +113,7 @@ def dfn_crop(some_dfn,**kwargs):
             dfn[key]=dfn[key][i] #crop 1D arrays accordingly
 
             dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
-
             dfn['dfn']=dfn['dfn'][i,:,:,:,:] #crop dfn
-
             dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
     return dfn
