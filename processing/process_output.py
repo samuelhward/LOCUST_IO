@@ -53,27 +53,27 @@ def dfn_transform(some_dfn,axes=['R','Z']):
     #begin list of specific options
 
     if axes==['R','Z']:
-        #integrating over the velocity space
+        #apply velocity space Jacobian
         for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
         dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
 
-        #then need to collapse over the first 3 dimensions which we do not need
+        #then need to integrate over the first 3 dimensions which we do not need
         for counter in range(3):
             dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
 
 
     elif axes==['E','V_pitch']:
-        #integrating over gyrophase and applying velocity space Jacobian
+        #applying velocity space and gyrophase Jacobian
         for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]
         dfn['dfn']*=some_dfn['dP']*e_charge/(2.*mass_neutron)
 
-        #integrating over all real space
+        #applying real space Jacobian and integrate over toroidal angle
         for r in range(len(some_dfn['R'])):
             dfn['dfn'][:,:,:,r,:]*=some_dfn['R'][r]*2.0*pi*some_dfn['dR']*some_dfn['dZ']
 
-        #then need to collapse over the unwanted coordinates
+        #then need to integrate over the unwanted coordinates
         dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
