@@ -119,15 +119,8 @@ def dump_beam_depo_LOCUST(output_data,filepath):
         file.write("{}\n".format(utils.fortran_string(1.0,13)))
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
- 
-            R_out=output_data['R'][this_particle] #briefly set to a temporary variable to improve readability
-            phi_out=output_data['phi'][this_particle]
-            Z_out=output_data['Z'][this_particle]
-            V_R_out=output_data['V_R'][this_particle]
-            V_tor_out=output_data['V_tor'][this_particle]
-            V_Z_out=output_data['V_Z'][this_particle]
- 
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(R_out,14,6),phi=utils.fortran_string(phi_out,14,6),z=utils.fortran_string(Z_out,14,6),v_r=utils.fortran_string(V_R_out,14,6),v_tor=utils.fortran_string(V_tor_out,14,6),v_z=utils.fortran_string(V_Z_out,14,6)))
+
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
     
     print("finished writing beam deposition to LOCUST") 
  
@@ -291,6 +284,11 @@ def read_beam_depo_TRANSP(filepath):
     print("finished reading beam deposition from TRANSP format")
 
     return input_data
+
+def dump_beam_depo_ASCOT(filepath):
+    """
+    dumps birth profile
+    """
 
 
 ################################################################## Beam_Deposition class
