@@ -68,16 +68,17 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
     
     if ax_flag is False: #if user has not externally supplied axes, generate them
         ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
 
     if ndim==2: #2D plotting
         
         if axes==['R','Z']: #if we're plotting along poloidal projection, then give options to include full cross-section and plasma boundary
            
             if real_scale is True:
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
-            
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+
             if LCFS is True: #plot plasma boundary
                 ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
@@ -89,8 +90,10 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         elif axes==['X','Y']: #plotting top-down
             
             if real_scale is True:
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
 
             if LCFS is True: #plot concentric rings to show inboard/outboard plasma boundaries
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
@@ -117,9 +120,11 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
             ax = fig.gca(projection='3d')
 
         if real_scale:
-            ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+            if some_equilibrium:
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+            ax.set_aspect('equal')
 
         if LCFS is True: #plot periodic poloidal cross-sections in 3D 
             for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
@@ -197,16 +202,18 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         if axes==['R','Z']: #check for common axes
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -235,8 +242,9 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         if axes==['R','Z']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -245,8 +253,9 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -334,8 +343,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
                 #the above line works because dfn_index is a numpy array of strings - would break for lists
 
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                    ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -356,8 +366,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             ax.set_title(some_distribution_function.ID)
             
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                    ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
