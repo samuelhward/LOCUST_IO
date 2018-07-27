@@ -155,16 +155,18 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
         if axes==['R','Z']: #check for commonly-used axes
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -190,8 +192,9 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
         if axes==['R','Z']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -200,8 +203,9 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
