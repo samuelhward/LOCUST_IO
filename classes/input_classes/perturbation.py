@@ -30,8 +30,7 @@ except:
 try:
     import imas 
 except:
-    raise ImportError("ERROR: IMAS module could not be imported!\nreturning\n")
-    sys.exit(1)
+    raise ImportError("WARNING: IMAS module could not be imported!\nreturning\n")
 try:
     from processing import utils
 except:
@@ -66,11 +65,7 @@ def read_perturbation_MARSF(filepath):
     print("reading MARSF perturbation")
 
     with open(filepath,'r') as file:
-         
-        lines=file.readlines() #return lines as list
-        if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_perturbation_MARSF() cannot read from "+filepath)
-        
+                 
         #initialise data
         input_data={}
         input_data['R_2D']=[]
@@ -85,18 +80,28 @@ def read_perturbation_MARSF(filepath):
         #read lazily
         for line in file:
             split_line=line.split()
-            input_data['R_2D'].extend(float(split_line[0]))
-            input_data['Z_2D'].extend(float(split_line[1]))
-            input_data['B_field_R_real'].extend(float(split_line[2]))
-            input_data['B_field_R_imag'].extend(float(split_line[3]))
-            input_data['B_field_Z_real'].extend(float(split_line[4]))
-            input_data['B_field_Z_imag'].extend(float(split_line[5]))
-            input_data['B_field_tor_real'].extend(float(split_line[6]))
-            input_data['B_field_tor_imag'].extend(float(split_line[7]))
+            input_data['R_2D'].append(float(split_line[0]))
+            input_data['Z_2D'].append(float(split_line[1]))
+            input_data['B_field_R_real'].append(float(split_line[2]))
+            input_data['B_field_R_imag'].append(float(split_line[3]))
+            input_data['B_field_Z_real'].append(float(split_line[4]))
+            input_data['B_field_Z_imag'].append(float(split_line[5]))
+            input_data['B_field_tor_real'].append(float(split_line[6]))
+            input_data['B_field_tor_imag'].append(float(split_line[7]))
 
+        input_data['R_2D']=np.asarray(input_data['R_2D'])
+        input_data['Z_2D']=np.asarray(input_data['Z_2D'])
+        input_data['B_field_R_real']=np.asarray(input_data['B_field_R_real'])
+        input_data['B_field_R_imag']=np.asarray(input_data['B_field_R_imag'])
+        input_data['B_field_Z_real']=np.asarray(input_data['B_field_Z_real'])
+        input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
+        input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
+        input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
+
+        
         #infer the grid dimensions
-        Z_dim=np.where(input_data['R_2D']==input_data['R_2D'][0]).size
-        R_dim=(input_data['R_2D'].size)/Z_dim
+        Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+        R_dim=int((input_data['R_2D'].size)/Z_dim)
 
         #reshape to grid dimensions
         input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
@@ -107,6 +112,7 @@ def read_perturbation_MARSF(filepath):
         input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
         input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
         input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
+        
 
     print("finished reading MARSF perturbation")
     

@@ -237,7 +237,7 @@ def dump_profiles_ASCOT(filepath,temperature_e,temperature_i,density_e,density_i
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
         file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n")
 
-        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(temperature_e['flux_pol_norm'],temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) 
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(temperature_e['flux_pol_norm'],temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']): 
             line=fortran_string(RHO,16,7)+fortran_string(Te,16,7)+fortran_string(Ne,16,7)+fortran_string(Vtor_I,15,7)+fortran_string(Ti1,17,7)+fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 
