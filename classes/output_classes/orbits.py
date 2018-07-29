@@ -28,7 +28,7 @@ except:
 try:
     import imas 
 except:
-    print("WARNING: IMAS module could not be imported!\nreturning\n")
+    print("WARNING: IMAS module could not be imported!\n")
 try:
     from processing import utils
 except:
