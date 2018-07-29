@@ -30,12 +30,11 @@ except:
 try:
     import imas 
 except:
-    raise ImportError("ERROR: IMAS module could not be imported!\nreturning\n")
-    sys.exit(1)
+    print("WARNING: IMAS module could not be imported!\n")
 try:
-    from classes import utils
+    from processing import utils
 except:
-    raise ImportError("ERROR: utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_input 
@@ -229,11 +228,11 @@ class Temperature(base_input.LOCUST_input):
         if utils.none_check(self.ID,self.LOCUST_input_type,"Temperature['properties']['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
             pass
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data - data_format required\n",data_format): #must always have data_format if reading in data
+        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -242,7 +241,7 @@ class Temperature(base_input.LOCUST_input):
                 self.data=read_temperature_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
  
                 self.data_format=data_format
                 self.shot=shot
@@ -251,7 +250,7 @@ class Temperature(base_input.LOCUST_input):
                 self.data=read_temperature_IDS(self.shot,self.run,**self.properties)
  
         else:
-            print("cannot read_data - please specify a compatible data_format (LOCUST/IDS)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -263,20 +262,20 @@ class Temperature(base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
 
-        if utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
+        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to LOCUST - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_temperature_LOCUST(self.data,filepath)
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
                 dump_temperature_IDS(self.ID,self.data,shot,run,**properties)
  
         else:
-            print("cannot dump_data - please specify a compatible data_format (LOCUST/IDS)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS)\n")
  
 
  

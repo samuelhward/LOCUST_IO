@@ -25,9 +25,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from classes import utils
+    from processing import utils
 except:
-    raise ImportError("ERROR: utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import support
@@ -248,6 +248,11 @@ class LOCUST_input:
 
         elif self.LOCUST_input_type=='number_density':
             for key in support.required_number_density:
+                if key not in self.data:
+                    missing_data.append(key)
+
+        elif self.LOCUST_input_type=='perturbation':
+            for key in support.required_perturbation:
                 if key not in self.data:
                     missing_data.append(key)
  

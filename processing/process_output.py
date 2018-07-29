@@ -53,36 +53,69 @@ def dfn_transform(some_dfn,axes=['R','Z']):
     #begin list of specific options
 
     if axes==['R','Z']:
-        #integrating over the velocity space
-        for v in range(int(some_dfn['nV'])):
+        #apply velocity space Jacobian
+        for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
         dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
 
-        #then need to collapse over the first 3 dimensions which we do not need
+        #then need to integrate over the first 3 dimensions which we do not need
         for counter in range(3):
             dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
 
 
     elif axes==['E','V_pitch']:
-        #integrating over gyrophase and applying velocity space Jacobian
-        for v in range(int(some_dfn['nV'])):
+        #applying velocity space and gyrophase Jacobian
+        for v in range(len(some_dfn['V'])):
             dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]
         dfn['dfn']*=some_dfn['dP']*e_charge/(2.*mass_neutron)
 
-        #integrating over all real space
-        for r in range(int(some_dfn['nR'])):
+        #applying real space Jacobian and integrate over toroidal angle
+        for r in range(len(some_dfn['R'])):
             dfn['dfn'][:,:,:,r,:]*=some_dfn['R'][r]*2.0*pi*some_dfn['dR']*some_dfn['dZ']
 
-        #then need to collapse over the unwanted coordinates
+        #then need to integrate over the unwanted coordinates
         dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
 
+    #general option
+    
     elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice
         dfn['dfn']=dfn['dfn'][tuple(axes)]
         #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
     else:
         print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
+    return dfn
+
+def dfn_crop(some_dfn,**kwargs):
+    """
+    notes:
+        assumes full 3D dfn
+        warning! cropping by R does not reset nR for example - must be done manually
+    args:
+        kwargs - axes and their limits e.g R=[0,1] crops dfn between 0<R<1
+    """
+
+    dfn=copy.deepcopy(some_dfn)
+
+    keys=list(kwargs.keys())
+    values=list(kwargs.values())
+
+    for key,value in zip(keys,values):
+        if key not in dfn['dfn_index']:
+            print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
+        else:
+
+            dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
+
+            i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
+            i=i[0] #get first element of returned tuple
+            dfn[key]=dfn[key][i] #crop 1D arrays accordingly
+
+            dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
+            dfn['dfn']=dfn['dfn'][i,:,:,:,:] #crop dfn
+            dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
     return dfn
 
