@@ -25,9 +25,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import process_input
+    from processing import utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
@@ -56,6 +56,7 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -86,6 +87,11 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
     else:
         ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -128,6 +134,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -148,16 +155,18 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
         if axes==['R','Z']: #check for commonly-used axes
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -175,15 +184,17 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
             ax.set_facecolor(colmap(np.amin(some_beam_depo_binned)))
             mesh=ax.pcolormesh(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,cmap=colmap,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
             #mesh=ax.contourf(some_beam_depo_binned_x,some_beam_depo_binned_y,some_beam_depo_binned,levels=np.linspace(np.amin(some_beam_depo_binned),np.amax(some_beam_depo_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_beam_depo_binned),vmax=np.amax(some_beam_depo_binned))
-            fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
 
         if axes==['R','Z']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -192,8 +203,9 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -213,8 +225,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
 def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
     """
     plots equilibrium
-     
+    
     notes:
+        
+    args:
         key - selects which data in equilibrium to plot
         LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
         limiters - toggles limiters on/off in 2D plots
@@ -233,6 +247,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     #0D data
     if some_equilibrium[key].ndim==0:
@@ -273,7 +288,8 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         #ax.view_init(elev=90, azim=None) #rotate the camera
         #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
         
-        fig.colorbar(mesh,ax=ax,orientation='horizontal')
+        if fig_flag is False:    
+            fig.colorbar(mesh,ax=ax,orientation='horizontal')
         ax.set_aspect('equal')
         ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -296,6 +312,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
 
     notes:
         essentially uses the Euler method of integration
+    args:
         axes - list of strings specifying which axes should be plotted
         LCFS - show plasma boundary outline (requires equilibrium arguement)
         number_field_lines - the number of field lines to plot
@@ -315,6 +332,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if 'B_field' not in some_equilibrium.data: #check we have a B field first
         print("ERROR: 'B_field' missing in equilibrium object (calculate first with B_calc)")
@@ -349,9 +367,9 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
 
 
     print('plot_B_field_line - generating B field interpolators')
-    B_field_R_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
-    B_field_Z_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
-    B_field_tor_interpolator=process_input.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
+    B_field_R_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
+    B_field_Z_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
+    B_field_tor_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
     print('plot_B_field_line - finished generating B field interpolators')
 
 
@@ -464,6 +482,7 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
@@ -478,8 +497,9 @@ def plot_B_field_stream(some_equilibrium,colmap=cmap_default,ax=False,fig=False)
 
     B_mag=np.sqrt(some_equilibrium['B_field'][:,:,0]**2+some_equilibrium['B_field'][:,:,2]**2) #calculate poloidal field magnitude
     strm = ax.streamplot(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0].T,some_equilibrium['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
-    
-    fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
+
+    if fig_flag is False:    
+        fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
     ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
 

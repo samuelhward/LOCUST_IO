@@ -60,6 +60,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
     if fig is False:
         fig_flag=False
     else:
+        fig_flag=True
     
     ndim=len(axes)
     if fig_flag is False:
@@ -67,16 +68,17 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
     
     if ax_flag is False: #if user has not externally supplied axes, generate them
         ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
 
     if ndim==2: #2D plotting
         
         if axes==['R','Z']: #if we're plotting along poloidal projection, then give options to include full cross-section and plasma boundary
            
             if real_scale is True:
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
-            
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                ax.set_aspect('equal')
+
             if LCFS is True: #plot plasma boundary
                 ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
@@ -88,8 +90,10 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         elif axes==['X','Y']: #plotting top-down
             
             if real_scale is True:
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_aspect('equal')
 
             if LCFS is True: #plot concentric rings to show inboard/outboard plasma boundaries
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
@@ -116,9 +120,11 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
             ax = fig.gca(projection='3d')
 
         if real_scale:
-            ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-            ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+            if some_equilibrium:
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+            ax.set_aspect('equal')
 
         if LCFS is True: #plot periodic poloidal cross-sections in 3D 
             for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
@@ -196,16 +202,18 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         if axes==['R','Z']: #check for common axes
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
 
         elif axes==['X','Y']:          
             if real_scale is True: 
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -226,15 +234,17 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.set_facecolor(colmap(np.amin(some_final_particle_list_binned)))
                 mesh=ax.pcolormesh(some_final_particle_list_binned_x,some_final_particle_list_binned_y,weight*some_final_particle_list_binned,cmap=colmap,vmin=np.amin(weight*some_final_particle_list_binned),vmax=np.amax(weight*some_final_particle_list_binned))
                 #ax.contourf(some_final_particle_list_binned_x,some_final_particle_list_binned_y,some_final_particle_list_binned,levels=np.linspace(np.amin(some_final_particle_list_binned),np.amax(some_final_particle_list_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(some_final_particle_list_binned),vmax=np.amax(some_final_particle_list_binned))
-                fig.colorbar(mesh, ax=ax,orientation='horizontal')
-
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                    
             elif type=='scatter':
                 ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap(np.random.uniform()),marker='x',s=1)
 
         if axes==['R','Z']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -243,8 +253,9 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -262,12 +273,13 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
     """
     plot the distribution function
 
     notes:
         if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
+        if user supplies full set of indices, code assumes those slices are dimension to plot over i.e. please crop before plotting
     args:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
         key - select which data to plot
@@ -275,6 +287,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         LCFS - show plasma boundary outline (requires equilibrium arguement)
         real_scale - plot to Tokamak scale
         colmap - set the colour map (use get_cmap names)
+        transform - set to False if supplied dfn has already been cut down to correct dimensions
         ax - take input axes (can be used to stack plots)
         fig - take input fig (can be used to add colourbars etc)
     """
@@ -311,21 +324,28 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     elif key=='dfn':
         
         #transform distribution function to the coordinates we want
-        dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
+        if transform is True:
+            dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
+        else:
+            dfn_copy=copy.deepcopy(some_distribution_function)
 
         #check resulting dimensionality of distribution function
-        if dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
+        if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
+            print(dfn_copy['dfn'])
+        elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
             pass #XXX incomplete
         elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
 
-            if len(axes)==2: #user has supplied list of chars to denote axes
+            if all(isinstance(axis,type('_')) for axis in axes): #user has supplied list of chars to denote axes
                 pass
             else: #user has supplied full list of indices to slice DFN -> need to determine convetional axes names  
-                axes=dfn_copy['dfn_index'][np.where([isinstance(index,slice) for index in axes])] #do this by assuming that user slices over dimensions they want to plot
+                axes=dfn_copy['dfn_index'][np.where([isinstance(axis,slice) for axis in axes])] #do this by assuming that user slices over dimensions they want to plot
+                #the above line works because dfn_index is a numpy array of strings - would break for lists
 
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                    ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -338,15 +358,17 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
             #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_contours),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
             '''for c in mesh.collections: #for use in contourf
-                c.set_edgecolor("face")'''    
-            fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                c.set_edgecolor("face")'''
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
             ax.set_title(some_distribution_function.ID)
             
             if real_scale is True: #set x and y plot limits to real scales
-                ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                if some_equilibrium:
+                    ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                    ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
@@ -355,6 +377,10 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
+
+        else: #user has not supplied >2D dfn
+            print("ERROR: plot_distribution_function given >2D DFN - please reduce dimensionality")
+            return 
 
     if ax_flag is False and fig_flag is False:
         plt.show()
