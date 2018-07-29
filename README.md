@@ -286,6 +286,20 @@ LOCUST reads a temperature profile in ASCII format as (normalised poloidal flux 
 
 LOCUST reads a density profile in ASCII format as (normalised poloidal flux | number density) 
 
+##### Perturbation
+
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[MARS-F](https://support.hdfgroup.org/HDF5/))
+
+    2D data
+        R_2D/                                                           #R coordinate of field grid (m)
+        Z_2D/                                                           #Z coordinate of field grid (m)
+        B_field_R_real/                                                 #real R component of magnetic field (T)
+        B_field_R_imag/                                                 #imaginary R component of magnetic field (T)
+        B_field_Z_real/                                                 #real Z component of magnetic field (T)
+        B_field_Z_imag/                                                 #imaginary Z component of magnetic field (T)
+        B_field_tor_real/                                               #real toroidal component of magnetic field (T)
+        B_field_tor_imag/                                               #imaginary toroidal component of magnetic field (T)
+
 #### Orbits:
 
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/LOCUST)
@@ -435,32 +449,6 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
         /e-source
 
 LOCUST dumps some types of data to HDF5, which are opened via h5py.
-
-##### Perturbation
-
-([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[MARS-F](https://support.hdfgroup.org/HDF5/))
-
-    1D data
-
-        /sqrt(PSIn)
-        /density
-        /energy
-        /J(NBCD)-raw
-        /NBI-heating-power(TOT)
-        /NBI-heating-power(e-)
-        /NBI-heating-power(i1)
-        /NBI-heating-power(i1)A
-        /NBI-heating-power(i1)Z
-        /NBI-heating-power(i2)
-        /NBI-heating-power(i2)Z
-        /NBI-heating-power(i2)A
-        /P(para)
-        /P(perp)
-        /residual-angular-momentum-density
-        /torque-density(JxB-inst)
-        /torque-density(JxB-sweep)
-        /torque-density(coll)
-        /e-source
 
 ### Processing Routines
 
