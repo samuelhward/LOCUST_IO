@@ -86,12 +86,10 @@ Works with:
 ## Getting Started
 
 * Set up a folder within LOCUST_IO e.g. *LOCUST_IO/my_project* (this is where you will run the package)
-* Copy a context.py file from *LOCUST_IO/testing* or *LOCUST_IO/example_project* to *LOCUST_IO/my_project* (this sets up your paths etc)
-* Copy the files which you want to manipulate to *LOCUST_IO/input_files* and *LOCUST_IO/output_files* (former/latter for inputs/outputs to/from LOCUST)
-
-* Import context into your python session
-* Import some classes from classes.input_classes or classes.output_classes
-* You're good to go!
+* Copy a context.py file from *LOCUST_IO/testing* or *LOCUST_IO/example_project* to *LOCUST_IO/my_project*
+* Copy your input/output files to *LOCUST_IO/input_files* or *LOCUST_IO/output_files* respectively
+* Import context and some classes from classes.input_classes or classes.output_classes
+* Off you go!
 
 
 
@@ -116,7 +114,7 @@ Works with:
 ## Usage
 
 
-As well as the included *example_project/*, some basic usage is outlined below:
+As well as the included *example_project/* some basic usage is outlined below:
 
 ```python
 #start by setting up python paths and import classes which hold LOCUST inputs:
@@ -137,7 +135,8 @@ my_equilibrium.read_data(data_format='GEQDSK',filename='some.eqdsk')
 my_equilibrium.dump_data(output_data_format='IDS',shot=1,run=1) 
 
 
-#you can set individual pieces of data with the .set() method. This will overwrite the default data format, which is numpy array:
+#you can set individual pieces of data with the .set() method
+#this will overwrite the default data format, which is numpy array:
 #set multiple values simultaneously
 my_equilibrium.set(nw=5,fpol=[1,2,3,4])  
 #equally
@@ -154,7 +153,7 @@ my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key'
 #to get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data: 
 from processing import plot_input
 plot_input.plot_equilibrium(my_equilibrium)                                         
-#(you can also stack plots onto the same axis object with the ax arguement)
+#(you can also stack plots onto the same axis object with the ax arguement - see example_project)
 
 
 #to check what data two objects share, use .compare():
@@ -242,7 +241,7 @@ LOCUST reads an equilibrium in GEQDSK format.
 
 #### Beam Deposition:
 
-([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[Distribution_Sources IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/distribution_sources.html)/LOCUST)
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[Distribution_Sources IDS](https://portal.iter.org/departments/POP/CM/IMDesign/Data%20Model/CI/imas-3.7.3/distribution_sources.html)/[TRANSP](https://w3.pppl.gov/~pshare/help/transp.htm)/LOCUST)
 
     1D data
         R/...source[0].markers[0].positions[0][p]/                      #R coordinates of particle p
@@ -251,6 +250,8 @@ LOCUST reads an equilibrium in GEQDSK format.
         V_R/...source[0].markers[0].positions[3][p]/                    #R component of v of particle p
         V_tor/...source[0].markers[0].positions[4][p]/                  #toroidal component of v of particle p
         V_Z/...source[0].markers[0].positions[5][p]/                    #Z component of v of particle p
+        V_pitch/-                                                       #v_parallel/v
+        E/                                                              #energy of particle (eV)
         absorption_fraction                                             #absorption fraction
         absorption_scaling                                              #scaling to allow for missing particles
 
@@ -314,7 +315,7 @@ LOCUST dumps orbits in ASCII format as (number_particles \n R | phi | Z \n numbe
 
 #### Final Particle List:
 
-([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/TRANSP/LOCUST)
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[TRANSP](https://w3.pppl.gov/~pshare/help/transp.htm)/LOCUST)
 
     0D data
         n/                                                              #number of particles per GPU (blocks per grid * threads per block)
@@ -462,8 +463,6 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
         B_calc                                   calculates the components of the axisymmetric magnetic field on the 2D computational grid
         mag_axis_calc                            calculate location of the magnetic axis
         transform_marker_velocities              transforms marker phase space velocities to LOCUST r,phi,z format
-        interpolate_1D                           returns a 1D interpolator (RBF)
-        interpolate_2D                           returns a 2D interpolator (RBF/RBS)
 
      process_output
 
@@ -476,8 +475,8 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
         plot_temperature                         plots the temperature
         plot_beam_deposition                     plot a histogram/scatter of the beam deposition profile
         plot_equilibrium                         plot the equilibrium
-        plot_B_field_stream                      plot the 2D poloidal magnetic vector field
         plot_B_field_line                        plot a single field line in 3D
+        plot_B_field_stream                      plot the 2D poloidal magnetic vector field
 
      plot_output
 

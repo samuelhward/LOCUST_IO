@@ -28,6 +28,11 @@ try:
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+try:
+    from classes import support #import support module from this directory
+except:
+    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
@@ -207,7 +212,7 @@ def interpolate_1D(X_axis,Y_axis):
     return interpolator
 
 
-def dump_profiles_ASCOT(filepath,temperature_e,temperature_i,density_e,density_i,rotation_toroidal):
+def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e,rotation_toroidal):
     """
     dumps collection of kinetic profiles to ASCOT ASCII format
 
@@ -216,7 +221,7 @@ def dump_profiles_ASCOT(filepath,temperature_e,temperature_i,density_e,density_i
         currently allows single ion species - in future, pass list of profile objects and iterate
         if rotation profile added to LOCUST data in future, will need to update this function accordingly
     args:
-        filepath - output filepath
+        filename - output filename
         temperature_e - electron temperature object (eV)
         temperature_i - ion temperature object (eV)
         density_e - electron density object (#/m^3)
@@ -226,12 +231,13 @@ def dump_profiles_ASCOT(filepath,temperature_e,temperature_i,density_e,density_i
 
     print("dumping profiles to ASCOT format")
  
+    filepath=support.dir_input_files+filename
     with open(filepath,'w') as file:
 
         file.write("# Input file for ASCOT containing radial 1D information of plasma temperature,density and toroidal rotation\n")
         file.write("# range must cover [0,1] of normalised poloidal rho. It can exceed 1. \n")
         file.write("# 18Jan08 for testing (first 3 lines are comment lines)\n")
-        file.write(temperature_e['flux_pol_norm'].size+"   "+"1"+"  # Nrad,Nion\n")
+        file.write(str(temperature_e['flux_pol_norm'].size)+"   "+"1"+" # Nrad,Nion\n")
         file.write("1           # ion Znum\n")
         file.write("1           # ion Amass\n")
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
