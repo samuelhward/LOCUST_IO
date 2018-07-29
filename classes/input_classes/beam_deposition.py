@@ -71,33 +71,35 @@ def read_beam_depo_LOCUST(filepath):
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
      
-    del(lines[0]) #first two lines are junk
-    del(lines[0])
- 
-    input_data = {} #initialise the dictionary to hold the data
-    input_data['R']=[] #initialise the arrays 
-    input_data['phi']=[]
-    input_data['Z']=[]
-    input_data['V_R']=[]
-    input_data['V_tor']=[]
-    input_data['V_Z']=[]
- 
-    for line in lines:
- 
-        split_line=line.split()
-        input_data['R'].append(float(split_line[0]))
-        input_data['phi'].append(float(split_line[1]))
-        input_data['Z'].append(float(split_line[2]))
-        input_data['V_R'].append(float(split_line[3]))
-        input_data['V_tor'].append(float(split_line[4]))
-        input_data['V_Z'].append(float(split_line[5]))
- 
-    input_data['R']=np.asarray(input_data['R']) #convert to arrays
-    input_data['phi']=np.asarray(input_data['phi'])
-    input_data['Z']=np.asarray(input_data['Z'])
-    input_data['V_R']=np.asarray(input_data['V_R'])
-    input_data['V_tor']=np.asarray(input_data['V_tor'])
-    input_data['V_Z']=np.asarray(input_data['V_Z'])
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['absorption_fraction']=float(lines[0])
+        input_data['absorption_scaling']=float(lines[1])
+        del(lines[0])
+        del(lines[0])
+     
+        input_data['R']=[] #initialise the arrays 
+        input_data['phi']=[]
+        input_data['Z']=[]
+        input_data['V_R']=[]
+        input_data['V_tor']=[]
+        input_data['V_Z']=[]
+     
+        for line in lines:
+     
+            split_line=line.split()
+            input_data['R'].append(float(split_line[0]))
+            input_data['phi'].append(float(split_line[1]))
+            input_data['Z'].append(float(split_line[2]))
+            input_data['V_R'].append(float(split_line[3]))
+            input_data['V_tor'].append(float(split_line[4]))
+            input_data['V_Z'].append(float(split_line[5]))
+     
+        input_data['R']=np.asarray(input_data['R']) #convert to arrays
+        input_data['phi']=np.asarray(input_data['phi'])
+        input_data['Z']=np.asarray(input_data['Z'])
+        input_data['V_R']=np.asarray(input_data['V_R'])
+        input_data['V_tor']=np.asarray(input_data['V_tor'])
+        input_data['V_Z']=np.asarray(input_data['V_Z'])
 
     print("finished reading beam deposition from LOCUST")
  
@@ -189,15 +191,15 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius [m]]" #description of coordinate
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius coordinate [m]]" #description of coordinate
 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].name="phi" 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].index=1 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle [rad]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle coordinate [rad]"
 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="Z"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical position [m]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical coordinate [m]"
 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_R"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
@@ -236,59 +238,105 @@ def read_beam_depo_TRANSP(filepath):
         if not lines: #check to see if the file opened
             raise IOError("ERROR: read_beam_depo_TRANSP() cannot read from "+filepath)
 
-    for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
-        if str(line.split()[0])=='<start-of-data>':
-            del(lines[0:counter+1])
-            break
+        for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
+            if str(line.split()[0])=='<start-of-data>':
+                del(lines[0:counter+1])
+                break
 
-    input_data = {} #initialise the dictionary to hold the data
-    input_data['X']=[] #initialise the arrays
-    input_data['Y']=[]
-    input_data['Z']=[]
-    input_data['R']=[]  
-    input_data['phi']=[]
-    input_data['V_X']=[]
-    input_data['V_Y']=[]
-    input_data['V_Z']=[]
-    input_data['V_R']=[]
-    input_data['V_tor']=[]
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['X']=[] #initialise the arrays
+        input_data['Y']=[]
+        input_data['Z']=[]
+        input_data['R']=[]  
+        input_data['phi']=[]
+        input_data['V_X']=[]
+        input_data['V_Y']=[]
+        input_data['V_Z']=[]
+        input_data['V_R']=[]
+        input_data['V_tor']=[]
 
-    for line in lines:
-        split_line=line.split()
-        split_line[0]=float(split_line[0])
-        split_line[1]=float(split_line[1])
-        split_line[2]=float(split_line[2])
-        split_line[3]=float(split_line[3])
-        split_line[4]=float(split_line[4])
-        split_line[5]=float(split_line[5])
+        for line in lines:
+            split_line=line.split()
+            split_line[0]=float(split_line[0])
+            split_line[1]=float(split_line[1])
+            split_line[2]=float(split_line[2])
+            split_line[3]=float(split_line[3])
+            split_line[4]=float(split_line[4])
+            split_line[5]=float(split_line[5])
 
-        input_data['X'].append(split_line[0]) #only read in x,y,z with append for speed
-        input_data['Y'].append(split_line[1])
-        input_data['Z'].append(split_line[2])
-        input_data['V_X'].append(split_line[3])
-        input_data['V_Y'].append(split_line[4])
-        input_data['V_Z'].append(split_line[5])
+            input_data['X'].append(split_line[0]) #only read in x,y,z with append for speed
+            input_data['Y'].append(split_line[1])
+            input_data['Z'].append(split_line[2])
+            input_data['V_X'].append(split_line[3])
+            input_data['V_Y'].append(split_line[4])
+            input_data['V_Z'].append(split_line[5])
 
-    input_data['X']=0.01*np.asarray(input_data['X']) #convert to arrays and from cm to m
-    input_data['Y']=0.01*np.asarray(input_data['Y'])
-    input_data['Z']=0.01*np.asarray(input_data['Z'])
-    input_data['V_X']=0.01*np.asarray(input_data['V_X'])
-    input_data['V_Y']=0.01*np.asarray(input_data['V_Y'])
-    input_data['V_Z']=0.01*np.asarray(input_data['V_Z'])
-    
-    input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
-    input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
-    input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
-    input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
+        input_data['X']=0.01*np.asarray(input_data['X']) #convert to arrays and from cm to m
+        input_data['Y']=0.01*np.asarray(input_data['Y'])
+        input_data['Z']=0.01*np.asarray(input_data['Z'])
+        input_data['V_X']=0.01*np.asarray(input_data['V_X'])
+        input_data['V_Y']=0.01*np.asarray(input_data['V_Y'])
+        input_data['V_Z']=0.01*np.asarray(input_data['V_Z'])
+        
+        input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
+        input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
+        input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
+        input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
 
     print("finished reading beam deposition from TRANSP format")
 
     return input_data
 
-def dump_beam_depo_ASCOT(filepath):
+def dump_beam_depo_ASCOT(filepath,output_data):
     """
-    dumps birth profile
+    dumps birth profile to ASCOT ACII format 
+
+    notes:
+        assumes output_data stores energy in eV, phi in rad
     """
+    print("dumping beam deposition to ASCOT format")
+
+    with open(filepath,'w') as file:
+
+        #write headers
+        file.write(" PARTICLE INITIAL DATA FOR ASCOT\n")
+        file.write(" 4 VERSION =====================\n")
+        file.write("\n")
+        
+        file.write(" 3  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
+        file.write("This is an example file for ASCOT4 particle input.\n")
+        file.write("$HeadURL: https://solps-mdsplus.aug.ipp.mpg.de/repos/ASCOT/trunk/ascot4/input.particles $")
+        file.write("$LastChangedRevision: 9738 $")
+        file.write("\n")
+
+        file.write(" {number_particles} # Number of particles\n".format(number_particles=output_data['R'].size))
+        file.write("\n")
+
+        file.write(" 12 # Number of different fields for each particle [10 first letters are significant]\n")
+        file.write("Anum      - mass number of particle        (integer)\n")
+        file.write("mass      - mass of the particle           (amu)\n")
+        file.write("Znum      - charge number of particle      (integer)\n")
+        file.write("charge    - charge of the particle         (elemental charge)\n")
+        file.write("energy    - kinetic energy of particle     (eV)\n")
+        file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
+        file.write("phi       - toroidal angle of particle     (deg)\n")
+        file.write("R         - R of particle                  (m)\n")
+        file.write("z         - z of particle                  (m)\n")
+        file.write("weight    - weight factor of particle      (particle/second)\n")
+        file.write("id        - unique identifier of particle  (integer)\n")
+        file.write("Tmax      - maximum time to follow the prt (s)\n")
+        file.write("\n")
+
+        i=0 #counter for particle identifier
+        for energy,pitch,phi,R,z in zip(output_data['E'],output_data['V_pitch'],output_data['phi'],output_data['R'],output_data['Z']): 
+            
+            line=utils.fortran_string(2.0,9,4,False)+utils.fortran_string(2.0,13,4,False)+utils.fortran_string(1.0,13,4,False)+utils.fortran_string(2.0,13,4,False)+utils.fortran_string(energy/1000.0,13,1,False)+utils.fortran_string(pitch,13,5,False)+utils.fortran_string(360.0*(phi/(2.*pi)),18,3,False)+utils.fortran_string(R,13,4,False)+utils.fortran_string(Z,13,5,False)+utils.fortran_string(1.0,17,5,True)+utils.fortran_string(i,15)+utils.fortran_string(999.0,8,1,False)"\n"
+            file.write(line)
+            i+=1
+
+        file.write("#EOF\n")
+
+    print("finished dumping beam deposition to ASCOT format")
 
 
 ################################################################## Beam_Deposition class
@@ -328,11 +376,11 @@ class Beam_Deposition(base_input.LOCUST_input):
         notes:
         """
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data - data_format required\n",data_format): #must always have data_format if reading in data
+        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -341,7 +389,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data from distribution_sources IDS - shot and run data required\n",shot,run):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run data required\n",shot,run):
  
                 self.data_format=data_format
                 self.shot=shot
@@ -350,7 +398,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
         elif data_format=='TRANSP':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot read_data from TRANSP - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -359,7 +407,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_TRANSP(self.filepath) #read the file
  
         else:
-            print("cannot read_data - please specify a compatible data_format (LOCUST/IDS/TRANSP)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
@@ -371,20 +419,20 @@ class Beam_Deposition(base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
+        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to LOCUST - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_LOCUST(self.data,filepath)
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"cannot dump_data to distribution_sources IDS - shot and run required\n",shot,run):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
  
         else:
-            print("cannot dump_data - please specify a compatible data_format (LOCUST/IDS)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS)\n")
 
  
  

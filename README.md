@@ -251,6 +251,8 @@ LOCUST reads an equilibrium in GEQDSK format.
         V_R/...source[0].markers[0].positions[3][p]/                    #R component of v of particle p
         V_tor/...source[0].markers[0].positions[4][p]/                  #toroidal component of v of particle p
         V_Z/...source[0].markers[0].positions[5][p]/                    #Z component of v of particle p
+        absorption_fraction                                             #absorption fraction
+        absorption_scaling                                              #scaling to allow for missing particles
 
 LOCUST reads a birth profile in ASCII format as (R | phi | Z | V_R | V_tor | V_Z) .
 
@@ -261,8 +263,8 @@ LOCUST reads a birth profile in ASCII format as (R | phi | Z | V_R | V_tor | V_Z
     1D data
         flux_pol/...profiles_1d[0].grid.psi/                           #poloidal flux (Weber / rad)
         flux_pol_norm/-/-                                              #normalised poloidal flux
-        T/...profiles_1d[0].ion[0].temperature/                        #ion temperature
-        T/...profiles_1d[0].electrons.temperature/                     #electron temperature
+        T/...profiles_1d[0].ion[0].temperature/                        #ion temperature (eV)
+        T/...profiles_1d[0].electrons.temperature/                     #electron temperature (eV)
         flux_tor_coord/...profiles_1d[0].grid.rho_tor/                 #toroidal flux coordinate
         flux_tor/-/                                                    #toroidal flux (Weber / rad)
         q/...profiles_1d[0].q/                                         #safety factor
@@ -276,8 +278,8 @@ LOCUST reads a temperature profile in ASCII format as (normalised poloidal flux 
     1D data
         flux_pol/...profiles_1d[0].grid.psi/                            #poloidal flux (Weber / rad)
         flux_pol_norm/-/-                                               #normalised poloidal flux
-        n/...profiles_1d[0].ion[0].density/                             #ion number density
-        n/...profiles_1d[0].electrons.density/                          #electron number density
+        n/...profiles_1d[0].ion[0].density/                             #ion number density (#/m^3)
+        n/...profiles_1d[0].electrons.density/                          #electron number density (#/m^3)
         flux_tor_coord/-/...profiles_1d[0].grid.rho_tor/                #toroidal flux coordinate
         flux_tor/-/-                                                    #toroidal flux (Weber / rad)
         q/...profiles_1d[0].q/                                          #safety factor
@@ -408,7 +410,7 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
     
 ##### HDF5
 
-([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/LOCUST [HDF5](https://support.hdfgroup.org/HDF5/))
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[HDF5](https://support.hdfgroup.org/HDF5/)/LOCUST)
 
     1D data
 
@@ -433,6 +435,32 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
         /e-source
 
 LOCUST dumps some types of data to HDF5, which are opened via h5py.
+
+##### Perturbation
+
+([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[MARS-F](https://support.hdfgroup.org/HDF5/))
+
+    1D data
+
+        /sqrt(PSIn)
+        /density
+        /energy
+        /J(NBCD)-raw
+        /NBI-heating-power(TOT)
+        /NBI-heating-power(e-)
+        /NBI-heating-power(i1)
+        /NBI-heating-power(i1)A
+        /NBI-heating-power(i1)Z
+        /NBI-heating-power(i2)
+        /NBI-heating-power(i2)Z
+        /NBI-heating-power(i2)A
+        /P(para)
+        /P(perp)
+        /residual-angular-momentum-density
+        /torque-density(JxB-inst)
+        /torque-density(JxB-sweep)
+        /torque-density(coll)
+        /e-source
 
 ### Processing Routines
 

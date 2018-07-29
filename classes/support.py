@@ -26,7 +26,7 @@ import numpy as np
 
 
 #software version number 
-LOCUST_IO_version=str('LOCUST_IO version 1.1.0')
+LOCUST_IO_version=str('LOCUST_IO version 1.2.0')
 numpy_version=np.version.version.split('.')
 python_version=sys.version_info
 
@@ -47,6 +47,7 @@ required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','s
 required_beam_deposition=['R','phi','Z','V_R','V_tor','V_Z']
 required_temperature=['flux_pol_norm','T']
 required_number_density=['flux_pol_norm','n']
+required_perturbation=['R_1D','Z_1D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
 
 #################################
 
