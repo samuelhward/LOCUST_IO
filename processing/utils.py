@@ -109,17 +109,24 @@ def safe_set(target,source):
         target=source
 
  
-def fortran_string(number_out,length,decimals=None):
+def fortran_string(number_out,length,decimals=None,exponential=True):
     """
     produces a string stream of specified length, padded with space at the start
 
     notes:
         supposed to be a quick fix to fortran format descriptors
-        decimals (required for non-ints) controls how many decimal places the number is written to (assumes exponential format)
+    args:
+        number_out - variable holding number to write out 
+        length - total number of characters for output string stream including white space 
+        decimals - required for non-ints, how many decimal places the number is written to 
+        exponential - true for output to exponential format, otherwise formatted like float
     """
 
     if decimals is not None:
-        output_string='{:.{decimals}e}'.format(number_out,decimals=decimals)        
+        if exponential is True:
+            output_string='{:.{decimals}e}'.format(number_out,decimals=decimals)        
+        else:
+            output_string='{:.{decimals}f}'.format(number_out,decimals=decimals)        
     else: #assume integer if decimals not specified
         output_string=str(number_out)
 
@@ -128,7 +135,7 @@ def fortran_string(number_out,length,decimals=None):
         string_stream='{}{}'.format(' '*number_spaces,output_string) #construct the string stream
         return string_stream
     else:
-        print('WARNING: fortran_string() must not take a number with more digits than desired length of output stream')
+        print('ERROR: fortran_string() output longer than length arguement!')
 
 
 def sort_arrays(main_array,*args):
@@ -186,8 +193,6 @@ def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS'):
 
     return interpolator
 
-    
-
 def interpolate_1D(X_axis,Y_axis):
     """
     generate a 1D line interpolator
@@ -200,3 +205,40 @@ def interpolate_1D(X_axis,Y_axis):
     interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function='cubic',smooth=0)
 
     return interpolator
+
+
+def dump_profiles_ASCOT(filepath,temperature_e,temperature_i,density_e,density_i,rotation_toroidal):
+    """
+    dumps collection of kinetic profiles to ASCOT ASCII format
+
+    notes:
+        profiles must be mapped to same poloidal flux axis
+        currently allows single ion species - in future, pass list of profile objects and iterate
+        if rotation profile added to LOCUST data in future, will need to update this function accordingly
+    args:
+        filepath - output filepath
+        temperature_e - electron temperature object (eV)
+        temperature_i - ion temperature object (eV)
+        density_e - electron density object (#/m^3)
+        density_i - ion density object (#/m^3)
+        rotation_toroidal - array-like toroidal rotation (rad/s)
+    """
+
+    print("dumping profiles to ASCOT format")
+ 
+    with open(filepath,'w') as file:
+
+        file.write("# Input file for ASCOT containing radial 1D information of plasma temperature,density and toroidal rotation\n")
+        file.write("# range must cover [0,1] of normalised poloidal rho. It can exceed 1. \n")
+        file.write("# 18Jan08 for testing (first 3 lines are comment lines)\n")
+        file.write(temperature_e['flux_pol_norm'].size+"   "+"1"+"  # Nrad,Nion\n")
+        file.write("1           # ion Znum\n")
+        file.write("1           # ion Amass\n")
+        file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
+        file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n")
+
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(temperature_e['flux_pol_norm'],temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) 
+            line=fortran_string(RHO,16,7)+fortran_string(Te,16,7)+fortran_string(Ne,16,7)+fortran_string(Vtor_I,15,7)+fortran_string(Ti1,17,7)+fortran_string(Ni1,15,7)+"\n"
+            file.write(line)
+
+    print("finished dumping profiles to ASCOT format")

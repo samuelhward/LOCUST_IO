@@ -250,6 +250,11 @@ class LOCUST_input:
             for key in support.required_number_density:
                 if key not in self.data:
                     missing_data.append(key)
+
+        elif self.LOCUST_input_type=='perturbation':
+            for key in support.required_perturbation:
+                if key not in self.data:
+                    missing_data.append(key)
  
         if missing_data: #object is not ready
             if verbose is True: #if wanting to print summary

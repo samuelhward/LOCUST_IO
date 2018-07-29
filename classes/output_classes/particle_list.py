@@ -285,11 +285,11 @@ class Final_Particle_List(base_output.LOCUST_output):
         notes:
         """
 
-        if utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data - data_format required\n",data_format): #must always have data_format if reading in data
+        if utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -298,7 +298,7 @@ class Final_Particle_List(base_output.LOCUST_output):
                 self.data=read_final_particle_list_LOCUST(self.filepath) #read the file
 
         elif data_format=='TRANSP': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot read_data from LOCUST - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -307,7 +307,7 @@ class Final_Particle_List(base_output.LOCUST_output):
                 self.data=read_final_particle_list_TRANSP(self.filepath) #read the file
         
         else:
-            print("cannot read_data - please specify a compatible data_format (LOCUST/TRANSP)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
@@ -316,21 +316,21 @@ class Final_Particle_List(base_output.LOCUST_output):
         notes: 
         """
 
-        if utils.none_check(self.ID,self.LOCUST_output_type,"cannot dump_data - self.data and data_format required\n",self.data,data_format):
+        if utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
         
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot dump_data to LOCUST - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_output_files+filename
                 dump_final_particle_list_LOCUST(self.data,filepath)
 
         elif data_format=='TRANSP':
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"cannot dump_data to TRANSP - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to TRANSP - filename required\n",filename):
                 filepath=support.dir_output_files+filename
                 dump_final_particle_list_TRANSP(self.data,filepath)
         
         else:
-            print("cannot dump_data - please specify a compatible data_format (LOCUST/TRANSP)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")
 
 
 #################################
