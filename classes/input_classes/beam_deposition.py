@@ -381,7 +381,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write("\n")
 
         i=0 #counter for particle identifier
-        for phi,R,z,vphi,vR,vz in zip(output_data['E'],output_data['V_pitch'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+        for phi,R,z,vphi,vR,vz in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
             line=''
             line+=utils.fortran_string(2.0,9,4,False)
