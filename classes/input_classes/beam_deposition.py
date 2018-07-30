@@ -362,13 +362,13 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write(" {number_particles} # Number of particles\n".format(number_particles=output_data['R'].size))
         file.write("\n")
 
-        file.write(" 15 # Number of different fields for each particle [10 first letters are significant]\n")
+        file.write(" 13 # Number of different fields for each particle [10 first letters are significant]\n")
         file.write("Anum      - mass number of particle        (integer)\n")
         file.write("mass      - mass of the particle           (amu)\n")
         file.write("Znum      - charge number of particle      (integer)\n")
         file.write("charge    - charge of the particle         (elemental charge)\n")
-        file.write("energy    - kinetic energy of particle     (eV)\n")
-        file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
+        #file.write("energy    - kinetic energy of particle     (eV)\n")
+        #file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
         file.write("phi       - toroidal angle of particle     (deg)\n")
         file.write("R         - R of particle                  (m)\n")
         file.write("z         - z of particle                  (m)\n")
@@ -381,9 +381,26 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write("\n")
 
         i=0 #counter for particle identifier
-        for energy,pitch,phi,R,z,vphi,vR,vz in zip(output_data['E'],output_data['V_pitch'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+        for phi,R,z,vphi,vR,vz in zip(output_data['E'],output_data['V_pitch'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
-            line=utils.fortran_string(2.0,9,4,False)+utils.fortran_string(2.0,13,4,False)+utils.fortran_string(1.0,13,4,False)+utils.fortran_string(2.0,13,4,False)+utils.fortran_string(energy/1000.0,13,1,False)+utils.fortran_string(pitch,13,5,False)+utils.fortran_string(360.0*(phi/(2.*pi)),18,3,False)+utils.fortran_string(R,13,4,False)+utils.fortran_string(z,13,5,False)+utils.fortran_string(vphi,15,5)+utils.fortran_string(vR,15,5)+utils.fortran_string(vz,15,5)+utils.fortran_string(1.0,17,5,True)+utils.fortran_string(i,15)+utils.fortran_string(999.0,8,1,False)+"\n"
+            line=''
+            line+=utils.fortran_string(2.0,9,4,False)
+            line+=utils.fortran_string(2.0,13,4,False)
+            line+=utils.fortran_string(1.0,13,4,False)
+            line+=utils.fortran_string(1.0,13,4,False)
+            #line+=utils.fortran_string(energy/1000.0,13,1,False)
+            #line+=utils.fortran_string(pitch,13,5,False)
+            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,3,False)
+            line+=utils.fortran_string(R,13,4,False)
+            line+=utils.fortran_string(z,13,5,False)
+            line+=utils.fortran_string(vphi,15,5)
+            line+=utils.fortran_string(vR,15,5)
+            line+=utils.fortran_string(vz,15,5)
+            line+=utils.fortran_string(1.0,17,5,True)
+            line+=utils.fortran_string(i,15,0,False)
+            line+=utils.fortran_string(999.0,8,1,False)
+            line+="\n"
+            
             file.write(line)
             i+=1
 
