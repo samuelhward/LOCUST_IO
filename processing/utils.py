@@ -214,7 +214,7 @@ def interpolate_1D(X_axis,Y_axis):
 
 def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e,rotation_toroidal):
     """
-    dumps collection of kinetic profiles to ASCOT ASCII format
+    dumps collection of kinetic profiles to ASCOT input.plasma_1d format
 
     notes:
         profiles must be mapped to same poloidal flux axis
@@ -248,3 +248,29 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
             file.write(line)
 
     print("finished dumping profiles to ASCOT format")
+
+def dump_wall_ASCOT(filename,wall):
+    """
+    dumps 2D wall outline to ASCOT input.wall_2d format
+    
+    notes:
+        currently sets all divertor flags = 0 i.e. treats everything as 'wall'
+    args:
+        filename - output filename
+        wall - dict or object holding wall with same variable names as GEQDSK equilibrium i.e. rlim,zlim
+
+    """
+
+    print("dumping wall to ASCOT format")
+
+    filepath=support.dir_input_files+filename
+
+    with open(filepath,'w') as file:
+
+        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall\n)".format(number_points=int(wall['rlim'].size)))
+        
+        for r,z in zip(wall['rlim'],wall['zlim']):
+            line=fortran_string(r,16,5)+fortran_string(r,16,5)+fortran_string(0.0,4,0,False)+"\n"
+            file.write(line)
+
+    print("finished dumping wall to ASCOT format")
