@@ -267,10 +267,10 @@ def dump_wall_ASCOT(filename,wall):
 
     with open(filepath,'w') as file:
 
-        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall\n)".format(number_points=int(wall['rlim'].size)))
+        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(wall['rlim'].size)))
         
         for r,z in zip(wall['rlim'],wall['zlim']):
-            line=fortran_string(r,16,5)+fortran_string(r,16,5)+fortran_string(0.0,4,0,False)+"\n"
+            line=fortran_string(r,16,7)+fortran_string(z,16,7)+fortran_string(0.0,4,0,False)+"\n"
             file.write(line)
 
     print("finished dumping wall to ASCOT format")
