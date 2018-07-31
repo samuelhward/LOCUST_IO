@@ -106,17 +106,13 @@ def dump_number_density_LOCUST(output_data,filepath):
  
         file.write("{}\n".format(utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
         for point in range(output_data['flux_pol_norm'].size): #iterate through all points i.e. length of our dictionary's arrays
- 
-            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
-            n_out=output_data['n'][point]
-             
-            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=utils.fortran_string(flux_pol_out,16,8),n=utils.fortran_string(n_out,16,8)))
+            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux[point],16,8),n=utils.fortran_string(output_data['n'][point],16,8)))
  
     print("finished writing number density to LOCUST")
 
 def read_number_density_IDS(shot,run,**properties):
     """
-    reads relevant LOCUST number density data from a core_profiles IDS and returns as a dictionary
+    reads LOCUST number density data from a core_profiles IDS and returns as a dictionary
  
     notes:
         
@@ -152,7 +148,7 @@ def read_number_density_IDS(shot,run,**properties):
  
 def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     """
-    writes relevant LOCUST number density data to a core_profiles IDS
+    writes LOCUST number density data to a core_profiles IDS
     """
     
     print("writing number density to IDS")
@@ -190,7 +186,30 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     output_IDS.close()
 
     print("finished writing number density to IDS")
+
+def dump_number_density_MARSF(output_data,filepath):
+    """
+    writes number density data to MARSF Mogui ASCII format 
+
+    note:
+        writes out a header line for number of points
+        MARSF mogui written by David Ryan
+    """
+
+    print("writing number density to MARSF mogui")
+
+    with open(filepath,'w') as file: #open file
+
+        normalised_flux_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #take abs sqrt()
+        normalised_flux_sqrt,output_data['n']=utils.sort_arrays(normalised_flux_sqrt,output_data['n']) #check order
  
+        file.write("{length} {some_number}\n".format(length=int(normalised_flux_sqrt.size),some_number=1)) #re-insert line containing length
+        
+        for point in range(normalised_flux_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm_sqrt} {n}\n".format(flux_pol_norm_sqrt=utils.fortran_string(normalised_flux_sqrt[point],24,18),n=utils.fortran_string(output_data['n'][point],24,18)))
+
+    print("finished writing number density to MARSF mogui")
+
 ################################################################## Number_Density class
  
 class Number_Density(base_input.LOCUST_input):
@@ -274,9 +293,14 @@ class Number_Density(base_input.LOCUST_input):
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
                 dump_number_density_IDS(self.ID,self.data,shot,run,**properties)
+
+        elif data_format=='MARSF':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to MARSF - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_number_density_MARSF(self.data,filepath)
  
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")
 
  
 #################################

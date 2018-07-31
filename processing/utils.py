@@ -140,7 +140,7 @@ def fortran_string(number_out,length,decimals=None,exponential=True):
         string_stream='{}{}'.format(' '*number_spaces,output_string) #construct the string stream
         return string_stream
     else:
-        print('ERROR: fortran_string() output longer than length arguement!')
+        print('ERROR: fortran_string() too many decimal places for requested string length!')
 
 
 def sort_arrays(main_array,*args):
@@ -249,7 +249,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
 
     print("finished dumping profiles to ASCOT format")
 
-def dump_wall_ASCOT(filename,wall):
+def dump_wall_ASCOT(filename,output_data):
     """
     dumps 2D wall outline to ASCOT input.wall_2d format
     
@@ -257,7 +257,7 @@ def dump_wall_ASCOT(filename,wall):
         currently sets all divertor flags = 0 i.e. treats everything as 'wall'
     args:
         filename - output filename
-        wall - dict or object holding wall with same variable names as GEQDSK equilibrium i.e. rlim,zlim
+        output_data - data structure holding wall with same wall variable names as GEQDSK equilibrium i.e. rlim,zlim
 
     """
 
@@ -267,10 +267,88 @@ def dump_wall_ASCOT(filename,wall):
 
     with open(filepath,'w') as file:
 
-        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(wall['rlim'].size)))
+        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(output_data['rlim'].size)))
         
-        for r,z in zip(wall['rlim'],wall['zlim']):
+        for r,z in zip(output_data['rlim'],output_data['zlim']):
             line=fortran_string(r,16,7)+fortran_string(z,16,7)+fortran_string(0.0,4,0,False)+"\n"
             file.write(line)
 
     print("finished dumping wall to ASCOT format")
+
+def dump_rotation_MARSF(filename,output_data):
+    """
+    writes rotation profile to MARSF Mogui ASCII format 
+
+    notes
+        assumes structure similar number_density or temperature, with normalised poloidal flux given against rotation
+        re-usable if rotation class written for LOCUST_IO
+        writes out a header line for number of points
+        MARSF mogui written by David Ryan
+    args:
+        filename - output filename
+        output_data - data structure holding 'rotation' against normalised poloidal flux
+    """
+
+    print("writing rotation to MARSF mogui")
+
+    filepath=support.dir_input_files+filename
+
+    with open(filepath,'w') as file: #open file
+
+        normalised_flux_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #take abs sqrt()
+        normalised_flux_sqrt,output_data['rotation']=utils.sort_arrays(normalised_flux_sqrt,output_data['n']) #check order
+ 
+        file.write("{length} {some_number}\n".format(length=int(normalised_flux_sqrt.size),some_number=1)) #re-insert line containing length
+        
+        for point in range(normalised_flux_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm_sqrt} {rotation}\n".format(flux_pol_norm_sqrt=utils.fortran_string(normalised_flux_sqrt[point],24,18),rotation=utils.fortran_string(output_data['rotation'][point],24,18)))
+
+    print("finished writing rotation to MARSF mogui")
+
+
+def dump_coil_currents_MARSF(filename,output_data):
+    """
+    writes coil currents to MARSF Mogui ASCII format
+
+    notes:
+        output_data structure assumed to be dict holding 'upper_coil_currents' and 'lower_coil_currents' arrays
+        MARSF mogui written by David Ryan
+    args:  
+        filename - output filename
+        output_data - data structure holding coil currents
+    """
+
+    print("writing coil currents to MARSF mogui")
+
+    filepath=support.dir_input_files+filename
+
+    with open(filepath,'w') as file: #open file
+
+        some_ID='34835_2000'
+        file.write('{}\n'.format(some_ID)) #write headerline
+        
+        upper_coil_currents=''
+        lower_coil_currents=''
+
+        for coil in output_data['upper_coil_currents']:
+            upper_coil_currents+=str(coil)+', '
+
+        for coil in output_data['lower_coil_currents']:
+            lower_coil_currents+=str(coil)+', '
+
+        upper_coil_currents=upper_coil_currents[0:-2]
+        lower_coil_currents=lower_coil_currents[0:-2]
+
+        upper_coil_currents+='\n'
+        lower_coil_currents+='\n'
+
+        file.write(upper_coil_currents) #write upper coil currents
+        file.write(lower_coil_currents) #write lower coil currents
+
+    print("finished writing coil currents to MARSF mogui")
+
+
+
+
+
+
