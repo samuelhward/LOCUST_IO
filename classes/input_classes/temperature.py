@@ -189,6 +189,29 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
 
     print("finished writing temperature to IDS") 
 
+def dump_temperature_MARSF(output_data,filepath):
+    """
+    writes temperature profile to MARSF Mogui ASCII format
+     
+    notes:
+        writes out a header line for number of points
+        MARSF mogui written by David Ryan
+    """
+
+    print("writing temperature to MARSF mogui")
+ 
+    with open(filepath,'w') as file: #open file
+
+        normalised_flux_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #take abs
+        normalised_flux_sqrt,output_data['T']=utils.sort_arrays(normalised_flux_sqrt,output_data['T']) #check order
+ 
+        file.write("{length} {some_number}\n".format(length=int(normalised_flux_sqrt.size),some_number=1)) #re-insert line containing length
+        
+        for point in range(normalised_flux_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays 
+            file.write("{flux_pol_norm} {T}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux_sqrt[point],24,18),T=utils.fortran_string(output_data['T'][point],24,18)))
+ 
+    print("finished writing temperature to MARSF mogui")
+
 
 ################################################################## Temperature class
  
@@ -273,9 +296,14 @@ class Temperature(base_input.LOCUST_input):
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
                 dump_temperature_IDS(self.ID,self.data,shot,run,**properties)
+
+        elif data_format=='MARSF':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to MARSF - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_temperature_MARSF(self.data,filepath)
  
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")
  
 
  
