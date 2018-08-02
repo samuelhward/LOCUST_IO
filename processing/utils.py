@@ -249,7 +249,10 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
         file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n")
 
-        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(temperature_e['flux_pol_norm'],temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']): 
+        #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt=np.abs(temperature_e['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
+
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']): 
             line=fortran_string(RHO,16,7)+fortran_string(Te,16,7)+fortran_string(Ne,16,7)+fortran_string(Vtor_I,15,7)+fortran_string(Ti1,17,7)+fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 
@@ -301,13 +304,13 @@ def dump_rotation_MARSF(filename,output_data):
 
     with open(filepath,'w') as file: #open file
 
-        normalised_flux_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #take abs sqrt()
-        normalised_flux_sqrt,output_data['rotation']=utils.sort_arrays(normalised_flux_sqrt,output_data['n']) #check order
+        flux_pol_norm_sqrt=np.abs(output_data['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
+        flux_pol_norm_sqrt,output_data['rotation']=utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
  
-        file.write("{length} {some_number}\n".format(length=int(normalised_flux_sqrt.size),some_number=1)) #re-insert line containing length
+        file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
-        for point in range(normalised_flux_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm_sqrt} {rotation}\n".format(flux_pol_norm_sqrt=utils.fortran_string(normalised_flux_sqrt[point],24,18),rotation=utils.fortran_string(output_data['rotation'][point],24,18)))
+        for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm_sqrt} {rotation}\n".format(flux_pol_norm_sqrt=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=utils.fortran_string(output_data['rotation'][point],24,18)))
 
     print("finished writing rotation to MARSF mogui")
 
