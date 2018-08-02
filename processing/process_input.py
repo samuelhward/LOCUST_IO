@@ -103,11 +103,12 @@ def fpolrz_calc(some_equilibrium):
     print("fpolrz_calc - finished calculating 2D flux function")
     return fpolrz
 
-def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in B_field_i calcs with that break things? I think the order is bad - but our data is 101x101 so need a GEQDSK which is rectangular in domain to test this
+def B_calc(some_equilibrium): #ordering OK - for Z[X,Y].shape=(2,3), gradient(Z,X,Y) --> gradient[0] along X, gradient[1] along Y
     """
     calculates r, phi, z axisymmetric magnetic field at coordinates R_1D, Z_1D
 
     notes:
+        see Wesson, based on RH coordinate system [R,Phi,Z]
         returns B(r,z,i), a 3D array holding component i of B field at grid indices r, z
         i=0 - B_r
         i=1 - B_toroidal
@@ -123,13 +124,13 @@ def B_calc(some_equilibrium): #XXX check all the ordering- if i swap ordering in
 
     print("B_calc - calculating 2D magnetic field")
 
-    gradient=np.gradient(some_equilibrium['psirz'],some_equilibrium['R_1D'],some_equilibrium['Z_1D']) #calculate gradient along both axes (gradient[i] is 2D) XXX is R_1D and Z_1D in the right order? IF I SWAP IT SHOULD BREAK?
+    gradient=np.gradient(some_equilibrium['psirz'],some_equilibrium['R_1D'],some_equilibrium['Z_1D']) #calculate gradient along both axes (gradient[i] is 2D)
 
     one_R=1.0/some_equilibrium['R_1D']
     one_R=one_R[:,np.newaxis]
 
-    B_field_Z=(gradient[0])*(-1.0)*one_R #XXX check here that we're dividing by R in the correct order (should break if not since length of one_R should only be equal to nR_1D)...maybe one of these references to one_R should be transposed?
-    B_field_R=(gradient[1])*one_R
+    B_field_Z=(gradient[0])*one_R
+    B_field_R=(gradient[1])*one_R*(-1.0)
     B_field_tor=some_equilibrium['fpolrz']*one_R
 
     B_field=np.array([[[B_field_R[w,h],B_field_tor[w,h],B_field_Z[w,h]] for h in range(len(some_equilibrium['Z_1D']))] for w in range(len(some_equilibrium['R_1D']))],ndmin=3)

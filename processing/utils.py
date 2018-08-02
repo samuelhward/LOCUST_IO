@@ -179,14 +179,20 @@ def angle_pol(R_major_width,R,Z):
 def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS'):
     """
     generate a 2D grid interpolator
-
     notes:
         keep as separate functions so can freely swap out interpolation method
-        X_axis, Y_axis are 1D grid axes
         RBF - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
             - high memory overhead, most accurate
         RBS - https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RectBivariateSpline.html#scipy.interpolate.RectBivariateSpline
               https://scipython.com/book/chapter-8-scipy/examples/two-dimensional-interpolation-with-scipyinterpolaterectbivariatespline/
+    args:
+        X_axis - 1D x-axis
+        Y_axis - 1D y-axis
+        Z_grid - 2D z-axis
+
+    usage:
+        my_interpolator=interpolate_2D(X_axis,Y_axis,data)
+        interpolated_value=my_interpolator(x,y)
     """
     
     if type=='RBF':

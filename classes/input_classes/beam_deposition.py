@@ -35,6 +35,11 @@ try:
     from processing import utils
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
+    from processing import process_input
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_input 
@@ -50,6 +55,8 @@ except:
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
 pi=np.pi
+amu=1.66053904e-27
+mass_deuterium=2.0141017781*amu
 
 
 ################################################################## Beam_Deposition functions
@@ -337,7 +344,7 @@ def read_beam_depo_TRANSP_gc(filepath):
 
     return input_data
 
-def dump_beam_depo_ASCOT(output_data,filepath):
+def dump_beam_depo_ASCOT(output_data,filepath,equilibrium):
     """
     dumps birth profile to ASCOT ACII format 
 
@@ -367,7 +374,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write("mass      - mass of the particle           (amu)\n")
         file.write("Znum      - charge number of particle      (integer)\n")
         file.write("charge    - charge of the particle         (elemental charge)\n")
-        #file.write("energy    - kinetic energy of particle     (eV)\n")
+        file.write("energy    - kinetic energy of particle     (eV)\n")
         #file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
         file.write("phi       - toroidal angle of particle     (deg)\n")
         file.write("R         - R of particle                  (m)\n")
@@ -375,30 +382,69 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write("vphi      - toroidal velocity of particle  (m/s)\n")
         file.write("vR        - radial velocity of particle    (m/s)\n")
         file.write("vz        - vertical velocity of particle  (m/s)\n")
+        file.write("origin    - origin of the particle         ()\n")
         file.write("weight    - weight factor of particle      (particle/second)\n")
         file.write("id        - unique identifier of particle  (integer)\n")
         file.write("Tmax      - maximum time to follow the prt (s)\n")
+        file.write("Bphi      - toroidal magnetic field        (T)\n")
+        file.write("BR        - radial magnetic field          (T)\n")
+        file.write("Bz        - vertical magnetic field        (T)\n")
         file.write("\n")
 
+        #calculate particle energies if missing
+        if 'E' not in output_data.keys():
+            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)
+
+        #interpolate B field to particle locations with supplied equilibrium
+        if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
+            print("B_field not found in equilibrium - calculating!")
+            if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
+                print("fpolrz not found in equilibrium - calculating!")
+                equilibrium.set(fpolrz=process_input.fpolrz_calc(equilibrium))
+            equilibrium.set(B_field=process_input.B_calc(equilibrium))
+
+        print("generating B_field interpolators")
+        B_field_R_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here
+        B_field_tor_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,1])
+        B_field_Z_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
+        print("finished generating B_field interpolators")
+
+
+        #hard-code weight calculation for now
+        beam_power=1.0
+        energies_sum=np.sum(output_data['E'])
+        weight=beam_power/energies_sum
+
+
+        print("dumping particle list to file")
         i=0 #counter for particle identifier
-        for phi,R,z,vphi,vR,vz in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+        for E,phi,R,Z,V_tor,V_R,V_Z in zip(output_data['E'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
             line=''
-            line+=utils.fortran_string(2.0,9,4,False)
-            line+=utils.fortran_string(2.0,13,4,False)
-            line+=utils.fortran_string(1.0,13,4,False)
-            line+=utils.fortran_string(1.0,13,4,False)
-            #line+=utils.fortran_string(energy/1000.0,13,1,False)
+            line+=utils.fortran_string(2,6,0,False) #mass and charge
+            line+=utils.fortran_string(2.0141017781,14,5)
+            line+=utils.fortran_string(1,6,0,False)
+            line+=utils.fortran_string(1.0,14,5)
+            
+            line+=utils.fortran_string(E,18,9) #energy
             #line+=utils.fortran_string(pitch,13,5,False)
-            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,3,False)
-            line+=utils.fortran_string(R,13,4,False)
-            line+=utils.fortran_string(z,13,5,False)
-            line+=utils.fortran_string(vphi,15,5)
-            line+=utils.fortran_string(vR,15,5)
-            line+=utils.fortran_string(vz,15,5)
-            line+=utils.fortran_string(1.0,17,5,True)
-            line+=utils.fortran_string(i,15,0,False)
-            line+=utils.fortran_string(999.0,8,1,False)
+            
+            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=utils.fortran_string(R,18,9)
+            line+=utils.fortran_string(Z,18,9)
+
+            line+=utils.fortran_string(V_tor,18,9) #velocity
+            line+=utils.fortran_string(V_R,18,9)
+            line+=utils.fortran_string(V_Z,18,9)
+
+            line+=utils.fortran_string(1.0,9,0,False) #origin
+            line+=utils.fortran_string(weight,18,9) #weight
+            line+=utils.fortran_string(i,10,0,False) #ID
+            line+=utils.fortran_string(999.0,18,9) #Tmax
+            
+            line+=utils.fortran_string(float(B_field_tor_interpolator(R,Z)),18,9) #B field
+            line+=utils.fortran_string(float(B_field_R_interpolator(R,Z)),18,9) #must interpolate ad hoc to save memory
+            line+=utils.fortran_string(float(B_field_Z_interpolator(R,Z)),18,9)
             line+="\n"
             
             file.write(line)
@@ -488,7 +534,7 @@ class Beam_Deposition(base_input.LOCUST_input):
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP/TRANSP_gc)\n")            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None):
         """
         write beam_deposition to file
  
@@ -511,9 +557,9 @@ class Beam_Deposition(base_input.LOCUST_input):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
 
         elif data_format=='ASCOT':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename and equilibrium required\n",filename,equilibrium):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT(self.data,filepath)
+                dump_beam_depo_ASCOT(self.data,filepath,equilibrium)
  
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/ASCOT)\n")

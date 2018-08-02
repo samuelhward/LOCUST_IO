@@ -236,6 +236,10 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_tor/-/...profiles_1d.phi/                                  #toroidal flux from magnetic axis up to the plasma boundary (Weber / rad)
     2D data
         psirz/psirz/...profiles_2d[0].psi/psi_equil_h                   #poloidal flux at coordinate [r,z] in (Weber / rad) 
+        fpolrz/-/-/-                                                    #poloidal current function at coordinate [r,z] (m T) calculated by fpolrz_calc
+    3D data
+        B_field/-/-/-                                                   #magnetic field component [i] at position [r,z] (T) calculate by B_calc
+
 
 LOCUST reads an equilibrium in GEQDSK format.
 
