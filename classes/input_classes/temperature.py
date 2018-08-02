@@ -202,13 +202,13 @@ def dump_temperature_MARSF(output_data,filepath):
  
     with open(filepath,'w') as file: #open file
 
-        normalised_flux_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #take abs
-        normalised_flux_sqrt,output_data['T']=utils.sort_arrays(normalised_flux_sqrt,output_data['T']) #check order
+        flux_pol_norm_sqrt=np.abs(output_data['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
+        flux_pol_norm_sqrt,output_data['T']=utils.sort_arrays(flux_pol_norm_sqrt,output_data['T']) #check order
  
-        file.write("{length} {some_number}\n".format(length=int(normalised_flux_sqrt.size),some_number=1)) #re-insert line containing length
+        file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
-        for point in range(normalised_flux_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays 
-            file.write("{flux_pol_norm} {T}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux_sqrt[point],24,18),T=utils.fortran_string(output_data['T'][point],24,18)))
+        for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays 
+            file.write("{flux_pol_norm} {T}\n".format(flux_pol_norm=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),T=utils.fortran_string(output_data['T'][point],24,18)))
  
     print("finished writing temperature to MARSF mogui")
 
