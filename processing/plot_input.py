@@ -358,14 +358,10 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
     else:
         #if this option chosen, then dl is reduced to stop numerical drift - thus a single flux surface is plotted
-        dl=0.005*np.sqrt(dr**2+dz**2)
-        if ax_flag is False:
+        dl=0.001*np.sqrt(dr**2+dz**2)
+        if ax_flag is False and len(axes)==3:
             ax = fig.gca(projection='3d')
-        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-        ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
-
-
+        
     print('plot_B_field_line - generating B field interpolators')
     B_field_R_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
     B_field_Z_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
@@ -397,9 +393,12 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
             B_field_R=B_field_R_interpolator(R_point,Z_point)
             B_field_tor=B_field_tor_interpolator(R_point,Z_point)
             B_field_Z=B_field_Z_interpolator(R_point,Z_point)
-            B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)   #calculate the magnitude
+
+            #was originally normalising here, but save computing power by just dividing by largest B component*some_constant - since we only need to divide the B vector by something we know is going to be larger than than the largest component
+            #and remember (in 3D) the magnitude cannot ever be more than sqrt(3) times larger than the largest component of the field, so if we divide by at least sqrt(3)*np.max(field) then we always know our normalised values will be < 1.0
+            B_field_mag=5.*np.max([B_field_tor,B_field_R,B_field_Z])#np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)
             
-            B_field_R/=B_field_mag #normalise the vector magnetic field
+            B_field_R/=B_field_mag #'normalise' the vector magnetic field
             B_field_Z/=B_field_mag
             B_field_tor/=B_field_mag
 
@@ -426,12 +425,14 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
             if axes==['R','Z']: #poloidal plot
                 ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
                 if start_mark: 
-                    ax.scatter(X_points[0],Y_points[0],color='red',s=10)
+                    ax.scatter(R_points[0],Z_points[0],color='red',s=10)
                 if LCFS is True: #plot plasma boundary
                     ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
         
                 ax.set_xlabel('R [m]')
                 ax.set_ylabel('Z [m]')
+                ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_title(some_equilibrium.ID)
 
             elif axes==['X','Y']: #top-down plot
@@ -446,6 +447,8 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                 
                 ax.set_xlabel('X [m]')
                 ax.set_ylabel('Y [m]')
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_title(some_equilibrium.ID)
             
             else: #3D plot
@@ -457,6 +460,10 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                         y_points=some_equilibrium['lcfs_r']*np.sin(angle)
                         z_points=some_equilibrium['lcfs_z']
                         ax.plot(x_points,y_points,zs=z_points,color='m')
+
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
                 ax.plot(X_points,Y_points,zs=Z_points,color=colmap(np.random.uniform()))
 
     if ax_flag is False and fig_flag is False:
