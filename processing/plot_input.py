@@ -358,7 +358,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
         ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
     else:
         #if this option chosen, then dl is reduced to stop numerical drift - thus a single flux surface is plotted
-        dl=0.001*np.sqrt(dr**2+dz**2)
+        dl=0.005*np.sqrt(dr**2+dz**2)
         if ax_flag is False and len(axes)==3:
             ax = fig.gca(projection='3d')
         
@@ -394,11 +394,11 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
             B_field_tor=B_field_tor_interpolator(R_point,Z_point)
             B_field_Z=B_field_Z_interpolator(R_point,Z_point)
 
-            #was originally normalising here, but save computing power by just dividing by largest B component*some_constant - since we only need to divide the B vector by something we know is going to be larger than than the largest component
+            #could save computing power by just dividing by largest B component*some_constant - since we only need to divide the B vector by something we know is going to be larger than than the largest component
             #and remember (in 3D) the magnitude cannot ever be more than sqrt(3) times larger than the largest component of the field, so if we divide by at least sqrt(3)*np.max(field) then we always know our normalised values will be < 1.0
-            B_field_mag=5.*np.max([B_field_tor,B_field_R,B_field_Z])#np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)
+            B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)
             
-            B_field_R/=B_field_mag #'normalise' the vector magnetic field
+            B_field_R/=B_field_mag #normalise the vector magnetic field
             B_field_Z/=B_field_mag
             B_field_tor/=B_field_mag
 
