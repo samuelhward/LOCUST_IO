@@ -599,29 +599,31 @@ class ASCOT_output:
         special method to overload []
 
         notes:
+            could adapt this to neatly print the whole tree with '\t * #recursion levels'
         usage:
         """
     
         return self.data[key]
 
-    def print_level(self,key=None):
+    def look(self,key=None):
         """
-        prints the sub-branches from current branch 'key'
+        prints sub-branches from branch 'key'
 
         notes:
+            can navigate tree with '/' like file directory
         usage:
-            my_ASCOT_output.print_level() #print top level
-            my_ASCOT_output.print_level('bfield')
+            my_ASCOT_output.look() #print top level
+            my_ASCOT_output.look('bfield')
         """
 
         if key:
-            for var in self[key].keys():
-                print(var)
+            if 'keys' in dir(self[key]):
+                for var in self[key].keys():
+                    print(var)
+            else:
+                print(self[key].value)
         else:
             for var in self.data.keys():
                 print(var)
 
-
-
-        
 
