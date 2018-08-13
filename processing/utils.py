@@ -22,8 +22,12 @@ try:
     import numpy as np
     import copy
     import re
+    import h5py
     import time
     import itertools
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from scipy.io import netcdf as ncdf
     import scipy.interpolate
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
@@ -35,7 +39,8 @@ except:
     sys.exit(1)
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
+colmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
+
 pi=np.pi
 
 
@@ -249,10 +254,10 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
         file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n")
 
-        #calculate profiles vs sqrt(flux_pol)
-        flux_pol_norm_sqrt=np.abs(temperature_e['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
+        flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt,temperature_e,density_e,rotation_toroidal,temperature_i,density_i=sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
-        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']): 
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,temperature_e,density_e,rotation_toroidal,temperature_i,density_i): 
             line=fortran_string(RHO,16,7)+fortran_string(Te,16,7)+fortran_string(Ne,16,7)+fortran_string(Vtor_I,15,7)+fortran_string(Ti1,17,7)+fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 
@@ -304,13 +309,13 @@ def dump_rotation_MARSF(filename,output_data):
 
     with open(filepath,'w') as file: #open file
 
-        flux_pol_norm_sqrt=np.abs(output_data['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
-        flux_pol_norm_sqrt,output_data['rotation']=utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
+        flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt,rotation=sort_arrays(flux_pol_norm_sqrt,output_data['rotation']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
         for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm_sqrt} {rotation}\n".format(flux_pol_norm_sqrt=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=utils.fortran_string(output_data['rotation'][point],24,18)))
+            file.write("{flux_pol_norm_sqrt}{rotation}\n".format(flux_pol_norm_sqrt=fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=fortran_string(rotation[point],24,18)))
 
     print("finished writing rotation to MARSF mogui")
 
@@ -358,6 +363,282 @@ def dump_coil_currents_MARSF(filename,output_data):
 
 
 
+
+
+
+
+
+
+################################################################## Supporting classes
+
+class TRANSP_output:
+    """
+    base class for generic CDF file produced by TRANSP
+    
+    notes:
+        more fundamental methods here which aim to overload netCDF  
+    """
+
+    def __init__(self,filename):
+        """
+        constructor for TRANSP_output class
+        
+        notes: 
+
+        """
+
+        self.filename=filename
+        self.data=ncdf.netcdf_file(filename,'r')
+        self.variables=sorted(self.data.variables.keys())
+        self.dimensions=self.data.dimensions #make shallow copy to update self.dimensions when new dimension created
+
+    def __getitem__(self,key):
+        """
+        special method to overload []
+
+        notes:
+            returns the nested netCDF object associated with 'key', not the raw data
+        usage:
+            access member data via my_ncdf[key].data, attributes via my_ncdf[key]._attributes etc
+            
+        """
+    
+        return self.data.variables[key]
+
+    #def __setitem__(self,key):
+        """
+        notes:
+
+        """
+
+    def new_var(self,key,typ,**dimensions):
+        """
+        interface for creating new netCDF variable
+
+        notes:
+            if dimension is supplied that does not already exist then new dimension is created
+            final variable shape does not currently reflect order of **dimensions arguements
+        args:
+            key - name of variable to create
+            typ - dtype of variable
+            dimensions - kwarg for dimension names and corresponding lengths
+        useage:
+            my_cdf.new_var('new_variable','float',x=100,y=50) 
+        """
+
+        for dimension in dimensions.keys():
+            if dimension not in self.data.dimensions:
+                self.data.dimensions[dimension]=dimensions[dimension]
+            elif dimensions[dimension]!=self.data.dimensions[dimension]:
+                print("ERROR - new_var(): specified dimension {dimension} already exists with value={value}!\n".format(dimension=dimension,value=dimensions[dimension]))
+                return 
+
+        if key in self.data.variables.keys():
+            print("{filename}: overwriting {key}".format(filename=self.filename,key=key))
+        self.data.createVariable(key,typ,dimensions)
+
+
+class TRANSP_output_FI(TRANSP_output):
+    """
+    notes:
+    """
+
+    def dfn_integrate(self,energy=True,pitch=True,space=True):
+        """
+        integrate the fast ion distribution function over specified dimensions
+
+        notes:
+            assumes regular pitch, energy grid
+        args:
+            space - toggle to integrate over space
+            pitch - toggle to integrate over pitch
+            energy - toggle to integrate over energy 
+        """
+
+        #infer dimensions of quantity to make
+        new_var_dimensions={}
+        vew_var_shape=[]
+        if not space:
+            dimension=self['F_D_NBI'].dimensions[0]
+            new_var_dimensions[dimension]=self.dimensions[dimension]
+            vew_var_shape+=[self.dimensions[dimension]]
+        if not pitch:
+            dimension=self['F_D_NBI'].dimensions[1]
+            new_var_dimensions[dimension]=self.dimensions[dimension]
+            vew_var_shape+=[self.dimensions[dimension]]
+        if not energy:
+            dimension=self['F_D_NBI'].dimensions[2]
+            new_var_dimensions[dimension]=self.dimensions[dimension]
+            vew_var_shape+=[self.dimensions[dimension]]
+        if new_var_dimensions==[]:
+            self.data.dimensions['dim_00001']=1
+            new_var_dimensions['dim_00001']=1
+
+        self.new_var('F_D_NBI_int','float',**new_var_dimensions)
+        self['F_D_NBI_int'].data.reshape(vew_var_shape) #need to reshape to space,pitch,energy here
+        self['F_D_NBI_int'].data=0.5*copy.deepcopy(self['F_D_NBI'].data) #0.5 to account for number pitch bins
+
+        dE=np.abs(self['E_D_NBI'].data[1]-self['E_D_NBI'].data[0]) #energy bin width
+        dP=np.abs(self['A_D_NBI'].data[1]-self['A_D_NBI'].data[0]) #pitch bin width
+
+        sum_indices=[] #figure out which indices we need to sum over
+        if energy: #apply Jacobian and integrate each dimension
+            self['F_D_NBI_int'].data*=dE
+            sum_indices.append(2)
+        if pitch:
+            self['F_D_NBI_int'].data*=dP
+            sum_indices.append(1)
+        if space: #integrate over various dimensions here
+            for counter,volume_element in enumerate(self['BMVOL'].data):
+                self['F_D_NBI_int'].data[counter,:,:]*=volume_element
+            sum_indices.append(0)
+
+        for sum_index in sum_indices: #sum over unwanted dimensions
+            self['F_D_NBI_int'].data=np.sum(self['F_D_NBI_int'].data,axis=int(sum_index))
+
+    def dfn_plot(self,axes=[0,slice(None),slice(None)],integrated=False,colmap=colmap_default,ax=None,fig=None):
+        """
+        notes:
+        args:
+            axes - array holding dfn indices to plot over
+            integrated - toggle whether to plot integrated dfn 'F_D_NBI_int'
+            colmap - select desired colourmap
+            ax - external axis object
+            fig - external figure object
+        """
+        
+        if not ax:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+        if not fig:
+            fig_flag=False
+        else:
+            fig_flag=True
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)   
+
+        #infer which dimensions we are plotting
+        '''
+        for i in range(len(axes)):
+            if axes[0] is slice(None):
+        
+
+
+        ax.set_xlim()
+        ax.set_ylim()
+        
+
+        #testing
+        """        
+        filename_a='157418U35.CDF'
+        filename_b='157418U35_birth.cdf1'
+        filename_c='157418U35_fi_2_gc.cdf'
+        a=TRANSP_output(filename_a)
+        b=TRANSP_output(filename_b)
+        c=TRANSP_output_FI(filename_c)
+        """
+
+        #make these into lists of filenames, lists of dfn
+        #integration graph
+
+
+
+        #read and gather all the data
+        filename_array=[]
+        fi_file_array=[]
+        F_D_NBI_int_all=[]
+        for i in range (14):
+            filename_array+=['157418U43_fi_{id}_gc.cdf'.format(id=i+2)]
+            fi_file_array+=[TRANSP_output_FI(filename_array[i])]
+            fi_file_array[i].dfn_integrate(energy=False)
+            F_D_NBI_int_all+=[fi_file_array[i]['F_D_NBI_int'].data]
+
+        F_D_NBI_int_all=np.array(F_D_NBI_int_all,ndmin=2).T #combine all results into one
+
+        #plot the result
+        X_energy=fi_file_array[0]['E_D_NBI'].data #set up plotting grids
+        Y_time=np.array([float(FI['TIME'].data) for FI in fi_file_array])
+        Y,X=np.meshgrid(Y_time,X_energy)
+
+        fig=plt.figure()
+        ax=fig.add_subplot(111)
+
+        mesh=ax.pcolormesh(X,Y,F_D_NBI_int_all,cmap=colmap_default)
+        fig.colorbar(mesh,ax=ax,orientation='horizontal')
+        plt.show()
+
+
+        '''
+
+
+class ASCOT_output:
+    """
+    class for encapsulating ASCOT HDF5 output file
+
+    notes:
+    """
+
+    def __init__(self,filename):
+        """
+        constructor for TRANSP_output class
+        
+        notes: 
+
+        """
+
+        self.filename=filename
+        self.data=h5py.File(filename,'r')
+
+    def __getitem__(self,key):
+        """
+        special method to overload []
+
+        notes:
+        usage:
+        """
+    
+        return self.data[key]
+
+    def print_level(self,key=None):
+        """
+        prints the sub-branches from current branch 'key'
+
+        notes:
+        usage:
+            my_ASCOT_output.print_level() #print top level
+            my_ASCOT_output.print_level('bfield')
+        """
+
+        if key:
+            for var in self[key].keys():
+                print(var)
+        else:
+            for var in self.data.keys():
+
+
+
+        
+
+
+        
+
+
+        
+
+
+        
+
+
+        
+
+
+        
+
+
+        
 
 
 

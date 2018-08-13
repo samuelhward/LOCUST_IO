@@ -94,7 +94,9 @@ def dfn_crop(some_dfn,**kwargs):
         assumes full 3D dfn
         warning! cropping by R does not reset nR for example - must be done manually
     args:
-        kwargs - axes and their limits e.g R=[0,1] crops dfn between 0<R<1
+        kwargs - axes and their limits 
+    usage:
+        new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1
     """
 
     dfn=copy.deepcopy(some_dfn)
