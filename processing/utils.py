@@ -619,28 +619,9 @@ class ASCOT_output:
                 print(var)
         else:
             for var in self.data.keys():
+                print(var)
 
 
 
         
-
-
-        
-
-
-        
-
-
-        
-
-
-        
-
-
-        
-
-
-        
-
-
 
