@@ -388,6 +388,7 @@ class TRANSP_output:
         """
 
         self.filename=filename
+        self.filepath=support.dir_input_files+filename
         self.data=ncdf.netcdf_file(filename,'r')
         self.variables=sorted(self.data.variables.keys())
         self.dimensions=self.data.dimensions #make shallow copy to update self.dimensions when new dimension created
@@ -590,6 +591,7 @@ class ASCOT_output:
         """
 
         self.filename=filename
+        self.filepath=support.dir_input_files+filename
         self.data=h5py.File(filename,'r')
 
     def __getitem__(self,key):
