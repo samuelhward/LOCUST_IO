@@ -471,6 +471,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
      process_output
 
         dfn_transform                            transform and integrate distribution function to coordinate system
+        dfn_crop                                 crops dfn according to limits in any dimension
         particle_list_compression                opens and processes >>GB LOCUST particle lists in memory-efficient way
 
      plot_input

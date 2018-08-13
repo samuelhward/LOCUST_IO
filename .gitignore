@@ -29,7 +29,7 @@ __pycache__
 *env
 
 #LOCUST run script files
-*run
+*.run
 
 #changes file
 changes

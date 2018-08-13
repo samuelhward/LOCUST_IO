@@ -102,11 +102,11 @@ def dump_number_density_LOCUST(output_data,filepath):
     with open(filepath,'w') as file: #open file
 
         normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_data['n']=utils.sort_arrays(normalised_flux,output_data['n']) #check order
+        normalised_flux,output_n=utils.sort_arrays(normalised_flux,output_data['n']) #check order
  
         file.write("{}\n".format(utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
-        for point in range(output_data['flux_pol_norm'].size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux[point],16,8),n=utils.fortran_string(output_data['n'][point],16,8)))
+        for point in range(normalised_flux.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux[point],16,8),n=utils.fortran_string(output_n[point],16,8)))
  
     print("finished writing number density to LOCUST")
 
@@ -200,13 +200,13 @@ def dump_number_density_MARSF(output_data,filepath):
 
     with open(filepath,'w') as file: #open file
 
-        flux_pol_norm_sqrt=np.abs(output_data['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
-        flux_pol_norm_sqrt,output_data['n']=utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
+        flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt,output_n=utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
         for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm_sqrt} {n}\n".format(flux_pol_norm_sqrt=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),n=utils.fortran_string(output_data['n'][point],24,18)))
+            file.write("{flux_pol_norm_sqrt} {n}\n".format(flux_pol_norm_sqrt=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),n=utils.fortran_string(output_n[point],24,18)))
 
     print("finished writing number density to MARSF mogui")
 

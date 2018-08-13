@@ -99,15 +99,12 @@ def dump_temperature_LOCUST(output_data,filepath):
     with open(filepath,'w') as file: #open file
 
         normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_data['T']=utils.sort_arrays(normalised_flux,output_data['T']) #check order
+        normalised_flux,output_T=utils.sort_arrays(normalised_flux,output_data['T']) #check order
  
-        file.write("{}\n".format(utils.fortran_string(output_data['flux_pol_norm'].size,8))) #re-insert line containing length
-        for point in range(output_data['flux_pol_norm'].size): #iterate through all points i.e. length of our dictionary's arrays
- 
-            flux_pol_out=normalised_flux[point] #briefly set to a temporary variable to improve readability
-            T_out=output_data['T'][point]
-             
-            file.write("{flux_pol_norm}{T}\n".format(flux_pol_norm=utils.fortran_string(flux_pol_out,16,8),T=utils.fortran_string(T_out,16,8)))
+        file.write("{}\n".format(utils.fortran_string(output_T.size,8))) #re-insert line containing length
+        
+        for point in range(output_T.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm}{T}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux[point],16,8),T=utils.fortran_string(output_T[point],16,8)))
  
     print("finished writing temperature to LOCUST")
 
@@ -202,13 +199,13 @@ def dump_temperature_MARSF(output_data,filepath):
  
     with open(filepath,'w') as file: #open file
 
-        flux_pol_norm_sqrt=np.abs(output_data['flux_pol_norm'])**2 #square to get the corresponding values sqrt(poloidal flux)
-        flux_pol_norm_sqrt,output_data['T']=utils.sort_arrays(flux_pol_norm_sqrt,output_data['T']) #check order
+        flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt,output_T=utils.sort_arrays(flux_pol_norm_sqrt,output_data['T']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
         for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays 
-            file.write("{flux_pol_norm} {T}\n".format(flux_pol_norm=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),T=utils.fortran_string(output_data['T'][point],24,18)))
+            file.write("{flux_pol_norm}{T}\n".format(flux_pol_norm=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),T=utils.fortran_string(output_T[point],24,18)))
  
     print("finished writing temperature to MARSF mogui")
 
