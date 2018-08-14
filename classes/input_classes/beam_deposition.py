@@ -51,6 +51,10 @@ try:
 except:
     raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    from scipy.io import netcdf as ncdf
+except
+    raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
@@ -230,20 +234,20 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
 
     print("finished writing beam deposition to IDS")
 
-def read_beam_depo_TRANSP(filepath):
+def read_beam_depo_TRANSP_fbm(filepath):
     """
-    reads birth profile from TRANSP ASCII file in 6D phase space coordinates
+    reads birth profile from TRANSP ASCII file at particle position
  
     notes:
         assumes all distances in cm in TRANSP file
     """
 
-    print("reading beam deposition from TRANSP format")
+    print("reading beam deposition from TRANSP FBM format")
 
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_TRANSP() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_TRANSP_fbm() cannot read from "+filepath)
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if str(line.split()[0])=='<start-of-data>':
@@ -290,23 +294,23 @@ def read_beam_depo_TRANSP(filepath):
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
 
-    print("finished reading beam deposition from TRANSP format")
+    print("finished reading beam deposition from TRANSP FBM format")
 
     return input_data
 
-def read_beam_depo_TRANSP_gc(filepath):
+def read_beam_depo_TRANSP_fbm_gc(filepath):
     """
-    reads birth profile from TRANSP ASCII file in guiding centre coordinates
+    reads birth profile from TRANSP ASCII file at guiding centre
  
     notes:
     """
 
-    print("reading beam deposition from TRANSP guiding centre format")
+    print("reading beam deposition from TRANSP FBM guiding centre format")
 
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_TRANSP_gc() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_TRANSP_fbm_gc() cannot read from "+filepath)
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if str(line.split()[0])=='<start-of-data>':
@@ -340,13 +344,64 @@ def read_beam_depo_TRANSP_gc(filepath):
         input_data['E']=np.asarray(input_data['E'])
         input_data['phi']=2.0*pi*np.asarray(input_data['phi'])/360.0
 
-    print("finished reading beam deposition from TRANSP guiding centre format")
+    print("finished reading beam deposition from TRANSP FBM guiding centre format")
 
     return input_data
 
-def dump_beam_depo_ASCOT(output_data,filepath,equilibrium):
+def read_beam_depo_TRANSP_birth(filepath):
     """
-    dumps birth profile to ASCOT ACII format 
+    reads birth profile from TRANSP birth CDF file at particle position
+
+    notes:
+    """
+
+
+    print("reading beam deposition from TRANSP birth CDF format")
+
+    file=ncdf.netcdf_file(filepath,'r')
+    input_data={}
+
+    input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
+    input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
+    input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
+
+    file.close()
+    file.close()
+
+    print("finished reading beam deposition from TRANSP birth CDF format")
+    
+    return input_data
+
+def read_beam_depo_TRANSP_birth_gc(filepath):
+    """
+    reads birth profile from TRANSP birth CDF file at guiding centre
+
+    notes:
+    """
+
+    print("reading beam deposition from TRANSP birth CDF guiding centre format")
+    
+    file=ncdf.netcdf_file(filepath,'r')
+
+    input_data={}
+
+    input_data['R']=file.variables['bs_rgc_D_MCBEAM'].data*.01
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
+    input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
+    input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
+    input_data['V_pitch']=file.variables['bs_xksid_D_MCBEAM'].data
+
+    file.close()
+    file.close()
+
+    print("finished reading beam deposition from TRANSP birth CDF guiding centre format")
+
+    return input_data
+
+def dump_beam_depo_ASCOT(output_data,filepath):
+    """
+    dumps birth profile to ASCOT ACII format at particle position
 
     notes:
         assumes output_data stores energy in eV, phi in rad
@@ -363,13 +418,95 @@ def dump_beam_depo_ASCOT(output_data,filepath,equilibrium):
         file.write(" 3  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
         file.write("This is an example file for ASCOT4 particle input.\n")
         file.write("$HeadURL: https://solps-mdsplus.aug.ipp.mpg.de/repos/ASCOT/trunk/ascot4/input.particles $")
-        file.write("$LastChangedRevision: 9738 $")
+        file.write("$LastChangedRevision: 9738 $\n")
         file.write("\n")
 
         file.write(" {number_particles} # Number of particles\n".format(number_particles=output_data['R'].size))
         file.write("\n")
 
-        file.write(" 13 # Number of different fields for each particle [10 first letters are significant]\n")
+        file.write(" 14 # Number of different fields for each particle [10 first letters are significant]\n")
+        file.write("Anum      - mass number of particle        (integer)\n")
+        file.write("mass      - mass of the particle           (amu)\n")
+        file.write("Znum      - charge number of particle      (integer)\n")
+        file.write("charge    - charge of the particle         (elemental charge)\n")
+        #file.write("pitch    - pitch angle cosine of particle (vpar/vtot)\n")
+        file.write("phiprt    - toroidal angle of particle     (deg)\n")
+        file.write("Rprt      - R of particle                  (m)\n")
+        file.write("zprt      - z of particle                  (m)\n")
+        file.write("vphi      - toroidal velocity of particle  (m/s)\n")
+        file.write("vR        - radial velocity of particle    (m/s)\n")
+        file.write("vz        - vertical velocity of particle  (m/s)\n")
+        file.write("origin    - origin of the particle         ()\n")
+        file.write("weight    - weight factor of particle      (particle/second)\n")
+        file.write("id        - unique identifier of particle  (integer)\n")
+        file.write("Tmax      - maximum time to follow the prt (s)\n")
+        file.write("\n")
+
+        #hard-code weight calculation for now
+        beam_power=1.0
+        energies_sum=np.sum(output_data['E'])
+        weight=beam_power/energies_sum
+
+        print("dumping particle list to file")
+        i=0 #counter for particle identifier
+        for phi,R,Z,V_tor,V_R,V_Z in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+            
+            line=''
+            line+=utils.fortran_string(2,6,0,False) #mass and charge
+            line+=utils.fortran_string(mass_deuterium,14,5)
+            line+=utils.fortran_string(1,6,0,False)
+            line+=utils.fortran_string(1.0,14,5)
+            
+            #line+=utils.fortran_string(pitch,13,5,False)
+            
+            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=utils.fortran_string(R,18,9)
+            line+=utils.fortran_string(Z,18,9)
+
+            line+=utils.fortran_string(V_tor,18,9) #velocity
+            line+=utils.fortran_string(V_R,18,9)
+            line+=utils.fortran_string(V_Z,18,9)
+
+            line+=utils.fortran_string(1.0,9,0,False) #origin
+            line+=utils.fortran_string(weight,18,9) #weight
+            line+=utils.fortran_string(i,10,0,False) #ID
+            line+=utils.fortran_string(999.0,18,9) #Tmax
+
+            line+="\n"
+            
+            file.write(line)
+            i+=1
+
+        file.write("#EOF\n")
+
+    print("finished dumping beam deposition to ASCOT format")
+
+def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
+    """
+    dumps birth profile to ASCOT ACII format at guiding centre
+
+    notes:
+        assumes output_data stores energy in eV, phi in rad
+    """
+    print("dumping beam deposition to ASCOT guiding centre format")
+
+    with open(filepath,'w') as file:
+
+        #write headers
+        file.write(" PARTICLE INITIAL DATA FOR ASCOT\n")
+        file.write(" 4 VERSION =====================\n")
+        file.write("\n")
+        
+        file.write(" 3  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
+        file.write("This is an example file for ASCOT4 particle input.\n")
+        file.write("$HeadURL: https://solps-mdsplus.aug.ipp.mpg.de/repos/ASCOT/trunk/ascot4/input.particles $")
+        file.write("$LastChangedRevision: 9738 $\n")
+        file.write("\n")
+
+        file.write(" {number_particles} # Number of particles\n".format(number_particles=output_data['R'].size))
+        file.write("\n")
+
+        file.write(" 18 # Number of different fields for each particle [10 first letters are significant]\n")
         file.write("Anum      - mass number of particle        (integer)\n")
         file.write("mass      - mass of the particle           (amu)\n")
         file.write("Znum      - charge number of particle      (integer)\n")
@@ -422,7 +559,7 @@ def dump_beam_depo_ASCOT(output_data,filepath,equilibrium):
             
             line=''
             line+=utils.fortran_string(2,6,0,False) #mass and charge
-            line+=utils.fortran_string(2.0141017781,14,5)
+            line+=utils.fortran_string(mass_deuterium,14,5)
             line+=utils.fortran_string(1,6,0,False)
             line+=utils.fortran_string(1.0,14,5)
             
@@ -452,8 +589,7 @@ def dump_beam_depo_ASCOT(output_data,filepath,equilibrium):
 
         file.write("#EOF\n")
 
-    print("finished dumping beam deposition to ASCOT format")
-
+    print("finished dumping beam deposition to ASCOT guiding centre format")
 
 ################################################################## Beam_Deposition class
  
@@ -513,26 +649,26 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.properties=properties
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
-        elif data_format=='TRANSP':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP - filename required\n",filename):
+        elif data_format=='TRANSP_fbm':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_beam_depo_TRANSP(self.filepath) #read the file
+                self.data=read_beam_depo_TRANSP_fbm(self.filepath) #read the file
 
-        elif data_format=='TRANSP_gc':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_gc - filename required\n",filename):
+        elif data_format=='TRANSP_fbm_gc':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm_gc - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties=properties
-                self.data=read_beam_depo_TRANSP_gc(self.filepath) #read the file
+                self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath) #read the file
  
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP/TRANSP_gc)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP_fbm/TRANSP_fbm_gc)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None):
         """
@@ -557,12 +693,17 @@ class Beam_Deposition(base_input.LOCUST_input):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
 
         elif data_format=='ASCOT':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename and equilibrium required\n",filename,equilibrium):
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT(self.data,filepath,equilibrium)
+                dump_beam_depo_ASCOT(self.data,filepath)
+
+        elif data_format=='ASCOT_gc':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT_gc - filename and equilibrium required\n",filename,equilibrium):
+                filepath=support.dir_input_files+filename
+                dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium)
  
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/ASCOT)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/ASCOT/ASCOT_gc)\n")
 
  
  
