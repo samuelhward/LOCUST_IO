@@ -35,17 +35,26 @@ except:
 try:
     from classes import support #import support module from this directory
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    from processing import plot_output
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
+
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
-colmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
+cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 
 pi=np.pi
+e_charge=1.60217662e-19 #define electron charge
+mass_neutron=1.674929e-27 #define mass of neutron
+amu=1.66053904e-27
+mass_deuterium=2.0141017781*amu
 
 
 
-################################################################## Supporting functions
+################################################################################################### Supporting functions
  
 def none_check(ID,LOCUST_input_type,error_message,*args):
     """
@@ -54,7 +63,7 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     notes:
         message should be something specific to the section of code which called none_check
     """
-    if all(arg is not False for arg in args):
+    if all(arg is not None for arg in args):
         return False
     else:
         print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
@@ -369,7 +378,17 @@ def dump_coil_currents_MARSF(filename,output_data):
 
 
 
-################################################################## Supporting classes
+
+
+
+
+
+
+
+
+################################################################################################### Supporting classes
+
+################################################################## TRANSP
 
 class TRANSP_output:
     """
@@ -456,37 +475,43 @@ class TRANSP_output_FI(TRANSP_output):
             energy - toggle to integrate over energy 
         """
 
+        print("integrating TRANSP fast ion distribution function")
+
         #infer dimensions of quantity to make
         new_var_dimensions={}
-        vew_var_shape=[]
+        new_var_shape=[]
         if not space:
             dimension=self['F_D_NBI'].dimensions[0]
             new_var_dimensions[dimension]=self.dimensions[dimension]
-            vew_var_shape+=[self.dimensions[dimension]]
+            new_var_shape+=[self.dimensions[dimension]]
         if not pitch:
             dimension=self['F_D_NBI'].dimensions[1]
             new_var_dimensions[dimension]=self.dimensions[dimension]
-            vew_var_shape+=[self.dimensions[dimension]]
+            new_var_shape+=[self.dimensions[dimension]]
         if not energy:
             dimension=self['F_D_NBI'].dimensions[2]
             new_var_dimensions[dimension]=self.dimensions[dimension]
-            vew_var_shape+=[self.dimensions[dimension]]
+            new_var_shape+=[self.dimensions[dimension]]
         if new_var_dimensions==[]:
             self.data.dimensions['dim_00001']=1
             new_var_dimensions['dim_00001']=1
 
         self.new_var('F_D_NBI_int','float',**new_var_dimensions)
-        self['F_D_NBI_int'].data.reshape(vew_var_shape) #need to reshape to space,pitch,energy here
+
+        #XXX DO I EVEN NEED THIS BIT IF I DEEP COPY AFTER?  TRY TAKING THIS NEXT LINE OUT
+        self['F_D_NBI_int'].data.reshape(new_var_shape) #need to reshape to space,pitch,energy here
+
+
         self['F_D_NBI_int'].data=0.5*copy.deepcopy(self['F_D_NBI'].data) #0.5 to account for number pitch bins
 
-        dE=np.abs(self['E_D_NBI'].data[1]-self['E_D_NBI'].data[0]) #energy bin width
-        dP=np.abs(self['A_D_NBI'].data[1]-self['A_D_NBI'].data[0]) #pitch bin width
 
         sum_indices=[] #figure out which indices we need to sum over
         if energy: #apply Jacobian and integrate each dimension
+            dE=np.abs(self['E_D_NBI'].data[1]-self['E_D_NBI'].data[0]) #energy bin width
             self['F_D_NBI_int'].data*=dE
             sum_indices.append(2)
         if pitch:
+            dP=np.abs(self['A_D_NBI'].data[1]-self['A_D_NBI'].data[0]) #pitch bin width
             self['F_D_NBI_int'].data*=dP
             sum_indices.append(1)
         if space: #integrate over various dimensions here
@@ -497,7 +522,9 @@ class TRANSP_output_FI(TRANSP_output):
         for sum_index in sum_indices: #sum over unwanted dimensions
             self['F_D_NBI_int'].data=np.sum(self['F_D_NBI_int'].data,axis=int(sum_index))
 
-    def dfn_plot(self,axes=[0,slice(None),slice(None)],integrated=False,colmap=colmap_default,ax=None,fig=None):
+        print("integrating TRANSP fast ion distribution function")
+
+    def dfn_plot(self,axes=[0,slice(None),slice(None)],integrated=False,colmap=cmap_default,ax=None,fig=None):
         """
         notes:
         args:
@@ -567,7 +594,7 @@ class TRANSP_output_FI(TRANSP_output):
         fig=plt.figure()
         ax=fig.add_subplot(111)
 
-        mesh=ax.pcolormesh(X,Y,F_D_NBI_int_all,cmap=colmap_default)
+        mesh=ax.pcolormesh(X,Y,F_D_NBI_int_all,cmap=cmap_default)
         fig.colorbar(mesh,ax=ax,orientation='horizontal')
         plt.show()
 
@@ -575,14 +602,18 @@ class TRANSP_output_FI(TRANSP_output):
         '''
 
 
+################################################################## ASCOT
+
 class ASCOT_output:
     """
     class for encapsulating ASCOT HDF5 output file
 
     notes:
+        mimics a LOCUST_IO object - use pull_data and methods like dfn_transform to then access standard LOCUST_IO functions
+        my_output.file['key/path/to/data'].values will return leaf-level tree data from HDF5 file
     """
 
-    def __init__(self,filename):
+    def __init__(self,ID,filename=None,datatype=None):
         """
         constructor for TRANSP_output class
         
@@ -590,20 +621,32 @@ class ASCOT_output:
 
         """
 
-        self.filename=filename
-        self.filepath=support.dir_output_files+filename
-        self.data=h5py.File(self.filepath,'r')
+        self.ID=ID
+        self.data={}
+        self.file_open(filename)
+        if datatype:
+            self.pull_data(datatype)
+            self.close_file()
+
 
     def __getitem__(self,key):
         """
-        special method to overload []
+        set member data via []
 
         notes:
+            this does not return the data at leaf level, this must be done using .values attribute
             could adapt this to neatly print the whole tree with '\t * #recursion levels'
         usage:
         """
     
         return self.data[key]
+
+    def __setitem__(self,key,value):
+        """
+        set member data via []
+        """
+
+        self.data[key]=value
 
     def look(self,key=None):
         """
@@ -617,13 +660,164 @@ class ASCOT_output:
         """
 
         if key:
-            if 'keys' in dir(self[key]):
-                for var in self[key].keys():
+            if 'keys' in dir(self.file[key]):
+                for var in self.file[key].keys():
                     print(var)
             else:
-                print(self[key].value)
+                print(self.file[key].value)
         else:
-            for var in self.data.keys():
+            for var in self.file.keys():
                 print(var)
 
+    def file_open(self,filename=None):
+        """
+        re-open new HDF5 file
+        """
 
+        if filename: #if supplied new filename, overwrite previous filepath
+            self.filename=filename
+            self.filepath=support.dir_output_files+filename
+        self.file=h5py.File(self.filepath,'r') 
+
+    def file_close(self):
+        """
+        close annoying HDF5 file handle for plotting/getting on with our lives
+
+        notes:
+        """
+
+        del(self.file)
+
+    def pull_data(self,datatype='distribution_function'):
+        """
+        deep copy and pull data from HDF5 file 
+
+        notes:
+            extracts and maps out the output HDF5 file to LOCUST_IO variable names where possible
+            see individual datatype branches for more detail
+            NOTE work in progress
+
+        args:
+            datatype - read data from ASCOT output file and create structure resembling this LOCUST_IO datatype    
+        """
+
+        self.datatype=datatype
+
+        if datatype=='distribution_function':
+            ''' 
+            extract dfn to #[m^-3 eV^-1 dpitch^-1] format 
+            able to use with processing.plot_output.plot_distribution_function if user handles transforming (i.e. call this dfn_transform and set transform=False when plotting)
+
+            file['distributions/rzPitchEdist/ordinate'].value=[species?,time?,E,V_pitch,Z,R,ordinate]
+            file['distributions/rzPitchEdist/abscissae']['dim1']=R
+                                                     ...['dim2']=Z
+                                                     ...['dim3']=V_pitch
+                                                     ...['dim4']=E [J]
+                                                     ...['dim5']=time?
+                                                     ...['dim6']=species?'''
+            
+            self['R']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim1'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim1'].value[:-1]) #bin centres [m]
+            self['Z']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim2'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim2'].value[:-1]) #[m]
+            self['V_pitch']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim3'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim3'].value[:-1])
+            self['E']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/e_charge #[eV]
+
+            self['dE']=np.abs(self['E'][1]-self['E'][0])
+            self['dV_pitch']=np.abs(self['V_pitch'][1]-self['V_pitch'][0])
+            self['dR']=np.abs(self['R'][1]-self['R'][0])
+            self['dZ']=np.abs(self['Z'][1]-self['Z'][0])
+            
+            self['dfn']=self.file['distributions/rzPitchEdist/ordinate'].value #[m^-3 J^-1]
+            self['dfn']=np.sum(self['dfn'],axis=0)
+            self['dfn']=np.sum(self['dfn'],axis=0)
+            self['dfn']=np.sum(self['dfn'],axis=-1)
+            self['dfn']=np.swapaxes(self['dfn'],-1,-2) 
+            self['dfn']*=e_charge/self['dV_pitch'] #[m^-3 eV^-1 dpitch^-1]
+            self['dfn_index']=np.array(['E','V_pitch','R','Z'])
+
+        elif datatype=='equilibrium':
+            pass #unfinished
+        
+
+    def dfn_transform(self,axes=['R','Z']):
+        """
+        transforms and integrates the distribution function according to pre-defined configurations 
+        
+        args:
+            axes - the dimensions over which to transform the DFN to
+        notes:
+            'overloads' processing.process_output.dfn_transform
+            overwrites dfn generated by pull_data() - call pull_data() again to reset
+            remember dimensions of unedited dfn are [E,V_pitch,R,Z] #[m^-3 eV^-1 dpitch^-1]
+            assumes unedited dfn
+            assumes the bin widths for a given dimension are constant
+            assumes toroidal symmetry (no toroidal dimension in dfn)
+            assumes user has execute self.pull_data('distribution_function')
+            if an array of indices is given, then slice the dfn accordingly and return without any integration
+                note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,slice(None),slice(None)] for all R,Z values
+
+        axes options:
+            R,Z - integrate over pitch and energy [m]^-3
+            E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+            E - [eV]^-1
+            N - total #
+        """
+
+        #begin list of specific options
+
+        if axes==['R','Z']:
+            self.data['dfn']*=self.data['dE']*self.data['dV_pitch'] #integrate
+            for counter in range(2): #sum
+                self.data['dfn']=np.sum(self.data['dfn'],axis=0)
+
+        elif axes==['E','V_pitch']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(self.data['R'])):
+                self.data['dfn'][:,:,r,:]*=self.data['R'][r]*2.*pi*self.data['dR']*self.data['dZ']
+            #then need to integrate over the unwanted coordinates
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #over Z
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #over R
+
+
+        elif axes==['E']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(self.data['R'])):
+                self.data['dfn'][:,:,r,:]*=self.data['R'][r]*2.*pi*self.data['dR']*self.data['dZ']
+            self.data['dfn']*=self.data['dV_pitch'] #integrate over pitch
+            
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over Z
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over R
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over V_pitch
+
+
+        elif axes==['N']:
+            #applying full Jacobian and integrate over toroidal angle
+            for r in range(len(self.data['R'])):
+                self.data['dfn'][:,:,r,:]*=self.data['R'][r]*2.*pi*self.data['dR']*self.data['dZ']*self.data['dV_pitch']*self.data['dE']
+            for all_axes in range(self.data['dfn'].ndim): #sum over all dimensions
+                self.data['dfn']=np.sum(self.data['dfn'],axis=0) 
+        
+
+        #general option
+        
+        elif len(axes)==self.data['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+            self.data['dfn']=self.data['dfn'][tuple(axes)]
+        else:
+            print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
+    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
+        """
+        wrapper to plot_distribution_function
+
+        notes:
+            ugly as hell - need to do this to get around HDF5 file being in ASCOT_output's member data
+        """
+
+        file=False
+        if hasattr(self,'file'):
+            file=True
+            self.file_close() #temporarily close the file to stop hdf5 moaning
+        if transform: #intercept before plot_distribution_function is called to optionally transform using our own method defined above 
+            self.dfn_transform(axes=axes)
+        plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with transform disabled
+        if file:
+            self.file_open()
