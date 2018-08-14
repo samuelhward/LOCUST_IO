@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 try:
     import numpy as np
     import copy
+    import os
     import re
     import h5py
     import time
@@ -372,9 +373,28 @@ def dump_coil_currents_MARSF(filename,output_data):
 
 
 
+def ASCOT_run_gen(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot'):
+    """
+    writes out freia batch file for ASCOT run
 
+    notes:
+    """
 
-
+    if initialdir is None:
+        initialdir=os.path.dirname(os.path.abspath(__file__)) #use cwd
+    
+    with open(run_file,'w') as file:
+        file.write('# @ input = dev/null/\n')
+        file.write('# @ initialdir = {initialdir}\n'.format(initialdir=initialdir))
+        file.write('# @ output = {output_file}\n'.format(output_file=output_file))
+        file.write('# @ error = {error_file}\n'.format(error_file=error_file))
+        file.write('# @ jobtype = openmpi\n')
+        file.write('# @ max_processors = {max_proc}\n'.format(max_proc=max_proc))
+        file.write('# @ min_processors = {min_proc}\n'.format(min_proc=min_proc))
+        file.write('# @ queue\n\n')
+        file.write('date\n')
+        file.write('mpirun -np $NSLOTS {executable} -output ascot_freia_$JOB_ID\n'.format(executable=executable))
+        file.write('date\n')
 
 
 
@@ -599,7 +619,27 @@ class TRANSP_output_FI(TRANSP_output):
         plt.show()
 
 
+
+class TRANSP_output_birth():
+
+
+guide:
+
+    bs_ib_D_MCBEAM = beam ID
+    bs_time_D_MCBEAM = time at deposition
+    bs_xksid_D_MCBEAM = pitch angle V||/V
+    bs_r_D_MCBEAM = R at deposition cm
+    bs_wght_D_MCBEAM =  weight of deposited particle
+    bs_rgc_D_MCBEAM = R at guiding centre cm
+    bs_einj_D_MCBEAM = energy eV
+    bs_z_D_MCBEAM = Z at deposition cm
+    bs_zgc_D_MCBEAM = Z at guiding centre cm
+    bs_zeta_D_MCBEAM = toroidal angle at deposition degrees 
+
+
         '''
+
+
 
 
 ################################################################## ASCOT
@@ -611,9 +651,13 @@ class ASCOT_output:
     notes:
         mimics a LOCUST_IO object - use pull_data and methods like dfn_transform to then access standard LOCUST_IO functions
         my_output.file['key/path/to/data'].values will return leaf-level tree data from HDF5 file
+    example:
+        my_output=ASCOT_output('ID',some_filename)
+        my_output.pull_data('distribution_function')
+        my_output.dfn_plot(axes=['R','Z'],real_scale=True) 
     """
 
-    def __init__(self,ID,filename=None,datatype=None):
+    def __init__(self,ID,filename=None):
         """
         constructor for TRANSP_output class
         
@@ -623,11 +667,9 @@ class ASCOT_output:
 
         self.ID=ID
         self.data={}
-        self.file_open(filename)
-        if datatype:
-            self.pull_data(datatype)
-            self.close_file()
-
+        if filename: #if supplied new filename, overwrite previous filepath
+            self.filename=filename
+            self.filepath=support.dir_output_files+filename
 
     def __getitem__(self,key):
         """
@@ -650,7 +692,7 @@ class ASCOT_output:
 
     def look(self,key=None):
         """
-        prints sub-branches from branch 'key'
+        prints file sub-branches from branch 'key'
 
         notes:
             can navigate tree with '/' like file directory
@@ -658,6 +700,10 @@ class ASCOT_output:
             my_ASCOT_output.look() #print top level
             my_ASCOT_output.look('bfield')
         """
+
+        if not self.file:
+            print("no file member data found by .look()! use .file_open()")
+            return
 
         if key:
             if 'keys' in dir(self.file[key]):
@@ -702,6 +748,7 @@ class ASCOT_output:
         """
 
         self.datatype=datatype
+        self.file_open()
 
         if datatype=='distribution_function':
             ''' 
@@ -737,6 +784,10 @@ class ASCOT_output:
         elif datatype=='equilibrium':
             pass #unfinished
         
+
+
+
+        self.file_close()
 
     def dfn_transform(self,axes=['R','Z']):
         """
@@ -812,12 +863,6 @@ class ASCOT_output:
             ugly as hell - need to do this to get around HDF5 file being in ASCOT_output's member data
         """
 
-        file=False
-        if hasattr(self,'file'):
-            file=True
-            self.file_close() #temporarily close the file to stop hdf5 moaning
         if transform: #intercept before plot_distribution_function is called to optionally transform using our own method defined above 
             self.dfn_transform(axes=axes)
         plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with transform disabled
-        if file:
-            self.file_open()

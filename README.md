@@ -38,6 +38,7 @@ Table of Contents
     * [Global Data Definitions And Variable Names](#global-data-definitions-and-variable-names)
     * [Processing Routines](#processing-routines) 
 * [Licence](#licence)
+* [Useful Stuff](#useful-stuff)
 
 
 
@@ -121,7 +122,7 @@ As well as the included *example_project/* some basic usage is outlined below:
 import context
 from classes.input_classes.equilibrium import Equilibrium
 
-my_equilibrium=Equilibrium('ID_tag_for_this_equilibrium',data_format='GEQDSK',filename='some.eqdsk') 
+my_equilibrium=Equilibrium('ID_tag_describing_this_equilibrium',data_format='GEQDSK',filename='some.eqdsk') 
 #my_equilibrium now holds all the data in one object
 #take a quick look at the equilibrium and its data
 my_equilibrium.look()                               
