@@ -31,6 +31,8 @@ cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 pi=np.pi #define pi
 e_charge=1.60217662e-19 #define electron charge
 mass_neutron=1.674929e-27 #define mass of neutron
+amu=1.66053904e-27
+mass_deuterium=2.0141017781*amu
 
 ##################################################################
 #Main Code
@@ -290,6 +292,17 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         transform - set to False if supplied dfn has already been cut down to correct dimensions
         ax - take input axes (can be used to stack plots)
         fig - take input fig (can be used to add colourbars etc)
+    usage:
+        plot_distribution_function(my_dfn) #basic default R,Z plot
+        plot_distribution_function(my_dfn,axes=['E','V_pitch']) #basic pitch,energy plot
+        plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True) #R,Z plotted with true scales and last closed flux surface from supplied equilibrium
+        plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True,transform=False) #R,Z plot where my_dfn has already been cropped to correct dimensions
+        plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
+    axes:
+        R,Z - integrate over pitch, gyrophase and velocity [m]^-3
+        E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+        E - [eV]^-1 
+        N - total #
     """
 
     if ax is False:
@@ -331,7 +344,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
 
         #check resulting dimensionality of distribution function
         if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
-            print(dfn_copy['dfn'])
+            pass #XXX incomplete - should add scatter point
         elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
             pass #XXX incomplete
         elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D

@@ -23,8 +23,11 @@ except:
     sys.exit(1)
     
 pi=np.pi
-e_charge=1.602e-19 #define electron charge
-mass_neutron=1.661e-27 #define mass of neutron
+e_charge=1.60217662e-19 #define electron charge
+mass_neutron=1.674929e-27 #define mass of neutron
+amu=1.66053904e-27
+mass_deuterium=2.0141017781*amu
+
 
 ##################################################################
 #Main Code
@@ -36,16 +39,19 @@ def dfn_transform(some_dfn,axes=['R','Z']):
     args:
         axes - the dimensions over which to transform the DFN to
     notes:
-        remember dimensions of dfn are my_dfn['dfn'][P,V,V_pitch,R,Z]
-        always assumes the bin widths for a given dimension are constant
+        remember dimensions of unedited dfn are my_dfn['dfn'][P,V,V_pitch,R,Z]
+        assumes unedited dfn
+        assumes the bin widths for a given dimension are constant
         assumes deuterium in energy conversion to energy space
-        always assumes toroidal symmetry (no toroidal dimension in dfn)
-        if an array of indices is given, then slice the dfn accordingly and return without any manipulation
+        assumes toroidal symmetry (no toroidal dimension in dfn)
+        if an array of indices is given, then slice the dfn accordingly and return without any integration
             note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
 
     axes options:
-        R,Z - integrate over pitch, gyrophase, velocity and toroidal angle [m]^-2
-        E,V_pitch - [eV]^-1[pitch bin]^-1  
+        R,Z - integrate over pitch, gyrophase and velocity [m]^-3
+        E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+        E - [eV]^-1 
+        N - total # 
     """
 
     dfn=copy.deepcopy(some_dfn) #make deep copy here since functions designed to repeatedly take fresh DFNs would otherwise permanently change it
@@ -54,9 +60,9 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     if axes==['R','Z']:
         #apply velocity space Jacobian
-        for v in range(len(some_dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]**2
-        dfn['dfn']*=some_dfn['dV']*some_dfn['dV_pitch']*some_dfn['dP']
+        for v in range(len(dfn['V'])):
+            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
 
         #then need to integrate over the first 3 dimensions which we do not need
         for counter in range(3):
@@ -65,22 +71,52 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     elif axes==['E','V_pitch']:
         #applying velocity space and gyrophase Jacobian
-        for v in range(len(some_dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=some_dfn['V'][v]
-        dfn['dfn']*=some_dfn['dP']*e_charge/(2.*mass_neutron)
+        for v in range(len(dfn['V'])):
+            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+        dfn['dfn']*=dfn['dP']*e_charge/(mass_deuterium)
 
         #applying real space Jacobian and integrate over toroidal angle
-        for r in range(len(some_dfn['R'])):
-            dfn['dfn'][:,:,:,r,:]*=some_dfn['R'][r]*2.0*pi*some_dfn['dR']*some_dfn['dZ']
+        for r in range(len(dfn['R'])):
+            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
 
         #then need to integrate over the unwanted coordinates
         dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
 
+    elif axes==['E']:
+        #applying velocity space and gyrophase Jacobian
+        for v in range(len(dfn['V'])):
+            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+        dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*e_charge/(mass_deuterium)
+
+        #applying real space Jacobian and integrate over toroidal angle
+        for r in range(len(dfn['R'])):
+            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+
+        #then need to integrate over the unwanted coordinates
+        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
+
+    elif axes==['N']:
+        #apply velocity space Jacobian
+        for v in range(len(dfn['V'])):
+            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+        #applying real space Jacobian and integrate over toroidal angle
+        for r in range(len(dfn['R'])):
+            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+
+        #sum over all axes
+        for all_axes in range(dfn['dfn'].ndim):
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+
     #general option
     
-    elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice
+    elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
         dfn['dfn']=dfn['dfn'][tuple(axes)]
         #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
     else:
@@ -91,7 +127,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 def dfn_crop(some_dfn,**kwargs):
     """
     notes:
-        assumes full 3D dfn
+        warning! to work, dfn_index and 1D dfn axes must accurately reflect dfn which is still stored e.g. dfn['dfn'][r,z] must contain dfn['R'],dfn['Z'] and dfn['dfn_index']=['R','Z']
         warning! cropping by R does not reset nR for example - must be done manually
     args:
         kwargs - axes and their limits 
@@ -116,7 +152,7 @@ def dfn_crop(some_dfn,**kwargs):
             dfn[key]=dfn[key][i] #crop 1D arrays accordingly
 
             dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
-            dfn['dfn']=dfn['dfn'][i,:,:,:,:] #crop dfn
+            dfn['dfn']=dfn['dfn'][i,:] #crop dfn
             dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
     return dfn

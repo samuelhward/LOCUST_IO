@@ -50,8 +50,10 @@ except:
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 pi=np.pi
-e_charge=1.6e-19 #define electron charge
-mass_neutron=1.67e-27 #define mass of neutron
+e_charge=1.60217662e-19 #define electron charge
+mass_neutron=1.674929e-27 #define mass of neutron
+amu=1.66053904e-27
+mass_deuterium=2.0141017781*amu
 
 
 ################################################################## Distribution_Function functions
@@ -327,7 +329,8 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
             input_data['dP']=np.array(2.*pi)
-        input_data['E']=np.array((0.5*2.0*mass_neutron*input_data['V']**2)/e_charge) #calculate energy [eV]
+        input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
+        input_data['dE']=np.array(np.abs(input_data['E'][1]-input_data['E'][0]))
         input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
    
     file.close()
