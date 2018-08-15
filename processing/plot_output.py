@@ -301,7 +301,8 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     axes:
         R,Z - integrate over pitch, gyrophase and velocity [m]^-3
         E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
-        E - [eV]^-1 
+        E - [eV]^-1
+        R - [m]^-3 
         N - total #
     """
 
@@ -329,7 +330,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
 
     #1D data
     if some_distribution_function[key].ndim==1:
-        ax.plot(some_distribution_function[key])
+        ax.plot(some_distribution_function[axes[0]],some_distribution_function[key])
         ax.set_ylabel(key)
         ax.set_title(some_distribution_function.ID)
 

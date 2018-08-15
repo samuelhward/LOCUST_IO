@@ -54,7 +54,7 @@ pi=np.pi
 
 ################################################################## Perturbation functions
  
-def read_perturbation_MARSF(filepath):
+def read_perturbation_LOCUST(filepath):
     """
     reads perturbation stored in LOCUST format
 
@@ -62,7 +62,7 @@ def read_perturbation_MARSF(filepath):
         assumes R is slower-varying dimension in file when inferring dimensions
     """
 
-    print("reading MARSF perturbation")
+    print("reading LOCUST perturbation")
 
     with open(filepath,'r') as file:
                  
@@ -114,23 +114,23 @@ def read_perturbation_MARSF(filepath):
         input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
         
 
-    print("finished reading MARSF perturbation")
+    print("finished reading LOCUST perturbation")
     
     return input_data
  
-def dump_perturbation_MARSF(output_data,filepath):
+def dump_perturbation_LOCUST(output_data,filepath):
     """
-    writes perturbation to MARSF format
+    writes perturbation to LOCUST format
 
     notes:
     """
  
-    print("writing MARSF perturbation")
+    print("writing LOCUST perturbation")
 
     with open(filepath,'w') as file: #open file
         pass
      
-    print("finished writing MARSF perturbation")
+    print("finished writing LOCUST perturbation")
 
  
 ################################################################## perturbation class
@@ -170,14 +170,14 @@ class Perturbation(base_input.LOCUST_input):
         if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
-        elif data_format=='MARSF': #here are the blocks for various file types, they all follow the same pattern
+        elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_perturbation_MARSF(self.filepath) #read the file
+                self.data=read_perturbation_LOCUST(self.filepath) #read the file
          
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (MARSF)\n")            
@@ -195,10 +195,10 @@ class Perturbation(base_input.LOCUST_input):
         if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
-        elif data_format=='MARSF':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to MARSF - filename required\n",filename):
+        elif data_format=='LOCUST':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_perturbation_MARSF(self.data,filepath)
+                dump_perturbation_LOCUST(self.data,filepath)
 
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (MARSF)\n")
