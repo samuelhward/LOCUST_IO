@@ -166,6 +166,9 @@ def read_beam_depo_IDS(shot,run):
 
                     input_data[coordinate_name].extend([marker])    
 
+        if len(source.markers[0].weights)>0: #if markers have defined weights
+            input_data['weights'].extend(source.markers[0].weights)
+
     for key in input_data: #convert to numpy arrays
         input_data[key]=np.asarray(input_data[key])
  
@@ -366,6 +369,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
+    input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
 
     file.close()
     file.close()
@@ -392,6 +396,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=file.variables['bs_xksid_D_MCBEAM'].data
+    input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
 
     file.close()
     file.close()

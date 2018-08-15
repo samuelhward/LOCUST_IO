@@ -235,6 +235,15 @@ def interpolate_1D(X_axis,Y_axis):
 
     return interpolator
 
+def RphiZ_to_XYZ(R,phi):
+    """
+    converts R,phi positions to X,Y 
+    """
+
+    X=R*np.sin(phi)
+    Y=R*np.cos(phi)
+
+    return X,Y
 
 def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e,rotation_toroidal):
     """
