@@ -53,7 +53,7 @@ except:
     sys.exit(1)
 try:
     from scipy.io import netcdf as ncdf
-except
+except:
     raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
