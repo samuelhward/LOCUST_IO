@@ -141,6 +141,7 @@ def read_beam_depo_IDS(shot,run):
     reads birth profile from a distribution_sources IDS and returns as a dictionary
  
     notes:
+        retains coordinate names from IMAS entries - must overwrite these manually
         reads in an arbitrary number of coordinates and injectors for each source        
         assumes that all sources have the same coordinate structure
         assumes markers hold only one time slice, at ...markers[0]

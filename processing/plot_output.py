@@ -330,7 +330,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
     #1D data
     if some_distribution_function[key].ndim==1:
         ax.plot(some_distribution_function[key])
-        ax.set_xlabel(key)
+        ax.set_ylabel(key)
         ax.set_title(some_distribution_function.ID)
 
     #plot distribution function
@@ -346,7 +346,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
             pass #XXX incomplete - should add scatter point
         elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-            pass #XXX incomplete
+            ax.plot(some_distribution_function[key])
+            ax.set_xlabel(axes[0])
+            ax.set_ylabel(key)
         elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
 
             if all(isinstance(axis,type('_')) for axis in axes): #user has supplied list of chars to denote axes

@@ -34,7 +34,11 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from classes import support #import support module from this directory
+    import h5py
+except:
+    print("WARNING: h5py could not be imported!\n") 
+try:
+    from classes import support
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -768,11 +772,16 @@ class ASCOT_output:
             self['V_pitch']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim3'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim3'].value[:-1])
             self['E']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/e_charge #[eV]
 
-            self['dE']=np.abs(self['E'][1]-self['E'][0])
-            self['dV_pitch']=np.abs(self['V_pitch'][1]-self['V_pitch'][0])
             self['dR']=np.abs(self['R'][1]-self['R'][0])
             self['dZ']=np.abs(self['Z'][1]-self['Z'][0])
+            self['dV_pitch']=np.abs(self['V_pitch'][1]-self['V_pitch'][0])
+            self['dE']=np.abs(self['E'][1]-self['E'][0])
             
+            self['nR']=np.array(len(self['R']))
+            self['nZ']=np.array(len(self['Z']))
+            self['nV_pitch']=np.array(len(self['V_pitch']))
+            self['nE']=np.array(len(self['E']))
+
             self['dfn']=self.file['distributions/rzPitchEdist/ordinate'].value #[m^-3 J^-1]
             self['dfn']=np.sum(self['dfn'],axis=0)
             self['dfn']=np.sum(self['dfn'],axis=0)
