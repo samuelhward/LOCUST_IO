@@ -146,7 +146,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
     ndim=len(axes) #infer how many dimensions user wants to plot
     if ndim==1: #plot 1D histograms
         if weight:
-            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins,weights=some_beam_depo['weights'])
+            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins,weights=some_beam_depo['weight'])
         else:
             some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
         some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
@@ -177,12 +177,12 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
         if type=='histogram':
             if grid is not None: #bin according to pre-defined grid
                 if weight:
-                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=some_beam_depo['weights'])
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=some_beam_depo['weight'])
                 else:
                     some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]])
             else:
                 if weight:
-                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins,weights=some_beam_depo['weights'])
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins,weights=some_beam_depo['weight'])
                 else:
                     some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
