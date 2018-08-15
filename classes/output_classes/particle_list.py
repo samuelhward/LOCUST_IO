@@ -277,7 +277,7 @@ class Final_Particle_List(base_output.LOCUST_output):
 
     LOCUST_output_type='final particle list'
 
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read final particle list from file 
 
@@ -293,7 +293,7 @@ class Final_Particle_List(base_output.LOCUST_output):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_final_particle_list_LOCUST(self.filepath) #read the file
 
         elif data_format=='TRANSP': #here are the blocks for various file types, they all follow the same pattern
@@ -302,7 +302,7 @@ class Final_Particle_List(base_output.LOCUST_output):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_final_particle_list_TRANSP(self.filepath) #read the file
         
         else:

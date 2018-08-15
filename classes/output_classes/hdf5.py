@@ -130,7 +130,7 @@ class HDF5(base_output.LOCUST_output):
 
     LOCUST_output_type='HDF5'
 
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read HDF5 from file 
 
@@ -146,7 +146,7 @@ class HDF5(base_output.LOCUST_output):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_HDF5_LOCUST(self.filepath) #read the file
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST)\n")            

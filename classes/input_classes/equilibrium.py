@@ -426,7 +426,7 @@ class Equilibrium(base_input.LOCUST_input):
  
     LOCUST_input_type='equilibrium'
   
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): #always supply all possible arguments for reading in data, irrespective of read in type
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
  
@@ -441,7 +441,7 @@ class Equilibrium(base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_equilibrium_GEQDSK(self.filepath) #read the file
             
         elif data_format=='IDS':
@@ -449,7 +449,7 @@ class Equilibrium(base_input.LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_equilibrium_IDS(self.shot,self.run)
  
         else:
