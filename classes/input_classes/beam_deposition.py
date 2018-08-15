@@ -358,6 +358,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     reads birth profile from TRANSP birth CDF file at particle position
 
     notes:
+        currently missing velocity vector - waiting for Princeton
     """
 
 
@@ -628,7 +629,7 @@ class Beam_Deposition(base_input.LOCUST_input):
  
     LOCUST_input_type='beam_deposition'
  
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,properties=None): 
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties): 
         """
         read beam_deposition from file 
  
@@ -644,7 +645,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_beam_depo_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
@@ -653,7 +654,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
         elif data_format=='TRANSP_fbm':
@@ -662,7 +663,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_fbm(self.filepath) #read the file
 
         elif data_format=='TRANSP_fbm_gc':
@@ -671,11 +672,29 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
-                self.properties=properties
+                self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath) #read the file
+
+        elif data_format=='TRANSP_birth':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth - filename required\n",filename):
  
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_TRANSP_birth(self.filepath) #read the file 
+
+        elif data_format=='TRANSP_birth_gc':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth_gc - filename required\n",filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_TRANSP_birth_gc(self.filepath) #read the file 
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP_fbm/TRANSP_fbm_gc)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None):
         """
