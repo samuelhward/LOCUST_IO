@@ -128,7 +128,6 @@ def dfn_crop(some_dfn,**kwargs):
     """
     notes:
         warning! to work, dfn_index and 1D dfn axes must accurately reflect dfn which is still stored e.g. dfn['dfn'][r,z] must contain dfn['R'],dfn['Z'] and dfn['dfn_index']=['R','Z']
-        warning! cropping by R does not reset nR for example - must be done manually
     args:
         kwargs - axes and their limits 
     usage:
@@ -150,6 +149,8 @@ def dfn_crop(some_dfn,**kwargs):
             i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
             i=i[0] #get first element of returned tuple
             dfn[key]=dfn[key][i] #crop 1D arrays accordingly
+            nkey='n{}'.format(key) #reset associated nkey values too e.g. reset nR if cropping R
+            dfn[nkey]=np.array(len(dfn[key]))
 
             dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
             dfn['dfn']=dfn['dfn'][i,:] #crop dfn

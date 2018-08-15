@@ -218,7 +218,32 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
         ax.set_title(some_beam_depo.ID)
+       
+    elif ndim==3: #plot 3D scatter - assume X,Y,Z
+
+        if type!='histogram':
+            print("ERROR: plot_beam_deposition() can only plot scatter type in 3D!")
+            return
+
+        if ax_flag is False and len(axes)==3:
+            ax = fig.gca(projection='3d')
         
+        if LCFS: #plot periodic poloidal cross-sections in 3D
+            for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                x_points=some_equilibrium['lcfs_r']*np.cos(angle)
+                y_points=some_equilibrium['lcfs_r']*np.sin(angle)
+                z_points=some_equilibrium['lcfs_z']
+                ax.plot(x_points,y_points,zs=z_points,color='m')
+
+        if real_scale is True:
+            ax.set_aspect('equal')
+            if some_equilibrium:
+                ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
+
+        ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],some_beam_depo[axes[2]],color=colmap(np.random.uniform()))
+    
     if ax_flag is False and fig_flag is False:
         plt.show()
 
