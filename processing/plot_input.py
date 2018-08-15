@@ -109,14 +109,15 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots beam deposition
 
     notes:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
-        some_dfn - corresponding distribution_function for matching binning axes etc.
+        grid - grid-like object containing same 'axes' to bin against e.g. distribution_function object with ['R'] and ['Z'] data
         type - choose from scatter or histogram
+        weight - toggle whether to include marker weights in histograms
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
         LCFS - toggles whether plasma boundary is included (requires equilibrium arguement)
@@ -172,10 +173,16 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
                 ax.set_aspect('auto')
 
         if type=='histogram':
-            if some_dfn is not None: #bin according to pre-defined grid
-                some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[some_dfn['R'],some_dfn['Z']])
+            if grid is not None: #bin according to pre-defined grid
+                if weight:
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=some_beam_depo['weights'])
+                else:
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]])
             else:
-                some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
+                if weight:
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins,weights=some_beam_depo['weights'])
+                else:
+                    some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=number_bins)
             #some_beam_depo_binned_x and some_beam_depo_binned_x are first edges then converted to centres
             some_beam_depo_binned_x=(some_beam_depo_binned_x[:-1]+some_beam_depo_binned_x[1:])*0.5
             some_beam_depo_binned_y=(some_beam_depo_binned_y[:-1]+some_beam_depo_binned_y[1:])*0.5
@@ -242,7 +249,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,some_dfn=None,type
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
 
-        ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],some_beam_depo[axes[2]],color=colmap(np.random.uniform()))
+        ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],some_beam_depo[axes[2]],color=colmap(np.random.uniform()),s=0.1)
     
     if ax_flag is False and fig_flag is False:
         plt.show()
