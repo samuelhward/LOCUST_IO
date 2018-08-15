@@ -145,8 +145,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
 
     ndim=len(axes) #infer how many dimensions user wants to plot
     if ndim==1: #plot 1D histograms
-
-        some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
+        if weight:
+            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins,weights=some_beam_depo['weights'])
+        else:
+            some_beam_depo_binned,some_beam_depo_binned_edges=np.histogram(some_beam_depo[axes[0]],bins=number_bins)
         some_beam_depo_binned_centres=(some_beam_depo_binned_edges[:-1]+some_beam_depo_binned_edges[1:])*0.5
         ax.plot(some_beam_depo_binned_centres,some_beam_depo_binned)
         ax.set_xlabel(axes[0])
