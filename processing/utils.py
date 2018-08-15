@@ -23,7 +23,6 @@ try:
     import copy
     import os
     import re
-    import h5py
     import time
     import itertools
     import matplotlib
