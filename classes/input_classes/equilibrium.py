@@ -397,6 +397,37 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     output_IDS.close()
 
     print("finished writing equilibrium to IDS")
+
+def dump_equilibrium_ASCOT(output_data,filepath):
+    """
+    writes equilibrium data to ASCOT input files
+
+    notes:
+    """
+
+    dump_equilibrium_GEQDSK(output_data,filepath) #ASCOT also requires GEQDSK so write out just in case
+
+    #XXX under construction
+
+    '''eqd = read_eqdsk_riplos1('g157418.03000');
+                eqd.psirz = -eqd.psirz;
+            
+            
+                [bkg,Xguess] = eqdsk2magn_bkg(eqd, [], [], [], [], [1.3 -1.1], true);
+            
+            
+            
+                head = eqdsk2ascbkg(eqd, [], [], [], [], [], Xguess);
+            
+            
+            
+                write_magn_bkg(bkg, 'input.magn_bkg')
+            
+            
+            
+                write_magn_header(head, 'input.magn_header')'''
+
+    
  
 ################################################################## Equilibrium class
  
@@ -477,8 +508,13 @@ class Equilibrium(base_input.LOCUST_input):
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to equilibrium IDS - shot and run required\n",shot,run):
                 dump_equilibrium_IDS(self.ID,self.data,shot,run)
  
+        elif data_format=='ASCOT':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_equilibrium_ASCOT(self.data,filepath)
+
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
 
  
 #################################

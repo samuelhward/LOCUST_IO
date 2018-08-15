@@ -98,6 +98,8 @@ def read_HDF5_LOCUST(filepath):
     input_data['e-source']=np.array(file['Output Data']['Fast Iones']['Profiles (1D)']['e-Source']['data'])
     input_data['e-source_err']=np.array(file['Output Data']['Fast Iones']['Profiles (1D)']['e-Source']['error'])
     
+    file.close()
+
     print("finished reading HDF5 from LOCUST")
 
     return input_data

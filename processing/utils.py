@@ -795,7 +795,7 @@ class ASCOT_output:
             self['dfn']=np.sum(self['dfn'],axis=0)
             self['dfn']=np.sum(self['dfn'],axis=-1)
             self['dfn']=np.swapaxes(self['dfn'],-1,-2) 
-            self['dfn']*=e_charge/self['dV_pitch'] #[m^-3 eV^-1 dpitch^-1]
+            self['dfn']*=e_charge/self['dV_pitch'] #[m^-3 eV^-1 dpitch^-1] XXX check this
             self['dfn_index']=np.array(['E','V_pitch','R','Z'])
 
         elif datatype=='equilibrium':
@@ -856,6 +856,11 @@ class ASCOT_output:
             self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over R
             self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over V_pitch
 
+        elif axes==['R']:
+            self.data['dfn']*=self.data['dE']*self.data['dV_pitch'] #integrate
+            for counter in range(2): #sum over pitch and energy
+                self.data['dfn']=np.sum(self.data['dfn'],axis=0)
+            self.data['dfn']=np.sum(self.data['dfn'],axis=-1) #sum over Z
 
         elif axes==['N']:
             #applying full Jacobian and integrate over toroidal angle
@@ -872,7 +877,7 @@ class ASCOT_output:
         else:
             print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
-    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
+    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
         """
         wrapper to plot_distribution_function
 
@@ -880,6 +885,6 @@ class ASCOT_output:
             ugly as hell - need to do this to get around HDF5 file being in ASCOT_output's member data
         """
 
-        if transform: #intercept before plot_distribution_function is called to optionally transform using our own method defined above 
-            self.dfn_transform(axes=axes)
+        self.dfn_transform(axes=axes)
         plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with transform disabled
+        self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform

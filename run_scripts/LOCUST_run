@@ -1,6 +1,9 @@
 #!/bin/bash 
 #or /usr/bin/env bash
 
+
+https://physicscodingclub.github.io/2018-01-25-python-for-scripts/
+
 ########################## users set this top level
 #run info
 tokamak='DIII-D'

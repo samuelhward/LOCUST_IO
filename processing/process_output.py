@@ -51,6 +51,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         R,Z - integrate over pitch, gyrophase and velocity [m]^-3
         E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
         E - [eV]^-1 
+        R - [m]^-3
         N - total # 
     """
 
@@ -99,6 +100,17 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
         dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
+
+    elif axes==['R']:
+        #apply velocity space Jacobian
+        for v in range(len(dfn['V'])):
+            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+        #then need to integrate over the first 3 dimensions which we do not need
+        for counter in range(3):
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
     elif axes==['N']:
         #apply velocity space Jacobian
