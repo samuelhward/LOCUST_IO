@@ -475,7 +475,7 @@ class TRANSP_output:
             typ - dtype of variable
             dimensions - kwarg for dimension names and corresponding lengths
         useage:
-            my_cdf.new_var('new_variable','float',x=100,y=50) 
+            my_cdf.new_var('new_variable','float',x=100,y=50)
         """
 
         for dimension in dimensions.keys():
@@ -604,7 +604,11 @@ class TRANSP_output_FI(TRANSP_output):
         #make these into lists of filenames, lists of dfn
         #integration graph
 
-
+        import context
+        from processing.utils import TRANSP_output_FI
+        import matplotlib
+        import matplotlib.pyplot as plt
+        cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 
         #read and gather all the data
         filename_array=[]
