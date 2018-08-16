@@ -50,6 +50,10 @@ try:
 except:
     raise ImportError("ERROR: processing/process_output.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    from scipy.io import netcdf as ncdf
+except:
+    raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
 
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
@@ -72,7 +76,7 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
 
     if compression is True: #for now just revert to the efficient compression version
         input_data=process_output.particle_list_compression(filepath)
-        print("finished reading final particle list from LOCUST")
+        print("finished reading compressed final particle list from LOCUST")
         return input_data
 
     else: #otherwise we can read the whole file - WARNING this can be huge
@@ -190,6 +194,7 @@ def dump_final_particle_list_LOCUST(output_data,filepath):
 
     pass
 
+'''
 def read_final_particle_list_TRANSP(filepath):
     """
     reads final particle list stored in TRANSP format
@@ -236,12 +241,44 @@ def read_final_particle_list_TRANSP(filepath):
         input_data['energy']=np.asarray(input_data['energy'])
 
         input_data['number_particles']=np.array(input_data['number_particles'])
-        input_data['status_flags']={} #initialise status_flags for use with plotting (but do not set to help memory)
-
+        input_data['status_flags']['any_loss']=0.0
+        input_data['status_flag']=np.zeros(len(input_data['R']))
+        
     print("finished reading final particle list from TRANSP")
 
     return input_data
+'''
 
+def read_final_particle_list_TRANSP(filepath):
+    """
+    read final particle list from TRANSP fi CDF output file
+
+    notes:
+        must set AVGTIM>0 in TRANSP namelist
+    """
+
+    print("reading final particle list from TRANSP")
+
+
+    file=ncdf.netcdf_file(filepath,'r')
+    input_data={}
+
+    input_data['R']=file.variables['RMJION'].data*.01
+    input_data['Z']=file.variables['ZYION'].data*.01
+    input_data['V_pitch']=file.variables['XKSIDLST'].data
+    input_data['E']=file.variables['ZELST'].data
+    input_data['weight']=file.variables['WGHTLST'].data
+    input_data['status_flags']={} #initialise generic status_flags - TRANSP does store these in ['GOOSELST'] but all are 1.00 or 1.0001
+    input_data['status_flags']['any_loss']=0.0
+    input_data['status_flag']=np.zeros(len(input_data['R']))
+
+    file.close()
+    file.close()
+    
+    print("finished reading final particle list from TRANSP")
+    
+    return input_data
+    
 def dump_final_particle_list_TRANSP(output_data,filepath):
     """
     writes final particle list to TRANSP format
@@ -250,6 +287,7 @@ def dump_final_particle_list_TRANSP(output_data,filepath):
     """
 
     pass
+
 
 ################################################################## Final_Particle_List class
 

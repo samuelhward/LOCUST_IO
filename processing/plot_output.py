@@ -202,7 +202,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
     elif ndim==2: #plot 2D histograms
 
-        if axes==['R','Z']: #check for common axes
+'''        if axes==['R','Z']: #check for common axes
             if real_scale is True: #set x and y plot limits to real scales
                 if some_equilibrium:
                     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -218,7 +218,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                     ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_aspect('equal')
             else:
-                ax.set_aspect('auto')
+                ax.set_aspect('auto')'''
 
         for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
@@ -243,6 +243,8 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap(np.random.uniform()),marker='x',s=1)
 
         if axes==['R','Z']:
+            if LCFS is True: #plot plasma boundarys
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
             if real_scale is True: #set x and y plot limits to real scales
                 if some_equilibrium:
                     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -250,10 +252,13 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
-            if LCFS is True: #plot plasma boundarys
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
 
         elif axes==['X','Y']:
+            if LCFS is True: #plot plasma boundary
+                plasma_max_R=np.max(some_equilibrium['lcfs_r'])
+                plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
             if real_scale is True: #set x and y plot limits to real scales
                 if some_equilibrium:
                     ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -261,12 +266,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
-            if LCFS is True: #plot plasma boundary
-                plasma_max_R=np.max(some_equilibrium['lcfs_r'])
-                plasma_min_R=np.min(some_equilibrium['lcfs_r'])
-                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
-                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
-        
+
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
         ax.set_title(some_final_particle_list.ID)
