@@ -31,6 +31,9 @@ except:
     sys.exit(1)
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
+plot_style_LCFS='m-' #set plot style for LCFS
+plot_style_limiters='k-' #set plot style for limiters
+
 pi=np.pi #define pi
 
 ##################################################################
@@ -109,7 +112,7 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots beam deposition
 
@@ -121,6 +124,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
         LCFS - toggles whether plasma boundary is included (requires equilibrium arguement)
+        limiters - toggles limiters on/off in 2D plots
         real_scale - sets r,z scale to real tokamak cross section
         colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
@@ -175,7 +179,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
                 ax.set_aspect('auto')
 
         if type=='histogram':
-            if grid is not None: #bin according to pre-defined grid
+            if grid is not False: #bin according to pre-defined grid
                 if weight:
                     some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=some_beam_depo['weight'])
                 else:
@@ -208,7 +212,9 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
             else:
                 ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
 
         elif axes==['X','Y']:
             if real_scale is True: #set x and y plot limits to real scales
@@ -221,8 +227,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
             if LCFS is True: #plot plasma boundary
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                 plasma_min_R=np.min(some_equilibrium['lcfs_r'])
-                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
-                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)          
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)    
         
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
@@ -256,7 +264,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=None,grid=None,type='hi
     if ax_flag is False and fig_flag is False:
         plt.show()
 
-def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
+def plot_equilibrium(some_equilibrium,key='psirz',LCFS=False,limiters=False,number_contours=20,contour_fill=True,colmap=cmap_default,ax=False,fig=False):
     """
     plots equilibrium
     
@@ -331,16 +339,16 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=None,limiters=None,number
         ax.set_ylabel('Z [m]')
         ax.set_title(some_equilibrium.ID)
 
-        if limiters is True: #add boundaries if desired
-            ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],'k-') 
         if LCFS is True:
-            ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+            ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+        if limiters is True: #add boundaries if desired
+            ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters) 
 
     if ax_flag is False and fig_flag is False:
         plt.show()
 
 
-def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
+def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,limiters=False,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots random field lines for 'angle' radians around the tokamak
 
@@ -349,6 +357,7 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
     args:
         axes - list of strings specifying which axes should be plotted
         LCFS - show plasma boundary outline (requires equilibrium arguement)
+        limiters - toggles limiters on/off in 2D plots
         number_field_lines - the number of field lines to plot
         angle - plot field line for this many radians around central column
         plot_full - choose whether each field line will trace the whole plasma topology (see below also)
@@ -461,7 +470,9 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                 if start_mark: 
                     ax.scatter(R_points[0],Z_points[0],color='red',s=10)
                 if LCFS is True: #plot plasma boundary
-                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)       
         
                 ax.set_xlabel('R [m]')
                 ax.set_ylabel('Z [m]')
@@ -476,8 +487,10 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,number_field
                 if LCFS is True: #plot plasma boundary
                     plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                     plasma_min_R=np.min(some_equilibrium['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-') 
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS) 
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
                 
                 ax.set_xlabel('X [m]')
                 ax.set_ylabel('Y [m]')

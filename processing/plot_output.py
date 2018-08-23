@@ -28,6 +28,9 @@ except:
     sys.exit(1)
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
+plot_style_LCFS='m-' #set plot style for LCFS
+plot_style_limiters='k-' #set plot style for limiters
+
 pi=np.pi #define pi
 e_charge=1.60217662e-19 #define electron charge
 mass_neutron=1.674929e-27 #define mass of neutron
@@ -38,7 +41,7 @@ mass_deuterium=2.0141017781*amu
 #Main Code
 
 
-def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],LCFS=False,real_scale=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
+def plot_orbits(some_orbits,some_equilibrium=False,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
     """
     simple orbits plot in the R,Z/X,Y planes
      
@@ -47,6 +50,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         particles - iterable list of particle numbers
         axes - define plot axes
         LCFS - show plasma boundary outline (requires equilibrium arguement)
+        limiters - toggles limiters on/off in 2D plots
         real_scale - plot to Tokamak scale (requires equilibrium arguement)
         start_mark - include marker to show birth point
         colmap - set the colour map (use get_cmap names)
@@ -82,7 +86,9 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
                 ax.set_aspect('equal')
 
             if LCFS is True: #plot plasma boundary
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
 
             for particle in particles: #plot all the particle tracks one by one
                 ax.plot(some_orbits['orbits'][1::2,0,particle],some_orbits['orbits'][1::2,2,particle],color=colmap(np.random.uniform()),linewidth=0.5) #plot every other position along trajectory
@@ -100,8 +106,10 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
             if LCFS is True: #plot concentric rings to show inboard/outboard plasma boundaries
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                 plasma_min_R=np.min(some_equilibrium['lcfs_r'])
-                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
-                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
 
             for particle in particles: #plot all the particle tracks one by one
                 x_points=some_orbits['orbits'][1::2,0,particle]*np.cos(some_orbits['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
@@ -134,6 +142,8 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
                 y_points=some_equilibrium['lcfs_r']*np.sin(angle)
                 z_points=some_equilibrium['lcfs_z']
                 ax.plot(x_points,y_points,zs=z_points,color='m')
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
 
         for particle in particles: #plot all the particle tracks one by one
             x_points=some_orbits['orbits'][1::2,0,particle]*np.cos(some_orbits['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
@@ -153,7 +163,7 @@ def plot_orbits(some_orbits,some_equilibrium=None,particles=[0],axes=['R','Z'],L
         plt.show()
 
 
-def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some_dfn=None,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,ax=False,fig=False):
+def plot_final_particle_list(some_final_particle_list,some_equilibrium=False,some_dfn=False,type='histogram',number_bins=50,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,ax=False,fig=False):
     """
     plot the final particle list
      
@@ -164,6 +174,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         number_bins - set bin for histogram
         axes - define plot axes
         LCFS - show plasma boundary outline (requires equilibrium arguement)
+        limiters - toggles limiters on/off in 2D plots
         real_scale - plot to Tokamak scale (requires equilibrium arguement)
         status_flags - plot particles with these statuses
         weight - weight per marker (must be constant)
@@ -224,7 +235,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
             
             if type=='histogram':
-                if some_dfn is not None:
+                if some_dfn is not False:
                     some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=[some_dfn['R'],some_dfn['Z']])
                 else:  
                     some_final_particle_list_binned,some_final_particle_list_binned_x,some_final_particle_list_binned_y=np.histogram2d(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],bins=number_bins)
@@ -244,7 +255,9 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
 
         if axes==['R','Z']:
             if LCFS is True: #plot plasma boundarys
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS)
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters) 
             if real_scale is True: #set x and y plot limits to real scales
                 if some_equilibrium:
                     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -257,8 +270,10 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
             if LCFS is True: #plot plasma boundary
                 plasma_max_R=np.max(some_equilibrium['lcfs_r'])
                 plasma_min_R=np.min(some_equilibrium['lcfs_r'])
-                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')
-                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),'m-')          
+                ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)          
             if real_scale is True: #set x and y plot limits to real scales
                 if some_equilibrium:
                     ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
@@ -275,7 +290,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=None,some
         plt.show()
 
 
-def plot_distribution_function(some_distribution_function,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
+def plot_distribution_function(some_distribution_function,some_equilibrium=False,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
     """
     plot the distribution function
 
@@ -287,6 +302,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
         key - select which data to plot
         axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
         LCFS - show plasma boundary outline (requires equilibrium arguement)
+        limiters - toggles limiters on/off in 2D plots
         real_scale - plot to Tokamak scale
         colmap - set the colour map (use get_cmap names)
         transform - set to False if supplied dfn has already been cut down to correct dimensions
@@ -389,7 +405,9 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=None,
             else:
                 ax.set_aspect('auto')
             if LCFS is True: #plot plasma boundary
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],'m-') 
+                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+            if limiters is True: #add boundaries if desired
+                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
             
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
