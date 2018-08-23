@@ -110,6 +110,7 @@ def read_beam_depo_LOCUST(filepath):
         input_data['V_R']=np.asarray(input_data['V_R'])
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
+        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*mass_deuterium)
 
     print("finished reading beam deposition from LOCUST")
  
@@ -135,6 +136,34 @@ def dump_beam_depo_LOCUST(output_data,filepath):
             file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
     
     print("finished writing beam deposition to LOCUST") 
+
+def dump_beam_depo_LOCUST_weighted(output_data,filepath):
+    """
+    writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
+     
+    notes:
+        writes out two headerlines
+    """
+ 
+    print("writing weighted beam deposition to LOCUST")
+
+    if 'V_pitch' not in output_data:
+        print("ERROR: dump_beam_depo_LOCUST_weighted() requires V_pitch!\n")
+        return
+
+    with open(filepath,'w') as file: #open file
+ 
+        file.write("{}\n".format(utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
+        file.write("{}\n".format(utils.fortran_string(1.0,13)))
+
+        V=np.sqrt(output_data['E']*2./mass_deuterium)
+        V_parallel=V*output_data['V_pitch']
+ 
+        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
+
+            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=V_parallel,V=V,weight=utils.fortran_string(output_data['weight'][this_particle],14,6)))
+    
+    print("finished writing weighted beam deposition to LOCUST") 
  
 def read_beam_depo_IDS(shot,run):
     """
@@ -298,6 +327,7 @@ def read_beam_depo_TRANSP_fbm(filepath):
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
+        input_data['E']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*mass_deuterium)
 
     print("finished reading beam deposition from TRANSP FBM format")
 
@@ -414,7 +444,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
     notes:
         assumes output_data stores energy in eV, phi in rad
     """
-    print("dumping beam deposition to ASCOT format")
+    print("writing beam deposition to ASCOT format")
 
     with open(filepath,'w') as file:
 
@@ -455,7 +485,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         energies_sum=np.sum(output_data['E'])
         weight=beam_power/energies_sum
 
-        print("dumping particle list to file")
+        print("writing particle list to file")
         i=0 #counter for particle identifier
         for phi,R,Z,V_tor,V_R,V_Z in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
@@ -487,7 +517,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
 
         file.write("#EOF\n")
 
-    print("finished dumping beam deposition to ASCOT format")
+    print("finished writing beam deposition to ASCOT format")
 
 def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
     """
@@ -496,7 +526,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
     notes:
         assumes output_data stores energy in eV, phi in rad
     """
-    print("dumping beam deposition to ASCOT guiding centre format")
+    print("writing beam deposition to ASCOT guiding centre format")
 
     with open(filepath,'w') as file:
 
@@ -561,7 +591,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
         weight=beam_power/energies_sum
 
 
-        print("dumping particle list to file")
+        print("writing particle list to file")
         i=0 #counter for particle identifier
         for E,phi,R,Z,V_tor,V_R,V_Z in zip(output_data['E'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
@@ -597,7 +627,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         file.write("#EOF\n")
 
-    print("finished dumping beam deposition to ASCOT guiding centre format")
+    print("finished writing beam deposition to ASCOT guiding centre format")
 
 ################################################################## Beam_Deposition class
  
@@ -713,6 +743,11 @@ class Beam_Deposition(base_input.LOCUST_input):
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_LOCUST(self.data,filepath)
+
+        elif data_format=='LOCUST_weighted':
+            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename required\n",filename):
+                filepath=support.dir_input_files+filename
+                dump_beam_depo_LOCUST_weighted(self.data,filepath)
          
         elif data_format=='IDS':
             if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
@@ -729,7 +764,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium)
  
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/ASCOT/ASCOT_gc)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/LOCUST_weighted/IDS/ASCOT/ASCOT_gc)\n")
 
  
  

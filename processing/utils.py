@@ -665,6 +665,7 @@ class ASCOT_output:
     class for encapsulating ASCOT HDF5 output file
 
     notes:
+        very hacky
         mimics a LOCUST_IO object - use pull_data and methods like dfn_transform to then access standard LOCUST_IO functions
         my_output.file['key/path/to/data'].values will return leaf-level tree data from HDF5 file
     example:
@@ -733,7 +734,7 @@ class ASCOT_output:
 
     def file_open(self,filename=None):
         """
-        re-open new HDF5 file
+        re-open/open new HDF5 file
         """
 
         if filename: #if supplied new filename, overwrite previous filepath
@@ -743,7 +744,7 @@ class ASCOT_output:
 
     def file_close(self):
         """
-        close annoying HDF5 file handle for plotting/getting on with our lives
+        close annoying HDF5 file handle
 
         notes:
         """
@@ -839,7 +840,7 @@ class ASCOT_output:
         if axes==['R','Z']:
             self.data['dfn']*=self.data['dE']*self.data['dV_pitch'] #integrate
             for counter in range(2): #sum
-                self.data['dfn']=np.sum(self.data['dfn'],axis=0)
+                self.data['dfn']=np.sum(self.data['dfn'],axis=0) #XXX IS A FACTOR OF 2 NEEDED WHEN INTEGRATING OVER PITCH LIKE TRANSP?
 
         elif axes==['E','V_pitch']:
             #applying real space Jacobian and integrate over toroidal angle
@@ -886,9 +887,8 @@ class ASCOT_output:
         wrapper to plot_distribution_function
 
         notes:
-            ugly as hell - need to do this to get around HDF5 file being in ASCOT_output's member data
         """
 
         self.dfn_transform(axes=axes)
-        plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with transform disabled
+        plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
         self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform

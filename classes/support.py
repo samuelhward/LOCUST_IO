@@ -44,7 +44,7 @@ dir_classes=os.path.join(dir_locust_io,'classes/')
 #data which must exist to be able to run LOCUST
 required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','simag','sibry','bcentr',
 'current','simag','rmaxis','zmaxis','sibry','xdum','fpol','pres','ffprime','pprime','psirz','qpsi','lcfs_n','limitr','lcfs_r','lcfs_z','rlim','zlim']
-required_beam_deposition=['R','phi','Z','V_R','V_tor','V_Z']
+required_beam_deposition=['R','phi','Z','V_R','V_tor','V_Z','absorption_fraction','absorption_scaling']
 required_temperature=['flux_pol_norm','T']
 required_number_density=['flux_pol_norm','n']
 required_perturbation=['R_2D','Z_2D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
