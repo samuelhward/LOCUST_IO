@@ -22,6 +22,7 @@ try:
     import os
     import subprocess
     import numpy as np
+    import matplotlib
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)
