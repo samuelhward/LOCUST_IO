@@ -121,7 +121,7 @@ def dump_beam_depo_LOCUST(output_data,filepath):
     writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor
      
     notes:
-        writes out two headerlines
+
     """
  
     print("writing beam deposition to LOCUST")
@@ -142,7 +142,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
     writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
      
     notes:
-        writes out two headerlines
+        assumes quantities are at the guiding centre
     """
  
     print("writing weighted beam deposition to LOCUST")
@@ -401,6 +401,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
+    input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
 
     file.close()
@@ -427,7 +428,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
-    input_data['V_pitch']=file.variables['bs_xksid_D_MCBEAM'].data
+    input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
 
     file.close()

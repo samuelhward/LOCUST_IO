@@ -32,7 +32,7 @@ except:
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='k-' #set plot style for limiters
+plot_style_limiters='w-' #set plot style for limiters
 
 pi=np.pi #define pi
 

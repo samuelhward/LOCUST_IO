@@ -29,7 +29,7 @@ except:
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='k-' #set plot style for limiters
+plot_style_limiters='w-' #set plot style for limiters
 
 pi=np.pi #define pi
 e_charge=1.60217662e-19 #define electron charge
@@ -212,24 +212,27 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=False,som
             ax.set_title(some_final_particle_list.ID)
 
     elif ndim==2: #plot 2D histograms
+        pass
+        #XXX SEE IF WE CAN DO WITHOUT THE FOLLOWING BIT OF CODE
+        '''        
+            if axes==['R','Z']: #check for common axes
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
 
-'''        if axes==['R','Z']: #check for common axes
-            if real_scale is True: #set x and y plot limits to real scales
-                if some_equilibrium:
-                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
-                ax.set_aspect('equal')
-            else:
-                ax.set_aspect('auto')
-
-        elif axes==['X','Y']:          
-            if real_scale is True: 
-                if some_equilibrium:
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                ax.set_aspect('equal')
-            else:
-                ax.set_aspect('auto')'''
+            elif axes==['X','Y']:          
+                if real_scale is True: 
+                    if some_equilibrium:
+                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+        '''
 
         for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
             p=np.where(some_final_particle_list['status_flag']==some_final_particle_list['status_flags'][status]) #find the particle indices which have the desired status_flag
@@ -314,12 +317,13 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=False
         plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True) #R,Z plotted with true scales and last closed flux surface from supplied equilibrium
         plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True,transform=False) #R,Z plot where my_dfn has already been cropped to correct dimensions
         plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
-    axes:
+    axes options:
         R,Z - integrate over pitch, gyrophase and velocity [m]^-3
         E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
         E - [eV]^-1
         R - [m]^-3 
         N - total #
+        list of indices and slices
     """
 
     if ax is False:
