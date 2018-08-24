@@ -667,6 +667,9 @@ class TRANSP_output_FI(TRANSP_output):
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
         elif axes==['E','V_pitch']: 
             E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
             ax.set_facecolor(colmap(np.amin(self['F_D_NBI_int']['data'])))
@@ -674,7 +677,10 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('pitch (v_parallel/v)')
             if fig_flag is False:    
-                fig.colorbar(mesh,ax=ax,orientation='horizontal')            
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh            
 
         elif axes==['E','time']: #use the kwargs to accept TRANSP_output_FI_list, a list of other integrated TRANSP_output_FI objects to plot in a single mesh plot
             if 'TRANSP_output_FI_list' in kwargs.keys():
