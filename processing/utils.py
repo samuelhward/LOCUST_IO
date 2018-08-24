@@ -942,3 +942,11 @@ class ASCOT_output:
             self.dfn_transform(axes=axes)
         plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
         self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
+
+
+
+#################################
+ 
+##################################################################
+ 
+###################################################################################################
