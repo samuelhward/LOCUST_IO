@@ -53,6 +53,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         E - [eV]^-1 
         R - [m]^-3
         N - total # 
+        list of indices and slices
     """
 
     dfn=copy.deepcopy(some_dfn) #make deep copy here since functions designed to repeatedly take fresh DFNs would otherwise permanently change it
