@@ -201,6 +201,9 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
 
@@ -344,6 +347,9 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=False,limiters=False,numb
             ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
         if limiters is True: #add boundaries if desired
             ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters) 
+
+        if ax_flag is True or fig_flag is True: #return the plot object
+            return mesh
 
     if ax_flag is False and fig_flag is False:
         plt.show()
