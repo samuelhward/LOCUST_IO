@@ -201,9 +201,6 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
-            if ax_flag is True or fig_flag is True: #return the plot object
-                return mesh
-
         elif type=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
 
@@ -236,6 +233,10 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
             if limiters is True: #add boundaries if desired
                 ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)    
         
+        if ax_flag is True or fig_flag is True: #return the plot object
+            if 'mesh' in locals():
+                return mesh
+
         ax.set_xlabel(axes[0])
         ax.set_ylabel(axes[1])
         ax.set_title(some_beam_depo.ID)
