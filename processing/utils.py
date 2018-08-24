@@ -27,6 +27,7 @@ try:
     import itertools
     import matplotlib
     import matplotlib.pyplot as plt
+    from matplotlib import cm
     from scipy.io import netcdf as ncdf
     import scipy.interpolate
 except:

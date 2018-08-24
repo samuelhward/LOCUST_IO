@@ -17,6 +17,7 @@ try:
     import scipy
     import numpy as np
     import matplotlib
+    from matplotlib import cm
     import matplotlib.pyplot as plt
     from matplotlib import cm #get colourmaps
     from mpl_toolkits import mplot3d #import 3D plotting axes

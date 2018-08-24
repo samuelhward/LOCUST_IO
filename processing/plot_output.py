@@ -15,6 +15,7 @@ notes:
 
 try:
     import matplotlib
+    from matplotlib import cm
     import matplotlib.pyplot as plt
     import numpy as np
     import copy
