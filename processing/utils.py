@@ -252,6 +252,16 @@ def RphiZ_to_XYZ(R,phi):
 
     return X,Y
 
+def XYZ_to_RphiZ(X,Y):
+    """
+    converts X,Y positions to R,phi 
+    """
+
+    phi=np.arctan2(Y,X)
+    R=X*np.cos(phi)+Y*np.sin(phi)
+
+    return R,phi
+
 def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e,rotation_toroidal):
     """
     dumps collection of kinetic profiles to ASCOT input.plasma_1d format

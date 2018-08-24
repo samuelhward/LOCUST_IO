@@ -400,6 +400,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
+    input_data['X'],input_data['Y']=utils.RphiZ_to_XYZ(input_data['R'],input_data['phi']):
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
@@ -427,6 +428,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     input_data['R']=file.variables['bs_rgc_D_MCBEAM'].data*.01
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
+    input_data['X'],input_data['Y']=utils.RphiZ_to_XYZ(input_data['R'],input_data['phi']):
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
