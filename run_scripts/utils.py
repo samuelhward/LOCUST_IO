@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 try:
     import os
     import subprocess
+    import numpy as np
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)
