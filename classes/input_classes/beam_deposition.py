@@ -61,6 +61,7 @@ np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
 pi=np.pi
 amu=1.66053904e-27
 mass_deuterium=2.0141017781*amu
+e_charge=1.60217662e-19
 
 
 ################################################################## Beam_Deposition functions
@@ -156,7 +157,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
         file.write("{}\n".format(utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
         file.write("{}\n".format(utils.fortran_string(1.0,13)))
 
-        V=np.sqrt(output_data['E']*2./mass_deuterium)
+        V=np.sqrt(e_charge*output_data['E']*2./mass_deuterium)
         V_parallel=V*output_data['V_pitch']
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
