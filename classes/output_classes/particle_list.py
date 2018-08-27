@@ -178,7 +178,11 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
             input_data['status_flags']['cross_open_face']=-15.0
             input_data['status_flags']['bin_fail_hard_2']=-16000.0
             input_data['status_flags']['generic_fail_hard']=-99999.0
-      
+
+            #calculate some additional things
+            input_data['E']=input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
+
+
         print("finished reading final particle list from LOCUST")
 
         return input_data

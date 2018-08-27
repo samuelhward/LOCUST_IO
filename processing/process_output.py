@@ -21,6 +21,11 @@ try:
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+try:
+    from processing import utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
     
 pi=np.pi
 e_charge=1.60217662e-19 #define electron charge
@@ -248,6 +253,40 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
 
                         return input_data
 
+'''
+def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None):
+    """
+    generates a new distribution function object from data stored in a final particle list
+
+    notes:
+        produces unweighted binned distribution function
+    args:
+        some_particle_list - 
+        some_equilibrium - 
+        some_bins - 
+    """
+
+    V_pitch=utils.pitch_calc_2D(some_particle_list,some_equilibrium)
+    dummy_gyrophase=np.zeros(len(some_particle_list['R'])) #if uniform in gyrophase
+    if 'V' not in some_particle_list.data:
+        some_particle_list['V']=np.array(np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_tor']**2+some_particle_list['V_Z']**2))
+
+    if some_bins:
+        dfn=np.histogramdd((dummy_gyrophase,some_particle_list['V'],some_particle_list['V_pitch'],some_particle_list['R'],some_particle_list['Z']))        
+        edges=
+        centres=
+        d=
+    else:
+        dfn=np.histogramdd((dummy_gyrophase,some_particle_list['V'],some_particle_list['V_pitch'],some_particle_list['R'],some_particle_list['Z']))
+        edges=
+        centres=
+        d=
+
+    dfn/=d  ##apply real space jacobian
+    dfn/=d  ##apply velocity space jacobian
+
+    P,V,V_pitch,R,Z
+'''
 #################################
 
 ##################################################################
