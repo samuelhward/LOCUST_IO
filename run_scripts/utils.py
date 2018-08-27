@@ -36,7 +36,7 @@ except:
     raise ImportError("ERROR: support.py could not be imported!\nreturning") 
     sys.exit(1)
 try:
-    import processing 
+    import processing.utils 
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
