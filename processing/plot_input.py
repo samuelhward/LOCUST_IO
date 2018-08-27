@@ -26,7 +26,7 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    import processing
+    import processing.utils
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
