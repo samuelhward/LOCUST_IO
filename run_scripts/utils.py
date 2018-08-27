@@ -387,7 +387,7 @@ class TRANSP_output_FI(TRANSP_output):
             X=np.linspace(np.min(self['R2D']['data']),np.max(self['R2D']['data']),np.sqrt(len(self['R2D']['data']))) #need to interpolate since irregular grid
             Y=np.linspace(np.min(self['Z2D']['data']),np.max(self['Z2D']['data']),np.sqrt(len(self['Z2D']['data'])))
             X,Y=np.meshgrid(X,Y)
-            interpolator=interpolate_2D(self['Z2D']['data'],self['R2D']['data'],self['F_D_NBI_int']['data'],type='RBF',rect_grid=False)
+            interpolator=processing.utils.interpolate_2D(self['Z2D']['data'],self['R2D']['data'],self['F_D_NBI_int']['data'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Y,X)
             ax.set_facecolor(colmap(np.amin(new_dfn)))
             mesh=ax.pcolormesh(X,Y,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
