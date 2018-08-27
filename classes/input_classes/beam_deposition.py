@@ -161,7 +161,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=V_parallel[this_particle],V=V[this_particle],weight=utils.fortran_string(output_data['weight'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=utils.fortran_string(V_parallel[this_particle],14,6),V=utils.fortran_string(V[this_particle],14,6),weight=utils.fortran_string(output_data['weight'][this_particle],14,6)))
     
     print("finished writing weighted beam deposition to LOCUST") 
  
