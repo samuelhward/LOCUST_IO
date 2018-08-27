@@ -73,7 +73,7 @@ def dump_2Dwall_LOCUST(output_data,filepath):
     with open(filepath,'r') as file:
         #write the number of points (must be 3600 always)
         #write the major radius
-        #write out the radii of limiter points as we rotate poloidally 3600 times anti-clockwise from outboard side
+        #write out the radii of limiter points as we rotate poloidally 3600 times anti-clockwise from outboard side 
 '''
 
 def read_equilibrium_GEQDSK(filepath): 
