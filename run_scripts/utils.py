@@ -23,7 +23,7 @@ try:
     import subprocess
     import numpy as np
     import matplotlib
-    from matplotlib import 
+    from matplotlib import cm
     from scipy.io import netcdf as ncdf
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
