@@ -32,9 +32,9 @@ try:
 except:
     print("WARNING: IMAS module could not be imported!\n")
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_input 
@@ -106,7 +106,7 @@ def read_equilibrium_GEQDSK(filepath):
         flags['case'] = conts[0:-4] 
      
         #now use generator to read numbers from remaining lines in file
-        token = utils.file_numbers(file) #token now holds all lines in the file, containing all values. each utils.get_next() call will grab the next number in a line (since utils.get_next() returns the next value in the yield loop? check this plz)
+        token = processing.utils.file_numbers(file) #token now holds all lines in the file, containing all values. each processing.utils.get_next() call will grab the next number in a line (since processing.utils.get_next() returns the next value in the yield loop? check this plz)
          
         float_keys = [
         'rdim','zdim','rcentr','rleft','zmid',
@@ -116,14 +116,14 @@ def read_equilibrium_GEQDSK(filepath):
      
         #read in all 0D floats
         for key in float_keys:                              
-            input_data[key] = np.asarray(float(utils.get_next(token))) #utils.get_next(token) always yields just a single value, convert this to numpy array
+            input_data[key] = np.asarray(float(processing.utils.get_next(token))) #processing.utils.get_next(token) always yields just a single value, convert this to numpy array
      
         def read_1d(n): 
             """
             """
             input_data = np.zeros(n) #initialise blank lists
             for i in np.arange(n): #instead of using linspace or something makes a temporary numpy array of dimension n to iterate through
-                input_data[i] = float(utils.get_next(token))
+                input_data[i] = float(processing.utils.get_next(token))
             return input_data
      
         def read_2d(nx,ny):
@@ -145,16 +145,16 @@ def read_equilibrium_GEQDSK(filepath):
         input_data['qpsi'] = read_1d(input_data['nR_1D'])
      
         #now deal with boundaries
-        input_data['lcfs_n'] = np.array(int(utils.get_next(token)))
-        input_data['limitr'] = np.array(int(utils.get_next(token)))
+        input_data['lcfs_n'] = np.array(int(processing.utils.get_next(token)))
+        input_data['limitr'] = np.array(int(processing.utils.get_next(token)))
      
         def read_bndy(nb,nl): #number of boundaries and limiters
             if nb > 0: #read in boundaries
                 rb = np.zeros(nb)
                 zb = np.zeros(nb)
                 for i in np.arange(nb):
-                    rb[i] = float(utils.get_next(token)) #read in R,Z pairs
-                    zb[i] = float(utils.get_next(token))
+                    rb[i] = float(processing.utils.get_next(token)) #read in R,Z pairs
+                    zb[i] = float(processing.utils.get_next(token))
             else:
                 rb = np.array(0)
                 zb = np.array(0)
@@ -163,8 +163,8 @@ def read_equilibrium_GEQDSK(filepath):
                 rl = np.zeros(nl)
                 zl = np.zeros(nl)
                 for i in np.arange(nl):
-                    rl[i] = float(utils.get_next(token))
-                    zl[i] = float(utils.get_next(token))
+                    rl[i] = float(processing.utils.get_next(token))
+                    zl[i] = float(processing.utils.get_next(token))
             else:
                 rl = np.array(0)
                 zl = np.array(0)
@@ -200,7 +200,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
             number = np.abs(number)
         else:
             separator = "  "
-        if utils.get_next(counter) == 4:
+        if processing.utils.get_next(counter) == 4:
             last = "\n"
         else:
             last = ""
@@ -232,7 +232,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
 
         EFIT_shot=19113 #just 'make up' a shot number and time (in ms) for now
         EFIT_time=23
-        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+utils.fortran_string(EFIT_shot,6)+utils.fortran_string(EFIT_time,6)+utils.fortran_string(output_data['xdum'],14)+utils.fortran_string(output_data['nR_1D'],4)+utils.fortran_string(output_data['nZ_1D'],4)+"\n"
+        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+processing.utils.fortran_string(EFIT_shot,6)+processing.utils.fortran_string(EFIT_time,6)+processing.utils.fortran_string(output_data['xdum'],14)+processing.utils.fortran_string(output_data['nR_1D'],4)+processing.utils.fortran_string(output_data['nZ_1D'],4)+"\n"
         file.write(line)
  
         float_keys = [
@@ -266,7 +266,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['qpsi'],cnt) 
         
-        file.write("\n"+utils.fortran_string(len(output_data['lcfs_r']),5)+utils.fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
+        file.write("\n"+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
         
         file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
@@ -480,11 +480,11 @@ class Equilibrium(base_input.LOCUST_input):
         notes:
         """
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from GEQDSK - filename required\n",filename): #check we have all info for reading GEQDSKs
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from GEQDSK - filename required\n",filename): #check we have all info for reading GEQDSKs
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
@@ -492,7 +492,7 @@ class Equilibrium(base_input.LOCUST_input):
                 self.data=read_equilibrium_GEQDSK(self.filepath) #read the file
             
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run data required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run data required\n",shot,run):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
@@ -512,20 +512,20 @@ class Equilibrium(base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"dump_data requires self.data and data_format\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"dump_data requires self.data and data_format\n",self.data,data_format):
             pass
          
         elif data_format=='GEQDSK':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to GEQDSK - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to GEQDSK - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_equilibrium_GEQDSK(self.data,filepath)
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to equilibrium IDS - shot and run required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to equilibrium IDS - shot and run required\n",shot,run):
                 dump_equilibrium_IDS(self.ID,self.data,shot,run)
  
         elif data_format=='ASCOT':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_equilibrium_ASCOT(self.data,filepath)
 

@@ -24,9 +24,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import support #import support module from this directory
@@ -56,7 +56,7 @@ class LOCUST_output:
 
         self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
         self.data={}
-        if not utils.none_check(self.ID,self.LOCUST_output_type,"read_data requires data_format, blank output initialised \n",data_format):
+        if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"read_data requires data_format, blank output initialised \n",data_format):
             self.read_data(data_format,filename,shot,run,**properties)
 
     def __getitem__(self,key):
@@ -136,7 +136,7 @@ class LOCUST_output:
             my_output.copy(some_other_output,'some_key','some_other_key') to copy specific fields
             my_output.copy(some_other_output, *some_list_of_args) equally
         """
-        if utils.none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"cannot copy() - target.data is blank\n",target.data): #return warning if any target data contains empty variables
             pass
 
         elif not keys: #if empty, keys will be false i.e. no key supplied --> copy everything 
@@ -144,7 +144,7 @@ class LOCUST_output:
             if hasattr(target,'properties'): #copy properties field
                 self.properties=target.properties
 
-        elif not utils.none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
+        elif not processing.utils.none_check(self.ID,self.LOCUST_input_type,"cannot copy() - found key containing None\n",*keys): 
             self.set(**{key:target[key] for key in keys}) #call set function and generate the dictionary of **kwargs with list comprehension
             if hasattr(target,'properties'): #copy properties field
                 self.properties=target.properties
@@ -165,7 +165,7 @@ class LOCUST_output:
         values=list(kwargs.values())
         allkeysvalues=keys+values
 
-        if utils.none_check(self.ID,self.LOCUST_output_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"cannot set() - empty key/value pair found\n",*allkeysvalues):
             pass
         else:
             for key,value in zip(keys,values): #loop through kwargs

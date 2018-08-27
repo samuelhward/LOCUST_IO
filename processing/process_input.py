@@ -23,9 +23,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
     
 pi=np.pi
@@ -90,7 +90,7 @@ def fpolrz_calc(some_equilibrium):
     print("fpolrz_calc - calculating 2D flux function")
 
     fpolrz=np.zeros((some_equilibrium['nR_1D'],some_equilibrium['nZ_1D'])) #initialise 2D grid
-    fpolrz_interpolator=utils.interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
+    fpolrz_interpolator=processing.utils.interpolate_1D(some_equilibrium['flux_pol'],some_equilibrium['fpol']) #generate the interpolator
 
     for w in np.arange(some_equilibrium['nR_1D']): #loop over 2D grid
         for h in np.arange(some_equilibrium['nZ_1D']):
@@ -203,9 +203,9 @@ def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1
             speed_trim=np.delete(speed,escapees)
 
             print('transform_marker_velocities - generating B field interpolators')
-            B_field_r_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,0]) #generate the interpolator functions
-            B_field_tor_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
-            B_field_z_interpolator=utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
+            B_field_r_interpolator=processing.utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,0]) #generate the interpolator functions
+            B_field_tor_interpolator=processing.utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,1])
+            B_field_z_interpolator=processing.utils.interpolate_2D(R_1D,Z_1D,B_field[:,:,2])
             print('transform_marker_velocities - interpolating B field to particle positions')
             B_field_r=B_field_r_interpolator(r_trim,z_trim) #interpolate B field components to each particle 
             B_field_tor=B_field_tor_interpolator(r_trim,z_trim)

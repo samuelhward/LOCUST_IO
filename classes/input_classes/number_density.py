@@ -32,9 +32,9 @@ try:
 except:
     print("WARNING: IMAS module could not be imported!\n")
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_input 
@@ -102,11 +102,11 @@ def dump_number_density_LOCUST(output_data,filepath):
     with open(filepath,'w') as file: #open file
 
         normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_n=utils.sort_arrays(normalised_flux,output_data['n']) #check order
+        normalised_flux,output_n=processing.utils.sort_arrays(normalised_flux,output_data['n']) #check order
  
-        file.write("{}\n".format(utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
+        file.write("{}\n".format(processing.utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
         for point in range(normalised_flux.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=utils.fortran_string(normalised_flux[point],16,8),n=utils.fortran_string(output_n[point],16,8)))
+            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),n=processing.utils.fortran_string(output_n[point],16,8)))
  
     print("finished writing number density to LOCUST")
 
@@ -135,11 +135,11 @@ def read_number_density_IDS(shot,run,**properties):
         print("cannot read_number_density_IDS - Number_Density['properties']['species'] must be set to 'electrons' or 'ions'\n")
 
     #read in axes
-    utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
-    utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
-    utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
+    processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
+    processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
+    processing.utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
     if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
-        utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
+        processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     input_IDS.close()
     print("finished reading number density from IDS")
@@ -177,9 +177,9 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         print("cannot dump_number_density_IDS - Number_Density['properties']['species'] must be set to 'electrons' or 'ions'\n")
 
     #write out the axes
-    utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
-    utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
-    utils.safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
+    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
+    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
+    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
@@ -201,12 +201,12 @@ def dump_number_density_MARSF(output_data,filepath):
     with open(filepath,'w') as file: #open file
 
         flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
-        flux_pol_norm_sqrt,output_n=utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
+        flux_pol_norm_sqrt,output_n=processing.utils.sort_arrays(flux_pol_norm_sqrt,output_data['n']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
         for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm_sqrt} {n}\n".format(flux_pol_norm_sqrt=utils.fortran_string(flux_pol_norm_sqrt[point],24,18),n=utils.fortran_string(output_n[point],24,18)))
+            file.write("{flux_pol_norm_sqrt} {n}\n".format(flux_pol_norm_sqrt=processing.utils.fortran_string(flux_pol_norm_sqrt[point],24,18),n=processing.utils.fortran_string(output_n[point],24,18)))
 
     print("finished writing number density to MARSF mogui")
 
@@ -245,14 +245,14 @@ class Number_Density(base_input.LOCUST_input):
  
         notes:
         """
-        if utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density['properties']['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density['properties']['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
             pass
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -261,7 +261,7 @@ class Number_Density(base_input.LOCUST_input):
                 self.data=read_number_density_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
  
                 self.data_format=data_format
                 self.shot=shot
@@ -282,20 +282,20 @@ class Number_Density(base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
 
-        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_number_density_LOCUST(self.data,filepath)
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n",shot,run,self.properties):
                 dump_number_density_IDS(self.ID,self.data,shot,run,**properties)
 
         elif data_format=='MARSF':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to MARSF - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to MARSF - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_number_density_MARSF(self.data,filepath)
  

@@ -1,4 +1,4 @@
-#utils.py
+#processing.utils.py
  
 """
 Samuel Ward
@@ -34,6 +34,11 @@ try:
     from classes import support
 except:
     raise ImportError("ERROR: support.py could not be imported!\nreturning") 
+    sys.exit(1)
+try:
+    import processing 
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
