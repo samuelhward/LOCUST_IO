@@ -32,9 +32,9 @@ try:
 except:
     print("WARNING: IMAS module could not be imported!\n")
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     from processing import process_input
@@ -129,12 +129,12 @@ def dump_beam_depo_LOCUST(output_data,filepath):
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(utils.fortran_string(1.0,13))) #re-insert junk lines
-        file.write("{}\n".format(utils.fortran_string(1.0,13)))
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert junk lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
     
     print("finished writing beam deposition to LOCUST") 
 
@@ -154,15 +154,15 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
-        file.write("{}\n".format(utils.fortran_string(1.0,13)))
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
 
         V=np.sqrt(e_charge*output_data['E']*2./mass_deuterium)
         V_parallel=V*output_data['V_pitch']
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=utils.fortran_string(output_data['R'][this_particle],14,6),phi=utils.fortran_string(output_data['phi'][this_particle],14,6),z=utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=utils.fortran_string(V_parallel[this_particle],14,6),V=utils.fortran_string(V[this_particle],14,6),weight=utils.fortran_string(output_data['weight'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
     
     print("finished writing weighted beam deposition to LOCUST") 
  
@@ -401,7 +401,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
-    input_data['X'],input_data['Y']=utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
+    input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
@@ -429,7 +429,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     input_data['R']=file.variables['bs_rgc_D_MCBEAM'].data*.01
     input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
-    input_data['X'],input_data['Y']=utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
+    input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
@@ -494,25 +494,25 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         for phi,R,Z,V_tor,V_R,V_Z in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
             line=''
-            line+=utils.fortran_string(2,6,0,False) #mass and charge
-            line+=utils.fortran_string(mass_deuterium,14,5)
-            line+=utils.fortran_string(1,6,0,False)
-            line+=utils.fortran_string(1.0,14,5)
+            line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
+            line+=processing.utils.fortran_string(mass_deuterium,14,5)
+            line+=processing.utils.fortran_string(1,6,0,False)
+            line+=processing.utils.fortran_string(1.0,14,5)
             
-            #line+=utils.fortran_string(pitch,13,5,False)
+            #line+=processing.utils.fortran_string(pitch,13,5,False)
             
-            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
-            line+=utils.fortran_string(R,18,9)
-            line+=utils.fortran_string(Z,18,9)
+            line+=processing.utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=processing.utils.fortran_string(R,18,9)
+            line+=processing.utils.fortran_string(Z,18,9)
 
-            line+=utils.fortran_string(V_tor,18,9) #velocity
-            line+=utils.fortran_string(V_R,18,9)
-            line+=utils.fortran_string(V_Z,18,9)
+            line+=processing.utils.fortran_string(V_tor,18,9) #velocity
+            line+=processing.utils.fortran_string(V_R,18,9)
+            line+=processing.utils.fortran_string(V_Z,18,9)
 
-            line+=utils.fortran_string(1.0,9,0,False) #origin
-            line+=utils.fortran_string(weight,18,9) #weight
-            line+=utils.fortran_string(i,10,0,False) #ID
-            line+=utils.fortran_string(999.0,18,9) #Tmax
+            line+=processing.utils.fortran_string(1.0,9,0,False) #origin
+            line+=processing.utils.fortran_string(weight,18,9) #weight
+            line+=processing.utils.fortran_string(i,10,0,False) #ID
+            line+=processing.utils.fortran_string(999.0,18,9) #Tmax
 
             line+="\n"
             
@@ -583,9 +583,9 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             equilibrium.set(B_field=process_input.B_calc(equilibrium))
 
         print("generating B_field interpolators")
-        B_field_R_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here
-        B_field_tor_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,1])
-        B_field_Z_interpolator=utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
+        B_field_R_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here
+        B_field_tor_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,1])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
         print("finished generating B_field interpolators")
 
 
@@ -600,30 +600,30 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
         for E,phi,R,Z,V_tor,V_R,V_Z in zip(output_data['E'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
             
             line=''
-            line+=utils.fortran_string(2,6,0,False) #mass and charge
-            line+=utils.fortran_string(mass_deuterium,14,5)
-            line+=utils.fortran_string(1,6,0,False)
-            line+=utils.fortran_string(1.0,14,5)
+            line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
+            line+=processing.utils.fortran_string(mass_deuterium,14,5)
+            line+=processing.utils.fortran_string(1,6,0,False)
+            line+=processing.utils.fortran_string(1.0,14,5)
             
-            line+=utils.fortran_string(E,18,9) #energy
-            #line+=utils.fortran_string(pitch,13,5,False)
+            line+=processing.utils.fortran_string(E,18,9) #energy
+            #line+=processing.utils.fortran_string(pitch,13,5,False)
             
-            line+=utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
-            line+=utils.fortran_string(R,18,9)
-            line+=utils.fortran_string(Z,18,9)
+            line+=processing.utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=processing.utils.fortran_string(R,18,9)
+            line+=processing.utils.fortran_string(Z,18,9)
 
-            line+=utils.fortran_string(V_tor,18,9) #velocity
-            line+=utils.fortran_string(V_R,18,9)
-            line+=utils.fortran_string(V_Z,18,9)
+            line+=processing.utils.fortran_string(V_tor,18,9) #velocity
+            line+=processing.utils.fortran_string(V_R,18,9)
+            line+=processing.utils.fortran_string(V_Z,18,9)
 
-            line+=utils.fortran_string(1.0,9,0,False) #origin
-            line+=utils.fortran_string(weight,18,9) #weight
-            line+=utils.fortran_string(i,10,0,False) #ID
-            line+=utils.fortran_string(999.0,18,9) #Tmax
+            line+=processing.utils.fortran_string(1.0,9,0,False) #origin
+            line+=processing.utils.fortran_string(weight,18,9) #weight
+            line+=processing.utils.fortran_string(i,10,0,False) #ID
+            line+=processing.utils.fortran_string(999.0,18,9) #Tmax
             
-            line+=utils.fortran_string(float(B_field_tor_interpolator(R,Z)),18,9) #B field
-            line+=utils.fortran_string(float(B_field_R_interpolator(R,Z)),18,9) #must interpolate ad hoc to save memory
-            line+=utils.fortran_string(float(B_field_Z_interpolator(R,Z)),18,9)
+            line+=processing.utils.fortran_string(float(B_field_tor_interpolator(R,Z)),18,9) #B field
+            line+=processing.utils.fortran_string(float(B_field_R_interpolator(R,Z)),18,9) #must interpolate ad hoc to save memory
+            line+=processing.utils.fortran_string(float(B_field_Z_interpolator(R,Z)),18,9)
             line+="\n"
             
             file.write(line)
@@ -670,11 +670,11 @@ class Beam_Deposition(base_input.LOCUST_input):
         notes:
         """
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -683,7 +683,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_LOCUST(self.filepath) #read the file
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run data required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run data required\n",shot,run):
  
                 self.data_format=data_format
                 self.shot=shot
@@ -692,7 +692,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_IDS(self.shot,self.run)
 
         elif data_format=='TRANSP_fbm':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -701,7 +701,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_TRANSP_fbm(self.filepath) #read the file
 
         elif data_format=='TRANSP_fbm_gc':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm_gc - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_fbm_gc - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -710,7 +710,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath) #read the file
 
         elif data_format=='TRANSP_birth':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -719,7 +719,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_TRANSP_birth(self.filepath) #read the file 
 
         elif data_format=='TRANSP_birth_gc':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth_gc - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from TRANSP_birth_gc - filename required\n",filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -740,30 +740,30 @@ class Beam_Deposition(base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
  
-        if utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_LOCUST(self.data,filepath)
 
         elif data_format=='LOCUST_weighted':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_LOCUST_weighted(self.data,filepath)
          
         elif data_format=='IDS':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run)
 
         elif data_format=='ASCOT':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_ASCOT(self.data,filepath)
 
         elif data_format=='ASCOT_gc':
-            if not utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT_gc - filename and equilibrium required\n",filename,equilibrium):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT_gc - filename and equilibrium required\n",filename,equilibrium):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium)
  

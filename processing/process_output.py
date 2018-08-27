@@ -22,9 +22,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
     
 pi=np.pi
@@ -266,7 +266,7 @@ def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None
         some_bins - 
     """
 
-    V_pitch=utils.pitch_calc_2D(some_particle_list,some_equilibrium)
+    V_pitch=processing.utils.pitch_calc_2D(some_particle_list,some_equilibrium)
     dummy_gyrophase=np.zeros(len(some_particle_list['R'])) #if uniform in gyrophase
     if 'V' not in some_particle_list.data:
         some_particle_list['V']=np.array(np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_tor']**2+some_particle_list['V_Z']**2))

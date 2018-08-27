@@ -30,9 +30,9 @@ try:
 except:
     print("WARNING: IMAS module could not be imported!\n")
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     from classes import base_output 
@@ -157,11 +157,11 @@ class Orbits(base_output.LOCUST_output):
         notes:
         """
 
-        if utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -177,11 +177,11 @@ class Orbits(base_output.LOCUST_output):
 
         notes: 
         """
-        if utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
         
         elif data_format=='LOCUST':
-            if not utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_output_files+filename
                 dump_orbits_LOCUST(self.data,filepath)
         else:

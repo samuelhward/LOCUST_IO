@@ -26,9 +26,9 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import utils
+    import processing
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
     sys.exit(1)
 
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
@@ -414,9 +414,9 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,limiters=Fal
             ax = fig.gca(projection='3d')
         
     print('plot_B_field_line - generating B field interpolators')
-    B_field_R_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
-    B_field_Z_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
-    B_field_tor_interpolator=utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
+    B_field_R_interpolator=processing.utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,0])
+    B_field_Z_interpolator=processing.utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,2])
+    B_field_tor_interpolator=processing.utils.interpolate_2D(some_equilibrium['R_1D'],some_equilibrium['Z_1D'],some_equilibrium['B_field'][:,:,1])
     print('plot_B_field_line - finished generating B field interpolators')
 
 
