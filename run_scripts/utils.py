@@ -20,10 +20,12 @@ notes:
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
 try:
     import os
+    import copy
     import subprocess
     import numpy as np
     import matplotlib
     from matplotlib import cm
+    import matplotlib.pyplot as plt
     from scipy.io import netcdf as ncdf
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
