@@ -463,10 +463,11 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
     notes:
     """
 
+    filepath=support.dir_input_files+run_file
     if initialdir is None:
         initialdir=os.path.dirname(os.path.abspath(__file__)) #use cwd
     
-    with open(run_file,'w') as file:
+    with open(filepath,'w') as file:
         file.write('# @ input = dev/null/\n')
         file.write('# @ initialdir = {initialdir}\n'.format(initialdir=initialdir))
         file.write('# @ output = {output_file}\n'.format(output_file=output_file))
@@ -574,8 +575,8 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
     print("ASCOT_run_gen creating ASCOT inputs")
 
     dump_run_file_ASCOT(initialdir=support.dir_input_files) #generate run file
-    dump_profiles_ASCOT(filename=support.dir_input_files+'input.plasma_1d',temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
-    dump_wall_ASCOT(filename=support.dir_input_files+'input.wall_2d',output_data=equilibrium)
+    dump_profiles_ASCOT(filename='input.plasma_1d',temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
+    dump_wall_ASCOT(filename='input.wall_2d',output_data=equilibrium)
     if guiding_centre:
         beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles',equilibrium=equilibrium)
     else:
