@@ -577,9 +577,9 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
     dump_profiles_ASCOT(filename=support.dir_input_files+'input.plasma_1d',temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
     dump_wall_ASCOT(filename=support.dir_input_files+'input.wall_2d',output_data=equilibrium)
     if guiding_centre:
-        beam_deposition.dump_data(data_format='ASCOT_gc',filename=support.dir_input_files+'input.particles',equilibrium=equilibrium)
+        beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles',equilibrium=equilibrium)
     else:
-        beam_deposition.dump_data(data_format='ASCOT',filename=support.dir_input_files+'input.particles',equilibrium=equilibrium)
+        beam_deposition.dump_data(data_format='ASCOT',filename='input.particles',equilibrium=equilibrium)
 
     print("ASCOT_run_gen finished")
 
