@@ -622,7 +622,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)*e_charge
+            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/e_charge
 
         #interpolate B field to particle locations with supplied equilibrium
         if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
