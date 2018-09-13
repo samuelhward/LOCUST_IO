@@ -34,7 +34,7 @@ except:
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     from processing import process_input
@@ -44,12 +44,12 @@ except:
 try:
     from classes import base_input 
 except:
-    raise ImportError("ERROR: base_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
 try:
     from classes import support #import support module from this directory
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from scipy.io import netcdf as ncdf
@@ -548,19 +548,19 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
         file.write(" {number_particles} # Number of particles\n".format(number_particles=output_data['R'].size))
         file.write("\n")
 
-        file.write(" 18 # Number of different fields for each particle [10 first letters are significant]\n")
+        file.write(" 16 # Number of different fields for each particle [10 first letters are significant]\n")
         file.write("Anum      - mass number of particle        (integer)\n")
         file.write("mass      - mass of the particle           (amu)\n")
         file.write("Znum      - charge number of particle      (integer)\n")
         file.write("charge    - charge of the particle         (elemental charge)\n")
         file.write("energy    - kinetic energy of particle     (eV)\n")
-        #file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
+        file.write("pitch     - pitch angle cosine of particle (vpar/vtot)\n")
         file.write("phi       - toroidal angle of particle     (deg)\n")
         file.write("R         - R of particle                  (m)\n")
         file.write("z         - z of particle                  (m)\n")
-        file.write("vphi      - toroidal velocity of particle  (m/s)\n")
-        file.write("vR        - radial velocity of particle    (m/s)\n")
-        file.write("vz        - vertical velocity of particle  (m/s)\n")
+        #file.write("vphi      - toroidal velocity of particle  (m/s)\n")
+        #file.write("vR        - radial velocity of particle    (m/s)\n")
+        #file.write("vz        - vertical velocity of particle  (m/s)\n")
         file.write("origin    - origin of the particle         ()\n")
         file.write("weight    - weight factor of particle      (particle/second)\n")
         file.write("id        - unique identifier of particle  (integer)\n")
@@ -576,28 +576,32 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         #interpolate B field to particle locations with supplied equilibrium
         if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
-            print("B_field not found in equilibrium - calculating!")
+            print("dump_beam_depo_ASCOT_gc found no B_field in equilibrium - calculating!")
             if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
-                print("fpolrz not found in equilibrium - calculating!")
+                print("dump_beam_depo_ASCOT_gc found no fpolrz in equilibrium - calculating!")
                 equilibrium.set(fpolrz=process_input.fpolrz_calc(equilibrium))
             equilibrium.set(B_field=process_input.B_calc(equilibrium))
 
-        print("generating B_field interpolators")
+        print("dump_beam_depo_ASCOT_gc generating B_field interpolators")
         B_field_R_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here
         B_field_tor_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,1])
         B_field_Z_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
-        print("finished generating B_field interpolators")
+        print("dump_beam_depo_ASCOT_gc finished generating B_field interpolators")
 
+        if 'V_pitch' not in output_data.data.keys():
+            print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
+            output_data.set(V_pitch=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium))
 
-        #hard-code weight calculation for now
-        beam_power=1.0
-        energies_sum=np.sum(output_data['E'])
-        weight=beam_power/energies_sum
-
+        if 'weight' in output_data.data.keys():
+            weight=output_data['weight']
+        else: #if weight not supplied in data, hard code a pseudo-weight based on 1W deposited power
+            beam_power=1.0
+            energies_sum=np.sum(output_data['E'])
+            weight=np.zeros(len(output_data['E']))+beam_power/energies_sum
 
         print("writing particle list to file")
         i=0 #counter for particle identifier
-        for E,phi,R,Z,V_tor,V_R,V_Z in zip(output_data['E'],output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+        for E,V_pitch,phi,R,Z,W in zip(output_data['E'],output_data['V_pitch'],output_data['phi'],output_data['R'],output_data['Z'],weight): 
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
@@ -606,18 +610,18 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             line+=processing.utils.fortran_string(1.0,14,5)
             
             line+=processing.utils.fortran_string(E,18,9) #energy
-            #line+=processing.utils.fortran_string(pitch,13,5,False)
+            line+=processing.utils.fortran_string(V_pitch,13,5,False)
             
             line+=processing.utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
             line+=processing.utils.fortran_string(R,18,9)
             line+=processing.utils.fortran_string(Z,18,9)
 
-            line+=processing.utils.fortran_string(V_tor,18,9) #velocity
-            line+=processing.utils.fortran_string(V_R,18,9)
-            line+=processing.utils.fortran_string(V_Z,18,9)
+            #line+=processing.utils.fortran_string(V_tor,18,9) #velocity
+            #line+=processing.utils.fortran_string(V_R,18,9)
+            #line+=processing.utils.fortran_string(V_Z,18,9)
 
             line+=processing.utils.fortran_string(1.0,9,0,False) #origin
-            line+=processing.utils.fortran_string(weight,18,9) #weight
+            line+=processing.utils.fortran_string(W,18,9) #weight
             line+=processing.utils.fortran_string(i,10,0,False) #ID
             line+=processing.utils.fortran_string(999.0,18,9) #Tmax
             
