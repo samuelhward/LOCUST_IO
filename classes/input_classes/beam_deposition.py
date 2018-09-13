@@ -149,8 +149,8 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
     print("writing weighted beam deposition to LOCUST")
 
     if 'V_pitch' not in output_data:
-        print("ERROR: dump_beam_depo_LOCUST_weighted() requires V_pitch!\n")
-        return
+        print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
+        output_data.set(V_pitch=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium))
 
     with open(filepath,'w') as file: #open file
  
@@ -588,7 +588,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
         B_field_Z_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
         print("dump_beam_depo_ASCOT_gc finished generating B_field interpolators")
 
-        if 'V_pitch' not in output_data.data.keys():
+        if 'V_pitch' not in output_data:
             print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
             output_data.set(V_pitch=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium))
 
