@@ -285,6 +285,7 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     calculates the pitch angles of a given set of particle positions for axisymmetric B_field 
 
     notes:
+        XXX untested
     args:
         some_equilibrium - equilibrium object
         some_particle_list - generic particle list with positions some_particle_list['R'],some_particle_list['Z']
@@ -292,9 +293,10 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
 
     eq=copy.deepcopy(some_equilibrium)
 
-    eq.set(fpolrz=process_input.fpolrz_calc(eq)) #first go about calculating the magnetic field
-    eq.set(B_field=process_input.B_calc(eq))
-    eq.set(B_field_mag=np.sqrt(eq['B_field'][:,:,0]**2+eq['B_field'][:,:,1]**2+eq['B_field'][:,:,2]**2))
+    if 'fpolrz' not in some_equilibrium.data.keys(): #first go about calculating the magnetic field if missing
+        eq.set(fpolrz=process_input.fpolrz_calc(eq)) 
+    if 'B_field' not in some_equilibrium.data.keys():
+        eq.set(B_field=process_input.B_calc(eq))
 
     B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,0]) #generate interpolators for B
     B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,1])

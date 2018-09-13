@@ -113,14 +113,14 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
 
 
 
-def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
+def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,style='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
     """
     plots beam deposition
 
     notes:
         some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
         grid - grid-like object containing same 'axes' to bin against e.g. distribution_function object with ['R'] and ['Z'] data
-        type - choose from scatter or histogram
+        style - choose from scatter or histogram
         weight - toggle whether to include marker weights in histograms
         number_bins - set bin for histogram
         axes - list of strings specifying which axes should be plotted
@@ -179,7 +179,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
             else:
                 ax.set_aspect('auto')
 
-        if type=='histogram':
+        if style=='histogram':
             if grid is not False: #bin according to pre-defined grid
                 if weight:
                     some_beam_depo_binned,some_beam_depo_binned_x,some_beam_depo_binned_y=np.histogram2d(some_beam_depo[axes[0]],some_beam_depo[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=some_beam_depo['weight'])
@@ -201,7 +201,7 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
-        elif type=='scatter':
+        elif style=='scatter':
             ax.scatter(some_beam_depo[axes[0]],some_beam_depo[axes[1]],color='red',marker='x',s=1)
 
         if axes==['R','Z']:
@@ -243,8 +243,8 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,type='
        
     elif ndim==3: #plot 3D scatter - assume X,Y,Z
 
-        if type!='histogram':
-            print("ERROR: plot_beam_deposition() can only plot scatter type in 3D!")
+        if style!='scatter':
+            print("ERROR: plot_beam_deposition() can only plot scatter style in 3D!")
             return
 
         if ax_flag is False and len(axes)==3:
