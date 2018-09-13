@@ -514,7 +514,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         flux_pol_norm_sqrt,te,ne,rot,ti,ni=processing.utils.sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
         for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,rot,ti,ni): 
-            line=fortran_string(RHO,16,7)+fortran_string(Te,16,7)+fortran_string(Ne,16,7)+fortran_string(Vtor_I,15,7)+fortran_string(Ti1,17,7)+fortran_string(Ni1,15,7)+"\n"
+            line=processing.utils.fortran_string(RHO,16,7)+processing.utils.fortran_string(Te,16,7)+processing.utils.fortran_string(Ne,16,7)+processing.utils.fortran_string(Vtor_I,15,7)+processing.utils.fortran_string(Ti1,17,7)+processing.utils.fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 
     print("finished dumping profiles to ASCOT format")
@@ -540,7 +540,7 @@ def dump_wall_ASCOT(filename,output_data):
         file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(output_data['rlim'].size)))
         
         for r,z in zip(output_data['rlim'],output_data['zlim']):
-            line=fortran_string(r,16,7)+fortran_string(z,16,7)+fortran_string(0.0,4,0,False)+"\n"
+            line=processing.utils.fortran_string(r,16,7)+processing.utils.fortran_string(z,16,7)+processing.utils.fortran_string(0.0,4,0,False)+"\n"
             file.write(line)
 
     print("finished dumping wall to ASCOT format")
@@ -848,7 +848,7 @@ def dump_rotation_MARSF(filename,output_data):
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
         for point in range(flux_pol_norm_sqrt.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm_sqrt}{rotation}\n".format(flux_pol_norm_sqrt=fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=fortran_string(rotation[point],24,18)))
+            file.write("{flux_pol_norm_sqrt}{rotation}\n".format(flux_pol_norm_sqrt=processing.utils.fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=processing.utils.fortran_string(rotation[point],24,18)))
 
     print("finished writing rotation to MARSF mogui")
 
