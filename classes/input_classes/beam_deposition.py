@@ -590,7 +590,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         if 'V_pitch' not in output_data:
             print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
-            output_data.set(V_pitch=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium))
+            output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
 
         if 'weight' in output_data.data.keys():
             weight=output_data['weight']
