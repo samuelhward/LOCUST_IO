@@ -843,7 +843,7 @@ def dump_rotation_MARSF(filename,output_data):
     with open(filepath,'w') as file: #open file
 
         flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
-        flux_pol_norm_sqrt,rotation=sort_arrays(flux_pol_norm_sqrt,output_data['rotation']) #check order
+        flux_pol_norm_sqrt,rotation=processing.utils.sort_arrays(flux_pol_norm_sqrt,output_data['rotation']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         
