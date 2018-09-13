@@ -47,10 +47,10 @@ plot_style_LCFS='m-' #set plot style for LCFS
 plot_style_limiters='w-' #set plot style for limiters
 
 pi=np.pi
-e_charge=1.60217662e-19 #define electron charge
-mass_neutron=1.674929e-27 #define mass of neutron
 amu=1.66053904e-27
-mass_deuterium=2.0141017781*amu
+mass_deuterium_amu=2.0141017781
+mass_deuterium=mass_deuterium_amu*amu
+e_charge=1.60217662e-19
 
 
 
