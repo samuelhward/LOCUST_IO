@@ -144,6 +144,7 @@ def read_beam_depo_LOCUST_weighted(filepath):
     reads birth profile stored in LOCUST format - R Z phi V_parallel V weight
 
     notes:
+        calculates energy in eV
     """
 
     print("reading weighted beam deposition from LOCUST")
@@ -174,14 +175,14 @@ def read_beam_depo_LOCUST_weighted(filepath):
             input_data['phi'].append(float(split_line[1]))
             input_data['Z'].append(float(split_line[2]))
             input_data['V_pitch'].append(float(split_line[3])/float(split_line[4]))
-            input_data['E'].append(.5*mass_deuterium*float(split_line[4])**2)
+            input_data['E'].append(float(split_line[4])**2)
             input_data['weight'].append(float(split_line[5]))
      
         input_data['R']=np.asarray(input_data['R']) #convert to arrays
         input_data['phi']=np.asarray(input_data['phi'])
         input_data['Z']=np.asarray(input_data['Z'])
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
-        input_data['E']=np.asarray(input_data['E'])
+        input_data['E']=np.asarray(input_data['E'])*.5*mass_deuterium/e_charge
         input_data['weight']=np.asarray(input_data['weight'])
         
     print("finished reading weighted beam deposition from LOCUST")

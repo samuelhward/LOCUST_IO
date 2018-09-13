@@ -257,7 +257,7 @@ LOCUST reads an equilibrium in GEQDSK format.
         V_Z/...source[0].markers[0].positions[5][p]/                    #Z component of v of particle p
         V_pitch/-                                                       #v_parallel/v
         E/                                                              #energy of particle (eV)
-        weight/                                                        #Monte Carlo weights of each particle
+        weight/                                                         #Monte Carlo weights of each particle
         absorption_fraction                                             #absorption fraction
         absorption_scaling                                              #scaling to allow for missing particles
 
