@@ -138,6 +138,55 @@ def dump_beam_depo_LOCUST(output_data,filepath):
     
     print("finished writing beam deposition to LOCUST") 
 
+def read_beam_depo_LOCUST_weighted(filepath):
+    """
+    reads birth profile stored in LOCUST format - R Z phi V_parallel V weight
+
+    notes:
+    """
+ 
+    print("reading weighted beam deposition from LOCUST")
+    
+    with open(filepath,'r') as file:
+     
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+     
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['absorption_fraction']=float(lines[0])
+        input_data['absorption_scaling']=float(lines[1])
+        del(lines[0])
+        del(lines[0])
+     
+        input_data['R']=[] #initialise the arrays 
+        input_data['phi']=[]
+        input_data['Z']=[]
+        input_data['V_pitch']=[]
+        input_data['E']=[]
+        input_data['weight']=[]
+     
+        for line in lines:
+     
+            split_line=line.split()
+            input_data['R'].append(float(split_line[0]))
+            input_data['phi'].append(float(split_line[1]))
+            input_data['Z'].append(float(split_line[2]))
+            input_data['V_pitch'].append(float(split_line[3])/float(split_line[4]))
+            input_data['E'].append(.5*mass_deuterium*float(split_line[4])**2)
+            input_data['weight'].append(float(split_line[5]))
+     
+        input_data['R']=np.asarray(input_data['R']) #convert to arrays
+        input_data['phi']=np.asarray(input_data['phi'])
+        input_data['Z']=np.asarray(input_data['Z'])
+        input_data['V_pitch']=np.asarray(input_data['V_pitch'])
+        input_data['E']=np.asarray(input_data['E'])
+        input_data['weight']=np.asarray(input_data['weight'])
+        
+    print("finished reading weighted beam deposition from LOCUST")
+ 
+    return input_data
+
 def dump_beam_depo_LOCUST_weighted(output_data,filepath):
     """
     writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
@@ -150,7 +199,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath):
 
     if 'V_pitch' not in output_data:
         print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
-        output_data.set(V_pitch=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium))
+        output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
 
     with open(filepath,'w') as file: #open file
  
@@ -685,6 +734,15 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
                 self.data=read_beam_depo_LOCUST(self.filepath) #read the file
+
+        elif data_format=='LOCUST_weighted': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_weighted - filename required\n",filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_LOCUST_weighted(self.filepath) #read the file
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run data required\n",shot,run):
