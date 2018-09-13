@@ -144,7 +144,7 @@ def read_beam_depo_LOCUST_weighted(filepath):
 
     notes:
     """
- 
+
     print("reading weighted beam deposition from LOCUST")
     
     with open(filepath,'r') as file:
@@ -641,7 +641,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
             output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
 
-        if 'weight' in output_data.data.keys():
+        if 'weight' in output_data:
             weight=output_data['weight']
         else: #if weight not supplied in data, hard code a pseudo-weight based on 1W deposited power
             beam_power=1.0
