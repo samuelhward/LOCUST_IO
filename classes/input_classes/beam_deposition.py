@@ -60,7 +60,8 @@ np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
  
 pi=np.pi
 amu=1.66053904e-27
-mass_deuterium=2.0141017781*amu
+mass_deuterium_amu=2.0141017781
+mass_deuterium=mass_deuterium_amu*amu
 e_charge=1.60217662e-19
 
 
@@ -506,7 +507,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write(" 4 VERSION =====================\n")
         file.write("\n")
         
-        file.write(" 3  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
+        file.write(" 2  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
         file.write("This is an example file for ASCOT4 particle input.\n")
         file.write("$HeadURL: https://solps-mdsplus.aug.ipp.mpg.de/repos/ASCOT/trunk/ascot4/input.particles $")
         file.write("$LastChangedRevision: 9738 $\n")
@@ -544,7 +545,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(mass_deuterium,14,5)
+            line+=processing.utils.fortran_string(mass_deuterium_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             
@@ -621,7 +622,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)
+            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)*e_charge
 
         #interpolate B field to particle locations with supplied equilibrium
         if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
@@ -654,7 +655,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(mass_deuterium,14,5)
+            line+=processing.utils.fortran_string(mass_deuterium_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             
