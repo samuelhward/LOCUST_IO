@@ -707,7 +707,7 @@ class ASCOT_output:
             self['Z']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim2'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim2'].value[:-1]) #[m]
             self['V_pitch']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim3'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim3'].value[:-1])
             self['E']=.5*(self.file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+self.file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/e_charge #[eV]
-            self['V']=np.sqrt(2.*self['E']/mass_neutron)
+            self['V']=np.sqrt(2.*self['E']/mass_deuterium)
 
             self['dR']=np.abs(self['R'][1]-self['R'][0])
             self['dZ']=np.abs(self['Z'][1]-self['Z'][0])
@@ -719,12 +719,12 @@ class ASCOT_output:
             self['nV_pitch']=np.array(len(self['V_pitch']))
             self['nE']=np.array(len(self['E']))
 
-            self['dfn']=self.file['distributions/rzPitchEdist/ordinate'].value #[m^-3 J^-1]
+            self['dfn']=self.file['distributions/rzPitchEdist/ordinate'].value #[m^-3 J^-1 dpitch^-1]
             self['dfn']=np.sum(self['dfn'],axis=0)
             self['dfn']=np.sum(self['dfn'],axis=0)
             self['dfn']=np.sum(self['dfn'],axis=-1)
             self['dfn']=np.swapaxes(self['dfn'],-1,-2) 
-            self['dfn']*=e_charge/self['dV_pitch'] #[m^-3 eV^-1 dpitch^-1] XXX check this
+            self['dfn']*=e_charge #[m^-3 eV^-1 dpitch^-1]
             
             self['dfn_index']=np.array(['dummy','E','V_pitch','R','Z'])
 

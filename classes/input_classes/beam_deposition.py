@@ -590,7 +590,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
         file.write(" 4 VERSION =====================\n")
         file.write("\n")
         
-        file.write(" 3  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
+        file.write(" 2  # Number of comment lines, max length 256 char, (defined in prtRead_lineLength)\n")
         file.write("This is an example file for ASCOT4 particle input.\n")
         file.write("$HeadURL: https://solps-mdsplus.aug.ipp.mpg.de/repos/ASCOT/trunk/ascot4/input.particles $")
         file.write("$LastChangedRevision: 9738 $\n")
