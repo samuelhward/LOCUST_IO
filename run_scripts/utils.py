@@ -31,6 +31,10 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)
 try:
+    import h5py
+except:
+    print("WARNING: h5py could not be imported!\n") 
+try:
     from classes import support
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning") 
@@ -39,6 +43,11 @@ try:
     import processing.utils 
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
+    import processing.plot_output 
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
@@ -807,7 +816,7 @@ class ASCOT_output:
         else:
             print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
-    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
+    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
         """
         wrapper to plot_distribution_function
 
@@ -816,7 +825,7 @@ class ASCOT_output:
 
         if transform: 
             self.dfn_transform(axes=axes)
-        plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        processing.plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,limiters,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
         self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
 
 
