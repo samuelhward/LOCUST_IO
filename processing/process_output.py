@@ -140,7 +140,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
     else:
         print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
-    return dfn
+    return dfn['dfn']
 
 def dfn_crop(some_dfn,**kwargs):
     """
@@ -174,7 +174,7 @@ def dfn_crop(some_dfn,**kwargs):
             dfn['dfn']=dfn['dfn'][i,:] #crop dfn
             dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
-    return dfn
+    return dfn['dfn']
 
 def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor','V_Z','status_flag'],dump=False):
     """
