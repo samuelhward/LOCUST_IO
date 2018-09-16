@@ -257,6 +257,13 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,style=
                 z_points=some_equilibrium['lcfs_z']
                 ax.plot(x_points,y_points,zs=z_points,color='m')
 
+        if LCFS: #plot periodic poloidal cross-sections in 3D
+            for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                x_points=some_equilibrium['rlim']*np.cos(angle)
+                y_points=some_equilibrium['rlim']*np.sin(angle)
+                z_points=some_equilibrium['zlim']
+                ax.plot(x_points,y_points,zs=z_points,color='m')
+
         if real_scale is True:
             ax.set_aspect('equal')
             if some_equilibrium:
