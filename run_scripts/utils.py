@@ -735,7 +735,7 @@ class ASCOT_output:
             self['dfn']=np.swapaxes(self['dfn'],-1,-2) 
             self['dfn']*=e_charge #[m^-3 eV^-1 dpitch^-1]
             
-            self['dfn_index']=np.array(['dummy','E','V_pitch','R','Z'])
+            self['dfn_index']=np.array(['E','V_pitch','R','Z'])
 
         elif datatype=='equilibrium':
             pass #unfinished
@@ -825,7 +825,7 @@ class ASCOT_output:
 
         if transform: 
             self.dfn_transform(axes=axes)
-        processing.plot_output.plot_distribution_function(self,some_equilibrium,key,axes,LCFS,limiters,real_scale,colmap,False,ax,fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        processing.plot_output.plot_distribution_function(self,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
         self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
 
 
