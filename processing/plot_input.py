@@ -255,14 +255,14 @@ def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,style=
                 x_points=some_equilibrium['lcfs_r']*np.cos(angle)
                 y_points=some_equilibrium['lcfs_r']*np.sin(angle)
                 z_points=some_equilibrium['lcfs_z']
-                ax.plot(x_points,y_points,zs=z_points,color='m')
+                ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
 
-        if LCFS: #plot periodic poloidal cross-sections in 3D
+        if limiters: #plot periodic poloidal cross-sections in 3D
             for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
                 x_points=some_equilibrium['rlim']*np.cos(angle)
                 y_points=some_equilibrium['rlim']*np.sin(angle)
                 z_points=some_equilibrium['zlim']
-                ax.plot(x_points,y_points,zs=z_points,color='m')
+                ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
 
         if real_scale is True:
             ax.set_aspect('equal')
@@ -521,7 +521,13 @@ def plot_B_field_line(some_equilibrium,axes=['X','Y','Z'],LCFS=True,limiters=Fal
                         x_points=some_equilibrium['lcfs_r']*np.cos(angle)
                         y_points=some_equilibrium['lcfs_r']*np.sin(angle)
                         z_points=some_equilibrium['lcfs_z']
-                        ax.plot(x_points,y_points,zs=z_points,color='m')
+                        ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
+                if limiters: #plot periodic poloidal cross-sections in 3D
+                    for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                        x_points=some_equilibrium['rlim']*np.cos(angle)
+                        y_points=some_equilibrium['rlim']*np.sin(angle)
+                        z_points=some_equilibrium['zlim']
+                        ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
 
                 ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                 ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
