@@ -84,8 +84,8 @@ def read_beam_depo_LOCUST(filepath):
             raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
      
         input_data = {} #initialise the dictionary to hold the data
-        input_data['absorption_fraction']=float(lines[0])
-        input_data['absorption_scaling']=float(lines[1])
+        input_data['absorption_fraction']=np.array(float(lines[0]))
+        input_data['absorption_scaling']=np.array(float(lines[1]))
         del(lines[0])
         del(lines[0])
      
@@ -156,8 +156,8 @@ def read_beam_depo_LOCUST_weighted(filepath):
             raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
      
         input_data = {} #initialise the dictionary to hold the data
-        input_data['absorption_fraction']=float(lines[0])
-        input_data['absorption_scaling']=float(lines[1])
+        input_data['absorption_fraction']=np.array(float(lines[0]))
+        input_data['absorption_scaling']=np.array(float(lines[1]))
         del(lines[0])
         del(lines[0])
      
