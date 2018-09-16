@@ -361,7 +361,7 @@ def plot_distribution_function(some_distribution_function,some_equilibrium=False
         #transform distribution function to the coordinates we want
         dfn_copy=copy.deepcopy(some_distribution_function)
         if transform is True:
-            dfn_copy['dfn']=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
+            dfn_copy=process_output.dfn_transform(some_distribution_function,axes=axes) #user-supplied axes are checked for validity here
 
         #check resulting dimensionality of distribution function
         if dfn_copy['dfn'].ndim==0: #user has given 0D dfn

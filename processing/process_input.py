@@ -150,8 +150,8 @@ def mag_axis_calc(some_equilibrium,index=False):
     """
 
     Z_2D,R_2D=np.meshgrid(some_equilibrium['Z_1D'],some_equilibrium['R_1D'])
-    contour=plt.contour(R_2D,Z_2D,np.abs(some_equilibrium['psirz']),levels=np.amin(np.abs(some_equilibrium['psirz']))+0.1*np.amax(np.abs(some_equilibrium['psirz'])))  
-    contour=contour.collections[0].get_paths()[0]
+    contour=plt.contour(R_2D,Z_2D,np.abs(some_equilibrium['psirz']),levels=[0.0,np.amin(np.abs(some_equilibrium['psirz']))+0.1*np.amax(np.abs(some_equilibrium['psirz']))])  
+    contour=contour.collections[1].get_paths()[0]
     contour=contour.vertices
     r=contour[:,0]
     z=contour[:,1]
