@@ -209,10 +209,6 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                 for line in range(int(input_data['nP'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
                 
-                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
-                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
-                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ = nR = nF)
-
             else:
                 input_data['dfn']=[] #Final combined DFn. grid  
                 input_data['dfn_s']=[] #Dfn. M.C. error
@@ -220,10 +216,6 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                     input_data['dfn'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
                 for line in range(int(input_data['nP'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
-
-                input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
-                input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
-                input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         
         else:
             input_data['dfn']=[] #Final combined DFn. grid   
@@ -233,10 +225,15 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             for line in range(int(input_data['nP'])):
                 input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
-            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F') 
+        if EBASE:
+            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
+            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
+        else:
+            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
             input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
             input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
-        
+    
         input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z - means plotting functions can assume index order x,y
         nEQ=file.read_ints() 
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
@@ -338,15 +335,17 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         else:
             input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
         
-        input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
+        if EBASE:
+            input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
+        else:
+            input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
    
         input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
         input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
         input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
         input_data['dV']=np.array(input_data['V'][1]-input_data['V'][0]) #velocity bin width
         input_data['dE']=np.array(np.abs(input_data['E'][1]-input_data['E'][0])) #energy bin width
-
-        
+     
     file.close()
 
     print("finished reading distribution function from LOCUST")
