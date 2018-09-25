@@ -30,7 +30,6 @@ try:
     import imas 
 except:
     print("WARNING: IMAS module could not be imported!\n")
-    sys.exit(1)
 try:
     import processing.utils
 except:
@@ -75,8 +74,6 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         must keep an eye on the double/single GPU formats specified in LOCUST's prec_mod.f90 to ensure Dfn is read correctly from LOCUST binary format
 
         final Dfn is s^3/m^6
-
-        TODO have option to read ITER,wtot,WIPE etc from **args IFF they are supplied in **args (otherwise can guess)
     """
 
     print("reading distribution function from LOCUST")
@@ -192,8 +189,13 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             #nPP-1
             input_data['nPP']=file.read_ints() #PPhi          
 
-        #nV-1
-        input_data['nV']=file.read_ints() #V        
+        if EBASE:
+            #nE-1
+            input_data['nE']=file.read_ints() #E
+        else:
+            #nV-1
+            input_data['nV']=file.read_ints() #V        
+        
         #nP-1
         input_data['nP']=file.read_ints() #poloidal gyro-phase cell boundaries
         
@@ -273,8 +275,13 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             #PP+dPP/2 (nPP long)
             input_data['PP']=file.read_reals(dtype=np.float32)
 
-        #V+dV/2 (nV long)
-        input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
+        if EBASE:
+            #E+dE/2 (nE long)
+            input_data['E']=file.read_reals(dtype=np.float32) #energy space of dfn
+        else:
+            #V+dV/2 (nV long)
+            input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
+        
         #PG+dPG/2 (nP long)
         input_data['P']=file.read_reals(dtype=np.float32) #special dimension - simulation specific (e.g. gyrophase)
 
@@ -321,18 +328,25 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
                 input_data['cpu_time']=file.read_reals(dtype=np.float64)
 
         #extra derived data
-        input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
-        input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
-        input_data['dV']=np.array(input_data['V'][1]-input_data['V'][0]) #velocity bin width
-        input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
         if input_data['nP']>1:
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
             input_data['dP']=np.array(2.*pi)
-        input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
-        input_data['dE']=np.array(np.abs(input_data['E'][1]-input_data['E'][0]))
+        
+        if EBASE:
+            input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium))
+        else:
+            input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
+        
         input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
    
+        input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
+        input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
+        input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
+        input_data['dV']=np.array(input_data['V'][1]-input_data['V'][0]) #velocity bin width
+        input_data['dE']=np.array(np.abs(input_data['E'][1]-input_data['E'][0])) #energy bin width
+
+        
     file.close()
 
     print("finished reading distribution function from LOCUST")
@@ -375,10 +389,10 @@ class Distribution_Function(base_output.LOCUST_output):
     notes:
         the properties field for the distribution_function can contain a dictionary of LOCUST flags present which dictate how the dfn is written to file
 
-        DoF for Fh (in order of array index i.e. my_dfn['dfn'][P,V,V_pitch,R,Z])
+        DoF for Fh (in order of array index i.e. my_dfn['dfn'][P,V/E,V_pitch,R,Z])
             IDFTYP=1
                 P       - special, rare simulation specific (e.g. gyro phase dimension)
-                V       - velocity dimension
+                V/E     - velocity dimension/energy dimension (dictated by EBASE)
                 V_pitch - pitch dimension
                 R       - r dimension of bin centres
                 Z       - z dimension of bin centres
