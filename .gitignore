@@ -9,6 +9,7 @@
 *.mesh.*
 *.dfn
 *.vtk
+*.f90
 
 #Old plotting files
 *.pro
