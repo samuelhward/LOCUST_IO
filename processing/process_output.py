@@ -65,7 +65,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     #begin list of specific options
 
-    if dfn['properties']['EBASE'] is True: #if LOCUST dfn is against energy
+    if dfn.properties['EBASE'] is True: #if LOCUST dfn is against energy
 
         if axes==['R','Z']:
             dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate

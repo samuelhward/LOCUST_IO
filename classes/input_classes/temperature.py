@@ -130,7 +130,7 @@ def read_temperature_IDS(shot,run,**properties):
     elif properties['species']=='ions':
         input_data['T']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].temperature)
     else:
-        print("cannot read_temperature_IDS - Temperature['properties']['species'] must be set to 'electrons' or 'ions'\n")
+        print("cannot read_temperature_IDS - Temperature.properties['species'] must be set to 'electrons' or 'ions'\n")
  
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
@@ -173,7 +173,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
         #TODO need to add additional species data here e.g. mass, charge
         output_IDS.core_profiles.profiles_1d[0].ion[0].temperature=output_data['T']
     else:
-        print("cannot dump_temperature_IDS - Temperature['properties']['species'] must be set to 'electrons' or 'ions'\n")
+        print("cannot dump_temperature_IDS - Temperature.properties['species'] must be set to 'electrons' or 'ions'\n")
 
     #write out the axes
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
@@ -245,7 +245,7 @@ class Temperature(base_input.LOCUST_input):
  
         notes:
         """
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Temperature['properties']['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Temperature.properties['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
             pass
  
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
