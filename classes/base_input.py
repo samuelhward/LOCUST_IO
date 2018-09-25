@@ -58,7 +58,8 @@ class LOCUST_input:
     def __init__(self,ID,data_format=None,filename=None,shot=None,run=None,**properties): #this is common to all children (not overloaded), must have ID
  
         self.ID=ID #always set the ID, even if we don't invoke read_data i.e. a blank object is initialised
-        self.data={} 
+        self.data={}
+        self.properties={**properties}
         if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"read_data requires data_format, blank input initialised \n",data_format):
             self.read_data(data_format,filename,shot,run,**properties)
  
