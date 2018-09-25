@@ -362,8 +362,9 @@ class TRANSP_output_FI(TRANSP_output):
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)   
 
-        #add specific options for plotting here
+        ax.set_title(self.ID) #set title to object's ID descriptor
         
+        #add specific options for plotting here
         if axes==['R','Z']:
             #R,Z=np.meshgrid(self['R2D']['data'],self['Z2D']['data'])
 
@@ -433,8 +434,6 @@ class TRANSP_output_FI(TRANSP_output):
 
         else:
             print("ERROR: TRANSP_output_FI.dfn_plot() given unknown axes option - please check dfn_plot() docstring\n")
-
-        ax.set_title(self.ID) #set title to object's ID descriptor
 
         if ax_flag is True or fig_flag is True: #return the plot object
             if mesh in locals():
@@ -803,10 +802,11 @@ class ASCOT_output:
         notes:
         """
 
+        dfn=copy.deepcopy(self)
         if transform: 
-            self.dfn_transform(axes=axes)
-        processing.plot_output.plot_distribution_function(self,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
-        self.read_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
+            dfn.dfn_transform(axes=axes)
+        return processing.plot_output.plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        #self.read_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
 
 
 
