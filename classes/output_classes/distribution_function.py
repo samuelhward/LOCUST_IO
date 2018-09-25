@@ -95,8 +95,6 @@ def read_distribution_function_LOCUST(filepath,**properties):
     input_data={} #initialise blank dictionary
     input_data['IDFTYP']=np.array(IDFTYP)
 
-    input_data['EBASE']=EBASE
-
     if IDFTYP==3:
 
         #32-char checksum (32 bytes in Fortran, so essentially reading 8x32 bit floats)
@@ -333,6 +331,8 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['dP']=np.array(2.*pi)
         
         if properties['EBASE']:
+            input_data['E']/=e_charge #convert energy to eV
+            input_data['dfn']*=e_charge #convert to eV^-1
             input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium))
         else:
             input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
