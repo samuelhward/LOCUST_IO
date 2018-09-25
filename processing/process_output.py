@@ -44,7 +44,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
     args:
         axes - the dimensions over which to transform the DFN to
     notes:
-        remember dimensions of unedited dfn are my_dfn['dfn'][P,V,V_pitch,R,Z]
+        remember dimensions of unedited dfn are my_dfn['dfn'][P,V/E,V_pitch,R,Z]
         assumes unedited dfn
         assumes the bin widths for a given dimension are constant
         assumes deuterium in energy conversion to energy space
@@ -65,80 +65,129 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
     #begin list of specific options
 
-    if axes==['R','Z']:
-        #apply velocity space Jacobian
-        for v in range(len(dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+    if dfn['properties']['EBASE'] is True: #if LOCUST dfn is against energy
 
-        #then need to integrate over the first 3 dimensions which we do not need
-        for counter in range(3):
-            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+        if axes==['R','Z']:
+            dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+            for counter in range(3): #sum
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+
+        elif axes==['E','V_pitch']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+            #then need to integrate over the unwanted coordinates
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+
+        elif axes==['E']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+            dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
+            
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over R
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over V_pitch
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+
+        elif axes==['R']:
+            dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+            for counter in range(3): #sum over gyrophase, pitch and energy
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+
+        elif axes==['N']:
+            #applying full Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
+            for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
+
+        #general option
+        elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+            dfn['dfn']=dfn['dfn'][tuple(axes)]
+            #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+        else:
+            print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
+    else: #if LOCUST dfn is against velocity
+
+        if axes==['R','Z']:
+            #apply velocity space Jacobian
+            for v in range(len(dfn['V'])):
+                dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+            dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+            #then need to integrate over the first 3 dimensions which we do not need
+            for counter in range(3):
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
 
 
-    elif axes==['E','V_pitch']:
-        #applying velocity space and gyrophase Jacobian
-        for v in range(len(dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-        dfn['dfn']*=dfn['dP']*e_charge/(mass_deuterium)
+        elif axes==['E','V_pitch']:
+            #applying velocity space and gyrophase Jacobian
+            for v in range(len(dfn['V'])):
+                dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+            dfn['dfn']*=dfn['dP']*e_charge/(mass_deuterium)
 
-        #applying real space Jacobian and integrate over toroidal angle
-        for r in range(len(dfn['R'])):
-            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
 
-        #then need to integrate over the unwanted coordinates
-        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+            #then need to integrate over the unwanted coordinates
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
 
-    elif axes==['E']:
-        #applying velocity space and gyrophase Jacobian
-        for v in range(len(dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-        dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*e_charge/(mass_deuterium)
+        elif axes==['E']:
+            #applying velocity space and gyrophase Jacobian
+            for v in range(len(dfn['V'])):
+                dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+            dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*e_charge/(mass_deuterium)
 
-        #applying real space Jacobian and integrate over toroidal angle
-        for r in range(len(dfn['R'])):
-            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
 
-        #then need to integrate over the unwanted coordinates
-        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
+            #then need to integrate over the unwanted coordinates
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
 
-    elif axes==['R']:
-        #apply velocity space Jacobian
-        for v in range(len(dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+        elif axes==['R']:
+            #apply velocity space Jacobian
+            for v in range(len(dfn['V'])):
+                dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+            dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
 
-        #then need to integrate over the first 3 dimensions which we do not need
-        for counter in range(3):
-            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
-        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+            #then need to integrate over the first 3 dimensions which we do not need
+            for counter in range(3):
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
-    elif axes==['N']:
-        #apply velocity space Jacobian
-        for v in range(len(dfn['V'])):
-            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+        elif axes==['N']:
+            #apply velocity space Jacobian
+            for v in range(len(dfn['V'])):
+                dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+            dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
 
-        #applying real space Jacobian and integrate over toroidal angle
-        for r in range(len(dfn['R'])):
-            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
 
-        #sum over all axes
-        for all_axes in range(dfn['dfn'].ndim):
-            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+            #sum over all axes
+            for all_axes in range(dfn['dfn'].ndim):
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0)
 
-    #general option
-    
-    elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
-        dfn['dfn']=dfn['dfn'][tuple(axes)]
-        #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
-    else:
-        print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+        #general option
+        elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+            dfn['dfn']=dfn['dfn'][tuple(axes)]
+            #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+        else:
+            print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
 
     return dfn
 

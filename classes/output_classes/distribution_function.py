@@ -57,7 +57,7 @@ mass_deuterium=2.0141017781*amu
 
 ################################################################## Distribution_Function functions
 
-def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,TEST=False,EBASE=True,dfn_s=True,Jh=True,Jh_s=True,cpu_time=True,**properties):
+def read_distribution_function_LOCUST(filepath,**properties):
     """
     reads distribution function stored in unformatted fortran file
 
@@ -95,12 +95,14 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
     input_data={} #initialise blank dictionary
     input_data['IDFTYP']=np.array(IDFTYP)
 
+    input_data['EBASE']=EBASE
+
     if IDFTYP==3:
 
         #32-char checksum (32 bytes in Fortran, so essentially reading 8x32 bit floats)
         input_data['EQBM_md5']=file.read_reals(dtype=np.float32) #equilibrium checksum
         
-        if EBASE:
+        if properties['EBASE']:
             #nEF-1
             input_data['nE']=file.read_ints() 
         else:
@@ -112,7 +114,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         #nMU-1
         input_data['nMU']=file.read_ints() #MU
         
-        if EBASE:
+        if properties['EBASE']:
             #dEFh
             input_data['dEh']=file.read_reals(dtype=np.float32)         
         else:
@@ -124,7 +126,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         #dMUh
         input_data['dMUh']=file.read_reals(dtype=np.float32)
 
-        if EBASE:
+        if properties['EBASE']:
             #EF+dEF/2 (nV long)
             input_data['E']=file.read_reals(dtype=np.float32)
         else:
@@ -137,8 +139,8 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         input_data['MU']=file.read_reals(dtype=np.float32)
         
         #for now these blocks do the same thing, but useful to leave as separate for now
-        if wtot: #cumulative energy inventory (total energy injected so far)
-            if EBASE:
+        if properties['wtot']: #cumulative energy inventory (total energy injected so far)
+            if properties['EBASE']:
                 #Fh_norm (nEF by nPP by nMU)
                 input_data['dfn']=file.read_reals(dtype=np.float32) #Final combined DFn. grid
             else:
@@ -151,13 +153,13 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         if Fh_s:
             #Fh_s (nV by nPP by nMU) if Fh_s present
             input_data['dfn_s']=file.read_reals(dtype=np.float32) #Dfn. M.C. error
-        if Jh:
+        if properties['Jh']:
             #Jh
             input_data['Jh']=file.read_reals(dtype=np.float64) #Jacobian for IDFTYP=3 
-        if Jh_s:
+        if properties['Jh_s']:
             #Jh_s
             input_data['Jh_s']=file.read_ints(dtype=np.float64) #Jacobian error for IDFTYP=3
-            if cpu_time:
+            if properties['cpu_time']:
                 #cpuTime
                 input_data['cpu_time']=file.read_reals(dtype=np.float64) #this may not be present in the file
     
@@ -189,7 +191,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             #nPP-1
             input_data['nPP']=file.read_ints() #PPhi          
 
-        if EBASE:
+        if properties['EBASE']:
             #nE-1
             input_data['nE']=file.read_ints() #E
         else:
@@ -199,9 +201,9 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         #nP-1
         input_data['nP']=file.read_ints() #poloidal gyro-phase cell boundaries
         
-        if ITER: #NOTE these blocks essentially do the same thing right now
+        if properties['ITER']: #NOTE these blocks essentially do the same thing right now
 
-            if WIPE:
+            if properties['WIPE']:
                 input_data['dfn']=[] #Final combined DFn. grid
                 input_data['dfn_s']=[] #Dfn. M.C. error
                 for line in range(int(input_data['nP'])):
@@ -225,7 +227,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             for line in range(int(input_data['nP'])):
                 input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
-        if EBASE:
+        if properties['EBASE']:
             input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
             input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
             input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
@@ -272,7 +274,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             #PP+dPP/2 (nPP long)
             input_data['PP']=file.read_reals(dtype=np.float32)
 
-        if EBASE:
+        if properties['EBASE']:
             #E+dE/2 (nE long)
             input_data['E']=file.read_reals(dtype=np.float32) #energy space of dfn
         else:
@@ -306,7 +308,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         input_data['threads_per_block']=file.read_ints() #gpu threads per block 
         input_data['blocks_per_grid']=file.read_ints() #gpu blockers per grid
 
-        if TEST:
+        if properties['TEST']:
 
             #Pdep/E0
             input_data['Pdep/E0']=file.read_reals(dtype=np.float32) #pdep is injected power
@@ -321,7 +323,7 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
             #siglg
             input_data['siglg']=file.read_reals(dtype=np.float32) #r.m.s. width of test src
 
-            if cpu_time:
+            if properties['cpu_time']:
                 input_data['cpu_time']=file.read_reals(dtype=np.float64)
 
         #extra derived data
@@ -330,12 +332,12 @@ def read_distribution_function_LOCUST(filepath,ITER=True,wtot=False,WIPE=False,T
         else:
             input_data['dP']=np.array(2.*pi)
         
-        if EBASE:
+        if properties['EBASE']:
             input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium))
         else:
             input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
         
-        if EBASE:
+        if properties['EBASE']:
             input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
         else:
             input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
@@ -416,7 +418,8 @@ class Distribution_Function(base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_distribution_function_LOCUST(self.filepath,**properties) #read the file
+                self.properties={'ITER':True,'wtot':False,'WIPE':False,'TEST':False,'EBASE':True,'dfn_s':True,'Jh':True,'Jh_s':True,'cpu_time':True} #override properties here with read_data settings
+                self.data=read_distribution_function_LOCUST(self.filepath,**self.properties) #read the file
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST)\n")            
 
@@ -432,7 +435,7 @@ class Distribution_Function(base_output.LOCUST_output):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_output_files+filename
-                dump_distribution_function_LOCUST(self.data,filepath,**properties)
+                dump_distribution_function_LOCUST(self.data,filepath,**self.properties)
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
