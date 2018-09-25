@@ -189,7 +189,7 @@ class TRANSP_output:
         please see individual class/method docstrings for help
     """
 
-    def __init__(self,filename):
+    def __init__(self,ID,filename):
         """
         constructor for TRANSP_output class
         
@@ -197,7 +197,9 @@ class TRANSP_output:
 
         """
 
+        self.ID=ID
         self.filename=filename
+        self.filepath=support.dir_output_files+filename
         self.data={}
         self.read_data(self.filename)
 
@@ -230,34 +232,6 @@ class TRANSP_output:
         """
 
         pass
-
-    '''
-    def new_var(self,key,typ,**dimensions):
-        """
-        interface for creating new netCDF variable
-
-        notes:
-            if dimension is supplied that does not already exist then new dimension is created
-            final variable shape does not currently reflect order of **dimensions arguements
-        args:
-            key - name of variable to create
-            typ - dtype of variable
-            dimensions - kwarg for dimension names and corresponding lengths
-        useage:
-            my_cdf.new_var('new_variable','float',x=100,y=50)
-        """
-
-        for dimension in dimensions.keys():
-            if dimension not in self.data.dimensions:
-                self.data.dimensions[dimension]=dimensions[dimension]
-            elif dimensions[dimension]!=self.data.dimensions[dimension]:
-                print("ERROR - new_var(): specified dimension {dimension} already exists with value={value}!\n".format(dimension=dimension,value=dimensions[dimension]))
-                return 
-
-        if key in self.data.variables.keys():
-            print("{filename}: overwriting {key}".format(filename=self.filename,key=key))
-        self.data.createVariable(key,typ,dimensions)
-    '''
 
 class TRANSP_output_FI(TRANSP_output):
     """
@@ -460,6 +434,12 @@ class TRANSP_output_FI(TRANSP_output):
         else:
             print("ERROR: TRANSP_output_FI.dfn_plot() given unknown axes option - please check dfn_plot() docstring\n")
 
+        ax.set_title(self.ID) #set title to object's ID descriptor
+
+        if ax_flag is True or fig_flag is True: #return the plot object
+            if mesh in locals():
+                return mesh
+
         if ax_flag is False and fig_flag is False:
             plt.show()
 
@@ -602,12 +582,11 @@ class ASCOT_output:
         mimics a LOCUST_IO object - use pull_data and methods like dfn_transform to then access standard LOCUST_IO functions
         my_output.file['key/path/to/data'].values will return leaf-level tree data from HDF5 file
     example:
-        my_output=ASCOT_output('ID',some_filename)
-        my_output.pull_data('distribution_function')
+        my_output=ASCOT_output('ID',some_filename,some_datatype)
         my_output.dfn_plot(axes=['R','Z'],real_scale=True) 
     """
 
-    def __init__(self,ID,filename=None):
+    def __init__(self,ID,filename,datatype):
         """
         constructor for TRANSP_output class
         
@@ -617,9 +596,10 @@ class ASCOT_output:
 
         self.ID=ID
         self.data={}
-        if filename: #if supplied new filename, overwrite previous filepath
-            self.filename=filename
-            self.filepath=support.dir_output_files+filename
+        self.filename=filename
+        self.filepath=support.dir_output_files+filename
+        self.datatype=datatype
+        self.read_data(self.filename,self.datatype)
 
     def __getitem__(self,key):
         """
@@ -665,15 +645,12 @@ class ASCOT_output:
             for var in self.file.keys():
                 print(var)
 
-    def file_open(self,filename=None):
+    def file_open(self,filepath=None):
         """
         re-open/open new HDF5 file
         """
 
-        if filename: #if supplied new filename, overwrite previous filepath
-            self.filename=filename
-            self.filepath=support.dir_output_files+filename
-        self.file=h5py.File(self.filepath,'r') 
+        self.file=h5py.File(filepath,'r') 
 
     def file_close(self):
         """
@@ -684,7 +661,7 @@ class ASCOT_output:
 
         del(self.file)
 
-    def pull_data(self,datatype='distribution_function'):
+    def read_data(self,filename=None,datatype='distribution_function'):
         """
         deep copy and pull data from HDF5 file 
 
@@ -697,8 +674,11 @@ class ASCOT_output:
             datatype - read data from ASCOT output file and create structure resembling this LOCUST_IO datatype    
         """
 
-        self.datatype=datatype
-        self.file_open()
+        self.datatype=datatype #overwrite datatype member data
+        if filename: #if supplied new filename, overwrite previous filepath
+            self.filename=filename
+            self.filepath=support.dir_output_files+filename
+        self.file_open(self.filepath)
 
         if datatype=='distribution_function':
             ''' 
@@ -925,12 +905,14 @@ class FINT_LOCUST:
     notes:
     """
     
-    def __init__(self,filename='FINT.dat'): 
+    def __init__(self,ID,filename='FINT.dat'): 
         """
         just reads in data from supplied filename
         """
         
+        self.ID=ID
         self.data={}
+        self.filename=filename
         self.filepath=support.dir_output_files+filename
         self.read_data(self.filepath)
 
@@ -1036,6 +1018,7 @@ class FINT_LOCUST:
         mesh=ax.pcolormesh(time,E,self['dfn'],cmap=cmap_default,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
         ax.set_xlabel('time [s]')
         ax.set_ylabel('energy [eV]')                
+        ax.set_title(self.ID)
         
         if fig_flag is False:    
             fig.colorbar(mesh,ax=ax,orientation='horizontal')
