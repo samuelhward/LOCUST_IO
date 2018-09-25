@@ -806,7 +806,7 @@ class ASCOT_output:
         if transform: 
             self.dfn_transform(axes=axes)
         processing.plot_output.plot_distribution_function(self,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
-        self.pull_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
+        self.read_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
 
 
 
