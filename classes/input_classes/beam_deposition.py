@@ -694,7 +694,7 @@ class Beam_Deposition(base_input.LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
  
-    inheritedfrom LOCUST_input:
+    inherited from LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'beam_deposition'
@@ -747,7 +747,7 @@ class Beam_Deposition(base_input.LOCUST_input):
                 self.data=read_beam_depo_LOCUST_weighted(self.filepath) #read the file
          
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run data required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run required\n",shot,run):
  
                 self.data_format=data_format
                 self.shot=shot

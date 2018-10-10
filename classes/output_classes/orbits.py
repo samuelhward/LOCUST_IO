@@ -129,7 +129,7 @@ class Orbits(base_output.LOCUST_output):
     """
     class describing orbits output for LOCUST
     
-    inheritedfrom LOCUST_output:
+    inherited from LOCUST_output:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all output data in dictionary object
         self.LOCUST_output_type     string which holds this class' output type, this case = 'orbits'

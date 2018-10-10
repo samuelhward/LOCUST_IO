@@ -118,9 +118,9 @@ def B_calc(some_equilibrium): #ordering OK - for Z[X,Y].shape=(2,3), gradient(Z,
                  - [row,column] in numpy
     """
     
-    if 'fpolrz' not in some_equilibrium.data:
-        print("ERROR: fpolrz missing in equilibrium object (calculate first with fpolrz_calc)")
-        return
+    if 'fpolrz' not in some_equilibrium.data: #could have a try except statement here to accommodate for both dictionaries (which may not contain .data) and LOCUST_IO objects 
+        print("WARNING: B_calc - fpolrz missing in equilibrium object")
+        some_equilibrium['fpolrz']=fpolrz_calc(some_equilibrium) #if fpolrz is missing calculate it
 
     print("B_calc - calculating 2D magnetic field")
 
