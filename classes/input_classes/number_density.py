@@ -132,7 +132,8 @@ def read_number_density_IDS(shot,run,**properties):
     elif properties['species']=='ions':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].density)
     else:
-        print("cannot read_number_density_IDS - Number_Density['properties']['species'] must be set to 'electrons' or 'ions'\n")
+        print("ERROR: cannot read_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
+        return 
 
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
@@ -174,7 +175,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         #TODO need to add additional species data here e.g. mass, charge
         output_IDS.core_profiles.profiles_1d[0].ion[0].density=output_data['n']
     else:
-        print("cannot dump_number_density_IDS - Number_Density['properties']['species'] must be set to 'electrons' or 'ions'\n")
+        print("cannot dump_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
 
     #write out the axes
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
@@ -216,7 +217,7 @@ class Number_Density(base_input.LOCUST_input):
     """
     class describing number density profile input for LOCUST
  
-    inheritedfrom LOCUST_input:
+    inherited from LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'number density'
@@ -245,7 +246,7 @@ class Number_Density(base_input.LOCUST_input):
  
         notes:
         """
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density['properties']['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density.properties['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
             pass
  
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data

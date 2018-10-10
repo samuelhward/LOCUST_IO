@@ -216,7 +216,7 @@ class Temperature(base_input.LOCUST_input):
     """
     class describing temperature profile input for LOCUST
  
-    inheritedfrom LOCUST_input:
+    inherited from LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'temperature'

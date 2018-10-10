@@ -105,7 +105,11 @@ def TRANSP_get_fbm_FI_CDF(run_ID,number_files,particle_position=True,guiding_cen
             print("writing TRANSP FI netCDF file {}".format(output_filename_gc))
             proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
             out, err = proc.communicate(input=fbm_input.encode('utf-8'))
-            os.rename(output_filename,output_filename_gc) #add '_gc' label onto file
+            try:
+                os.rename(output_filename,output_filename_gc) #add '_gc' label onto file
+            except:
+                print("WARNING: TRANSP_get_fbm_FI_CDF could not rename {} to {}".format(output_filename,output_filename_gc))
+                    
             print("finished writing TRANSP FI netCDF file {}".format(output_filename_gc))
 
         if particle_position:
@@ -436,7 +440,7 @@ class TRANSP_output_FI(TRANSP_output):
             print("ERROR: TRANSP_output_FI.dfn_plot() given unknown axes option - please check dfn_plot() docstring\n")
 
         if ax_flag is True or fig_flag is True: #return the plot object
-            if mesh in locals():
+            if mesh is not None:
                 return mesh
 
         if ax_flag is False and fig_flag is False:
@@ -806,7 +810,6 @@ class ASCOT_output:
         if transform: 
             dfn.dfn_transform(axes=axes)
         return processing.plot_output.plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
-        #self.read_data(datatype='distribution_function') #re-pull data that has been overwritten by dfn_transform
 
 
 

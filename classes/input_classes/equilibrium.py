@@ -235,6 +235,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
         line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+processing.utils.fortran_string(EFIT_shot,6)+processing.utils.fortran_string(EFIT_time,6)+processing.utils.fortran_string(output_data['xdum'],14)+processing.utils.fortran_string(output_data['nR_1D'],4)+processing.utils.fortran_string(output_data['nZ_1D'],4)+"\n"
         file.write(line)
  
+        output_data['xdum']=0.
         float_keys = [
         'rdim','zdim','rcentr','rleft','zmid',
         'rmaxis','zmaxis','simag','sibry','bcentr',
@@ -443,15 +444,100 @@ def dump_equilibrium_ASCOT(output_data,filepath):
             
                 write_magn_header(head, 'input.magn_header')'''
 
-    
- 
+
+def read_equilibrium_UDA(shot,time):
+    """
+    reads equilibrium from analysed EFIT signals from MAST UDA database
+
+    notes:
+
+    args:
+        shot - target shot number to read
+        time - fetch equilibrium at this time
+    """
+
+    print("reading equilibrium from UDA")
+
+    input_data={}
+
+    try:
+        import pyuda
+        udaClient=pyuda.Client()
+        getdata=udaClient.get
+        import numpy as np
+    except:
+        raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda")
+
+
+    #time dependent data first
+    input_data['psirz']=getdata('efm_psi(r,z)',       shot)
+    input_data['simag']=getdata('efm_psi_axis',       shot)
+    input_data['sibry']=getdata('efm_psi_boundary',   shot)
+    input_data['current']=getdata('efm_plasma_curr(C)', shot)
+    input_data['bcentr']=getdata('efm_bvac_val',       shot)
+    input_data['rcentr']=getdata('efm_bvac_r',       shot)
+    input_data['pres']=getdata('efm_p(psi)_(c)',shot)
+    input_data['fpol']=getdata('efm_f(psi)_(c)',shot)
+    input_data['rmaxis']=getdata('efm_magnetic_axis_r',shot)
+    input_data['zmaxis']=getdata('efm_magnetic_axis_z',shot)
+    input_data['ffprime']=getdata('efm_ffprime',shot)
+    input_data['pprime']=getdata('efm_pprime',shot)
+    input_data['qpsi']=getdata('efm_q(psi)_(c)',shot)
+    input_data['lcfs_n']=getdata('efm_lcfs(n)_(c)',shot)
+    input_data['lcfs_r']=getdata('efm_lcfs(r)_(c)',shot)
+    input_data['lcfs_z']=getdata('efm_lcfs(z)_(c)',shot)
+
+    #redefine read time based on available converged EFIT equilibria constructions 
+    time_index=np.abs(input_data['psirz'].time.data-time).argmin()
+    time_new=input_data['psirz'].time.data[time_index]
+
+    #go through time dependent data and pick closest times
+    for key in input_data:
+        #print(key) #to check times
+        time_index=np.abs(input_data[key].time.data-time_new).argmin()
+        #print(input_data[key].time.data[time_index]) #to check times
+        input_data[key]=np.asarray(input_data[key].data[time_index])
+
+    input_data['R_1D']=np.asarray(getdata('efm_grid(r)',shot).data[0,:])
+    input_data['Z_1D']=np.asarray(getdata('efm_grid(z)',shot).data[0,:])
+    input_data['nR_1D']=np.asarray(getdata('efm_nw',shot))
+    input_data['nZ_1D']=np.asarray(getdata('efm_nh',shot))
+    input_data['rdim']=input_data['R_1D'][-1]-input_data['R_1D'][0]
+    input_data['rleft']=input_data['R_1D'][0]
+    input_data['zdim']=input_data['Z_1D'][-1]-input_data['Z_1D'][0]
+    input_data['zmid']=(input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5
+
+    input_data['rlim'] = np.array([
+    0.195, 0.195, 0.280, 0.280, 0.280, 0.175,
+    0.175, 0.190, 0.190, 0.330, 0.330, 0.535,
+    0.535, 0.755, 0.755, 0.755, 1.110, 1.655,
+    1.655, 1.655, 2.000, 2.000, 2.000, 2.000,
+    2.000, 1.655, 1.655, 1.655, 1.110, 0.755,
+    0.755, 0.755, 0.535, 0.535, 0.330, 0.330,
+    0.190, 0.190, 0.175, 0.175, 0.280, 0.280,
+    0.280, 0.195, 0.195])
+
+    input_data['zlim'] = np.array([
+    0.000, 1.080, 1.220, 1.450, 1.670, 1.670,
+    1.720, 1.820, 1.905, 2.000, 2.000, 2.000,
+    2.000, 2.000, 1.975, 1.826, 1.826, 1.826,
+    1.975, 2.000, 2.000, 0.300, 0.000,-0.300,
+    -2.000,-2.000,-1.975,-1.826,-1.826,-1.826,
+    -1.975,-2.000,-2.000,-2.000,-2.000,-2.000,
+    -1.905,-1.820,-1.720,-1.670,-1.670,-1.450,
+    -1.220,-1.080, 0.000])
+
+    print("finished reading equilibrium from UDA")
+
+    return input_data
+
 ################################################################## Equilibrium class
  
 class Equilibrium(base_input.LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
  
-    inheritedfrom LOCUST_input:
+    inherited from LOCUST_input:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all input data in dictionary object
         self.LOCUST_input_type      string which holds this class' input type, this case = 'equilibrium'
@@ -473,7 +559,7 @@ class Equilibrium(base_input.LOCUST_input):
  
     LOCUST_input_type='equilibrium'
   
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties): #always supply all possible arguments for reading in data, irrespective of read in type
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,time=None,**properties): #always supply all possible arguments for reading in data, irrespective of read in type
         """
         read equilibrium from file 
  
@@ -492,15 +578,23 @@ class Equilibrium(base_input.LOCUST_input):
                 self.data=read_equilibrium_GEQDSK(self.filepath) #read the file
             
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run data required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run required\n",shot,run):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
                 self.data=read_equilibrium_IDS(self.shot,self.run)
- 
+
+        elif data_format=='UDA':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from UDA - shot and time required\n",shot,time):
+                self.data_format=data_format
+                self.shot=shot
+                self.time=time
+                self.properties={**properties}
+                self.data=read_equilibrium_UDA(self.shot,self.time)
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (GEQDSK/IDS)\n")
+            print("ERROR: cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
