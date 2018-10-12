@@ -428,6 +428,9 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_ylabel('time [s]')
                 if fig_flag is False:    
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                    
+                if ax_flag is True or fig_flag is True: #return the plot object
+                    return mesh  
             
             else:
                 print("ERROR: 'TRANSP_output_FI_list' not supplied in TRANSP_output_FI.dfn_plot(...**kwargs) - please see docstring for TRANSP_output_FI.dfn_plot()\n")
@@ -436,12 +439,21 @@ class TRANSP_output_FI(TRANSP_output):
 
         #elif axes==['R']:
 
+        elif len(axes)==self['F_D_NBI']['data'].ndim: #assume user wants to plot energy pitch at point in real space
+            new_dfn=self['F_D_NBI']['data'][tuple(axes)]
+            E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
+            ax.set_facecolor(colmap(np.amin(new_dfn)))
+            mesh=ax.pcolormesh(E,V_pitch,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))            
+            ax.set_xlabel('energy [eV]')
+            ax.set_ylabel('pitch (v_parallel/v)')
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh 
+                            
         else:
             print("ERROR: TRANSP_output_FI.dfn_plot() given unknown axes option - please check dfn_plot() docstring\n")
-
-        if ax_flag is True or fig_flag is True: #return the plot object
-            if mesh is not None:
-                return mesh
 
         if ax_flag is False and fig_flag is False:
             plt.show()
