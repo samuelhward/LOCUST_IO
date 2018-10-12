@@ -1,10 +1,10 @@
-#hdf5.py
+#moments.py
 
 """
 Samuel Ward
 27/04/2018
 ----
-class to handle LOCUST HDF5 output data
+class to handle LOCUST moments output data
 ---
 usage:
     see README.md for usage
@@ -51,15 +51,15 @@ np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
 ################################################################## Orbits functions
 
-def read_HDF5_LOCUST(filepath):
+def read_moments_LOCUST(filepath):
     """
-    reads generic HDF5 data output from LOCUST
+    reads generic moments data output from LOCUST
 
     notes:
 
     """
 
-    print("reading HDF5 from LOCUST")
+    print("reading moments from LOCUST")
 
     input_data={} #initialise data dictionary
     file = h5py.File(filepath, 'r')
@@ -100,7 +100,7 @@ def read_HDF5_LOCUST(filepath):
     
     file.close()
 
-    print("finished reading HDF5 from LOCUST")
+    print("finished reading moments from LOCUST")
 
     return input_data
 
@@ -108,14 +108,14 @@ def read_HDF5_LOCUST(filepath):
 
 ################################################################## Orbits class
 
-class HDF5(base_output.LOCUST_output):
+class Moments(base_output.LOCUST_output):
     """
-    class describing a generic HDF5 output for LOCUST
+    class describing a generic moments output for LOCUST
     
     inherited from LOCUST_output:
         self.ID                     unique object identifier, good convention to fill these for error handling etc
         self.data                   holds all output data in dictionary object
-        self.LOCUST_output_type     string which holds this class' output type, this case = 'HDF5'
+        self.LOCUST_output_type     string which holds this class' output type, this case = 'moments'
     class data
         self.data_format            data format of original data e.g. LOCUST
         self.filename               name of file in output_files folder
@@ -130,11 +130,11 @@ class HDF5(base_output.LOCUST_output):
         data is stored such that...
     """
 
-    LOCUST_output_type='HDF5'
+    LOCUST_output_type='moments'
 
     def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
-        read HDF5 from file 
+        read moments from file 
 
         notes:
         """
@@ -149,13 +149,13 @@ class HDF5(base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_HDF5_LOCUST(self.filepath) #read the file
+                self.data=read_moments_LOCUST(self.filepath) #read the file
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
-        write HDF5 to file
+        write moments to file
 
         notes: 
         """
@@ -165,7 +165,7 @@ class HDF5(base_output.LOCUST_output):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
                 filepath=support.dir_output_files+filename
-                dump_HDF5_LOCUST(self.data,filepath)
+                dump_moments_LOCUST(self.data,filepath)
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
