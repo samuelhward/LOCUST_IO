@@ -57,7 +57,11 @@ except:
 
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
-
+pi=np.pi
+amu=1.66053904e-27
+mass_deuterium_amu=2.0141017781
+mass_deuterium=mass_deuterium_amu*amu
+e_charge=1.60217662e-19
 
 ################################################################## Final_Particle_List functions
 
@@ -180,7 +184,7 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
             input_data['status_flags']['generic_fail_hard']=-99999.0
 
             #calculate some additional things
-            input_data['E']=input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
+            input_data['E']=.5*mass_deuterium*e_charge*input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
 
 
         print("finished reading final particle list from LOCUST")
@@ -258,13 +262,12 @@ def read_final_particle_list_TRANSP(filepath):
     read final particle list from TRANSP fi CDF output file
 
     notes:
-        must set AVGTIM>0 in TRANSP namelist
+        
     """
 
     print("reading final particle list from TRANSP")
 
-
-    file=ncdf.netcdf_file(filepath,'r')
+    file=ncdf.netcdf_file(filename,'r')
     input_data={}
 
     input_data['R']=file.variables['RMJION'].data*.01
@@ -272,8 +275,10 @@ def read_final_particle_list_TRANSP(filepath):
     input_data['V_pitch']=file.variables['XKSIDLST'].data
     input_data['E']=file.variables['ZELST'].data
     input_data['weight']=file.variables['WGHTLST'].data
-    input_data['status_flags']={} #initialise generic status_flags - TRANSP does store these in ['GOOSELST'] but all are 1.00 or 1.0001
-    input_data['status_flags']['any_loss']=0.0
+    input_data['time']=file.variables['track_time_D_NBI'].data
+
+    input_data['status_flags']={} #initialise generic status_flags - TRANSP does store these in ['GOOSELST'] but all are 1.00 or 1.0001 anyway
+    input_data['status_flags']['all_losses']=0.0
     input_data['status_flag']=np.zeros(len(input_data['R']))
 
     file.close()
@@ -282,16 +287,6 @@ def read_final_particle_list_TRANSP(filepath):
     print("finished reading final particle list from TRANSP")
     
     return input_data
-    
-def dump_final_particle_list_TRANSP(output_data,filepath):
-    """
-    writes final particle list to TRANSP format
-
-    notes:
-    """
-
-    pass
-
 
 ################################################################## Final_Particle_List class
 

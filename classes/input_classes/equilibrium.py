@@ -468,7 +468,6 @@ def read_equilibrium_UDA(shot,time):
     except:
         raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda")
 
-
     #time dependent data first
     input_data['psirz']=getdata('efm_psi(r,z)',       shot)
     input_data['simag']=getdata('efm_psi_axis',       shot)
