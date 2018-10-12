@@ -267,7 +267,7 @@ def read_final_particle_list_TRANSP(filepath):
 
     print("reading final particle list from TRANSP")
 
-    file=ncdf.netcdf_file(filename,'r')
+    file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
     input_data['R']=file.variables['RMJION'].data*.01
