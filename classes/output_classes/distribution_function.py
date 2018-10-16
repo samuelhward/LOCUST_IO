@@ -365,6 +365,12 @@ def dump_distribution_function_LOCUST(output_data,filepath,**properties):
 
     pass
 
+def dump_distribution_function_TRANSP(output_data,filepath):
+    """
+    notes:
+        check old LOCUST_IO code for functions which can generate new netCDF variables easily
+    """
+    pass
 
 
 ################################################################## Distribution_Function class

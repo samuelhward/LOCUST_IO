@@ -232,10 +232,10 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
 
         EFIT_shot=19113 #just 'make up' a shot number and time (in ms) for now
         EFIT_time=23
-        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+processing.utils.fortran_string(EFIT_shot,6)+processing.utils.fortran_string(EFIT_time,6)+processing.utils.fortran_string(output_data['xdum'],14)+processing.utils.fortran_string(output_data['nR_1D'],4)+processing.utils.fortran_string(output_data['nZ_1D'],4)+"\n"
+        output_data['xdum']=np.array(0)
+        line = "LOCUSTIO   "+time.strftime("%d/%m/%y")+"      #"+processing.utils.fortran_string(EFIT_shot,6)+processing.utils.fortran_string(EFIT_time,6)+processing.utils.fortran_string(int(output_data['xdum']),14)+processing.utils.fortran_string(int(output_data['nR_1D']),4)+processing.utils.fortran_string(int(output_data['nZ_1D']),4)+"\n"
         file.write(line)
  
-        output_data['xdum']=0.
         float_keys = [
         'rdim','zdim','rcentr','rleft','zmid',
         'rmaxis','zmaxis','simag','sibry','bcentr',
@@ -485,6 +485,9 @@ def read_equilibrium_UDA(shot,time):
     input_data['lcfs_n']=getdata('efm_lcfs(n)_(c)',shot)
     input_data['lcfs_r']=getdata('efm_lcfs(r)_(c)',shot)
     input_data['lcfs_z']=getdata('efm_lcfs(z)_(c)',shot)
+    input_data['limitr']=getdata('efm_limiter(n)',shot) #limiter data not on time base but contains single time coordinate, so read in here
+    input_data['rlim']=getdata('efm_limiter(r)',shot)
+    input_data['zlim']=getdata('efm_limiter(z)',shot)
 
     #redefine read time based on available converged EFIT equilibria constructions 
     time_index=np.abs(input_data['psirz'].time.data-time).argmin()
@@ -495,17 +498,23 @@ def read_equilibrium_UDA(shot,time):
         #print(key) #to check times
         time_index=np.abs(input_data[key].time.data-time_new).argmin()
         #print(input_data[key].time.data[time_index]) #to check times
-        input_data[key]=np.asarray(input_data[key].data[time_index])
+        input_data[key]=np.array(input_data[key].data[time_index])
+
+    input_data['lcfs_r']=input_data['lcfs_r'][0:input_data['lcfs_n']] #LCFS data seems to have junk on the end, so crop accordingly
+    input_data['lcfs_z']=input_data['lcfs_z'][0:input_data['lcfs_n']]
+
+    input_data['psirz']=input_data['psirz'].T
 
     input_data['R_1D']=np.asarray(getdata('efm_grid(r)',shot).data[0,:])
     input_data['Z_1D']=np.asarray(getdata('efm_grid(z)',shot).data[0,:])
-    input_data['nR_1D']=np.asarray(getdata('efm_nw',shot))
-    input_data['nZ_1D']=np.asarray(getdata('efm_nh',shot))
+    input_data['nR_1D']=np.asarray(getdata('efm_nw',shot).data)
+    input_data['nZ_1D']=np.asarray(getdata('efm_nh',shot).data)
     input_data['rdim']=input_data['R_1D'][-1]-input_data['R_1D'][0]
     input_data['rleft']=input_data['R_1D'][0]
     input_data['zdim']=input_data['Z_1D'][-1]-input_data['Z_1D'][0]
-    input_data['zmid']=(input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5
-
+    input_data['zmid']=np.asarray((input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5)
+    
+    '''
     input_data['rlim'] = np.array([
     0.195, 0.195, 0.280, 0.280, 0.280, 0.175,
     0.175, 0.190, 0.190, 0.330, 0.330, 0.535,
@@ -524,7 +533,7 @@ def read_equilibrium_UDA(shot,time):
     -2.000,-2.000,-1.975,-1.826,-1.826,-1.826,
     -1.975,-2.000,-2.000,-2.000,-2.000,-2.000,
     -1.905,-1.820,-1.720,-1.670,-1.670,-1.450,
-    -1.220,-1.080, 0.000])
+    -1.220,-1.080, 0.000])'''
 
     print("finished reading equilibrium from UDA")
 
