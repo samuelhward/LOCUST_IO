@@ -92,7 +92,7 @@ def plot_orbits(some_orbits,some_equilibrium=False,particles=[0],axes=['R','Z'],
                 ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
 
             for particle in particles: #plot all the particle tracks one by one
-                ax.plot(some_orbits['orbits'][1::2,0,particle],some_orbits['orbits'][1::2,2,particle],color=colmap(np.random.uniform()),linewidth=0.5) #plot every other position along trajectory
+                ax.plot(some_orbits['orbits'][1::2,0,particle],some_orbits['orbits'][1::2,2,particle],color=colmap,linewidth=0.5) #plot every other position along trajectory
                 if start_mark: #show birth point
                     ax.plot(some_orbits['orbits'][0,0,particle],some_orbits['orbits'][0,2,particle],color='red',marker='o',markersize=1)
 
@@ -115,7 +115,7 @@ def plot_orbits(some_orbits,some_equilibrium=False,particles=[0],axes=['R','Z'],
             for particle in particles: #plot all the particle tracks one by one
                 x_points=some_orbits['orbits'][1::2,0,particle]*np.cos(some_orbits['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
                 y_points=some_orbits['orbits'][1::2,0,particle]*np.sin(some_orbits['orbits'][1::2,1,particle])   
-                ax.plot(x_points,y_points,color=colmap(np.random.uniform()),linewidth=1) 
+                ax.plot(x_points,y_points,color=colmap,linewidth=1) 
                 
                 if start_mark: #show birth point
                     ax.plot(x_points[0],y_points[0],color='red',marker='o',markersize=1)
@@ -150,7 +150,7 @@ def plot_orbits(some_orbits,some_equilibrium=False,particles=[0],axes=['R','Z'],
             x_points=some_orbits['orbits'][1::2,0,particle]*np.cos(some_orbits['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
             y_points=some_orbits['orbits'][1::2,0,particle]*np.sin(some_orbits['orbits'][1::2,1,particle])   
             z_points=some_orbits['orbits'][1::2,2,particle]
-            ax.plot(x_points,y_points,zs=z_points,color=colmap(np.random.uniform())) 
+            ax.plot(x_points,y_points,zs=z_points,color=colmap) 
             
             if start_mark: #show birth point
                 ax.scatter(x_points[0],y_points[0],z_points[0],color='red',marker='o',s=10)
@@ -255,7 +255,7 @@ def plot_final_particle_list(some_final_particle_list,some_equilibrium=False,som
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
                     
             elif type=='scatter':
-                ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap(np.random.uniform()),marker='x',s=1)
+                ax.scatter(some_final_particle_list[axes[0]][p],some_final_particle_list[axes[1]][p],cmap=colmap,marker='x',s=1)
 
         if axes==['R','Z']:
             if LCFS is True: #plot plasma boundarys

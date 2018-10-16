@@ -209,6 +209,12 @@ def dump_temperature_MARSF(output_data,filepath):
  
     print("finished writing temperature to MARSF mogui")
 
+def read_temperature_UDA(shot,time):
+    """
+    """
+
+
+    return input_data
 
 ################################################################## Temperature class
  

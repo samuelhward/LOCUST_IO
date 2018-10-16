@@ -429,7 +429,7 @@ LOCUST dumps final particle lists in ASCII format as (n \n ngpu \n niter \n npt_
 
 LOCUST dumps distribution functions in unformatted binary format. Different run-time flag combinations will dictate whether the above fields are written to file. The Dfn grid is defined at the bin centres in SI units [s^3/m^6] (one must integrate to get particles per bin for plotting).
     
-##### HDF5
+##### Moments
 
 ([LOCUST_IO](https://github.com/armoured-moose/LOCUST_IO)/[HDF5](https://support.hdfgroup.org/HDF5/)/LOCUST)
 

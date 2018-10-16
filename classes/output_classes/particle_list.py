@@ -203,7 +203,7 @@ def dump_final_particle_list_LOCUST(output_data,filepath):
     pass
 
 '''
-def read_final_particle_list_TRANSP(filepath):
+def read_final_particle_list_TRANSP_FLOST(filepath):
     """
     reads final particle list stored in TRANSP format
 
