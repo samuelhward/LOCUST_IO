@@ -54,7 +54,10 @@ try:
     from scipy.io import netcdf as ncdf
 except:
     raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
-
+try:
+    import h5py
+except:
+    print("WARNING: h5py could not be imported!\n") 
 
 np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 pi=np.pi
@@ -286,6 +289,45 @@ def read_final_particle_list_TRANSP(filepath):
     
     print("finished reading final particle list from TRANSP")
     
+    return input_data
+
+def read_final_particle_list_ASCOT(filepath):
+    """
+    read final particle list from ASCOT HDF5 output file
+
+    notes:
+        endstates
+             1 - maximum tracking time reached
+             2 - minimum kinetic energy reached
+             3 - collision with wall  
+             4 - thermalisation
+            -1 - particle was rejected at initialisation, possibly due to starting outside wall or having negative energy etc
+            -2 - particle aborted during tracking, possible numerical error etc
+    """
+
+    file=h5py.File(filepath,'r')
+    input_data={}
+
+    input_data['R']=file['endstate/R'].value
+    input_data['phi']=file['endstate/phi'].value
+    input_data['Z']=file['endstate/z'].value
+    input_data['V_R']=file['endstate/vR'].value
+    input_data['V_tor']=file['endstate/vphi'].value
+    input_data['V_Z']=file['endstate/vz'].value
+    input_data['E']=file['endstate/energy'].value
+    input_data['V_pitch']=file['endstate/pitch'].value
+    input_data['time']=file['endstate/time'].value
+    input_data['weight']=file['endstate/weight'].value
+
+    input_data['status_flag']=file['endstate/endcond'].value
+    input_data['status_flags']={}
+    input_data['status_flags']['maximum_time']=1.
+    input_data['status_flags']['minimu_kinetic_energy']=2.
+    input_data['status_flags']['wall_collision']=3.
+    input_data['status_flags']['thermalisation']=4.
+    input_data['status_flags']['particle_initial_reject']=-1.
+    input_data['status_flags']['particle_abort']=-2.
+
     return input_data
 
 ################################################################## Final_Particle_List class
