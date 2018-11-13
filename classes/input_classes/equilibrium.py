@@ -18,63 +18,48 @@ notes:
 #Preamble
  
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
+
 try:
     import numpy as np
-    import copy
     import re
-    import time
-    import itertools
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
-    sys.exit(1)  
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)   
+try:
+    import processing.process_input 
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
 try:
     from classes import base_input 
 except:
-    raise ImportError("ERROR: base_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support #import support module from this directory
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from processing import process_input 
+    from constants import *
 except:
-    raise ImportError("ERROR: process_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
-pi=np.pi
-
-
-
-################################################################## Equilibrium functions
-
-'''
-def dump_2Dwall_LOCUST(output_data,filepath):
-    """
-    dumps 2D wall profile to LOCUST format
-
-    notes:
-        output_data must be GEQDSK-style object
-        2D wall points must be monotonic in poloidal angle
-    """
-    
-    with open(filepath,'r') as file:
-        #write the number of points (must be 3600 always)
-        #write the major radius
-        #write out the radii of limiter points as we rotate poloidally 3600 times anti-clockwise from outboard side 
-'''
+################################################################## Equilibrium read functions
 
 def read_equilibrium_GEQDSK(filepath): 
     """ 
@@ -83,8 +68,28 @@ def read_equilibrium_GEQDSK(filepath):
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
     """
- 
-    input_data = {}
+
+        input_data = {}
+
+    def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
+        """
+        generator to read numbers in a file
+     
+        notes:
+            originally written by Ben Dudson
+     
+            calling get_next() on a generator produced with this function will permanently advance the iterator in this generator
+            when generators reach the end, that's permanently it!
+        """
+        toklist = []
+        while True: #runs forever until break statement (until what is read is not a line) below will cause a return - which permanently stops a generator
+            line = ingf.readline() #read in line from INGF
+            if not line: break #break if readline() doesnt return a line i.e. end of file
+            line = line.replace("NaN","-0.00000e0") #replaces NaNs with 0s
+            pattern = r'[+-]?\d*[\.]?\d+(?:[Ee][+-]?\d+)?' #regular expression to find numbers
+            toklist = re.findall(pattern,line) #toklist now holds all the numbers in a file line (is essentially a single file line)
+            for tok in toklist: #yield every number in that one line individually
+                yield tok #so in terms of iteration, using get_next() will cause another line to be read
 
     print("reading equilibrium from GEQDSK")
     
@@ -106,7 +111,7 @@ def read_equilibrium_GEQDSK(filepath):
         flags['case'] = conts[0:-4] 
      
         #now use generator to read numbers from remaining lines in file
-        token = processing.utils.file_numbers(file) #token now holds all lines in the file, containing all values. each processing.utils.get_next() call will grab the next number in a line (since processing.utils.get_next() returns the next value in the yield loop? check this plz)
+        token = file_numbers(file) #token now holds all lines in the file, containing all values. each processing.utils.get_next() call will grab the next number in a line (since processing.utils.get_next() returns the next value in the yield loop? check this plz)
          
         float_keys = [
         'rdim','zdim','rcentr','rleft','zmid',
@@ -182,7 +187,171 @@ def read_equilibrium_GEQDSK(filepath):
         print("finished reading equilibrium from GEQDSK")
 
     return input_data
-     
+
+def read_equilibrium_IDS(shot,run): 
+    """
+    reads relevant LOCUST equilibrium data from an equilibrium IDS and returns as a dictionary
+ 
+    notes:
+        idum not read
+        assumes dim1, dim2 of IDS are R,Z respectively
+    """
+ 
+    print("reading equilibrium from IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_equilibrium_IDS could not import IMAS module!\nreturning\n")
+        return
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open()
+    input_IDS.equilibrium.get() #open the file and get all the data from it
+ 
+    input_data = {} #initialise blank dictionary to hold the data
+ 
+    #easy bits
+    #0D data
+    input_data['rcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.r0).reshape([]) #need reshape to ensure shape consistency
+    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
+    input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
+    input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
+    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*pi)).reshape([]) #convert to Wb/rad
+    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*pi)).reshape([]) #convert to Wb/rad
+    input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
+ 
+    #1D data
+    input_data['fpol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f) #flux grid data
+    input_data['pres']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.pressure)
+    input_data['ffprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi)
+    input_data['pprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi)
+    input_data['qpsi']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.q)
+    input_data['rlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.r) #boundaries, lcfs is obsolete in latest IMAS
+    input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
+    input_data['lcfs_r']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
+    input_data['lcfs_z']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
+    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*pi)) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*pi)) #convert to Wb/rad
+    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values,dim2=Z values
+    Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
+    input_data['R_1D']=np.asarray(R_1D)
+    input_data['Z_1D']=np.asarray(Z_1D)
+
+    #2D data    
+    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*pi) #convert to Wb/rad
+ 
+    #harder bits (values derived from grids and profiles)
+    input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
+    input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)).reshape([])
+    input_data['nR_1D']=np.asarray(len(R_1D)).reshape([])
+    input_data['nZ_1D']=np.asarray(len(Z_1D)).reshape([])
+    input_data['rleft']=np.asarray(min(R_1D)).reshape([])
+    input_data['rdim']=np.asarray(abs(max(R_1D)-min(R_1D))).reshape([])
+    input_data['zdim']=np.asarray(abs(max(Z_1D)-min(Z_1D))).reshape([])
+    input_data['zmid']=np.asarray(0.5*(max(Z_1D)+min(Z_1D))).reshape([])
+ 
+    input_IDS.close()
+    print("finished reading equilibrium from IDS")
+
+    return input_data
+
+def read_equilibrium_UDA(shot,time):
+    """
+    reads equilibrium from analysed EFIT signals from MAST UDA database
+
+    notes:
+
+    args:
+        shot - target shot number to read
+        time - fetch equilibrium at this time
+    """
+
+    print("reading equilibrium from UDA")
+
+    input_data={}
+
+    try:
+        import pyuda
+        udaClient=pyuda.Client()
+        getdata=udaClient.get
+        import numpy as np
+    except:
+        raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda!\nreturning\n")
+
+    #time dependent data first
+    input_data['psirz']=getdata('efm_psi(r,z)',       shot)
+    input_data['simag']=getdata('efm_psi_axis',       shot)
+    input_data['sibry']=getdata('efm_psi_boundary',   shot)
+    input_data['current']=getdata('efm_plasma_curr(C)', shot)
+    input_data['bcentr']=getdata('efm_bvac_val',       shot)
+    input_data['rcentr']=getdata('efm_bvac_r',       shot)
+    input_data['pres']=getdata('efm_p(psi)_(c)',shot)
+    input_data['fpol']=getdata('efm_f(psi)_(c)',shot)
+    input_data['rmaxis']=getdata('efm_magnetic_axis_r',shot)
+    input_data['zmaxis']=getdata('efm_magnetic_axis_z',shot)
+    input_data['ffprime']=getdata('efm_ffprime',shot)
+    input_data['pprime']=getdata('efm_pprime',shot)
+    input_data['qpsi']=getdata('efm_q(psi)_(c)',shot)
+    input_data['lcfs_n']=getdata('efm_lcfs(n)_(c)',shot)
+    input_data['lcfs_r']=getdata('efm_lcfs(r)_(c)',shot)
+    input_data['lcfs_z']=getdata('efm_lcfs(z)_(c)',shot)
+    input_data['limitr']=getdata('efm_limiter(n)',shot) #limiter data not on time base but contains single time coordinate, so read in here
+    input_data['rlim']=getdata('efm_limiter(r)',shot)
+    input_data['zlim']=getdata('efm_limiter(z)',shot)
+
+    #redefine read time based on available converged EFIT equilibria constructions 
+    time_index=np.abs(input_data['psirz'].time.data-time).argmin()
+    time_new=input_data['psirz'].time.data[time_index]
+
+    #go through time dependent data and pick closest times
+    for key in input_data:
+        #print(key) #to check times
+        time_index=np.abs(input_data[key].time.data-time_new).argmin()
+        #print(input_data[key].time.data[time_index]) #to check times
+        input_data[key]=np.array(input_data[key].data[time_index])
+
+    input_data['lcfs_r']=input_data['lcfs_r'][0:input_data['lcfs_n']] #LCFS data seems to have junk on the end, so crop accordingly
+    input_data['lcfs_z']=input_data['lcfs_z'][0:input_data['lcfs_n']]
+
+    input_data['psirz']=input_data['psirz'].T
+
+    input_data['R_1D']=np.asarray(getdata('efm_grid(r)',shot).data[0,:])
+    input_data['Z_1D']=np.asarray(getdata('efm_grid(z)',shot).data[0,:])
+    input_data['nR_1D']=np.asarray(getdata('efm_nw',shot).data)
+    input_data['nZ_1D']=np.asarray(getdata('efm_nh',shot).data)
+    input_data['rdim']=input_data['R_1D'][-1]-input_data['R_1D'][0]
+    input_data['rleft']=input_data['R_1D'][0]
+    input_data['zdim']=input_data['Z_1D'][-1]-input_data['Z_1D'][0]
+    input_data['zmid']=np.asarray((input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5)
+    
+    '''
+    input_data['rlim'] = np.array([
+    0.195, 0.195, 0.280, 0.280, 0.280, 0.175,
+    0.175, 0.190, 0.190, 0.330, 0.330, 0.535,
+    0.535, 0.755, 0.755, 0.755, 1.110, 1.655,
+    1.655, 1.655, 2.000, 2.000, 2.000, 2.000,
+    2.000, 1.655, 1.655, 1.655, 1.110, 0.755,
+    0.755, 0.755, 0.535, 0.535, 0.330, 0.330,
+    0.190, 0.190, 0.175, 0.175, 0.280, 0.280,
+    0.280, 0.195, 0.195])
+
+    input_data['zlim'] = np.array([
+    0.000, 1.080, 1.220, 1.450, 1.670, 1.670,
+    1.720, 1.820, 1.905, 2.000, 2.000, 2.000,
+    2.000, 2.000, 1.975, 1.826, 1.826, 1.826,
+    1.975, 2.000, 2.000, 0.300, 0.000,-0.300,
+    -2.000,-2.000,-1.975,-1.826,-1.826,-1.826,
+    -1.975,-2.000,-2.000,-2.000,-2.000,-2.000,
+    -1.905,-1.820,-1.720,-1.670,-1.670,-1.450,
+    -1.220,-1.080, 0.000])'''
+
+    print("finished reading equilibrium from UDA")
+
+    return input_data
+
+################################################################## Equilibrium write functions
+
 def dump_equilibrium_GEQDSK(output_data,filepath):
     """
     generic function for writing G-EQDSK-formatted data to file
@@ -190,6 +359,16 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
     """ 
+
+    try:
+        import time
+        import itertools
+    except:
+        raise ImportError("ERROR: dump_equilibrium_GEQDSK could not import necessary modules!\nreturning\n")
+        return
+
+    print("writing equilibrium to GEQDSK")
+
     def write_number(file,number,counter):
         
         if number==0:
@@ -222,9 +401,6 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
         for i in np.arange(len(list(R))):
             write_number(file,R[i],counter)
             write_number(file,Z[i],counter)
-     
-
-    print("writing equilibrium to GEQDSK")
     
     with open(filepath,'w') as file:
         
@@ -279,68 +455,6 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
 
         print("finished writing equilibrium to GEQDSK")
  
-def read_equilibrium_IDS(shot,run): 
-    """
-    reads relevant LOCUST equilibrium data from an equilibrium IDS and returns as a dictionary
- 
-    notes:
-        idum not read
-        assumes dim1, dim2 of IDS are R,Z respectively
-    """
- 
-    print("reading equilibrium from IDS")
-
-    input_IDS=imas.ids(shot,run) #initialise new blank IDS
-    input_IDS.open()
-    input_IDS.equilibrium.get() #open the file and get all the data from it
- 
-    input_data = {} #initialise blank dictionary to hold the data
- 
-    #easy bits
-    #0D data
-    input_data['rcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.r0).reshape([]) #need reshape to ensure shape consistency
-    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
-    input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
-    input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
-    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*pi)).reshape([]) #convert to Wb/rad
-    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*pi)).reshape([]) #convert to Wb/rad
-    input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
- 
-    #1D data
-    input_data['fpol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f) #flux grid data
-    input_data['pres']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.pressure)
-    input_data['ffprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi)
-    input_data['pprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.dpressure_dpsi)
-    input_data['qpsi']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.q)
-    input_data['rlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.r) #boundaries, lcfs is obsolete in latest IMAS
-    input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
-    input_data['lcfs_r']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
-    input_data['lcfs_z']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
-    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*pi)) #convert to Wb/rad
-    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*pi)) #convert to Wb/rad
-    R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values,dim2=Z values
-    Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
-    input_data['R_1D']=np.asarray(R_1D)
-    input_data['Z_1D']=np.asarray(Z_1D)
-
-    #2D data    
-    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*pi) #convert to Wb/rad
- 
-    #harder bits (values derived from grids and profiles)
-    input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
-    input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)).reshape([])
-    input_data['nR_1D']=np.asarray(len(R_1D)).reshape([])
-    input_data['nZ_1D']=np.asarray(len(Z_1D)).reshape([])
-    input_data['rleft']=np.asarray(min(R_1D)).reshape([])
-    input_data['rdim']=np.asarray(abs(max(R_1D)-min(R_1D))).reshape([])
-    input_data['zdim']=np.asarray(abs(max(Z_1D)-min(Z_1D))).reshape([])
-    input_data['zmid']=np.asarray(0.5*(max(Z_1D)+min(Z_1D))).reshape([])
- 
-    input_IDS.close()
-    print("finished reading equilibrium from IDS")
-
-    return input_data
- 
 def dump_equilibrium_IDS(ID,output_data,shot,run):
     """
     writes relevant LOCUST equilibrium data to an equilibrium IDS
@@ -353,6 +467,12 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
     """
  
     print("writing equilibrium to IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_equilibrium_IDS could not import IMAS module!\nreturning\n")
+        return
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
@@ -444,104 +564,9 @@ def dump_equilibrium_ASCOT(output_data,filepath):
             
                 write_magn_header(head, 'input.magn_header')'''
 
-
-def read_equilibrium_UDA(shot,time):
-    """
-    reads equilibrium from analysed EFIT signals from MAST UDA database
-
-    notes:
-
-    args:
-        shot - target shot number to read
-        time - fetch equilibrium at this time
-    """
-
-    print("reading equilibrium from UDA")
-
-    input_data={}
-
-    try:
-        import pyuda
-        udaClient=pyuda.Client()
-        getdata=udaClient.get
-        import numpy as np
-    except:
-        raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda")
-
-    #time dependent data first
-    input_data['psirz']=getdata('efm_psi(r,z)',       shot)
-    input_data['simag']=getdata('efm_psi_axis',       shot)
-    input_data['sibry']=getdata('efm_psi_boundary',   shot)
-    input_data['current']=getdata('efm_plasma_curr(C)', shot)
-    input_data['bcentr']=getdata('efm_bvac_val',       shot)
-    input_data['rcentr']=getdata('efm_bvac_r',       shot)
-    input_data['pres']=getdata('efm_p(psi)_(c)',shot)
-    input_data['fpol']=getdata('efm_f(psi)_(c)',shot)
-    input_data['rmaxis']=getdata('efm_magnetic_axis_r',shot)
-    input_data['zmaxis']=getdata('efm_magnetic_axis_z',shot)
-    input_data['ffprime']=getdata('efm_ffprime',shot)
-    input_data['pprime']=getdata('efm_pprime',shot)
-    input_data['qpsi']=getdata('efm_q(psi)_(c)',shot)
-    input_data['lcfs_n']=getdata('efm_lcfs(n)_(c)',shot)
-    input_data['lcfs_r']=getdata('efm_lcfs(r)_(c)',shot)
-    input_data['lcfs_z']=getdata('efm_lcfs(z)_(c)',shot)
-    input_data['limitr']=getdata('efm_limiter(n)',shot) #limiter data not on time base but contains single time coordinate, so read in here
-    input_data['rlim']=getdata('efm_limiter(r)',shot)
-    input_data['zlim']=getdata('efm_limiter(z)',shot)
-
-    #redefine read time based on available converged EFIT equilibria constructions 
-    time_index=np.abs(input_data['psirz'].time.data-time).argmin()
-    time_new=input_data['psirz'].time.data[time_index]
-
-    #go through time dependent data and pick closest times
-    for key in input_data:
-        #print(key) #to check times
-        time_index=np.abs(input_data[key].time.data-time_new).argmin()
-        #print(input_data[key].time.data[time_index]) #to check times
-        input_data[key]=np.array(input_data[key].data[time_index])
-
-    input_data['lcfs_r']=input_data['lcfs_r'][0:input_data['lcfs_n']] #LCFS data seems to have junk on the end, so crop accordingly
-    input_data['lcfs_z']=input_data['lcfs_z'][0:input_data['lcfs_n']]
-
-    input_data['psirz']=input_data['psirz'].T
-
-    input_data['R_1D']=np.asarray(getdata('efm_grid(r)',shot).data[0,:])
-    input_data['Z_1D']=np.asarray(getdata('efm_grid(z)',shot).data[0,:])
-    input_data['nR_1D']=np.asarray(getdata('efm_nw',shot).data)
-    input_data['nZ_1D']=np.asarray(getdata('efm_nh',shot).data)
-    input_data['rdim']=input_data['R_1D'][-1]-input_data['R_1D'][0]
-    input_data['rleft']=input_data['R_1D'][0]
-    input_data['zdim']=input_data['Z_1D'][-1]-input_data['Z_1D'][0]
-    input_data['zmid']=np.asarray((input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5)
-    
-    '''
-    input_data['rlim'] = np.array([
-    0.195, 0.195, 0.280, 0.280, 0.280, 0.175,
-    0.175, 0.190, 0.190, 0.330, 0.330, 0.535,
-    0.535, 0.755, 0.755, 0.755, 1.110, 1.655,
-    1.655, 1.655, 2.000, 2.000, 2.000, 2.000,
-    2.000, 1.655, 1.655, 1.655, 1.110, 0.755,
-    0.755, 0.755, 0.535, 0.535, 0.330, 0.330,
-    0.190, 0.190, 0.175, 0.175, 0.280, 0.280,
-    0.280, 0.195, 0.195])
-
-    input_data['zlim'] = np.array([
-    0.000, 1.080, 1.220, 1.450, 1.670, 1.670,
-    1.720, 1.820, 1.905, 2.000, 2.000, 2.000,
-    2.000, 2.000, 1.975, 1.826, 1.826, 1.826,
-    1.975, 2.000, 2.000, 0.300, 0.000,-0.300,
-    -2.000,-2.000,-1.975,-1.826,-1.826,-1.826,
-    -1.975,-2.000,-2.000,-2.000,-2.000,-2.000,
-    -1.905,-1.820,-1.720,-1.670,-1.670,-1.450,
-    -1.220,-1.080, 0.000])'''
-
-    print("finished reading equilibrium from UDA")
-
-    return input_data
-
 ################################################################## Equilibrium class
  
-class Equilibrium(base_input.LOCUST_input):
+class Equilibrium(classes.base_input.LOCUST_input):
     """
     class describing the equilibrium input for LOCUST
  
@@ -634,7 +659,343 @@ class Equilibrium(base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
 
- 
+    def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
+        """
+        plots equilibrium
+        
+        notes:
+            
+        args:
+            key - selects which data in equilibrium to plot
+            LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
+            limiters - toggles limiters on/off in 2D plots
+            number_bins - set number of bins or levels
+            fill - toggle contour fill on 2D plots
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        #0D data
+        if self[key].ndim==0:
+            print([key])
+            return
+        
+        #>0D data is plottable
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+
+        #1D data
+        if self[key].ndim==1:
+            ax.plot(self[key])
+            ax.set_ylabel(key)
+
+        #2D data
+        elif self[key].ndim==2:
+
+            X=self['R_1D'] #make a mesh
+            Y=self['Z_1D'] 
+            Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
+            Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+            
+            #2D plot
+            if fill is True:
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                for c in mesh.collections: #for use in contourf
+                    c.set_edgecolor("face")
+            else:
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                ax.clabel(mesh,inline=1,fontsize=10)
+                
+            #mesh=ax.pcolormesh(X,Y,Z,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+
+            #3D plot
+            #ax=ax.axes(projection='3d')
+            #ax.view_init(elev=90, azim=None) #rotate the camera
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            ax.set_aspect('equal')
+            ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+            ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+            ax.set_xlabel('R [m]')
+            ax.set_ylabel('Z [m]')
+            ax.set_title(self.ID)
+
+            if LCFS is True:
+                ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+            if limiters is True: #add boundaries if desired
+                ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
+
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
+
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=True,limiters=False,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
+        """
+        plots random field lines for 'angle' radians around the tokamak
+
+        notes:
+            essentially uses the Euler method of integration
+        args:
+            axes - list of strings specifying which axes should be plotted
+            LCFS - show plasma boundary outline (requires equilibrium arguement)
+            limiters - toggles limiters on/off in 2D plots
+            number_field_lines - the number of field lines to plot
+            angle - plot field line for this many radians around central column
+            plot_full - choose whether each field line will trace the whole plasma topology (see below also)
+            start_mark - add marker for start of the field line
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if 'B_field' not in self.data: #check we have a B field first
+            print("ERROR: 'B_field' missing in equilibrium object (calculate first with B_calc)")
+            return
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+        ax.set_aspect('equal')
+        
+        dr=np.abs(self['R_1D'][1]-self['R_1D'][0])
+        dz=np.abs(self['Z_1D'][1]-self['Z_1D'][0])
+        
+        if plot_full is True: #set integration path step size
+            #if this option, then dl chosen to cause slight numerical drift that such that field line strays outward onto
+            #different flux surfaces - thus tracing the whole field topology
+            dl=3.0*np.sqrt(dr**2+dz**2) 
+            angle=pi*200.0
+            number_field_lines=1
+            ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+            ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D'])) 
+        else:
+            #if this option chosen, then dl is reduced to stop numerical drift - thus a single flux surface is plotted
+            dl=0.005*np.sqrt(dr**2+dz**2)
+            if ax_flag is False and len(axes)==3:
+                ax = fig.gca(projection='3d')
+            
+        print('plot_B_field_line - generating B field interpolators')
+        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,2])
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,1])
+        print('plot_B_field_line - finished generating B field interpolators')
+
+        for line in range(number_field_lines): 
+
+            R_points=np.array([]) #reset the arrays that will hold marker coordinates along a single field line
+            Z_points=np.array([])
+            tor_points=np.array([])
+
+            R_point=float(self['rmaxis']) #pick some starting points                                                       
+            tor_point=np.random.uniform(0.0,2.0*pi*R_point) 
+            if plot_full is True: 
+                Z_point=float(1.05*self['zmaxis'])
+            else:
+                Z_point=np.random.uniform(1.05*self['zmaxis'],0.9*np.max(self['lcfs_z']))      
+                
+            R_points=np.append(R_points,R_point) #add this position to our array of points along trajectory
+            Z_points=np.append(Z_points,Z_point)
+            tor_points=np.append(tor_points,tor_point)     
+
+            tor_point_start=tor_point #remember where we started toroidally
+
+            while np.abs(tor_point-tor_point_start)<self['rmaxis']*angle: #keep going until we rotate 'angle' radians around the tokamak
+                
+                B_field_R=B_field_R_interpolator(R_point,Z_point)
+                B_field_tor=B_field_tor_interpolator(R_point,Z_point)
+                B_field_Z=B_field_Z_interpolator(R_point,Z_point)
+
+                #could save computing power by just dividing by largest B component*some_constant - since we only need to divide the B vector by something we know is going to be larger than than the largest component
+                #and remember (in 3D) the magnitude cannot ever be more than sqrt(3) times larger than the largest component of the field, so if we divide by at least sqrt(3)*np.max(field) then we always know our normalised values will be < 1.0
+                B_field_mag=np.sqrt(B_field_R**2+B_field_Z**2+B_field_tor**2)
+                
+                B_field_R/=B_field_mag #normalise the vector magnetic field
+                B_field_Z/=B_field_mag
+                B_field_tor/=B_field_mag
+
+                Z_point+=B_field_Z*dl
+                tor_point+=B_field_tor*dl
+                R_point+=B_field_R*dl 
+
+                R_points=np.append(R_points,R_point)
+                Z_points=np.append(Z_points,Z_point)
+                tor_points=np.append(tor_points,tor_point)    
+
+            R_points=R_points[1::2] #take every other value to help the visuals
+            Z_points=Z_points[1::2]
+            tor_points=tor_points[1::2]
+            X_points=R_points*np.cos(tor_points/R_points) #transform to cartesian
+            Y_points=R_points*np.sin(tor_points/R_points) 
+
+            if plot_full is True: #if wanting to trace the flux surfaces, then plot in r,z plane
+                ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
+                if start_mark: 
+                    ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
+            else:
+                
+                if axes==['R','Z']: #poloidal plot
+                    ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
+                    if start_mark: 
+                        ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
+                    if LCFS is True: #plot plasma boundary
+                        ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+                    if limiters is True: #add boundaries if desired
+                        ax.plot(self['rlim'],self['zlim'],plot_style_limiters)       
+            
+                    ax.set_xlabel('R [m]')
+                    ax.set_ylabel('Z [m]')
+                    ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+                    ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+                    ax.set_title(self.ID)
+
+                elif axes==['X','Y']: #top-down plot
+                    ax.plot(X_points,Y_points,color=colmap(np.random.uniform()))
+                    if start_mark: 
+                        ax.scatter(X_points[0],Y_points[0],color=colour_start_mark,s=10)
+                    if LCFS is True: #plot plasma boundary
+                        plasma_max_R=np.max(self['lcfs_r'])
+                        plasma_min_R=np.min(self['lcfs_r'])
+                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS) 
+                    if limiters is True: #add boundaries if desired
+                        ax.plot(self['rlim'],self['zlim'],plot_style_limiters)
+                    
+                    ax.set_xlabel('X [m]')
+                    ax.set_ylabel('Y [m]')
+                    ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
+                    ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
+                    ax.set_title(self.ID)
+                
+                else: #3D plot
+                    if start_mark: 
+                        ax.scatter(X_points[0],Y_points[0],Z_points[0],color=colour_start_mark,s=10)
+                    if LCFS: #plot periodic poloidal cross-sections in 3D
+                        for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                            x_points=self['lcfs_r']*np.cos(angle)
+                            y_points=self['lcfs_r']*np.sin(angle)
+                            z_points=self['lcfs_z']
+                            ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
+                    if limiters: #plot periodic poloidal cross-sections in 3D
+                        for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                            x_points=self['rlim']*np.cos(angle)
+                            y_points=self['rlim']*np.sin(angle)
+                            z_points=self['zlim']
+                            ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
+
+                    ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
+                    ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
+                    ax.set_zlim(np.min(self['Z_1D']),np.max(self['Z_1D'])) 
+                    ax.plot(X_points,Y_points,zs=Z_points,color=colmap(np.random.uniform()))
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
+
+    def plot_field_stream(self,colmap=cmap_default,ax=False,fig=False):
+        """
+        stream plot of magnetic field in R,Z plane
+
+        notes:
+            take transpose due to streamplot index convention
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+        ax.set_aspect('equal')
+            
+        if 'B_field' not in self.data.keys(): #calculate B field if missing
+            print("plot_field_stream found no B_field in equilibrium - calculating!")
+            if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
+                print("plot_field_stream found no fpolrz in equilibrium - calculating!")
+                self.set(fpolrz=process_input.fpolrz_calc(equilibrium))
+            self.set(B_field=process_input.B_calc(equilibrium))
+
+        B_mag=np.sqrt(self['B_field'][:,:,0]**2+self['B_field'][:,:,2]**2) #calculate poloidal field magnitude
+        strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0].T,self['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
+
+        if fig_flag is False:    
+            fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
+        ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+        ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+
+        ax.set_xlabel('R [m]')
+        ax.set_ylabel('Z [m]')
+        ax.set_title(self.ID)
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
 #################################
  
 ##################################################################

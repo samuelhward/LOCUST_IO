@@ -14,21 +14,37 @@ notes:
 ###################################################################################################
 #Preamble
 
+import sys 
+
 try:
-    import random
     import scipy.integrate
     import numpy as np
     import matplotlib.pyplot as plt
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
     
-pi=np.pi
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 
 ###################################################################################################

@@ -340,7 +340,7 @@ LOCUST dumps orbits in ASCII format as (number_particles \n R | phi | Z \n numbe
         V_Z/-/                                                          #v_z coordinate of particle
         V_pitch/vpll_v/                                                 #v_parallel/v
         energy/E/                                                       #energy of particle
-        t///                                                            #time coordinate of particle
+        time///                                                            #time coordinate of particle
         status_flag//                                                   #status value of particle at this time
         status_flags//                                                  #possible status flags and their associated values
 

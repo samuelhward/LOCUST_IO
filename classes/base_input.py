@@ -15,29 +15,36 @@ notes:
 #Preamble
  
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
+
 try:
     import numpy as np
     import copy
-    import re
-    import time
-    import itertools
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
-    from classes import support
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
-pi=np.pi
 
 
 ################################################################## Base class

@@ -18,54 +18,48 @@ notes:
 #Preamble
  
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
+
 try:
     import numpy as np
-    import copy
-    import re
-    import time
-    import itertools
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
-    from processing import process_input
+    import processing.process_input
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
-    from classes import base_input 
+    import classes.base_input 
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support #import support module from this directory
+    import support
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from scipy.io import netcdf as ncdf
+    from constants import *
 except:
-    raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
-
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
-pi=np.pi
-amu=1.66053904e-27
-mass_deuterium_amu=2.0141017781
-mass_deuterium=mass_deuterium_amu*amu
-e_charge=1.60217662e-19
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 
-################################################################## Beam_Deposition functions
+################################################################## Beam_Deposition read functions
  
 def read_beam_depo_LOCUST(filepath):
     """
@@ -117,27 +111,6 @@ def read_beam_depo_LOCUST(filepath):
     print("finished reading beam deposition from LOCUST")
  
     return input_data
- 
-def dump_beam_depo_LOCUST(output_data,filepath):
-    """
-    writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor
-     
-    notes:
-
-    """
- 
-    print("writing beam deposition to LOCUST")
-
-    with open(filepath,'w') as file: #open file
- 
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert junk lines
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
- 
-        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
-
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
-    
-    print("finished writing beam deposition to LOCUST") 
 
 def read_beam_depo_LOCUST_weighted(filepath):
     """
@@ -189,34 +162,6 @@ def read_beam_depo_LOCUST_weighted(filepath):
  
     return input_data
 
-def dump_beam_depo_LOCUST_weighted(output_data,filepath):
-    """
-    writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
-     
-    notes:
-        assumes quantities are at the guiding centre
-    """
- 
-    print("writing weighted beam deposition to LOCUST")
-
-    if 'V_pitch' not in output_data:
-        print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
-        output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
-
-    with open(filepath,'w') as file: #open file
- 
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
-
-        V=np.sqrt(e_charge*output_data['E']*2./mass_deuterium)
-        V_parallel=V*output_data['V_pitch']
- 
-        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
-
-            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
-    
-    print("finished writing weighted beam deposition to LOCUST") 
- 
 def read_beam_depo_IDS(shot,run):
     """
     reads birth profile from a distribution_sources IDS and returns as a dictionary
@@ -228,6 +173,12 @@ def read_beam_depo_IDS(shot,run):
         assumes markers hold only one time slice, at ...markers[0]
     """
     print("reading beam deposition from IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_beam_depo_IDS could not import IMAS module!\nreturning\n")
+        return
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
@@ -259,66 +210,6 @@ def read_beam_depo_IDS(shot,run):
     print("finished reading beam deposition from IDS")
  
     return input_data
- 
-def dump_beam_depo_IDS(ID,output_data,shot,run):
-    """
-    writes birth profile to a distribution_sources IDS
- 
-    notes:
-    """
-    
-    print("writing beam deposition to IDS")
-
-    output_IDS=imas.ids(shot,run) 
-    output_IDS.create() #this will overwrite any existing IDS for this shot/run
- 
-    #write out code properties
-    output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
-    output_IDS.distribution_sources.code.name="LOCUST_IO"
-    output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
-    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
-     
-    #add a type of source and add a time_slice for this source
-    output_IDS.distribution_sources.source.resize(1) #adds a type of source here
-    output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
-    output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
- 
-    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius coordinate [m]]" #description of coordinate
-
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].name="phi" 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].index=1 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle coordinate [rad]"
-
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="Z"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical coordinate [m]"
-
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_R"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="radial velocity [m/s]"
-
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_tor"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=4
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="toroidal velocity [m/s]"
-
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_Z"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=5
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical velocity [m/s]"
-
-    #start storing particle data
-    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['R'].size) #define the weights, i.e. number of particles per marker 
-    positions=np.array([output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']]) #create 2D array of positions
-    output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
- 
-    #'put' all the output_data into the file and close
-    output_IDS.distribution_sources.put()
-    output_IDS.close()
-
-    print("finished writing beam deposition to IDS")
 
 def read_beam_depo_TRANSP_fbm(filepath):
     """
@@ -446,6 +337,12 @@ def read_beam_depo_TRANSP_birth(filepath):
 
     print("reading beam deposition from TRANSP birth CDF format")
 
+    try:
+        from scipy.io import netcdf as ncdf
+    except:
+        raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
+        return
+
     file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
@@ -473,6 +370,12 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
 
     print("reading beam deposition from TRANSP birth CDF guiding centre format")
     
+    try:
+        from scipy.io import netcdf as ncdf
+    except:
+        raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
+        return
+
     file=ncdf.netcdf_file(filepath,'r')
 
     input_data={}
@@ -491,6 +394,123 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     print("finished reading beam deposition from TRANSP birth CDF guiding centre format")
 
     return input_data
+
+################################################################## Beam_Deposition write functions 
+
+def dump_beam_depo_LOCUST(output_data,filepath):
+    """
+    writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor
+     
+    notes:
+
+    """
+ 
+    print("writing beam deposition to LOCUST")
+
+    with open(filepath,'w') as file: #open file
+ 
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert junk lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+ 
+        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
+
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
+    
+    print("finished writing beam deposition to LOCUST") 
+
+def dump_beam_depo_LOCUST_weighted(output_data,filepath):
+    """
+    writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
+     
+    notes:
+        assumes quantities are at the guiding centre
+    """
+ 
+    print("writing weighted beam deposition to LOCUST")
+
+    if 'V_pitch' not in output_data:
+        print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
+        output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
+
+    with open(filepath,'w') as file: #open file
+ 
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+
+        V=np.sqrt(e_charge*output_data['E']*2./mass_deuterium)
+        V_parallel=V*output_data['V_pitch']
+ 
+        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
+
+            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
+    
+    print("finished writing weighted beam deposition to LOCUST") 
+  
+def dump_beam_depo_IDS(ID,output_data,shot,run):
+    """
+    writes birth profile to a distribution_sources IDS
+ 
+    notes:
+    """
+    
+    print("writing beam deposition to IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_beam_depo_IDS could not import IMAS module!\nreturning\n")
+        return
+
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+ 
+    #write out code properties
+    output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
+    output_IDS.distribution_sources.code.name="LOCUST_IO"
+    output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
+    output_IDS.distribution_sources.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+     
+    #add a type of source and add a time_slice for this source
+    output_IDS.distribution_sources.source.resize(1) #adds a type of source here
+    output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
+    output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
+ 
+    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius coordinate [m]]" #description of coordinate
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].name="phi" 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].index=1 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[1].description="toroidal angle coordinate [rad]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="Z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical coordinate [m]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_R"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="radial velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=4
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="toroidal velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_Z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=5
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical velocity [m/s]"
+
+    #start storing particle data
+    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['R'].size) #define the weights, i.e. number of particles per marker 
+    positions=np.array([output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']]) #create 2D array of positions
+    output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
+ 
+    #'put' all the output_data into the file and close
+    output_IDS.distribution_sources.put()
+    output_IDS.close()
+
+    print("finished writing beam deposition to IDS")
 
 def dump_beam_depo_ASCOT(output_data,filepath):
     """
@@ -690,7 +710,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
 ################################################################## Beam_Deposition class
  
-class Beam_Deposition(base_input.LOCUST_input):
+class Beam_Deposition(classes.base_input.LOCUST_input):
     """
     class describing neutral beam deposition profile input for LOCUST
  
@@ -834,7 +854,181 @@ class Beam_Deposition(base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/LOCUST_weighted/IDS/ASCOT/ASCOT_gc)\n")
 
- 
+    def plot(self,some_equilibrium=False,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,fill=True,ax=False,fig=False):
+        """
+        plots beam deposition
+
+        notes:
+            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+            grid - grid-like object containing same 'axes' to bin against e.g. distribution_function object with ['R'] and ['Z'] data
+            style - choose from scatter or histogram
+            weight - toggle whether to include marker weights in histograms
+            number_bins - set number of bins or levels
+            axes - list of strings specifying which axes should be plotted
+            LCFS - toggles whether plasma boundary is included (requires equilibrium arguement)
+            limiters - toggles limiters on/off in 2D plots
+            real_scale - sets r,z scale to real tokamak cross section
+            colmap - set the colour map (use get_cmap names)
+            fill - toggle contour fill on 2D plots
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+
+        ndim=len(axes) #infer how many dimensions user wants to plot
+        if ndim==1: #plot 1D histograms
+            if weight:
+                self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins,weights=self['weight'])
+            else:
+                self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins)
+            self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
+            ax.plot(self_binned_centres,self_binned)
+            ax.set_xlabel(axes[0])
+            ax.set_title(self.ID)
+
+        elif ndim==2: #plot 2D histograms
+
+            if axes==['R','Z']: #check for commonly-used axes
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+
+            elif axes==['X','Y']:          
+                if real_scale is True: 
+                    if some_equilibrium:
+                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+
+            if style=='histogram':
+                if grid is not False: #bin according to pre-defined grid
+                    if weight:
+                        self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'])
+                    else:
+                        self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]])
+                else:
+                    if weight:
+                        self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins,weights=self['weight'])
+                    else:
+                        self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins)
+                #self_binned_x and self_binned_x are first edges then converted to centres
+                self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
+                self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
+                self_binned_y,self_binned_x=np.meshgrid(self_binned_y,self_binned_x)
+                
+                if fill:
+                    ax.set_facecolor(colmap(np.amin(self_binned)))
+                    mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                else:
+                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                    ax.clabel(mesh,inline=1,fontsize=10)
+
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
+
+            elif style=='scatter':
+                ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1)
+
+            if axes==['R','Z']:
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+                if LCFS is True: #plot plasma boundary
+                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+
+            elif axes==['X','Y']:
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+                if LCFS is True: #plot plasma boundary
+                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
+                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)          
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)    
+            
+            if ax_flag is True or fig_flag is True: #return the plot object
+                if 'mesh' in locals():
+                    return mesh
+
+            ax.set_xlabel(axes[0])
+            ax.set_ylabel(axes[1])
+            ax.set_title(self.ID)
+           
+        elif ndim==3: #plot 3D scatter - assume X,Y,Z
+
+            if style!='scatter':
+                print("ERROR: plot_beam_deposition() can only plot scatter style in 3D!")
+                return
+
+            if ax_flag is False and len(axes)==3:
+                ax = fig.gca(projection='3d')
+            
+            if LCFS: #plot periodic poloidal cross-sections in 3D
+                for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                    x_points=some_equilibrium['lcfs_r']*np.cos(angle)
+                    y_points=some_equilibrium['lcfs_r']*np.sin(angle)
+                    z_points=some_equilibrium['lcfs_z']
+                    ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
+
+            if limiters: #plot periodic poloidal cross-sections in 3D
+                for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                    x_points=some_equilibrium['rlim']*np.cos(angle)
+                    y_points=some_equilibrium['rlim']*np.sin(angle)
+                    z_points=some_equilibrium['zlim']
+                    ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
+
+            if real_scale is True:
+                ax.set_aspect('equal')
+                if some_equilibrium:
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
+
+            ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(np.random.uniform()),s=0.1)
+        
+        if ax_flag is False and fig_flag is False:
+            plt.show() 
  
 #################################
  

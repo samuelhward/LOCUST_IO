@@ -14,6 +14,8 @@ notes:
 ##################################################################
 #Preamble
 
+import sys
+
 try:
     import scipy.integrate
     import numpy as np
@@ -21,17 +23,28 @@ try:
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
     
-pi=np.pi
-e_charge=1.60217662e-19 #define electron charge
-mass_neutron=1.674929e-27 #define mass of neutron
-amu=1.66053904e-27
-mass_deuterium=2.0141017781*amu
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 
 ##################################################################

@@ -13,34 +13,46 @@ notes:
 ##################################################################
 #Preamble
 
+import sys
+
 try:
     import scipy
     import numpy as np
     import matplotlib
     from matplotlib import cm
     import matplotlib.pyplot as plt
-    from matplotlib import cm #get colourmaps
     from mpl_toolkits import mplot3d #import 3D plotting axes
     from mpl_toolkits.mplot3d import Axes3D
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
-plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='w-' #set plot style for limiters
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
-pi=np.pi #define pi
+
 
 ##################################################################
 #Main Code
-
-
 
 def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=False):
     """
@@ -76,7 +88,6 @@ def plot_number_density(some_number_density,axis='flux_pol_norm',ax=False,fig=Fa
     if ax_flag is False and fig_flag is False:
         plt.show()
 
-
 def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
     """
     plots number density
@@ -110,8 +121,6 @@ def plot_temperature(some_temperature,axis='flux_pol_norm',ax=False,fig=False):
 
     if ax_flag is False and fig_flag is False:
         plt.show()
-
-
 
 def plot_beam_deposition(some_beam_depo,some_equilibrium=False,grid=False,style='histogram',weight=True,number_bins=50,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,ax=False,fig=False):
     """
@@ -287,7 +296,7 @@ def plot_equilibrium(some_equilibrium,key='psirz',LCFS=False,limiters=False,numb
         LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
         limiters - toggles limiters on/off in 2D plots
         number_contours - set fidelity of 2D contour plot
-        contour_fill - whether to use contour or contourf
+        contour_fill - toggle contour fill on 2D plots
         colmap - set the colour map (use get_cmap names)
         ax - take input axes (can be used to stack plots)
         fig - take input fig (can be used to add colourbars etc)

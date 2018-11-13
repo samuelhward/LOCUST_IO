@@ -30,15 +30,7 @@ try:
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)
-try:
-    import h5py
-except:
-    print("WARNING: h5py could not be imported!\n") 
-try:
-    from classes import support
-except:
-    raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning") 
-    sys.exit(1)
+
 try:
     import processing.utils 
 except:
@@ -50,26 +42,28 @@ except:
     raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
     sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
-plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='w-' #set plot style for limiters
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
-pi=np.pi
-amu=1.66053904e-27
-mass_deuterium_amu=2.0141017781
-mass_deuterium=mass_deuterium_amu*amu
-e_charge=1.60217662e-19
 
-
-
-
-##################################################################
+###################################################################################################
 #Main Code
 
 
-
-################################################################################################### TRANSP
+################################################################################################### TRANSP classes and functions
 
 def TRANSP_get_fbm_FI_CDF(run_ID,number_files,particle_position=True,guiding_centre=True,device='d3d'):
     """
@@ -290,7 +284,6 @@ class TRANSP_output_FI(TRANSP_output):
 
         print("finished reading TRANSP fast ion distribution function")
 
-
     def dfn_integrate(self,space=True,pitch=True,energy=True):
         """
         integrate the fast ion distribution function over specified dimensions
@@ -328,7 +321,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         print("finished integrating TRANSP fast ion distribution function")
 
-    def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,ax=False,fig=False,**kwargs):
+    def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -342,6 +335,7 @@ class TRANSP_output_FI(TRANSP_output):
             limiters - toggles limiters on/off in 2D plot
             real_scale - plot to Tokamak scale
             colmap - select desired colourmap
+            number_bins - set number of bins or levels
             ax - external axis object
             fig - external figure object
         axes options:
@@ -372,13 +366,18 @@ class TRANSP_output_FI(TRANSP_output):
         if axes==['R','Z']:
             #R,Z=np.meshgrid(self['R2D']['data'],self['Z2D']['data'])
 
-            X=np.linspace(np.min(self['R2D']['data']),np.max(self['R2D']['data']),np.sqrt(len(self['R2D']['data']))) #need to interpolate since irregular grid
-            Y=np.linspace(np.min(self['Z2D']['data']),np.max(self['Z2D']['data']),np.sqrt(len(self['Z2D']['data'])))
-            X,Y=np.meshgrid(X,Y)
+            R=np.linspace(np.min(self['R2D']['data']),np.max(self['R2D']['data']),np.sqrt(len(self['R2D']['data']))) #need to interpolate since irregular grid
+            Z=np.linspace(np.min(self['Z2D']['data']),np.max(self['Z2D']['data']),np.sqrt(len(self['Z2D']['data'])))
+            R,Z=np.meshgrid(R,Z)
             interpolator=processing.utils.interpolate_2D(self['Z2D']['data'],self['R2D']['data'],self['F_D_NBI_int']['data'],type='RBF',rect_grid=False)
-            new_dfn=interpolator(Y,X)
-            ax.set_facecolor(colmap(np.amin(new_dfn)))
-            mesh=ax.pcolormesh(X,Y,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+            new_dfn=interpolator(Z,R)
+            if fill:
+                ax.set_facecolor(colmap(np.amin(new_dfn)))
+                mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+            else:
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                ax.clabel(mesh,inline=1,fontsize=10)
+
             ax.set_xlabel('R [m]')
             ax.set_ylabel('Z [m]')
 
@@ -401,8 +400,14 @@ class TRANSP_output_FI(TRANSP_output):
 
         elif axes==['E','V_pitch']: 
             E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
-            ax.set_facecolor(colmap(np.amin(self['F_D_NBI_int']['data'])))
-            mesh=ax.pcolormesh(E,V_pitch,self['F_D_NBI_int']['data'],cmap=colmap,vmin=np.amin(self['F_D_NBI_int']['data']),vmax=np.amax(self['F_D_NBI_int']['data']))            
+
+            if fill:
+                ax.set_facecolor(colmap(np.amin(self['F_D_NBI_int']['data'])))
+                mesh=ax.pcolormesh(E,V_pitch,self['F_D_NBI_int']['data'],cmap=colmap,vmin=np.amin(self['F_D_NBI_int']['data']),vmax=np.amax(self['F_D_NBI_int']['data']))            
+            else:
+                mesh=ax.contour(E,V_pitch,self['F_D_NBI_int']['data'],levels=np.linspace(np.amin(self['F_D_NBI_int']['data']),np.amax(self['F_D_NBI_int']['data']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['F_D_NBI_int']['data']),vmax=np.amax(self['F_D_NBI_int']['data']))
+                ax.clabel(mesh,inline=1,fontsize=10)
+
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('pitch (v_parallel/v)')
             if fig_flag is False:    
@@ -423,7 +428,14 @@ class TRANSP_output_FI(TRANSP_output):
 
                 F_D_NBI_int_all=np.array(E_list,ndmin=2) #combine all objects in list into one
                 E,time=np.meshgrid(self['E_D_NBI']['data'],np.array(time_list)) #automatically sorts in ascending time since pcolormesh does not require increasing meshgrid
-                mesh=ax.pcolormesh(time,E,F_D_NBI_int_all,cmap=cmap_default,vmin=np.amin(F_D_NBI_int_all),vmax=np.amax(F_D_NBI_int_all))
+                
+                if fill:
+                    ax.set_facecolor(colmap(np.amin(F_D_NBI_int_all)))
+                    mesh=ax.pcolormesh(time,E,F_D_NBI_int_all,cmap=colmap,vmin=np.amin(F_D_NBI_int_all),vmax=np.amax(F_D_NBI_int_all))           
+                else:
+                    mesh=ax.contour(time,E,F_D_NBI_int_all,levels=np.linspace(np.amin(F_D_NBI_int_all),np.amax(F_D_NBI_int_all),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(F_D_NBI_int_all),vmax=np.amax(F_D_NBI_int_all))
+                    ax.clabel(mesh,inline=1,fontsize=10)
+
                 ax.set_xlabel('energy [eV]')                
                 ax.set_ylabel('time [s]')
                 if fig_flag is False:    
@@ -442,8 +454,14 @@ class TRANSP_output_FI(TRANSP_output):
         elif len(axes)==self['F_D_NBI']['data'].ndim: #assume user wants to plot energy pitch at point in real space
             new_dfn=self['F_D_NBI']['data'][tuple(axes)]
             E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
-            ax.set_facecolor(colmap(np.amin(new_dfn)))
-            mesh=ax.pcolormesh(E,V_pitch,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))            
+
+            if fill:          
+                ax.set_facecolor(colmap(np.amin(new_dfn)))
+                mesh=ax.pcolormesh(E,V_pitch,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))         
+            else:
+                mesh=ax.contour(E,V_pitch,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                ax.clabel(mesh,inline=1,fontsize=10)
+
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('pitch (v_parallel/v)')
             if fig_flag is False:    
@@ -458,7 +476,7 @@ class TRANSP_output_FI(TRANSP_output):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
-################################################################################################### ASCOT
+################################################################################################### ASCOT classes and functions
 
 def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot'):
     """
@@ -664,6 +682,12 @@ class ASCOT_output:
         """
         re-open/open new HDF5 file
         """
+        
+        try:
+            import h5py
+        except:
+            raise ImportError("ERROR: ASCOT_output.file_open() could not import h5py module!\nreturning\n")
+            return
 
         self.file=h5py.File(filepath,'r') 
 
@@ -825,7 +849,7 @@ class ASCOT_output:
 
 
 
-################################################################################################### MARSF
+################################################################################################### MARSF classes and functions
 
 def dump_rotation_MARSF(filename,output_data):
     """
@@ -911,7 +935,7 @@ def dump_coil_currents_MARSF(filename,output_data):
     print("finished writing coil currents to MARSF mogui")
 
 
-################################################################################################### MISC
+################################################################################################### LOCUST classes and functions
 
 class FINT_LOCUST:
     """
@@ -1009,7 +1033,7 @@ class FINT_LOCUST:
             self['dfn']=np.asarray(self['dfn'])
             self['dfn']=self['dfn'].reshape(int(len(self['time'])),int(self['nE'])) #XXX check order of this
 
-    def dfn_plot(self,some_equilibrium=None,axes=['E','time'],colmap=cmap_default,ax=False,fig=False):
+    def dfn_plot(self,some_equilibrium=None,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
         """
         plot dfn vs time
         
@@ -1030,7 +1054,14 @@ class FINT_LOCUST:
             ax = fig.add_subplot(111)
 
         E,time=np.meshgrid(self['E'],self['time'])
-        mesh=ax.pcolormesh(time,E,self['dfn'],cmap=cmap_default,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+
+        if fill:
+            ax.set_facecolor(colmap(np.amin(self['dfn'])))
+            mesh=ax.pcolormesh(time,E,self['dfn'],cmap=colmap,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+        else:
+            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+            ax.clabel(mesh,inline=1,fontsize=10)
+
         ax.set_xlabel('time [s]')
         ax.set_ylabel('energy [eV]')                
         ax.set_title(self.ID)
@@ -1043,6 +1074,10 @@ class FINT_LOCUST:
 
         if ax_flag is False and fig_flag is False:
             plt.show()
+
+################################################################################################### misc functions
+
+
 
 #################################
  

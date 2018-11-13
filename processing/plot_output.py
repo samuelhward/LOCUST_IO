@@ -13,34 +13,44 @@ notes:
 ##################################################################
 #Preamble
 
+import sys
+
 try:
+    import scipy
+    import numpy as np
     import matplotlib
     from matplotlib import cm
     import matplotlib.pyplot as plt
-    import numpy as np
-    import copy
+    from mpl_toolkits import mplot3d #import 3D plotting axes
+    from mpl_toolkits.mplot3d import Axes3D
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
+    
 try:
-    from processing import process_output
+    import processing.process_output
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/process_output.py could not be imported!\nreturning\n")
     sys.exit(1)
 
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
-plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='w-' #set plot style for limiters
-
-pi=np.pi #define pi
-e_charge=1.60217662e-19 #define electron charge
-mass_neutron=1.674929e-27 #define mass of neutron
-amu=1.66053904e-27
-mass_deuterium=2.0141017781*amu
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ##################################################################
 #Main Code
-
 
 def plot_orbits(some_orbits,some_equilibrium=False,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
     """

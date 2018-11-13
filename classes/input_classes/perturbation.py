@@ -18,41 +18,42 @@ notes:
 #Preamble
  
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
+
 try:
     import numpy as np
-    import copy
-    import re
-    import time
-    import itertools
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
     from classes import base_input 
 except:
-    raise ImportError("ERROR: base_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support #import support module from this directory
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
-pi=np.pi
-
-
-################################################################## Perturbation functions
+################################################################## Perturbation read functions
  
 def read_perturbation_LOCUST(filepath):
     """
@@ -117,6 +118,38 @@ def read_perturbation_LOCUST(filepath):
     print("finished reading LOCUST perturbation")
     
     return input_data
+
+def read_perturbation_IDS(shot,run):
+    """
+    notes:
+
+    """ 
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_perturbation_IDS could not import IMAS module!\nreturning\n")
+        return
+
+def read_perturbation_JOREK(filepath):
+    """
+    notes:
+    """
+
+    try:
+        import h5py
+    except:
+        print("ERROR: read_perturbation_JOREK could not import h5py!\n")
+        return
+
+    input_data={} #initialise data dictionary
+    file = h5py.File(filepath, 'r')
+
+    input_data['']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
+
+    return input_data
+    
+################################################################## Perturbation write functions
  
 def dump_perturbation_LOCUST(output_data,filepath):
     """
@@ -132,10 +165,9 @@ def dump_perturbation_LOCUST(output_data,filepath):
      
     print("finished writing LOCUST perturbation")
 
- 
 ################################################################## perturbation class
  
-class Perturbation(base_input.LOCUST_input):
+class Perturbation(classes.base_input.LOCUST_input):
     """
     class describing magnetic field perturbation for LOCUST
  
@@ -178,9 +210,18 @@ class Perturbation(base_input.LOCUST_input):
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath) #read the file
-         
+
+        elif data_format=='IDS':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from magnetics IDS - shot and run required\n",shot,run):
+ 
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.properties={**properties}
+                self.data=read_perturbation_IDS(self.shot,self.run)
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (MARSF)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (MARSF/IDS)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -203,7 +244,32 @@ class Perturbation(base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (MARSF)\n")
 
- 
+    def plot(self,some_equilibrium=False,key='Br',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False):
+        """
+        notes:
+        args:
+            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+            key - select which data to plot
+            axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
+            LCFS - show plasma boundary outline (requires equilibrium arguement)
+            limiters - toggles limiters on/off in 2D plots
+            real_scale - plot to Tokamak scale
+            colmap - set the colour map (use get_cmap names)
+            number_bins - set number of bins or levels
+            fill - toggle contour fill on 2D plots
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+        
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        pass
 #################################
  
 ##################################################################
