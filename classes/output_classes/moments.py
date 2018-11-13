@@ -18,40 +18,40 @@ notes:
 #Preamble
 
 import sys #have global imports --> makes less modular (no "from output_classes import x") but best practice to import whole output_classes module anyway
+
 try:
     import numpy as np
-    import copy
-    import re
-    import h5py
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
-    from classes import base_output 
+    import classes.base_output 
 except:
-    raise ImportError("ERROR: base_output.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_output.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support #import support module from this directory
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from scipy.io import netcdf as ncdf
+    from constants import *
 except:
-    raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
-
-
-np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ################################################################## Orbits functions
 
@@ -66,6 +66,13 @@ def read_moments_LOCUST(filepath):
     print("reading moments from LOCUST")
 
     input_data={} #initialise data dictionary
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_moments_LOCUST could not import h5py!\nreturning\n")
+        return
+
     file = h5py.File(filepath, 'r')
 
     input_data['flux_pol_norm_sqrt']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
@@ -134,6 +141,12 @@ def read_moments_TRANSP(filepath):
 
     print("reading moments from TRANSP")
 
+    try:
+        from scipy.io import netcdf as ncdf
+    except:
+        raise ImportError("ERROR: read_moments_TRANSP could not import scipy.io.netcdf!\nreturning\n")
+        return
+
     file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
@@ -168,7 +181,7 @@ def read_moments_TRANSP(filepath):
 
 ################################################################## Orbits class
 
-class Moments(base_output.LOCUST_output):
+class Moments(classes.base_output.LOCUST_output):
     """
     class describing a generic moments output for LOCUST
     

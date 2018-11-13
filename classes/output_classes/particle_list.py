@@ -18,55 +18,47 @@ notes:
 #Preamble
 
 import sys #have global imports --> makes less modular (no "from output_classes import x") but best practice to import whole output_classes module anyway
+
 try:
     import numpy as np
-    import copy
-    import re
-    from scipy.io import  FortranFile
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+try:
+    import processing.process_output
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_output.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+
 try:
     from classes import base_output 
 except:
-    raise ImportError("ERROR: base_output.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_output.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support 
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from processing import process_output
+    from constants import *
 except:
-    raise ImportError("ERROR: processing/process_output.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from scipy.io import netcdf as ncdf
+    from settings import *
 except:
-    raise ImportError("ERROR: scipy.io.netcdf could not be imported!\nreturning\n")
-try:
-    import h5py
-except:
-    print("WARNING: h5py could not be imported!\n") 
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
-pi=np.pi
-amu=1.66053904e-27
-mass_deuterium_amu=2.0141017781
-mass_deuterium=mass_deuterium_amu*amu
-e_charge=1.60217662e-19
-
-################################################################## Final_Particle_List functions
+################################################################## Final_Particle_List read functions
 
 def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
     """
@@ -111,7 +103,7 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
             input_data['V_R']=np.array([])
             input_data['V_tor']=np.array([])
             input_data['V_Z']=np.array([])
-            input_data['t']=np.array([])
+            input_data['time']=np.array([])
             input_data['status_flag']=np.array([])
             input_data['additional_flag1']=np.array([])
             input_data['additional_flag2']=np.array([])
@@ -148,7 +140,7 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
                 input_data['V_R']=np.append(input_data['V_R'],file_buffer[:,3,0])
                 input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[:,4,0])
                 input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[:,5,0])
-                input_data['t']=np.append(input_data['t'],file_buffer[:,6,0])
+                input_data['time']=np.append(input_data['time'],file_buffer[:,6,0])
                 input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[:,7,0])
                 input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[:,8,0])
                 input_data['additional_flag2']=np.append(input_data['additional_flag2'],file_buffer[:,9,0])
@@ -188,22 +180,11 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
 
             #calculate some additional things
             input_data['E']=.5*mass_deuterium*e_charge*input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
-
+            input_data['weight']=np.full(len(input_data['R']),1.)
 
         print("finished reading final particle list from LOCUST")
 
         return input_data
-
-
-def dump_final_particle_list_LOCUST(output_data,filepath): 
-    """
-    writes final particle list to LOCUST format
-    
-    notes:
-
-    """
-
-    pass
 
 '''
 def read_final_particle_list_TRANSP_FLOST(filepath):
@@ -270,6 +251,12 @@ def read_final_particle_list_TRANSP(filepath):
 
     print("reading final particle list from TRANSP")
 
+    try:
+        from scipy.io import netcdf as 
+    except:
+        raise ImportError("ERROR: read_final_particle_list_TRANSP could not import scipy.io.netcdf module!\nreturning\n")
+        return
+
     file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
@@ -278,7 +265,7 @@ def read_final_particle_list_TRANSP(filepath):
     input_data['V_pitch']=file.variables['XKSIDLST'].data
     input_data['E']=file.variables['ZELST'].data
     input_data['weight']=file.variables['WGHTLST'].data
-    input_data['time']=file.variables['track_time_D_NBI'].data
+    input_data['time']=file.variables['TIMELST'].data
 
     input_data['status_flags']={} #initialise generic status_flags - TRANSP does store these in ['GOOSELST'] but all are 1.00 or 1.0001 anyway
     input_data['status_flags']['all_losses']=0.0
@@ -305,6 +292,14 @@ def read_final_particle_list_ASCOT(filepath):
             -2 - particle aborted during tracking, possible numerical error etc
     """
 
+    print("reading final particle list from ASCOT")
+
+    try:
+        import h5py
+    except:
+        raise ImportError("WARNING: h5py could not be imported!\n") 
+        return
+
     file=h5py.File(filepath,'r')
     input_data={}
 
@@ -328,11 +323,25 @@ def read_final_particle_list_ASCOT(filepath):
     input_data['status_flags']['particle_initial_reject']=-1.
     input_data['status_flags']['particle_abort']=-2.
 
+    print("finished reading final particle list from ASCOT")
+
     return input_data
+
+################################################################## Final_Particle_List write functions
+
+def dump_final_particle_list_LOCUST(output_data,filepath): 
+    """
+    writes final particle list to LOCUST format
+    
+    notes:
+
+    """
+
+    pass
 
 ################################################################## Final_Particle_List class
 
-class Final_Particle_List(base_output.LOCUST_output):
+class Final_Particle_List(classes.base_output.LOCUST_output):
     """
     class describing final particle list output for LOCUST
     
@@ -410,6 +419,136 @@ class Final_Particle_List(base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")
 
+    def plot(self,some_equilibrium=False,grid=False,style='histogram',number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+        """
+        plot the final particle list
+         
+        args:
+            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+            grid - corresponding distribution_function for matching binning axes etc. 
+            style - choose from scatter or histogram
+            number_bins - set number of bins or levels
+            axes - define plot axes
+            LCFS - show plasma boundary outline (requires equilibrium arguement)
+            limiters - toggles limiters on/off in 2D plots
+            real_scale - plot to Tokamak scale (requires equilibrium arguement)
+            status_flags - plot particles with these statuses
+            weight - toggle whether to include marker weights in histograms
+            colmap - set the colour map (use get_cmap names)
+            colfield - set the quantity which is associated with colmap, defaults to status_flag
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+
+        ndim=len(axes)
+        if ndim==1: #plot 1D histograms
+
+            for status in status_flags:
+                p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
+                self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
+                self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
+                ax.plot(self_binned_centres,weight*self_binned)
+
+                ax.set_xlabel(axes[0])
+                ax.set_title(self.ID)
+
+        elif ndim==2: #plot 2D histograms
+
+            for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
+                p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
+                
+                if style=='histogram':
+
+                    if grid is not False: #bin according to pre-defined grid
+                        if weight:
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'])
+                        else:
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]])
+                    else:
+                        if weight:
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins,weights=self['weight'])
+                        else:
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins)
+
+                    #self_binned_x and self_binned_x are first edges then converted to centres
+                    self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
+                    self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
+                    self_binned_y,self_binned_x=np.meshgrid(self_binned_y,self_binned_x)
+                    
+                    if fill:
+                        ax.set_facecolor(colmap(np.amin(weight*self_binned)))
+                        mesh=ax.pcolormesh(self_binned_x,self_binned_y,weight*self_binned,cmap=colmap,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
+                        #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                    else:
+                        mesh=ax.contour(self_binned_x,self_binned_y,weight*self_binned,levels=np.linspace(np.amin(weight*self_binned),np.amax(weight*self_binned),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
+                        ax.clabel(mesh,inline=1,fontsize=10)
+                        
+                    if fig_flag is False:    
+                        fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                        
+                elif style=='scatter':
+                    colweights=self[colfield][p]-np.min(self[colfield][p])/(np.max(self[colfield][p]-np.min(self[colfield][p])))
+                    ax.scatter(self[axes[0]][p],self[axes[1]][p],cmap=colmap,c=colweights,marker='x',s=1)
+
+            if axes==['R','Z']:
+                if LCFS is True: #plot plasma boundarys
+                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS)
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters) 
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+
+            elif axes==['X','Y']:
+                if LCFS is True: #plot plasma boundary
+                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
+                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                if limiters is True: #add boundaries if desired
+                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)          
+                if real_scale is True: #set x and y plot limits to real scales
+                    if some_equilibrium:
+                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+                    ax.set_aspect('equal')
+                else:
+                    ax.set_aspect('auto')
+
+            ax.set_xlabel(axes[0])
+            ax.set_ylabel(axes[1])
+            ax.set_title(self.ID)
+                
+        if ax_flag is False and fig_flag is False:
+            plt.show()
 
 #################################
 

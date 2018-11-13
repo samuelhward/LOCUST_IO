@@ -18,41 +18,49 @@ notes:
 #Preamble
  
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
+
 try:
     import numpy as np
-    import copy
-    import re
-    import time
-    import itertools
+    import scipy
+    import numpy as np
+    import matplotlib
+    from matplotlib import cm
+    import matplotlib.pyplot as plt
+    from mpl_toolkits import mplot3d #import 3D plotting axes
+    from mpl_toolkits.mplot3d import Axes3D
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import imas 
-except:
-    print("WARNING: IMAS module could not be imported!\n")
+
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/ could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
-    from classes import base_input 
+    import classes.base_input 
 except:
-    raise ImportError("ERROR: base_input.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
+
 try:
-    from classes import support #import support module from this directory
+    import support
 except:
-    raise ImportError("ERROR: support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from constants import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
- 
-pi=np.pi
-
-
-################################################################## Number_Density functions
+################################################################## Number_Density read functions
  
 def read_number_density_LOCUST(filepath):
     """
@@ -89,27 +97,6 @@ def read_number_density_LOCUST(filepath):
     
     return input_data
  
-def dump_number_density_LOCUST(output_data,filepath):
-    """
-    writes number density profile to LOCUST format - normalised_poloidal_flux n [m^-3]
-     
-    notes:
-        writes out a headerline for length of file
-    """
- 
-    print("writing number density to LOCUST")
-
-    with open(filepath,'w') as file: #open file
-
-        normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_n=processing.utils.sort_arrays(normalised_flux,output_data['n']) #check order
- 
-        file.write("{}\n".format(processing.utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
-        for point in range(normalised_flux.size): #iterate through all points i.e. length of our dictionary's arrays
-            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),n=processing.utils.fortran_string(output_n[point],16,8)))
- 
-    print("finished writing number density to LOCUST")
-
 def read_number_density_IDS(shot,run,**properties):
     """
     reads LOCUST number density data from a core_profiles IDS and returns as a dictionary
@@ -119,6 +106,12 @@ def read_number_density_IDS(shot,run,**properties):
     """
  
     print("reading number density from IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_number_density_IDS could not import IMAS module!\nreturning\n")
+        return
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
     input_IDS.open()
@@ -147,12 +140,41 @@ def read_number_density_IDS(shot,run,**properties):
  
     return input_data
  
+################################################################## Number_Density write functions
+
+def dump_number_density_LOCUST(output_data,filepath):
+    """
+    writes number density profile to LOCUST format - normalised_poloidal_flux n [m^-3]
+     
+    notes:
+        writes out a headerline for length of file
+    """
+ 
+    print("writing number density to LOCUST")
+
+    with open(filepath,'w') as file: #open file
+
+        normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
+        normalised_flux,output_n=processing.utils.sort_arrays(normalised_flux,output_data['n']) #check order
+ 
+        file.write("{}\n".format(processing.utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
+        for point in range(normalised_flux.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm}{n}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),n=processing.utils.fortran_string(output_n[point],16,8)))
+ 
+    print("finished writing number density to LOCUST")
+
 def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     """
     writes LOCUST number density data to a core_profiles IDS
     """
     
     print("writing number density to IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_number_density_IDS could not import IMAS module!\nreturning\n")
+        return
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
@@ -213,7 +235,7 @@ def dump_number_density_MARSF(output_data,filepath):
 
 ################################################################## Number_Density class
  
-class Number_Density(base_input.LOCUST_input):
+class Number_Density(classes.base_input.LOCUST_input):
     """
     class describing number density profile input for LOCUST
  
@@ -303,6 +325,48 @@ class Number_Density(base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")
 
+    def plot(self,axis='flux_pol_norm',colmap='blue',ax=False,fig=False):
+        """
+        plots number density
+         
+        notes:
+            axis - selects x axis of plot
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import scipy
+        import numpy as np
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+
+        ax.plot(self[axis],self['n'],color=colmap)
+        ax.set_xlabel(axis)
+        ax.set_ylabel('number density [m^-3]')
+        ax.set_title(self.ID)
+        
+        if ax_flag is False and fig_flag is False:
+            plt.show()
  
 #################################
  

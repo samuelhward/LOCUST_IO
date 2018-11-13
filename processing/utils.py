@@ -23,24 +23,16 @@ try:
     import copy
     import os
     import re
-    import time
-    import itertools
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib import cm
-    from scipy.io import netcdf as ncdf
-    import scipy.interpolate
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
-    sys.exit(1)
+    sys.exit(1) 
 try:
-    import h5py
+    import support
 except:
-    print("WARNING: h5py could not be imported!\n") 
-try:
-    from classes import support
-except:
-    raise ImportError("ERROR: LOCUST_IO/classes/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from processing import plot_output
@@ -79,27 +71,7 @@ def none_check(ID,LOCUST_input_type,error_message,*args):
     else:
         print("WARNING: none_check returned True (LOCUST_input_type={LOCUST_input_type}, ID={ID}): {message}".format(LOCUST_input_type=LOCUST_input_type,ID=ID,message=error_message))
         return True
-         
-def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
-    """
-    generator to read numbers in a file
- 
-    notes:
-        originally written by Ben Dudson
- 
-        calling get_next() on a generator produced with this function will permanently advance the iterator in this generator
-        when generators reach the end, that's permanently it!
-    """
-    toklist = []
-    while True: #runs forever until break statement (until what is read is not a line) below will cause a return - which permanently stops a generator
-        line = ingf.readline() #read in line from INGF
-        if not line: break #break if readline() doesnt return a line i.e. end of file
-        line = line.replace("NaN","-0.00000e0") #replaces NaNs with 0s
-        pattern = r'[+-]?\d*[\.]?\d+(?:[Ee][+-]?\d+)?' #regular expression to find numbers
-        toklist = re.findall(pattern,line) #toklist now holds all the numbers in a file line (is essentially a single file line)
-        for tok in toklist: #yield every number in that one line individually
-            yield tok #so in terms of iteration, using get_next() will cause another line to be read
- 
+          
 def get_next(obj):
     """
     generic object iterator
@@ -201,7 +173,7 @@ def angle_pol(R_major_width,R,Z):
 
     return angle
 
-def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS',rect_grid=True):
+def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smooth=0,rect_grid=True):
     """
     generate a 2D grid interpolator
     notes:
@@ -214,35 +186,57 @@ def interpolate_2D(X_axis,Y_axis,Z_grid,type='RBS',rect_grid=True):
         X_axis - 1D x-axis
         Y_axis - 1D y-axis
         Z_grid - 2D z-axis
+        function - spline function
+        type - name of interpolation function to use
+        smooth - level of smoothing
         rect_grid - toggle whether X_axis, Y_axis are regular rectangular grid edges or arbitrary cordinates 
-
     usage:
         my_interpolator=interpolate_2D(X_axis,Y_axis,data)
         interpolated_value=my_interpolator(x,y)
     """
-    
+
+    try:
+        import scipy.interpolate 
+    except:
+        raise ImportError("ERROR: interpolate_2D could not import scipy.interpolate module!\nreturning\n")
+        return
+
     if type=='RBF':
         if rect_grid:
             Y_grid,X_grid=np.meshgrid(Y_axis,X_axis) #swap since things are defined r,z 
         else:
             Y_grid,X_grid=Y_axis,X_axis
-        interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function='multiquadric',smooth=0)
+        interpolator=scipy.interpolate.Rbf(X_grid,Y_grid,Z_grid,function=function,smooth=smooth)
     
     elif type=='RBS':
         interpolator=scipy.interpolate.RectBivariateSpline(X_axis,Y_axis,Z_grid) #normally order is other way in RBS but I have swapped my axes
 
     return interpolator
 
-def interpolate_1D(X_axis,Y_axis):
+def interpolate_1D(X_axis,Y_axis,function='cubic',smooth=0):
     """
     generate a 1D line interpolator
 
     notes:
         keep as separate functions so can freely swap out interpolation method
         uses Rbf - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
+    args:
+        X_axis - 1D x-axis
+        Y_axis - 1D y-axis
+        function - spline function
+        smooth - level of smoothing
+    usage:
+        my_interpolator=interpolate_1D(X_axis,data)
+        interpolated_value=my_interpolator(x)        
     """
 
-    interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function='cubic',smooth=0)
+    try:
+        import scipy.interpolate 
+    except:
+        raise ImportError("ERROR: interpolate_1D could not import scipy.interpolate module!\nreturning\n")
+        return
+
+    interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function=function,smooth=smooth)
 
     return interpolator
 

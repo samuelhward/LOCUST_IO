@@ -26,8 +26,9 @@ from classes.input_classes import number_density
 from classes.output_classes import orbits
 from processing import plot_input
 from processing import plot_output
-
-
+import matplotlib
+from matplotlib import cm
+mycmap=matplotlib.cm.get_cmap('jet') #set default colourmap
 
 
 ##################################################################
@@ -54,16 +55,16 @@ my_orbit=orbits.Orbits(ID='LOCUST_IO sample orbits',data_format='LOCUST',filenam
 my_orbit.set(number_of_orbits=1)
 
 #what do the orbits look like?
-plot_output.plot_orbits(my_orbit)
+my_orbit.plot(colmap='red')
 
 #what if I want to plot my orbits and the number density in one figure?
 
 #start by creating some axis objects
 fig,(ax1,ax2)=plt.subplots(1,2)
 #then let us add an x,y plot of the orbits to this figure on the first axis
-plot_output.plot_orbits(my_orbit,axes=['X','Y'],ax=ax1,fig=fig)
+my_orbit.plot(axes=['X','Y'],colmap=mycmap(numpy.random.uniform()),ax=ax1,fig=fig)
 #now add a plot of number density on the second axis
-plot_input.plot_number_density(my_Ne,ax=ax2,fig=fig)
+my_Ne.plot(ax=ax2,fig=fig)
 #if I do not like the default axis labels, I can always overwrite them
 ax1.set_xlabel('a nice trajectory')
 #display the plot
