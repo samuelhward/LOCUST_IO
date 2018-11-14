@@ -91,14 +91,11 @@ def read_wall_LOCUST_2D(filepath):
 
             R=float(line.split()[0]) #polar radii values from above origin
 
-            r.append(R*np.cos(angle))
-            z.append(R*np.sin(angle))
+            r.append(R*np.cos(angle)+R_0)
+            z.append(R*np.sin(angle)+Z_0)
             
-        r=np.asarray(r)+R_0
-        z=np.asarray(z)+Z_0
-
-        input_data['rlim']=r
-        input_data['zlim']=z
+        input_data['rlim']=np.sqrt(np.asarray(r))
+        input_data['zlim']=np.asarray(z)
         input_data['limitr']=np.asarray(len(input_data['rlim']))
 
     print("finished reading 2D wall from LOCUST_2D")
