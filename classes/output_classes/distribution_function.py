@@ -31,6 +31,7 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+
 try:
     import classes.base_output 
 except:
@@ -521,7 +522,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             #transform distribution function to the coordinates we want
             dfn_copy=copy.deepcopy(self)
             if transform is True:
-                dfn_copy=process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
+                dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
 
             #check resulting dimensionality of distribution function
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn

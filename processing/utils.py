@@ -21,41 +21,30 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 try:
     import numpy as np
     import copy
-    import os
-    import re
-    import matplotlib
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1) 
+
+try:
+    import processing.process_input
+except:
+    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
+
 try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from processing import plot_output
+    from constants import *
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 try:
-    from processing import process_input
+    from settings import *
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/process_input.py could not be imported!\nreturning\n")
-
-
-np.set_printoptions(precision=5,threshold=5) #set printing style of numpy arrays
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
-plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='w-' #set plot style for limiters
-
-pi=np.pi
-e_charge=1.60217662e-19 #define electron charge
-mass_neutron=1.674929e-27 #define mass of neutron
-amu=1.66053904e-27
-mass_deuterium=2.0141017781*amu
-
-
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ################################################################################################### Supporting functions
  
@@ -288,9 +277,9 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     eq=copy.deepcopy(some_equilibrium)
 
     if 'fpolrz' not in some_equilibrium.data.keys(): #first go about calculating the magnetic field if missing
-        eq.set(fpolrz=process_input.fpolrz_calc(eq)) 
+        eq.set(fpolrz=processing.process_input.fpolrz_calc(eq)) 
     if 'B_field' not in some_equilibrium.data.keys():
-        eq.set(B_field=process_input.B_calc(eq))
+        eq.set(B_field=processing.process_input.B_calc(eq))
 
     B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,0]) #generate interpolators for B
     B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,1])

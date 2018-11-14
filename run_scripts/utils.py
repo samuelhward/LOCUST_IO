@@ -36,11 +36,6 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import processing.plot_output 
-except:
-    raise ImportError("ERROR: LOCUST_IO/processing/plot_output.py could not be imported!\nreturning\n")
-    sys.exit(1)
 
 try:
     import support
@@ -842,10 +837,158 @@ class ASCOT_output:
         notes:
         """
 
+        #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
+
+        def plot_distribution_function(self,some_equilibrium=False,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+            """
+            plot the distribution function
+
+            notes:
+                if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
+                if user supplies full set of indices, code assumes those slices are dimension to plot over i.e. please crop before plotting
+            args:
+                some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
+                key - select which data to plot
+                axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
+                LCFS - show plasma boundary outline (requires equilibrium arguement)
+                limiters - toggles limiters on/off in 2D plots
+                real_scale - plot to Tokamak scale
+                colmap - set the colour map (use get_cmap names)
+                transform - set to False if supplied dfn has already been cut down to correct dimensions
+                number_bins - set number of bins or levels
+                fill - toggle contour fill on 2D plots
+                ax - take input axes (can be used to stack plots)
+                fig - take input fig (can be used to add colourbars etc)
+            usage:
+                plot_distribution_function(my_dfn) #basic default R,Z plot
+                plot_distribution_function(my_dfn,axes=['E','V_pitch']) #basic pitch,energy plot
+                plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True) #R,Z plotted with true scales and last closed flux surface from supplied equilibrium
+                plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True,transform=False) #R,Z plot where my_dfn has already been cropped to correct dimensions
+                plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
+            axes options:
+                R,Z - integrate over pitch, gyrophase and velocity [m]^-3
+                E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+                E - [eV]^-1
+                R - [m]^-3 
+                N - total #
+                list of indices and slices
+            """
+
+            import scipy
+            import numpy as np
+            import matplotlib
+            from matplotlib import cm
+            import matplotlib.pyplot as plt
+            from mpl_toolkits import mplot3d #import 3D plotting axes
+            from mpl_toolkits.mplot3d import Axes3D
+
+            if ax is False:
+                ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+            else:
+                ax_flag=True
+
+            if fig is False:
+                fig_flag=False
+            else:
+                fig_flag=True
+
+            #0D data
+            if self[key].ndim==0:
+                print(self[key])
+                return
+            
+            #>0D data is plottable
+            if fig_flag is False:
+                fig = plt.figure() #if user has not externally supplied figure, generate
+            
+            if ax_flag is False: #if user has not externally supplied axes, generate them
+                ax = fig.add_subplot(111)
+
+            #1D data
+            if self[key].ndim==1:
+                ax.plot(self[axes[0]],self[key])
+                ax.set_ylabel(key)
+                ax.set_title(self.ID)
+
+            #plot distribution function
+            elif key=='dfn':
+                
+                #transform distribution function to the coordinates we want
+                dfn_copy=copy.deepcopy(self)
+                if transform is True:
+                    dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
+
+                #check resulting dimensionality of distribution function
+                if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
+                    pass #XXX incomplete - should add scatter point
+                elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
+                    ax.plot(self[key])
+                    ax.set_xlabel(axes[0])
+                    ax.set_ylabel(key)
+                elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
+
+                    if all(isinstance(axis,type('_')) for axis in axes): #user has supplied list of chars to denote axes
+                        pass
+                    else: #user has supplied full list of indices to slice DFN -> need to determine convetional axes names  
+                        axes=dfn_copy['dfn_index'][np.where([isinstance(axis,slice) for axis in axes])] #do this by assuming that user slices over dimensions they want to plot
+                        #the above line works because dfn_index is a numpy array of strings - would break for lists
+
+                    if real_scale is True: #set x and y plot limits to real scales
+                        if some_equilibrium:
+                            ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                            ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                        ax.set_aspect('equal')
+                    else:
+                        ax.set_aspect('auto')
+
+                    X=dfn_copy[axes[0]] #make a mesh
+                    Y=dfn_copy[axes[1]]
+                    Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
+
+                    if fill:
+                        ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
+                        mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        '''for c in mesh.collections: #for use in contourf
+                            c.set_edgecolor("face")'''
+                    else:
+                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
+                        ax.clabel(mesh,inline=1,fontsize=10)
+
+                    if fig_flag is False:    
+                        fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                    ax.set_xlabel(axes[0])
+                    ax.set_ylabel(axes[1])
+                    ax.set_title(self.ID)
+                    
+                    if real_scale is True: #set x and y plot limits to real scales
+                        if some_equilibrium:
+                            ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
+                            ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
+                        ax.set_aspect('equal')
+                    else:
+                        ax.set_aspect('auto')
+                    if LCFS is True: #plot plasma boundary
+                        ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
+                    if limiters is True: #add boundaries if desired
+                        ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                    
+                    if ax_flag is True or fig_flag is True: #return the plot object
+                        return mesh
+
+                else: #user has not supplied >2D dfn
+                    print("ERROR: plot_distribution_function given >2D DFN - please reduce dimensionality")
+                    return 
+
+            if ax_flag is False and fig_flag is False:
+                plt.show()
+
+        #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
+
         dfn=copy.deepcopy(self)
         if transform: 
             dfn.dfn_transform(axes=axes)
-        return processing.plot_output.plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        return plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
 
 
 

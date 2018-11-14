@@ -409,7 +409,7 @@ def dump_beam_depo_LOCUST(output_data,filepath):
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert junk lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction lines
         file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
@@ -650,8 +650,8 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             print("dump_beam_depo_ASCOT_gc found no B_field in equilibrium - calculating!")
             if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
                 print("dump_beam_depo_ASCOT_gc found no fpolrz in equilibrium - calculating!")
-                equilibrium.set(fpolrz=process_input.fpolrz_calc(equilibrium))
-            equilibrium.set(B_field=process_input.B_calc(equilibrium))
+                equilibrium.set(fpolrz=processing.process_input.fpolrz_calc(equilibrium))
+            equilibrium.set(B_field=processing.process_input.B_calc(equilibrium))
 
         print("dump_beam_depo_ASCOT_gc generating B_field interpolators")
         B_field_R_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here

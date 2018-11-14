@@ -38,7 +38,7 @@ except:
     sys.exit(1)
 
 try:
-    from classes import base_input 
+    import classes.base_input 
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
@@ -182,7 +182,7 @@ def read_equilibrium_GEQDSK(filepath):
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nR_1D'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nZ_1D']) 
         input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #all 1D profiles are defined against a flux grid, so use any 1D profile's length
-        input_data['flux_tor']=process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
+        input_data['flux_tor']=processing.process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
 
         print("finished reading equilibrium from GEQDSK")
 
@@ -354,7 +354,7 @@ def read_equilibrium_UDA(shot,time):
 
 def dump_equilibrium_GEQDSK(output_data,filepath):
     """
-    generic function for writing G-EQDSK-formatted data to file
+    generic function for writing GEQDSK-formatted data to file
  
     notes:
         originally written by Ben Dudson and edited by Nick Walkden
@@ -978,8 +978,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             print("plot_field_stream found no B_field in equilibrium - calculating!")
             if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
                 print("plot_field_stream found no fpolrz in equilibrium - calculating!")
-                self.set(fpolrz=process_input.fpolrz_calc(equilibrium))
-            self.set(B_field=process_input.B_calc(equilibrium))
+                self.set(fpolrz=processing.process_input.fpolrz_calc(equilibrium))
+            self.set(B_field=processing.process_input.B_calc(equilibrium))
 
         B_mag=np.sqrt(self['B_field'][:,:,0]**2+self['B_field'][:,:,2]**2) #calculate poloidal field magnitude
         strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0].T,self['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)

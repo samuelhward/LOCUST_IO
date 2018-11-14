@@ -262,7 +262,7 @@ def dump_wall_LOCUST_2D(output_data,filepath):
         radii=np.append(radii,radii[1])
 
         #now interpolate in polar coordinates onto 3600 points in theta, starting anti-clockwise from outboard side 
-        angles_new=np.linspace(0.,(3599./3600.)*2.*pi,3600)
+        angles_new=np.mod(np.linspace(0.,(3599./3600.)*2.*pi,3600)+pi,2.*pi)
 
         radii_interpolator=processing.utils.interpolate_1D(angles,radii,function='linear',smooth=0.0001)
         radii_new=radii_interpolator(angles_new)

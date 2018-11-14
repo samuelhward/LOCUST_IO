@@ -24,8 +24,6 @@ import context
 import matplotlib.pyplot as plt
 from classes.input_classes import number_density
 from classes.output_classes import orbits
-from processing import plot_input
-from processing import plot_output
 import matplotlib
 from matplotlib import cm
 mycmap=matplotlib.cm.get_cmap('jet') #set default colourmap

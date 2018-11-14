@@ -37,7 +37,7 @@ except:
     sys.exit(1)
 
 try:
-    from classes import base_output 
+    import classes.base_output 
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/base_output.py could not be imported!\nreturning\n")
     sys.exit(1) 
@@ -74,7 +74,7 @@ def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True):
     print("reading final particle list from LOCUST")
 
     if compression is True: #for now just revert to the efficient compression version
-        input_data=process_output.particle_list_compression(filepath)
+        input_data=processing.process_output.particle_list_compression(filepath)
         print("finished reading compressed final particle list from LOCUST")
         return input_data
 
