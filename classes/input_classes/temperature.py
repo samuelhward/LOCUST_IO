@@ -32,7 +32,7 @@ except:
     sys.exit(1)  
 
 try:
-    from classes import base_input 
+    import classes.base_input 
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
     sys.exit(1) 
