@@ -69,7 +69,7 @@ def read_equilibrium_GEQDSK(filepath):
         originally written by Ben Dudson and edited by Nick Walkden
     """
 
-        input_data = {}
+    input_data = {}
 
     def file_numbers(ingf):#instance of generators are objects hence can use .next() method on them
         """
