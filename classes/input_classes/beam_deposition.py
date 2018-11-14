@@ -987,10 +987,10 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 if limiters is True: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
                     ax.set_ylim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    plasma_max_R=np.max(some_equilibrium['rlim'])
-                    plasma_min_R=np.min(some_equilibrium['rlim'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)          
+                    limiters_max_R=np.max(some_equilibrium['rlim'])
+                    limiters_min_R=np.min(some_equilibrium['rlim'])
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
             
             if ax_flag is True or fig_flag is True: #return the plot object
                 if 'mesh' in locals():

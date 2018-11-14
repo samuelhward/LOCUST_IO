@@ -64,9 +64,46 @@ def read_wall_LOCUST_3D(filepath):
 
 def read_wall_LOCUST_2D(filepath):
     """
+
     notes:
+
     """
-    pass
+
+    print("reading 2D wall from LOCUST_2D")
+
+    input_data={}
+
+    with open(filepath,'w') as file:
+
+        lines=file.readlines()
+        
+        del(lines[0]) #just number of points in first line
+        R_0=lines[0]  #next line defines the R position of the origin
+        Z_0=0.        #origin always at Z=0
+        del(lines[0])
+
+        angles=np.mod(np.linspace(0.,(3599./3600.)*2.*pi,3600)+pi,2.*pi) #LOCUST always assumes counter-clockwise limiters starting from inboard side
+        
+        r=[]
+        z=[]
+
+        for line,angle in zip(lines,angles):
+
+            R=float(line.split()[0]) #polar radii values from above origin
+
+            r.append(R*np.cos(angle))
+            z.append(R*np.sin(angle))
+            
+        r=np.asarray(r)+R_0
+        z=np.asarray(z)+Z_0
+
+        input_data['rlim']=r
+        input_data['zlim']=z
+        input_data['limitr']=np.asarray(len(input_data['rlim']))
+
+    print("finished reading 2D wall from LOCUST_2D")
+
+    return input_data
 
 def read_wall_GEQDSK(filepath):
     """
