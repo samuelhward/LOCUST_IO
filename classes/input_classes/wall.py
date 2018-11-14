@@ -78,7 +78,7 @@ def read_wall_LOCUST_2D(filepath):
         lines=file.readlines()
         
         del(lines[0]) #just number of points in first line
-        R_0=lines[0]  #next line defines the R position of the origin
+        R_0=float(lines[0])  #next line defines the R position of the origin
         Z_0=0.        #origin always at Z=0
         del(lines[0])
 
