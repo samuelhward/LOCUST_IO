@@ -73,7 +73,7 @@ def read_wall_LOCUST_2D(filepath):
 
     input_data={}
 
-    with open(filepath,'w') as file:
+    with open(filepath,'r') as file:
 
         lines=file.readlines()
         
