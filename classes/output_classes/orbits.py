@@ -269,7 +269,12 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                     ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                 if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                    ax.set_xlim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
+                    ax.set_ylim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
+                    limiters_max_R=np.max(some_equilibrium['rlim'])
+                    limiters_min_R=np.min(some_equilibrium['rlim'])
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
 
                 for particle in particles: #plot all the particle tracks one by one
                     x_points=self['orbits'][1::2,0,particle]*np.cos(self['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
