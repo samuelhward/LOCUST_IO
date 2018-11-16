@@ -252,7 +252,7 @@ def read_final_particle_list_TRANSP(filepath):
     print("reading final particle list from TRANSP")
 
     try:
-        from scipy.io import netcdf as 
+        from scipy.io import netcdf as ncdf 
     except:
         raise ImportError("ERROR: read_final_particle_list_TRANSP could not import scipy.io.netcdf module!\nreturning\n")
         return
@@ -419,7 +419,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")
 
-    def plot(self,some_equilibrium=False,grid=False,style='histogram',number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+    def plot(self,some_equilibrium=False,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -428,6 +428,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             grid - corresponding distribution_function for matching binning axes etc. 
             style - choose from scatter or histogram
             number_bins - set number of bins or levels
+            fill - toggle contour fill on 2D plots
             axes - define plot axes
             LCFS - show plasma boundary outline (requires equilibrium arguement)
             limiters - toggles limiters on/off in 2D plots

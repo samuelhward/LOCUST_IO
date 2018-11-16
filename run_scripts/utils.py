@@ -316,7 +316,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         print("finished integrating TRANSP fast ion distribution function")
 
-    def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,ax=False,fig=False,**kwargs):
+    def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -473,14 +473,22 @@ class TRANSP_output_FI(TRANSP_output):
 
 ################################################################################################### ASCOT classes and functions
 
-def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot'):
+def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot',tag=''):
     """
     writes out freia batch file for ASCOT run
-
+    args:
+        run_file - 
+        initialdir - 
+        output_file - 
+        max_proc - 
+        min_proc - 
+        error_file - 
+        executable - 
+        tag - optional identifier tag for each set of run files produced
     notes:
     """
 
-    filepath=support.dir_input_files+run_file
+    filepath=support.dir_input_files+run_file+tag
     if initialdir is None:
         initialdir=os.path.dirname(os.path.abspath(__file__)) #use cwd
     
@@ -563,7 +571,7 @@ def dump_wall_ASCOT(filename,output_data):
 
     print("finished dumping wall to ASCOT format")
 
-def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,guiding_centre=True):
+def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,guiding_centre=True,tag=''):
     """
     generates full run input data for ASCOT
 
@@ -587,17 +595,18 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
         density_i - ion density object (#/m^3)
         rotation_toroidal - array-like toroidal rotation (rad/s)
         guiding_centre - toggle dumping birth list at guiding-centre or particle position
+        tag - optional identifier tag for each set of run files produced
     """
 
     print("ASCOT_run_gen creating ASCOT inputs")
 
-    dump_run_file_ASCOT(initialdir=support.dir_input_files) #generate run file
-    dump_profiles_ASCOT(filename='input.plasma_1d',temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
-    dump_wall_ASCOT(filename='input.wall_2d',output_data=equilibrium)
+    dump_run_file_ASCOT(initialdir=support.dir_input_files,tag=tag) #generate run file
+    dump_profiles_ASCOT(filename='input.plasma_1d'+tag,temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
+    dump_wall_ASCOT(filename='input.wall_2d'+tag,output_data=equilibrium)
     if guiding_centre:
-        beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles',equilibrium=equilibrium)
+        beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles'+tag,equilibrium=equilibrium)
     else:
-        beam_deposition.dump_data(data_format='ASCOT',filename='input.particles',equilibrium=equilibrium)
+        beam_deposition.dump_data(data_format='ASCOT',filename='input.particles'+tag,equilibrium=equilibrium)
 
     print("ASCOT_run_gen finished")
 
