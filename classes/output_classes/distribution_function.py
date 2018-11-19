@@ -91,6 +91,12 @@ def read_distribution_function_LOCUST(filepath,**properties):
     else:
         print('ERROR: cannot infer IDFTYPE from filename\n')
 
+    try:
+        from scipy.io import FortranFile 
+    except:
+        raise ImportError("ERROR: read_distribution_function_LOCUST could not import scipy.io.FortranFile!\nreturning\n")
+        return
+
     file=FortranFile(filepath,'r')
     input_data={} #initialise blank dictionary
     input_data['IDFTYP']=np.array(IDFTYP)
