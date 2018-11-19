@@ -241,9 +241,7 @@ class TRANSP_output_FI(TRANSP_output):
         
         notes:
             reads all data into nested dictionary before renaming and reshaping some data according to LOCUST_IO variable names  
-            my_TRANSP_output_FI[key]['data'] returns data from netCDF
-            my_TRANSP_output_FI[key]['units'] returns any associated units if any 
-            my_TRANSP_output_FI[key]['description'] returns any associated description if any
+            my_TRANSP_output_FI[key] returns data from netCDF
         """
 
         print("reading TRANSP fast ion distribution function")
@@ -253,29 +251,22 @@ class TRANSP_output_FI(TRANSP_output):
         file=ncdf.netcdf_file(self.filepath,'r') #open netCDF file
 
         for key in file.variables.keys(): #read everything into a nested dictionary
-            self[key]={}
             try: #this try except structure is more suitable than using hasattr
-                self[key]['units']=copy.deepcopy(file.variables[key].units.decode('utf-8'))
+                self[key]=copy.deepcopy(file.variables[key].data)
             except:
-                self[key]['units']=None
-            try:
-                self[key]['description']=copy.deepcopy(file.variables[key].long_name.decode('utf-8'))
-            except:
-                self[key]['description']=None
-            try:   
-                self[key]['data']=copy.deepcopy(file.variables[key].data)
-            except:
-                self[key]['data']=None
+                self[key]=None
 
         del(file) #close file
 
         #map some data to more LOCUST_IO-style variable names here
-        self['F_D_NBI']['data']*=.5e6 #get dfn in terms of dPitch^-1 m^-3 
-        self['F_D_NBI']['units']='#/m^3/eV/dPitchBin'
-        self['R2D']['data']*=.01
-        self['R2D']['units']='[metres]'
-        self['Z2D']['data']*=.01
-        self['Z2D']['units']='[metres]'
+        self['F_D_NBI']*=.5e6 #get dfn in terms of dPitch^-1 m^-3 eV^-1
+        self['R2D']*=.01 #convert to metres
+        self['Z2D']*=.01 #convert to metres
+        self['dE']=np.abs(self['E_D_NBI'][1]-self['E_D_NBI'][0]) #energy bin width
+        self['dV_pitch']=np.abs(self.data.pop['A_D_NBI'][1]-self.data.pop['A_D_NBI'][0])
+        self['dfn']=self.data.pop['F_D_NBI']
+        self['E']=self.data.pop['E_D_NBI']
+        self['V_pitch']=self.data.pop['A_D_NBI']
 
         print("finished reading TRANSP fast ion distribution function")
 
@@ -294,27 +285,26 @@ class TRANSP_output_FI(TRANSP_output):
 
         print("integrating TRANSP fast ion distribution function")
 
-        self['F_D_NBI_int']={}
-        self['F_D_NBI_int']['data']=copy.deepcopy(self['F_D_NBI']['data'])
+        dfn_copy=copy.deepcopy(self)
 
         sum_indices=[] #figure out which indices we need to sum over
         if energy: #apply Jacobian and integrate each dimension
-            dE=np.abs(self['E_D_NBI']['data'][1]-self['E_D_NBI']['data'][0]) #energy bin width
-            self['F_D_NBI_int']['data']*=dE
+            dfn_copy['dfn']*=dfn_copy['dE']
             sum_indices.append(2)
         if pitch:
-            dP=np.abs(self['A_D_NBI']['data'][1]-self['A_D_NBI']['data'][0]) #pitch bin width
-            self['F_D_NBI_int']['data']*=dP
+            dfn_copy['dfn']*=dfn_copy['dV_pitch']
             sum_indices.append(1)
         if space: #integrate over various dimensions here
-            for counter,volume_element in enumerate(self['BMVOL']['data']):
-                self['F_D_NBI_int']['data'][counter,:,:]*=volume_element
+            for counter,volume_element in enumerate(dfn_copy['BMVOL']):
+                dfn_copy['dfn'][counter,:,:]*=volume_element
             sum_indices.append(0)
 
         for sum_index in sum_indices: #sum over unwanted dimensions - must be descending order to avoid changing desired index to sum over
-            self['F_D_NBI_int']['data']=np.sum(self['F_D_NBI_int']['data'],axis=sum_index)
+            dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=sum_index)
 
         print("finished integrating TRANSP fast ion distribution function")
+
+        return dfn_copy
 
     def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False,**kwargs):
         """
@@ -338,7 +328,7 @@ class TRANSP_output_FI(TRANSP_output):
             E,V_pitch - assumes integrated over space and transform to [eV]^-1[dpitch]^-1  
             E,time - [eV]^-1 over multiple timesteps (supply list of additional objects in **kwargs e.g. ...fig=False, TRANSP_output_FI_list=[FI_CDF_Time1,FI_CDF_Time2])
             E - [eV]^-1
-            R - [m]^-3 
+            R - [m]^-3 x
             N - total #
         """
         
@@ -356,15 +346,17 @@ class TRANSP_output_FI(TRANSP_output):
             ax = fig.add_subplot(111)   
 
         ax.set_title(self.ID) #set title to object's ID descriptor
+
         
         #add specific options for plotting here
         if axes==['R','Z']:
-            #R,Z=np.meshgrid(self['R2D']['data'],self['Z2D']['data'])
 
-            R=np.linspace(np.min(self['R2D']['data']),np.max(self['R2D']['data']),np.sqrt(len(self['R2D']['data']))) #need to interpolate since irregular grid
-            Z=np.linspace(np.min(self['Z2D']['data']),np.max(self['Z2D']['data']),np.sqrt(len(self['Z2D']['data'])))
+            dfn_copy=self.dfn_integrate(space=False)
+
+            R=np.linspace(np.min(dfn_copy['R2D']),np.max(dfn_copy['R2D']),np.sqrt(len(dfn_copy['R2D']))) #need to interpolate since irregular grid
+            Z=np.linspace(np.min(dfn_copy['Z2D']),np.max(dfn_copy['Z2D']),np.sqrt(len(dfn_copy['Z2D'])))
             R,Z=np.meshgrid(R,Z)
-            interpolator=processing.utils.interpolate_2D(self['Z2D']['data'],self['R2D']['data'],self['F_D_NBI_int']['data'],type='RBF',rect_grid=False)
+            interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Z,R)
             if fill:
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
@@ -394,13 +386,15 @@ class TRANSP_output_FI(TRANSP_output):
                 return mesh
 
         elif axes==['E','V_pitch']: 
-            E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
+            dfn_copy=self.dfn_integrate(pitch=False,energy=False)
+
+            E,V_pitch=np.meshgrid(dfn_copy['E'],dfn_copy['V_pitch']) #X,Y this way because dfn dimension ordering
 
             if fill:
-                ax.set_facecolor(colmap(np.amin(self['F_D_NBI_int']['data'])))
-                mesh=ax.pcolormesh(E,V_pitch,self['F_D_NBI_int']['data'],cmap=colmap,vmin=np.amin(self['F_D_NBI_int']['data']),vmax=np.amax(self['F_D_NBI_int']['data']))            
+                ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
+                mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=np.amin(dfn_copy['dfn']),vmax=np.amax(dfn_copy['dfn']))            
             else:
-                mesh=ax.contour(E,V_pitch,self['F_D_NBI_int']['data'],levels=np.linspace(np.amin(self['F_D_NBI_int']['data']),np.amax(self['F_D_NBI_int']['data']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['F_D_NBI_int']['data']),vmax=np.amax(self['F_D_NBI_int']['data']))
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(np.amin(dfn_copy['dfn']),np.amax(dfn_copy['dfn']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
                 ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -412,23 +406,26 @@ class TRANSP_output_FI(TRANSP_output):
                 return mesh            
 
         elif axes==['E','time']: #use the kwargs to accept TRANSP_output_FI_list, a list of other integrated TRANSP_output_FI objects to plot in a single mesh plot
+            
+            dfn_copy=self.dfn_integrate(energy=False)
+
             if 'TRANSP_output_FI_list' in kwargs.keys():
 
-                E_list=[self['F_D_NBI_int']['data']]
-                time_list=[self['TIME']['data']]
+                E_list=[dfn_copy['dfn']]
+                time_list=[dfn_copy['TIME']]
                 
                 for FI_object in kwargs['TRANSP_output_FI_list']:
-                    E_list.append(FI_object['F_D_NBI_int']['data'])
-                    time_list.append(FI_object['TIME']['data'])
+                    E_list.append(FI_object['dfn'])
+                    time_list.append(FI_object['TIME'])
 
-                F_D_NBI_int_all=np.array(E_list,ndmin=2) #combine all objects in list into one
-                E,time=np.meshgrid(self['E_D_NBI']['data'],np.array(time_list)) #automatically sorts in ascending time since pcolormesh does not require increasing meshgrid
+                dfn_int_all=np.array(E_list,ndmin=2) #combine all objects in list into one
+                E,time=np.meshgrid(dfn_copy['E'],np.array(time_list)) #automatically sorts in ascending time since pcolormesh does not require increasing meshgrid
                 
                 if fill:
-                    ax.set_facecolor(colmap(np.amin(F_D_NBI_int_all)))
-                    mesh=ax.pcolormesh(time,E,F_D_NBI_int_all,cmap=colmap,vmin=np.amin(F_D_NBI_int_all),vmax=np.amax(F_D_NBI_int_all))           
+                    ax.set_facecolor(colmap(np.amin(dfn_int_all)))
+                    mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))           
                 else:
-                    mesh=ax.contour(time,E,F_D_NBI_int_all,levels=np.linspace(np.amin(F_D_NBI_int_all),np.amax(F_D_NBI_int_all),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(F_D_NBI_int_all),vmax=np.amax(F_D_NBI_int_all))
+                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(np.amin(dfn_int_all),np.amax(dfn_int_all),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))
                     ax.clabel(mesh,inline=1,fontsize=10)
 
                 ax.set_xlabel('energy [eV]')                
@@ -438,7 +435,7 @@ class TRANSP_output_FI(TRANSP_output):
                     
                 if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh  
-            
+
             else:
                 print("ERROR: 'TRANSP_output_FI_list' not supplied in TRANSP_output_FI.dfn_plot(...**kwargs) - please see docstring for TRANSP_output_FI.dfn_plot()\n")
 
@@ -446,15 +443,15 @@ class TRANSP_output_FI(TRANSP_output):
 
         #elif axes==['R']:
 
-        elif len(axes)==self['F_D_NBI']['data'].ndim: #assume user wants to plot energy pitch at point in real space
-            new_dfn=self['F_D_NBI']['data'][tuple(axes)]
-            E,V_pitch=np.meshgrid(self['E_D_NBI']['data'],self['A_D_NBI']['data']) #X,Y this way because F_D_NBI dimension ordering
+        elif len(axes)==self['dfn'].ndim: #assume user wants to plot energy pitch at point in real space
+            dfn_copy=self['dfn'][tuple(axes)]
+            E,V_pitch=np.meshgrid(self['E'],self['V_pitch']) #X,Y this way because F_D_NBI dimension ordering
 
             if fill:          
-                ax.set_facecolor(colmap(np.amin(new_dfn)))
-                mesh=ax.pcolormesh(E,V_pitch,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))         
+                ax.set_facecolor(colmap(np.amin(dfn_copy)))
+                mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))         
             else:
-                mesh=ax.contour(E,V_pitch,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(np.amin(dfn_copy),np.amax(dfn_copy),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
                 ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
