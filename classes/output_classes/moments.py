@@ -150,11 +150,13 @@ def read_moments_TRANSP(filepath):
     file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
-    input_data['density']=np.array(file.variables['BDENS'].data)*1.0e6
-    input_data['NBI-heating-power(i1)']=np.array(file.variables['PBI'].data)*1.0e6
-    input_data['NBI-heating-power(e-)']=np.array(file.variables['PBE'].data)*1.0e6
-    input_data['beam_source']=np.array(file.variables['BDEP_D'].data)*1.0e6
+    input_data['density']=np.array(file.variables['BDENS'].data)
+    input_data['NBI-heating-power(i1)']=np.array(file.variables['PBI'].data)
+    input_data['NBI-heating-power(e-)']=np.array(file.variables['PBE'].data)
+    input_data['beam_source']=np.array(file.variables['BDEP_D'].data)
     input_data['beam_source_captured']=np.array(file.variables['BPCAP'].data)[:,np.newaxis]
+    input_data['beam_source_loss_fraction']=np.array(file.variables['BSORBPR'].data)[:,np.newaxis]
+
     input_data['time']=np.array(file.variables['TIME3'].data)
 
     input_data['r/a ctr']=np.array(file.variables['X'].data)
