@@ -721,19 +721,19 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 ax.clabel(mesh,inline=1,fontsize=10)
                 
-            #mesh=ax.pcolormesh(X,Y,Z,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #mesh=ax.pcolormesh(X,Y,Z,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
             #3D plot
             #ax=ax.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
