@@ -263,10 +263,10 @@ class TRANSP_output_FI(TRANSP_output):
         self['R2D']*=.01 #convert to metres
         self['Z2D']*=.01 #convert to metres
         self['dE']=np.abs(self['E_D_NBI'][1]-self['E_D_NBI'][0]) #energy bin width
-        self['dV_pitch']=np.abs(self.data.pop['A_D_NBI'][1]-self.data.pop['A_D_NBI'][0])
-        self['dfn']=self.data.pop['F_D_NBI']
-        self['E']=self.data.pop['E_D_NBI']
-        self['V_pitch']=self.data.pop['A_D_NBI']
+        self['dV_pitch']=np.abs(self['A_D_NBI'][1]-self['A_D_NBI'][0])
+        self['dfn']=self.data.pop('F_D_NBI')
+        self['E']=self.data.pop('E_D_NBI')
+        self['V_pitch']=self.data.pop('A_D_NBI')
 
         print("finished reading TRANSP fast ion distribution function")
 
@@ -362,13 +362,13 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
                 mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
             else:
-                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
-                ax.clabel(mesh,inline=1,fontsize=10)
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('R [m]')
             ax.set_ylabel('Z [m]')
 
-            if real_scale is True: #set x and y plot limits to real scales
+            if real_scale is True: #set x and y plot limi`ts to real scales
                 if some_equilibrium:
                     ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                     ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
@@ -394,8 +394,8 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=np.amin(dfn_copy['dfn']),vmax=np.amax(dfn_copy['dfn']))            
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(np.amin(dfn_copy['dfn']),np.amax(dfn_copy['dfn']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
-                ax.clabel(mesh,inline=1,fontsize=10)
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(np.amin(dfn_copy['dfn']),np.amax(dfn_copy['dfn']),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+                #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('pitch (v_parallel/v)')
@@ -425,8 +425,8 @@ class TRANSP_output_FI(TRANSP_output):
                     ax.set_facecolor(colmap(np.amin(dfn_int_all)))
                     mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))           
                 else:
-                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(np.amin(dfn_int_all),np.amax(dfn_int_all),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))
-                    ax.clabel(mesh,inline=1,fontsize=10)
+                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(np.amin(dfn_int_all),np.amax(dfn_int_all),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))
+                    #ax.clabel(mesh,inline=1,fontsize=10)
 
                 ax.set_xlabel('energy [eV]')                
                 ax.set_ylabel('time [s]')
@@ -451,8 +451,8 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy)))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))         
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(np.amin(dfn_copy),np.amax(dfn_copy),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
-                ax.clabel(mesh,inline=1,fontsize=10)
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(np.amin(dfn_copy),np.amax(dfn_copy),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
+                #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('pitch (v_parallel/v)')
@@ -836,7 +836,7 @@ class ASCOT_output:
         else:
             print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
-    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,ax=False,fig=False):
+    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
         """
         wrapper to plot_distribution_function
 
@@ -954,12 +954,12 @@ class ASCOT_output:
                     if fill:
                         ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
                         mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
-                        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
                         '''for c in mesh.collections: #for use in contourf
                             c.set_edgecolor("face")'''
                     else:
-                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
-                        ax.clabel(mesh,inline=1,fontsize=10)
+                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        #ax.clabel(mesh,inline=1,fontsize=10)
 
                     if fig_flag is False:    
                         fig.colorbar(mesh,ax=ax,orientation='horizontal')
@@ -994,7 +994,7 @@ class ASCOT_output:
         dfn=copy.deepcopy(self)
         if transform: 
             dfn.dfn_transform(axes=axes)
-        return plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        return plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
 
 
 
@@ -1208,8 +1208,8 @@ class FINT_LOCUST:
             ax.set_facecolor(colmap(np.amin(self['dfn'])))
             mesh=ax.pcolormesh(time,E,self['dfn'],cmap=colmap,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
         else:
-            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
-            ax.clabel(mesh,inline=1,fontsize=10)
+            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+            #ax.clabel(mesh,inline=1,fontsize=10)
 
         ax.set_xlabel('time [s]')
         ax.set_ylabel('energy [eV]')                

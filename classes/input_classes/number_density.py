@@ -97,6 +97,37 @@ def read_number_density_LOCUST(filepath):
     
     return input_data
  
+def read_number_density_LOCUST_h5(filepath,**properties):
+    """
+
+    notes:
+    """
+
+    print("reading number density from LOCUST_h5")
+    
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_temperature_LOCUST_h5 could not import h5py module!\n") 
+        return
+
+    with h5py.File(filepath,'r') as file:
+        
+        input_data={}
+
+        input_data['flux_pol_norm']=file['Input Data/Kinetic Data/Profiles (1D)/PSIn'].value
+
+        if properties['species']=='electrons':
+            input_data['n']=file['Input Data/Kinetic Data/Profiles (1D)/ne/data'].value 
+        elif properties['species']=='ions':
+            input_data['n']=file['Input Data/Kinetic Data/Profiles (1D)/ne/data'].value #XXX at the moment only read in electron density
+        else:
+            print("WARNING: cannot read_number_density_LOCUST_h5 - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
+
+    print("finished reading number density from LOCUST_h5")
+
+    return input_data
+
 def read_number_density_IDS(shot,run,**properties):
     """
     reads LOCUST number density data from a core_profiles IDS and returns as a dictionary
@@ -125,8 +156,7 @@ def read_number_density_IDS(shot,run,**properties):
     elif properties['species']=='ions':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].density)
     else:
-        print("ERROR: cannot read_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
-        return 
+        print("WARNING: cannot read_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n") 
 
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
@@ -136,6 +166,7 @@ def read_number_density_IDS(shot,run,**properties):
         processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     input_IDS.close()
+
     print("finished reading number density from IDS")
  
     return input_data
@@ -197,7 +228,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         #TODO need to add additional species data here e.g. mass, charge
         output_IDS.core_profiles.profiles_1d[0].ion[0].density=output_data['n']
     else:
-        print("cannot dump_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
+        print("WARNING: cannot dump_number_density_IDS - Number_Density.properties['species'] must be set to 'electrons' or 'ions'\n")
 
     #write out the axes
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
@@ -268,7 +299,8 @@ class Number_Density(classes.base_input.LOCUST_input):
  
         notes:
         """
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density.properties['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties):
+
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density.properties['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties['species']):
             pass
  
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
@@ -282,9 +314,18 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
                 self.data=read_number_density_LOCUST(self.filepath) #read the file
-         
+
+        elif data_format=='LOCUST_h5': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_h5 - filename and ion species property required\n",filename,properties['species']): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename #remember this is in output files director!
+                self.properties={**properties}
+                self.data=read_number_density_LOCUST_h5(self.filepath,**self.properties) #read the file
+
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from core_profiles IDS - shot, run and ion species property required\n",shot,run,properties['species']):
  
                 self.data_format=data_format
                 self.shot=shot
@@ -293,7 +334,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.data=read_number_density_IDS(self.shot,self.run,**self.properties)
  
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

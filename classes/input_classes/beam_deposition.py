@@ -949,14 +949,14 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.set_facecolor(colmap(np.amin(self_binned)))
                     mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                 else:
-                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
             elif style=='scatter':
-                ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1)
+                mesh=ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:
                 if real_scale is True: #set x and y plot limits to real scales
@@ -993,7 +993,6 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
             
             if ax_flag is True or fig_flag is True: #return the plot object
-                if 'mesh' in locals():
                     return mesh
 
             ax.set_xlabel(axes[0])
@@ -1030,7 +1029,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                     ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
 
-            ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(np.random.uniform()),s=0.1)
+            mesh=ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(np.random.uniform()),s=0.1,label=self.ID)
         
         if ax_flag is False and fig_flag is False:
             plt.show() 

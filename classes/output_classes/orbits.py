@@ -317,7 +317,7 @@ class Orbits(classes.base_output.LOCUST_output):
                 ax.plot(x_points,y_points,zs=z_points,color=colmap) 
                 
                 if start_mark: #show birth point
-                    ax.scatter(x_points[0],y_points[0],z_points[0],color=colour_start_mark,marker='o',s=10)
+                    mesh=ax.scatter(x_points[0],y_points[0],z_points[0],color=colour_start_mark,marker='o',s=10,label=self.ID)
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])

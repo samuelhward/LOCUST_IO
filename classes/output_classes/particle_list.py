@@ -297,31 +297,32 @@ def read_final_particle_list_ASCOT(filepath):
     try:
         import h5py
     except:
-        raise ImportError("WARNING: h5py could not be imported!\n") 
+        raise ImportError("ERROR: read_final_particle_list_ASCOT could not import h5py module!\n") 
         return
 
-    file=h5py.File(filepath,'r')
-    input_data={}
+    with h5py.File(filepath,'r') as file:
 
-    input_data['R']=file['endstate/R'].value
-    input_data['phi']=file['endstate/phi'].value
-    input_data['Z']=file['endstate/z'].value
-    input_data['V_R']=file['endstate/vR'].value
-    input_data['V_tor']=file['endstate/vphi'].value
-    input_data['V_Z']=file['endstate/vz'].value
-    input_data['E']=file['endstate/energy'].value
-    input_data['V_pitch']=file['endstate/pitch'].value
-    input_data['time']=file['endstate/time'].value
-    input_data['weight']=file['endstate/weight'].value
+        input_data={}
 
-    input_data['status_flag']=file['endstate/endcond'].value
-    input_data['status_flags']={}
-    input_data['status_flags']['maximum_time']=1.
-    input_data['status_flags']['minimu_kinetic_energy']=2.
-    input_data['status_flags']['wall_collision']=3.
-    input_data['status_flags']['thermalisation']=4.
-    input_data['status_flags']['particle_initial_reject']=-1.
-    input_data['status_flags']['particle_abort']=-2.
+        input_data['R']=file['endstate/R'].value
+        input_data['phi']=file['endstate/phi'].value
+        input_data['Z']=file['endstate/z'].value
+        input_data['V_R']=file['endstate/vR'].value
+        input_data['V_tor']=file['endstate/vphi'].value
+        input_data['V_Z']=file['endstate/vz'].value
+        input_data['E']=file['endstate/energy'].value
+        input_data['V_pitch']=file['endstate/pitch'].value
+        input_data['time']=file['endstate/time'].value
+        input_data['weight']=file['endstate/weight'].value
+
+        input_data['status_flag']=file['endstate/endcond'].value
+        input_data['status_flags']={}
+        input_data['status_flags']['maximum_time']=1.
+        input_data['status_flags']['minimum_kinetic_energy']=2.
+        input_data['status_flags']['wall_collision']=3.
+        input_data['status_flags']['thermalisation']=4.
+        input_data['status_flags']['particle_initial_reject']=-1.
+        input_data['status_flags']['particle_abort']=-2.
 
     print("finished reading final particle list from ASCOT")
 
@@ -385,16 +386,25 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 self.data=read_final_particle_list_LOCUST(self.filepath) #read the file
 
         elif data_format=='TRANSP': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from TRANSP - filename required\n",filename):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
                 self.data=read_final_particle_list_TRANSP(self.filepath) #read the file
-        
+
+        elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from ASCOT - filename required\n",filename):
+
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_final_particle_list_ASCOT(self.filepath) #read the file 
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
@@ -503,17 +513,16 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     if fill:
                         ax.set_facecolor(colmap(np.amin(weight*self_binned)))
                         mesh=ax.pcolormesh(self_binned_x,self_binned_y,weight*self_binned,cmap=colmap,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
-                        #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                        #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
-                        mesh=ax.contour(self_binned_x,self_binned_y,weight*self_binned,levels=np.linspace(np.amin(weight*self_binned),np.amax(weight*self_binned),num=number_bins),cmap=colmap,edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
+                        mesh=ax.contour(self_binned_x,self_binned_y,weight*self_binned,levels=np.linspace(np.amin(weight*self_binned),np.amax(weight*self_binned),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
                         ax.clabel(mesh,inline=1,fontsize=10)
                         
                     if fig_flag is False:    
                         fig.colorbar(mesh,ax=ax,orientation='horizontal')
                         
                 elif style=='scatter':
-                    colweights=self[colfield][p]-np.min(self[colfield][p])/(np.max(self[colfield][p]-np.min(self[colfield][p])))
-                    ax.scatter(self[axes[0]][p],self[axes[1]][p],cmap=colmap,c=colweights,marker='x',s=1)
+                    mesh=ax.scatter(self[axes[0]][p],self[axes[1]][p],c=self[colfield][p],cmap=colmap,marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:
                 if LCFS is True: #plot plasma boundarys
@@ -552,7 +561,10 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
             ax.set_title(self.ID)
-                
+            
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
         if ax_flag is False and fig_flag is False:
             plt.show()
 
