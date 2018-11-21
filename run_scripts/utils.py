@@ -267,6 +267,7 @@ class TRANSP_output_FI(TRANSP_output):
         self['dfn']=self.data.pop('F_D_NBI')
         self['E']=self.data.pop('E_D_NBI')
         self['V_pitch']=self.data.pop('A_D_NBI')
+        self['dfn_index']=['RZ','V_pitch','E']
 
         print("finished reading TRANSP fast ion distribution function")
 
@@ -299,7 +300,8 @@ class TRANSP_output_FI(TRANSP_output):
                 dfn_copy['dfn'][counter,:,:]*=volume_element
             sum_indices.append(0)
 
-        for sum_index in sum_indices: #sum over unwanted dimensions - must be descending order to avoid changing desired index to sum over
+        sum_indices.sort(reverse=True) #must be descending order to avoid changing desired index to sum over
+        for sum_index in sum_indices: #sum over unwanted dimensions
             dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=sum_index)
 
         print("finished integrating TRANSP fast ion distribution function")
@@ -759,9 +761,6 @@ class ASCOT_output:
         elif datatype=='equilibrium':
             pass #unfinished
         
-
-
-
         self.file_close()
 
     def dfn_transform(self,axes=['R','Z']):
@@ -794,7 +793,7 @@ class ASCOT_output:
         if axes==['R','Z']:
             self.data['dfn']*=self.data['dE']*self.data['dV_pitch'] #integrate
             for counter in range(2): #sum
-                self.data['dfn']=np.sum(self.data['dfn'],axis=0) #XXX IS A FACTOR OF 2 NEEDED WHEN INTEGRATING OVER PITCH LIKE TRANSP?
+                self.data['dfn']=np.sum(self.data['dfn'],axis=0)
 
         elif axes==['E','V_pitch']:
             #applying real space Jacobian and integrate over toroidal angle
