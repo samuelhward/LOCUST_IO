@@ -300,3 +300,58 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     V_pitch=V_parallel/V
 
     return V_pitch
+
+def get_dfn_point(dfn,type='LOCUST',**kwargs):
+    """
+    returns magnitude of dfn at a point closest to that supplied
+
+    args:
+        dfn - distribution_function object
+        type - type of distribution function
+        kwargs - should define desired points in all possible dimensions to sample at
+    usage:
+        my_values=get_dfn_point(my_dfn,E=[1,2,3],V_pitch=[-1,0,1],R=[1,2,3],Z=[0,0,0],P=[-pi,-pi,-pi])
+        my_values=get_dfn_point(my_dfn,'TRANSP',E=[1,2,3],V_pitch=[-1,0,1],R=[1,2,3],Z=[0,0,0]) (for TRANSP)
+    notes:
+    """
+
+    if type=='TRANSP': #TRANSP has non-standard way of defining dimensions
+
+        dfn_values=[]
+
+        for E,V_pitch,R,Z in zip(kwargs['E'],kwargs['V_pitch'],kwargs['R'],kwargs['Z']):
+
+            diff_R=np.abs(dfn['R2D']-R)**2 #irregular grid so need to minimise distance to every point
+            diff_Z=np.abs(dfn['Z2D']-Z)**2
+
+            index_RZ=(diff_r+diff_z).argmin()
+            index_V_pitch=np.abs(dfn['V_pitch']-V_pitch).argmin()
+            index_E=np.abs(dfn['E']-E).argmin()
+
+            dfn_values.append(dfn[index_RZ,index_V_pitch,index_E])
+    
+    else:
+        
+        number_dimensions=len(kwargs.keys())
+        for key in kwargs:
+            number_points=len(kwargs[key])
+
+        coordinate_array=np.ndarray(shape=(number_points,number_dimensions)) #hold nD indices of all the N points we want to know in an NxnD array for an nD distribution function
+
+        for key in kwargs: #go through supplied dimensions
+
+            for dimension in dfn['dfn_index']: #find the dfn index of the dimension we're dealing with
+                if key == dimension:
+                    dimension_index=dfn['dfn_index'].tolist().index(key)
+
+            for counter,point in enumerate(kwargs[key]):
+                point_index=np.abs(dfn[key]-point).argmin() #find index of nearest grid point to the point we're dealing with along this dimension 
+                coordinate_array[counter,dimension_index]=point_index 
+
+        dfn_values=[]
+        for coordinate in coordinate_array:
+            dfn_values.append(dfn['dfn'][tuple(coordinate)])
+
+
+    dfn_values=np.asarray(dfn_values)
+    return dfn_values
