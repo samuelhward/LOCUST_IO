@@ -429,24 +429,23 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")
 
-    def plot(self,some_equilibrium=False,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
         args:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             grid - corresponding distribution_function for matching binning axes etc. 
             style - choose from scatter or histogram
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             axes - define plot axes
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale (requires equilibrium arguement)
             status_flags - plot particles with these statuses
             weight - toggle whether to include marker weights in histograms
             colmap - set the colour map (use get_cmap names)
-            colfield - set the quantity which is associated with colmap, defaults to status_flag
+            colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -525,35 +524,31 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     mesh=ax.scatter(self[axes[0]][p],self[axes[1]][p],c=self[colfield][p],cmap=colmap,marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:
-                if LCFS is True: #plot plasma boundarys
-                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS)
-                if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters) 
+                if LCFS: #plot plasma boundarys
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS)
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
 
             elif axes==['X','Y']:
-                if LCFS is True: #plot plasma boundary
-                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
-                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                if LCFS: #plot plasma boundary
+                    plasma_max_R=np.max(LCFS['lcfs_r'])
+                    plasma_min_R=np.min(LCFS['lcfs_r'])
                     ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                     ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
-                if limiters is True: #add boundaries if desired
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    limiters_max_R=np.max(some_equilibrium['rlim'])
-                    limiters_min_R=np.min(some_equilibrium['rlim'])
+                if limiters: #add boundaries if desired
+                    ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    limiters_max_R=np.max(limiters['rlim'])
+                    limiters_min_R=np.min(limiters['rlim'])
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
+
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')

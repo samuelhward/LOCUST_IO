@@ -418,7 +418,7 @@ def dump_beam_depo_LOCUST(output_data,filepath):
     
     print("finished writing beam deposition to LOCUST") 
 
-def dump_beam_depo_LOCUST_weighted(output_data,filepath):
+def dump_beam_depo_LOCUST_weighted(output_data,filepath,equilibrium):
     """
     writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
      
@@ -601,6 +601,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
     notes:
         assumes output_data stores energy in eV, phi in rad
     """
+
     print("writing beam deposition to ASCOT guiding centre format")
 
     with open(filepath,'w') as file:
@@ -833,9 +834,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 dump_beam_depo_LOCUST(self.data,filepath)
 
         elif data_format=='LOCUST_weighted':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename and equilibrium required\n",filename,equilibrium):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST_weighted(self.data,filepath)
+                dump_beam_depo_LOCUST_weighted(self.data,filepath,equilibrium)
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
@@ -854,19 +855,18 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST/LOCUST_weighted/IDS/ASCOT/ASCOT_gc)\n")
 
-    def plot(self,some_equilibrium=False,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,fill=True,ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,fill=True,ax=False,fig=False):
         """
         plots beam deposition
 
         notes:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             grid - grid-like object containing same 'axes' to bin against e.g. distribution_function object with ['R'] and ['Z'] data
             style - choose from scatter or histogram
             weight - toggle whether to include marker weights in histograms
             number_bins - set number of bins or levels
             axes - list of strings specifying which axes should be plotted
-            LCFS - toggles whether plasma boundary is included (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - sets r,z scale to real tokamak cross section
             colmap - set the colour map (use get_cmap names)
             fill - toggle contour fill on 2D plots
@@ -913,18 +913,12 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
 
             if axes==['R','Z']: #check for commonly-used axes
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
 
             elif axes==['X','Y']:          
                 if real_scale is True: 
-                    if some_equilibrium:
-                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
@@ -959,36 +953,30 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 mesh=ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:
-                if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+                if real_scale is True:                    
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
-                if LCFS is True: #plot plasma boundary
-                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
-                if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                if LCFS: #plot plasma boundary
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
 
             elif axes==['X','Y']:
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
-                if LCFS is True: #plot plasma boundary
-                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
-                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                if LCFS: #plot plasma boundary
+                    plasma_max_R=np.max(LCFS['lcfs_r'])
+                    plasma_min_R=np.min(LCFS['lcfs_r'])
                     ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                     ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)          
-                if limiters is True: #add boundaries if desired
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    limiters_max_R=np.max(some_equilibrium['rlim'])
-                    limiters_min_R=np.min(some_equilibrium['rlim'])
+                if limiters: #add boundaries if desired
+                    ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    limiters_max_R=np.max(limiters['rlim'])
+                    limiters_min_R=np.min(limiters['rlim'])
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
             
@@ -1010,25 +998,21 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             
             if LCFS: #plot periodic poloidal cross-sections in 3D
                 for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
-                    x_points=some_equilibrium['lcfs_r']*np.cos(angle)
-                    y_points=some_equilibrium['lcfs_r']*np.sin(angle)
-                    z_points=some_equilibrium['lcfs_z']
+                    x_points=LCFS['lcfs_r']*np.cos(angle)
+                    y_points=LCFS['lcfs_r']*np.sin(angle)
+                    z_points=LCFS['lcfs_z']
                     ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
 
             if limiters: #plot periodic poloidal cross-sections in 3D
                 for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
-                    x_points=some_equilibrium['rlim']*np.cos(angle)
-                    y_points=some_equilibrium['rlim']*np.sin(angle)
-                    z_points=some_equilibrium['zlim']
+                    x_points=limiters['rlim']*np.cos(angle)
+                    y_points=limiters['rlim']*np.sin(angle)
+                    z_points=limiters['zlim']
                     ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
 
             if real_scale is True:
                 ax.set_aspect('equal')
-                if some_equilibrium:
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D'])) 
-
+ 
             mesh=ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(np.random.uniform()),s=0.1,label=self.ID)
         
         if ax_flag is False and fig_flag is False:
