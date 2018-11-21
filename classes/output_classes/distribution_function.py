@@ -451,7 +451,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
-    def plot(self,some_equilibrium=False,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
         """
         plot the distribution function
 
@@ -459,11 +459,10 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
             if user supplies full set of indices, code assumes those slices are dimension to plot over i.e. please crop before plotting
         args:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             key - select which data to plot
             axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
             transform - set to False if supplied dfn has already been cut down to correct dimensions
@@ -546,9 +545,6 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     #the above line works because dfn_index is a numpy array of strings - would break for lists
 
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                        ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
@@ -574,16 +570,13 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 ax.set_title(self.ID)
                 
                 if real_scale is True: #set x and y plot limits to real scales
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                        ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
-                if LCFS is True: #plot plasma boundary
-                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
-                if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                if LCFS: #plot plasma boundary
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
                 
                 if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh

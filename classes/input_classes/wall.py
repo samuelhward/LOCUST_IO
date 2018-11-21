@@ -433,15 +433,14 @@ class Wall(classes.base_input.LOCUST_input):
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT)\n")
 
 
-    def plot(self,some_equilibrium=False,key='Br',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False): 
+    def plot(self,key='Br',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False): 
         """
         notes:
         args:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             key - select which data to plot
             axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
             transform - set to False if supplied dfn has already been cut down to correct dimensions

@@ -306,7 +306,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def dfn_plot(self,some_equilibrium=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False,**kwargs):
+    def dfn_plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -314,10 +314,9 @@ class TRANSP_output_FI(TRANSP_output):
             functions differently to LOCUST_IO's plot_distribution_function() (see args list below)
             assumes distribution function has already been integrated to specified 'axes' option
         args:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             axes - array specifying plot type from list of options below
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plot
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - select desired colourmap
             number_bins - set number of bins or levels
@@ -369,16 +368,13 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_ylabel('Z [m]')
 
             if real_scale is True: #set x and y plot limi`ts to real scales
-                if some_equilibrium:
-                    ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                 ax.set_aspect('equal')
             else:
                 ax.set_aspect('auto')
-            if LCFS is True: #plot plasma boundary
-                ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
-            if limiters is True: #add boundaries if desired
-                ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+            if LCFS: #plot plasma boundary
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+            if limiters: #add boundaries if desired
+                ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
@@ -531,8 +527,8 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         file.write("1           # ion Znum\n")
         file.write("1           # ion Amass\n")
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
-        file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n")
-
+        file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n") #rho_pol is defined as sqrt((psi - psi_axis)/(psi_sep - psi_axis)), where psi is the poloidal magnetic flux, and psi_axis/psi_sep are its value evaluated on-axis/at the separatrix
+ 
         flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
         flux_pol_norm_sqrt,te,ne,rot,ti,ni=processing.utils.sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
@@ -542,7 +538,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
 
     print("finished dumping profiles to ASCOT format")
 
-def dump_wall_ASCOT(filename,output_data):
+def dump_wall_ASCOT(filename,wall):
     """
     dumps 2D wall outline to ASCOT input.wall_2d format
     
@@ -550,7 +546,7 @@ def dump_wall_ASCOT(filename,output_data):
         currently sets all divertor flags = 0 i.e. treats everything as 'wall'
     args:
         filename - output filename
-        output_data - data structure holding wall with same wall variable names as GEQDSK equilibrium e.g. rlim,zlim - i.e. a GEQDSK equilibrium object 
+        wall - data structure holding wall with same wall variable names as GEQDSK equilibrium e.g. rlim,zlim - i.e. a GEQDSK equilibrium object 
 
     """
 
@@ -560,15 +556,15 @@ def dump_wall_ASCOT(filename,output_data):
 
     with open(filepath,'w') as file:
 
-        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(output_data['rlim'].size)))
+        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(wall['rlim'].size)))
         
-        for r,z in zip(output_data['rlim'],output_data['zlim']):
+        for r,z in zip(wall['rlim'],wall['zlim']):
             line=processing.utils.fortran_string(r,16,7)+processing.utils.fortran_string(z,16,7)+processing.utils.fortran_string(0.0,4,0,False)+"\n"
             file.write(line)
 
     print("finished dumping wall to ASCOT format")
 
-def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,guiding_centre=True,tag=''):
+def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,guiding_centre=True,tag=''):
     """
     generates full run input data for ASCOT
 
@@ -586,11 +582,14 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
             - input.wall_2d = limiter contour outline
             - binary = executable
     args:
-        temperature_e - electron temperature object (eV)
         temperature_i - ion temperature object (eV)
-        density_e - electron density object (#/m^3)
+        temperature_e - electron temperature object (eV)
         density_i - ion density object (#/m^3)
+        density_e - electron density object (#/m^3)
         rotation_toroidal - array-like toroidal rotation (rad/s)
+        equilibrium - equilibrium object 
+        beam_deposition - beam deposition object
+        wall - wall object
         guiding_centre - toggle dumping birth list at guiding-centre or particle position
         tag - optional identifier tag for each set of run files produced
     """
@@ -599,7 +598,7 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
 
     dump_run_file_ASCOT(initialdir=support.dir_input_files,tag=tag) #generate run file
     dump_profiles_ASCOT(filename='input.plasma_1d'+tag,temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
-    dump_wall_ASCOT(filename='input.wall_2d'+tag,output_data=equilibrium)
+    dump_wall_ASCOT(filename='input.wall_2d'+tag,wall=wall)
     if guiding_centre:
         beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles'+tag,equilibrium=equilibrium)
     else:
@@ -836,7 +835,7 @@ class ASCOT_output:
         else:
             print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
-    def dfn_plot(self,some_equilibrium=None,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+    def dfn_plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
         """
         wrapper to plot_distribution_function
 
@@ -845,7 +844,7 @@ class ASCOT_output:
 
         #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
 
-        def plot_distribution_function(self,some_equilibrium=False,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+        def plot_distribution_function(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
             """
             plot the distribution function
 
@@ -853,11 +852,10 @@ class ASCOT_output:
                 if external figure or axes are supplied then, if possible, function returns plottable object for use with external colorbars etc 
                 if user supplies full set of indices, code assumes those slices are dimension to plot over i.e. please crop before plotting
             args:
-                some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
                 key - select which data to plot
                 axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
-                LCFS - show plasma boundary outline (requires equilibrium arguement)
-                limiters - toggles limiters on/off in 2D plots
+                LCFS - object which contains LCFS data lcfs_r and lcfs_z
+                limiters - object which contains limiter data rlim and zlim
                 real_scale - plot to Tokamak scale
                 colmap - set the colour map (use get_cmap names)
                 transform - set to False if supplied dfn has already been cut down to correct dimensions
@@ -940,9 +938,6 @@ class ASCOT_output:
                         #the above line works because dfn_index is a numpy array of strings - would break for lists
 
                     if real_scale is True: #set x and y plot limits to real scales
-                        if some_equilibrium:
-                            ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                            ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                         ax.set_aspect('equal')
                     else:
                         ax.set_aspect('auto')
@@ -968,16 +963,13 @@ class ASCOT_output:
                     ax.set_title(self.ID)
                     
                     if real_scale is True: #set x and y plot limits to real scales
-                        if some_equilibrium:
-                            ax.set_xlim(np.min(dfn_copy[axes[0]]),np.max(dfn_copy[axes[0]]))
-                            ax.set_ylim(np.min(dfn_copy[axes[1]]),np.max(dfn_copy[axes[1]]))
                         ax.set_aspect('equal')
                     else:
                         ax.set_aspect('auto')
-                    if LCFS is True: #plot plasma boundary
-                        ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
-                    if limiters is True: #add boundaries if desired
-                        ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                    if LCFS: #plot plasma boundary
+                        ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                    if limiters: #add boundaries if desired
+                        ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
                     
                     if ax_flag is True or fig_flag is True: #return the plot object
                         return mesh
@@ -994,7 +986,7 @@ class ASCOT_output:
         dfn=copy.deepcopy(self)
         if transform: 
             dfn.dfn_transform(axes=axes)
-        return plot_distribution_function(dfn,some_equilibrium=some_equilibrium,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        return plot_distribution_function(dfn,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
 
 
 
@@ -1182,7 +1174,7 @@ class FINT_LOCUST:
             self['dfn']=np.asarray(self['dfn'])
             self['dfn']=self['dfn'].reshape(int(len(self['time'])),int(self['nE'])) #XXX check order of this
 
-    def dfn_plot(self,some_equilibrium=None,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
+    def dfn_plot(self,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
         """
         plot dfn vs time
         

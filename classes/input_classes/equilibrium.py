@@ -668,7 +668,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         args:
             key - selects which data in equilibrium to plot
             LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            limiters - object which contains limiter data rlim and zlim
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             colmap - set the colour map (use get_cmap names)
@@ -744,9 +744,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_ylabel('Z [m]')
             ax.set_title(self.ID)
 
-            if LCFS is True:
+            if LCFS:
                 ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
-            if limiters is True: #add boundaries if desired
+            if limiters: #add boundaries if desired
                 ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
 
             if ax_flag is True or fig_flag is True: #return the plot object
@@ -764,8 +764,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             essentially uses the Euler method of integration
         args:
             axes - list of strings specifying which axes should be plotted
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             number_field_lines - the number of field lines to plot
             angle - plot field line for this many radians around central column
             plot_full - choose whether each field line will trace the whole plasma topology (see below also)
@@ -884,9 +884,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
                     if start_mark: 
                         ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
-                    if LCFS is True: #plot plasma boundary
+                    if LCFS: #plot plasma boundary
                         ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
-                    if limiters is True: #add boundaries if desired
+                    if limiters: #add boundaries if desired
                         ax.plot(self['rlim'],self['zlim'],plot_style_limiters)       
             
                     ax.set_xlabel('R [m]')
@@ -899,12 +899,12 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.plot(X_points,Y_points,color=colmap(np.random.uniform()))
                     if start_mark: 
                         ax.scatter(X_points[0],Y_points[0],color=colour_start_mark,s=10)
-                    if LCFS is True: #plot plasma boundary
+                    if LCFS: #plot plasma boundary
                         plasma_max_R=np.max(self['lcfs_r'])
                         plasma_min_R=np.min(self['lcfs_r'])
                         ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                         ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS) 
-                    if limiters is True: #add boundaries if desired
+                    if limiters: #add boundaries if desired
                         ax.set_xlim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         ax.set_ylim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         limiters_max_R=np.max(self['rlim'])

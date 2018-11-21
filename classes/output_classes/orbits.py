@@ -193,16 +193,15 @@ class Orbits(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
-    def plot(self,some_equilibrium=False,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap='blue',ax=False,fig=False):
+    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap='blue',ax=False,fig=False):
         """
         simple orbits plot in the R,Z/X,Y planes
          
         args:
-            some_equilibrium - corresponding equilibrium for plotting plasma boundary, scaled axes etc.
             particles - iterable list of particle numbers
             axes - define plot axes
-            LCFS - show plasma boundary outline (requires equilibrium arguement)
-            limiters - toggles limiters on/off in 2D plots
+            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale (requires equilibrium arguement)
             start_mark - include marker to show birth point
             colmap - set the colour map (use get_cmap names)
@@ -240,15 +239,12 @@ class Orbits(classes.base_output.LOCUST_output):
             if axes==['R','Z']: #if we're plotting along poloidal projection, then give options to include full cross-section and plasma boundary
                
                 if real_scale is True:
-                    if some_equilibrium:
-                        ax.set_xlim(np.min(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
                     ax.set_aspect('equal')
 
-                if LCFS is True: #plot plasma boundary
-                    ax.plot(some_equilibrium['lcfs_r'],some_equilibrium['lcfs_z'],plot_style_LCFS) 
-                if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                if LCFS: #plot plasma boundary
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
 
                 for particle in particles: #plot all the particle tracks one by one
                     ax.plot(self['orbits'][1::2,0,particle],self['orbits'][1::2,2,particle],color=colmap,linewidth=0.5) #plot every other position along trajectory
@@ -258,21 +254,18 @@ class Orbits(classes.base_output.LOCUST_output):
             elif axes==['X','Y']: #plotting top-down
                 
                 if real_scale is True:
-                    if some_equilibrium:
-                        ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                        ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
                     ax.set_aspect('equal')
 
-                if LCFS is True: #plot concentric rings to show inboard/outboard plasma boundaries
-                    plasma_max_R=np.max(some_equilibrium['lcfs_r'])
-                    plasma_min_R=np.min(some_equilibrium['lcfs_r'])
+                if LCFS: #plot concentric rings to show inboard/outboard plasma boundaries
+                    plasma_max_R=np.max(LCFS['lcfs_r'])
+                    plasma_min_R=np.min(LCFS['lcfs_r'])
                     ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
                     ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
-                if limiters is True: #add boundaries if desired
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['rlim']),np.max(some_equilibrium['rlim']))
-                    limiters_max_R=np.max(some_equilibrium['rlim'])
-                    limiters_min_R=np.min(some_equilibrium['rlim'])
+                if limiters: #add boundaries if desired
+                    ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
+                    limiters_max_R=np.max(limiters['rlim'])
+                    limiters_min_R=np.min(limiters['rlim'])
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
 
@@ -295,20 +288,17 @@ class Orbits(classes.base_output.LOCUST_output):
                 ax = fig.gca(projection='3d')
 
             if real_scale:
-                if some_equilibrium:
-                    ax.set_xlim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_ylim(-1.0*np.max(some_equilibrium['R_1D']),np.max(some_equilibrium['R_1D']))
-                    ax.set_zlim(np.min(some_equilibrium['Z_1D']),np.max(some_equilibrium['Z_1D']))
+
                 ax.set_aspect('equal')
 
-            if LCFS is True: #plot periodic poloidal cross-sections in 3D 
+            if LCFS: #plot periodic poloidal cross-sections in 3D 
                 for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
-                    x_points=some_equilibrium['lcfs_r']*np.cos(angle)
-                    y_points=some_equilibrium['lcfs_r']*np.sin(angle)
-                    z_points=some_equilibrium['lcfs_z']
+                    x_points=LCFS['lcfs_r']*np.cos(angle)
+                    y_points=LCFS['lcfs_r']*np.sin(angle)
+                    z_points=LCFS['lcfs_z']
                     ax.plot(x_points,y_points,zs=z_points,color='m')
-                if limiters is True: #add boundaries if desired
-                    ax.plot(some_equilibrium['rlim'],some_equilibrium['zlim'],plot_style_limiters)
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
 
             for particle in particles: #plot all the particle tracks one by one
                 x_points=self['orbits'][1::2,0,particle]*np.cos(self['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
