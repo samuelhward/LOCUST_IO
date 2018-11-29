@@ -202,7 +202,7 @@ def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smoot
 
     return interpolator
 
-def interpolate_1D(X_axis,Y_axis,function='cubic',smooth=0):
+def interpolate_1D(X_axis,Y_axis,function='cubic',type='RBF',smooth=0):
     """
     generate a 1D line interpolator
 
@@ -213,6 +213,7 @@ def interpolate_1D(X_axis,Y_axis,function='cubic',smooth=0):
         X_axis - 1D x-axis
         Y_axis - 1D y-axis
         function - spline function
+        type - name of interpolation function to use
         smooth - level of smoothing
     usage:
         my_interpolator=interpolate_1D(X_axis,data)
@@ -225,7 +226,10 @@ def interpolate_1D(X_axis,Y_axis,function='cubic',smooth=0):
         raise ImportError("ERROR: interpolate_1D could not import scipy.interpolate module!\nreturning\n")
         return
 
-    interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function=function,smooth=smooth)
+    if type=='RBF':
+        interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function=function,smooth=smooth)
+    elif type=='interp1d':
+        interpolator=scipy.interpolate.interp1d(X_axis,Y_axis,kind=function)
 
     return interpolator
 
@@ -324,19 +328,28 @@ def get_dfn_point(dfn,type='LOCUST',**kwargs):
             diff_R=np.abs(dfn['R2D']-R)**2 #irregular grid so need to minimise distance to every point
             diff_Z=np.abs(dfn['Z2D']-Z)**2
 
-            index_RZ=(diff_r+diff_z).argmin()
+            index_RZ=(diff_R+diff_Z).argmin()
             index_V_pitch=np.abs(dfn['V_pitch']-V_pitch).argmin()
             index_E=np.abs(dfn['E']-E).argmin()
 
-            dfn_values.append(dfn[index_RZ,index_V_pitch,index_E])
-    
+            dfn_values.append(dfn['dfn'][index_RZ,index_V_pitch,index_E])
+
+            print('R') #diagnostic printing out to show the point is in right ball park
+            print(dfn['R2D'][index_RZ])
+            print('Z') #diagnostic printing out to show the point is in right ball park
+            print(dfn['Z2D'][index_RZ])
+            print('V_pitch') #diagnostic printing out to show the point is in right ball park
+            print(dfn['V_pitch'][index_V_pitch])  
+            print('E') #diagnostic printing out to show the point is in right ball park
+            print(dfn['E'][index_E])
+
     else:
-        
+
         number_dimensions=len(kwargs.keys())
         for key in kwargs:
             number_points=len(kwargs[key])
 
-        coordinate_array=np.ndarray(shape=(number_points,number_dimensions)) #hold nD indices of all the N points we want to know in an NxnD array for an nD distribution function
+        coordinate_array=np.ndarray(shape=(number_points,number_dimensions),dtype=int) #hold nD indices of all the N points we want to know in an NxnD array for an nD distribution function
 
         for key in kwargs: #go through supplied dimensions
 
@@ -347,6 +360,8 @@ def get_dfn_point(dfn,type='LOCUST',**kwargs):
             for counter,point in enumerate(kwargs[key]):
                 point_index=np.abs(dfn[key]-point).argmin() #find index of nearest grid point to the point we're dealing with along this dimension 
                 coordinate_array[counter,dimension_index]=point_index 
+                #print(key) #diagnostic printing out to show the point is in right ball park
+                #print(dfn[key][point_index])
 
         dfn_values=[]
         for coordinate in coordinate_array:

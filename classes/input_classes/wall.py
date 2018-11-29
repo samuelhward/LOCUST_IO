@@ -264,6 +264,59 @@ def read_wall_ufile(filepath):
 
     return input_data 
 
+def read_wall_ASCOT_2D_input(filepath):
+    """
+    reads 2D wall limiter profile from ASCOT input file format
+
+    notes:
+    """
+
+    print("reading 2D wall from ASCOT input file")
+
+    with open(filepath,'r') as file:
+
+        input_data={}
+        lines=file.readlines()
+        del(lines[0]) #delete headerline
+        r=[]
+        z=[]
+
+        for line in lines:
+            r.append(float(line.split()[0]))
+            z.append(float(line.split()[1]))
+
+        input_data['rlim']=np.array(r)
+        input_data['zlim']=np.array(z)
+
+    print("finished reading 2D wall from ASCOT input file")
+
+    return input_data
+
+def read_wall_ASCOT_2D_output(filepath):
+    """
+    reads 2D wall limiter profile from ASCOT input file format
+
+    notes:
+    """
+
+    print("reading 2D wall from ASCOT output file")
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_temperature_LOCUST_h5 could not import h5py module!\n") 
+        return
+
+    with h5py.File(filepath,'r') as file:
+
+        input_data={}    
+        input_data['rlim']=file['wall/2d/R'].value
+        input_data['zlim']=file['wall/2d/z'].value
+
+    print("finished reading 2D wall from ASCOT output file")
+
+    return input_data
+
 ################################################################## Wall write functions
 
 def dump_wall_LOCUST_2D(output_data,filepath):
@@ -283,7 +336,7 @@ def dump_wall_LOCUST_2D(output_data,filepath):
         file.write("{}\n".format(processing.utils.fortran_string(R_0,13,5,exponential=False)))
 
         #calculate angle and radius of limiter points with respect to geometric centre 
-        Z_0=np.mean(output_data['zlim']) #should be roughly 0
+        Z_0=0. #LOCUST always assumes Z_0 is zero
         angles=np.arctan2(output_data['zlim']-Z_0,output_data['rlim']-R_0)
         angles[angles<0]=2.*pi+angles[angles<0]
         radii=(output_data['zlim']-Z_0)/np.sin(angles)
@@ -298,7 +351,7 @@ def dump_wall_LOCUST_2D(output_data,filepath):
         #now interpolate in polar coordinates onto 3600 points in theta, starting anti-clockwise from outboard side 
         angles_new=np.mod(np.linspace(0.,(3599./3600.)*2.*pi,3600)+pi,2.*pi)
 
-        radii_interpolator=processing.utils.interpolate_1D(angles,radii,function='linear',smooth=0.0001)
+        radii_interpolator=processing.utils.interpolate_1D(angles,radii,type='interp1d',function='linear')
         radii_new=radii_interpolator(angles_new)
 
         for radius in radii_new: 
@@ -306,9 +359,9 @@ def dump_wall_LOCUST_2D(output_data,filepath):
 
     print("finished writing 2D limiter wall to LOCUST format")
 
-def dump_wall_ASCOT(output_data,filepath):
+def dump_wall_ASCOT_2D_input(output_data,filepath):
     """
-    dumps 2D wall outline to ASCOT input.wall_2d format
+    dumps 2D wall outline to ASCOT input.wall_2d input file format
     
     notes:
         currently sets all divertor flags = 0 i.e. treats everything as 'wall'
@@ -403,8 +456,26 @@ class Wall(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_wall_ufile(self.filepath)
 
+        elif data_format=='ASCOT_2D_input':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from 2D ASCOT input file - filename required\n",filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_wall_ASCOT_2D_input(self.filepath)
+
+        elif data_format=='ASCOT_2D_output':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from 2D ASCOT output file - filename required\n",filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_wall_ASCOT_2D_output(self.filepath)
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/ufile)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/ufile/ASCOT_2D_input/ASCOT_2D_output)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -424,28 +495,22 @@ class Wall(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files+filename
                 dump_wall_LOCUST_2D(self.data,filepath)
 
-        elif data_format=='ASCOT':
+        elif data_format=='ASCOT_2D_input':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_wall_ASCOT(self.data,filepath)                
+                dump_wall_ASCOT_2D_input(self.data,filepath)                
 
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT)\n")
+            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n")
 
 
-    def plot(self,key='Br',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False): 
+    def plot(self,LCFS=False,real_scale=False,colmap=plot_style_limiters,ax=False,fig=False): 
         """
         notes:
         args:
-            key - select which data to plot
-            axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
-            limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
-            transform - set to False if supplied dfn has already been cut down to correct dimensions
-            number_bins - set number of bins or levels
-            fill - toggle contour fill on 2D plots
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -458,7 +523,35 @@ class Wall(classes.base_input.LOCUST_input):
         from mpl_toolkits import mplot3d #import 3D plotting axes
         from mpl_toolkits.mplot3d import Axes3D
 
-        pass
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+
+        if LCFS: #plot plasma boundary
+            ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS)
+        
+        ax.plot(self['rlim'],self['zlim'],colmap)
+
+        if real_scale is True: #set x and y plot limits to real scales
+            ax.set_aspect('equal')
+        else:
+            ax.set_aspect('auto')
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
 
 #################################
  

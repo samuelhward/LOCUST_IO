@@ -120,7 +120,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
         
         if properties['EBASE']:
             #dEFh
-            input_data['dEh']=file.read_reals(dtype=np.float32)         
+            input_data['dE']=file.read_reals(dtype=np.float32)         
         else:
             #dVFh
             input_data['dV']=file.read_reals(dtype=np.float32) 
@@ -233,6 +233,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
 
         if properties['EBASE']:
             input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['dfn']*=0.5 #convert from same pitch dimension as TRANSP (per dSolidAngle/4pi) to per unit pitch 
             input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
             input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         else:
@@ -264,9 +265,9 @@ def read_distribution_function_LOCUST(filepath,**properties):
         else:
 
             #R+dR/2 (nF long)
-            input_data['R']=file.read_reals(dtype=np.float32) #r space of dfn
+            input_data['R']=file.read_reals(dtype=np.float32) #r space of dfn [m]
             #Z+dZ/2 (nF long)
-            input_data['Z']=file.read_reals(dtype=np.float32) #z space of dfn
+            input_data['Z']=file.read_reals(dtype=np.float32) #z space of dfn [m]
 
         if IDFTYP==1 or IDFTYP==4:
 
@@ -281,9 +282,12 @@ def read_distribution_function_LOCUST(filepath,**properties):
         if properties['EBASE']:
             #E+dE/2 (nE long)
             input_data['E']=file.read_reals(dtype=np.float32) #energy space of dfn
+            input_data['E']/=e_charge #convert energy to [eV]
+            input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium)) #[m/s]
         else:
             #V+dV/2 (nV long)
             input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
+            input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
         
         #PG+dPG/2 (nP long)
         input_data['P']=file.read_reals(dtype=np.float32) #special dimension - simulation specific (e.g. gyrophase)
@@ -335,14 +339,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
             input_data['dP']=np.array(2.*pi)
-        
-        if properties['EBASE']:
-            input_data['E']/=e_charge #convert energy to eV
-            #input_data['dfn']*=e_charge #convert to eV^-1
-            input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium))
-        else:
-            input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
-        
+                
         if properties['EBASE']:
             input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
         else:
