@@ -448,7 +448,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
         plot the distribution function
 
@@ -465,6 +465,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             transform - set to False if supplied dfn has already been cut down to correct dimensions
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
+            vminmax - set mesh Vmin/Vmax values
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         usage:
@@ -472,7 +473,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             plot_distribution_function(my_dfn,axes=['E','V_pitch']) #basic pitch,energy plot
             plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True) #R,Z plotted with true scales and last closed flux surface from supplied equilibrium
             plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True,transform=False) #R,Z plot where my_dfn has already been cropped to correct dimensions
-            plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
+            plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],vminmax=[0,1000],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
         axes options:
             R,Z - integrate over pitch, gyrophase and velocity [m]^-3
             E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
@@ -526,6 +527,13 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if transform is True:
                 dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
 
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(dfn_copy[key])
+                vmax=np.amax(dfn_copy[key])
+
             #check resulting dimensionality of distribution function
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
@@ -552,12 +560,12 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
-                    mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
-                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                    mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
+                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
-                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     #ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
