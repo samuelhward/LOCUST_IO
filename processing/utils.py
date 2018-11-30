@@ -233,13 +233,22 @@ def interpolate_1D(X_axis,Y_axis,function='cubic',type='RBF',smooth=0):
 
     return interpolator
 
-def RphiZ_to_XYZ(R,phi):
+def RphiZ_to_XYZ(R,phi,RH=True):
     """
     converts R,phi positions to X,Y 
+
+    args:
+        R - R coordinates to convert
+        phi - Toroidal angle coordinates to convert
+        RH - toggle right-handed R phi Z coordinate system
+    notes:
     """
 
-    X=R*np.sin(phi)
-    Y=R*np.cos(phi)
+    if RH is not True:
+        phi=2.*pi-phi
+
+    X=R*np.cos(phi)
+    Y=R*np.sin(phi)
 
     return X,Y
 

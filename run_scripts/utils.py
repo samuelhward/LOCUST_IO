@@ -1249,6 +1249,8 @@ class FINT_LOCUST:
         read data from filepath
         """
 
+        print("reading LOCUST FINT distribution")
+
         with open(filepath,'r') as file:
 
             lines=file.readlines() #reading entire file anyway so grab all at once
@@ -1302,6 +1304,8 @@ class FINT_LOCUST:
             self['PFC_power']=np.asarray(self['PFC_power'])
             self['dfn']=np.asarray(self['dfn'])
             self['dfn']=self['dfn'].reshape(int(len(self['time'])),int(self['nE'])) #XXX check order of this
+
+        print("finished reading LOCUST FINT distribution")
 
     def dfn_plot(self,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
         """
