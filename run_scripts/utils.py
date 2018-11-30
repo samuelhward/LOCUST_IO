@@ -363,7 +363,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def dfn_plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False,**kwargs):
+    def dfn_plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -377,6 +377,8 @@ class TRANSP_output_FI(TRANSP_output):
             real_scale - plot to Tokamak scale
             colmap - select desired colourmap
             number_bins - set number of bins or levels
+            fill - toggle contour fill on 2D plots
+            vminmax - set mesh Vmin/Vmax values
             ax - external axis object
             fig - external figure object
         axes options:
@@ -414,11 +416,19 @@ class TRANSP_output_FI(TRANSP_output):
             R,Z=np.meshgrid(R,Z)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Z,R)
+
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(new_dfn['dfn'])
+                vmax=np.amax(new_dfn['dfn'])
+
             if fill:
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
-                mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=vmin,vmax=vmax)
             else:
-                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(np.amin(new_dfn),np.amax(new_dfn),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(new_dfn),vmax=np.amax(new_dfn))
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('R [m]')
@@ -439,15 +449,23 @@ class TRANSP_output_FI(TRANSP_output):
                 return mesh
 
         elif axes==['E','V_pitch']: 
+
             dfn_copy=self.dfn_integrate(pitch=False,energy=False)
+
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(dfn_copy['dfn'])
+                vmax=np.amax(dfn_copy['dfn'])
 
             E,V_pitch=np.meshgrid(dfn_copy['E'],dfn_copy['V_pitch']) #X,Y this way because dfn dimension ordering
 
             if fill:
                 ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
-                mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=np.amin(dfn_copy['dfn']),vmax=np.amax(dfn_copy['dfn']))            
+                mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=vmin,vmax=vmax)            
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(np.amin(dfn_copy['dfn']),np.amax(dfn_copy['dfn']),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -473,12 +491,19 @@ class TRANSP_output_FI(TRANSP_output):
 
                 dfn_int_all=np.array(E_list,ndmin=2) #combine all objects in list into one
                 E,time=np.meshgrid(dfn_copy['E'],np.array(time_list)) #automatically sorts in ascending time since pcolormesh does not require increasing meshgrid
-                
+
+                if vminmax:
+                    vmin=vminmax[0]
+                    vmax=vminmax[1]
+                else:
+                    vmin=np.amin(dfn_int_all)
+                    vmax=np.amax(dfn_int_all)
+
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_int_all)))
-                    mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))           
+                    mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=vmin,vmax=vmax)           
                 else:
-                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(np.amin(dfn_int_all),np.amax(dfn_int_all),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_int_all),vmax=np.amax(dfn_int_all))
+                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     #ax.clabel(mesh,inline=1,fontsize=10)
 
                 ax.set_xlabel('energy [eV]')                
@@ -497,14 +522,22 @@ class TRANSP_output_FI(TRANSP_output):
         #elif axes==['R']:
 
         elif len(axes)==self['dfn'].ndim: #assume user wants to plot energy pitch at point in real space
+
             dfn_copy=self['dfn'][tuple(axes)]
-            E,V_pitch=np.meshgrid(self['E'],self['V_pitch']) #X,Y this way because F_D_NBI dimension ordering
+            E,V_pitch=np.meshgrid(self['E'],self['V_pitch']) #X,Y this way because dfn dimension ordering
+
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(dfn_copy)
+                vmax=np.amax(dfn_copy)
 
             if fill:          
                 ax.set_facecolor(colmap(np.amin(dfn_copy)))
-                mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))         
+                mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=vmin,vmax=vmax)         
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(np.amin(dfn_copy),np.amax(dfn_copy),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy),vmax=np.amax(dfn_copy))
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -668,7 +701,6 @@ class ASCOT_output:
     class for encapsulating ASCOT HDF5 output file
 
     notes:
-        very hacky
         mimics a LOCUST_IO object - use pull_data and methods like dfn_transform to then access standard LOCUST_IO functions
         my_output.file['key/path/to/data'].values will return leaf-level tree data from HDF5 file
     example:
@@ -925,7 +957,7 @@ class ASCOT_output:
 
         return dfn_copy
 
-    def dfn_plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+    def dfn_plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
         wrapper to plot_distribution_function
 
@@ -934,7 +966,7 @@ class ASCOT_output:
 
         #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
 
-        def plot_distribution_function(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,ax=False,fig=False):
+        def plot_distribution_function(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=vminmax,ax=False,fig=False):
             """
             plot the distribution function
 
@@ -951,6 +983,7 @@ class ASCOT_output:
                 transform - set to False if supplied dfn has already been cut down to correct dimensions
                 number_bins - set number of bins or levels
                 fill - toggle contour fill on 2D plots
+                vminmax - set mesh Vmin/Vmax values
                 ax - take input axes (can be used to stack plots)
                 fig - take input fig (can be used to add colourbars etc)
             usage:
@@ -958,7 +991,7 @@ class ASCOT_output:
                 plot_distribution_function(my_dfn,axes=['E','V_pitch']) #basic pitch,energy plot
                 plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True) #R,Z plotted with true scales and last closed flux surface from supplied equilibrium
                 plot_distribution_function(my_dfn,my_eq,axes=['R','Z'],LCFS=True,real_scale=True,transform=False) #R,Z plot where my_dfn has already been cropped to correct dimensions
-                plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
+                plot_distribution_function(my_dfn,axes=[0,9,3,slice(None),slice(None)],vminmax=[0,1000],ax=my_ax,fig=my_fig) #R,Z plot at point 9,3 in E,pitch space without integrating and adding to my_ax on figure my_fig
             axes options:
                 R,Z - integrate over pitch, gyrophase and velocity [m]^-3
                 E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
@@ -1012,6 +1045,13 @@ class ASCOT_output:
                 if transform is True:
                     dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
 
+                if vminmax:
+                    vmin=vminmax[0]
+                    vmax=vminmax[1]
+                else:
+                    vmin=np.amin(dfn_copy[key])
+                    vmax=np.amax(dfn_copy[key])
+
                 #check resulting dimensionality of distribution function
                 if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                     pass #XXX incomplete - should add scatter point
@@ -1038,12 +1078,12 @@ class ASCOT_output:
 
                     if fill:
                         ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
-                        mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
-                        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
+                        #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                         '''for c in mesh.collections: #for use in contourf
                             c.set_edgecolor("face")'''
                     else:
-                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(dfn_copy[key]),vmax=np.amax(dfn_copy[key]))
+                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                         #ax.clabel(mesh,inline=1,fontsize=10)
 
                     if fig_flag is False:    

@@ -555,14 +555,16 @@ def dump_beam_depo_ASCOT(output_data,filepath):
         file.write("Tmax      - maximum time to follow the prt (s)\n")
         file.write("\n")
 
-        #hard-code weight calculation for now
-        beam_power=1.0
-        energies_sum=np.sum(output_data['E'])
-        weight=beam_power/energies_sum
+        if 'weight' in output_data:
+            weight=output_data['weight']
+        else: #if weight not supplied in data, hard code a pseudo-weight based on 1W deposited power
+            beam_power=1.0
+            energies_sum=np.sum(output_data['E'])
+            weight=np.zeros(len(output_data['E']))+beam_power/energies_sum
 
         print("writing particle list to file")
         i=0 #counter for particle identifier
-        for phi,R,Z,V_tor,V_R,V_Z in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z']): 
+        for phi,R,Z,V_tor,V_R,V_Z,W in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z'],weight): 
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
@@ -581,7 +583,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
             line+=processing.utils.fortran_string(V_Z,18,9)
 
             line+=processing.utils.fortran_string(1.0,9,0,False) #origin
-            line+=processing.utils.fortran_string(weight,18,9) #weight
+            line+=processing.utils.fortran_string(W,18,9) #weight
             line+=processing.utils.fortran_string(i,10,0,False) #ID
             line+=processing.utils.fortran_string(999.0,18,9) #Tmax
 
