@@ -473,6 +473,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         ndim=len(axes)
         if ndim==1: #plot 1D histograms
@@ -484,7 +485,6 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 ax.plot(self_binned_centres,weight*self_binned)
 
                 ax.set_xlabel(axes[0])
-                ax.set_title(self.ID)
 
         elif ndim==2: #plot 2D histograms
 
@@ -555,7 +555,6 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
-            ax.set_title(self.ID)
             
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh

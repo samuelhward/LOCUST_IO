@@ -538,6 +538,7 @@ class Wall(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         if LCFS: #plot plasma boundary
             ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS)

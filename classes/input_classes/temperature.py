@@ -35,6 +35,11 @@ try:
     import classes.base_input 
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/base_input.py could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
+    import classes.input_classes.equilibrium 
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/equilibrium.py could not be imported!\nreturning\n")
     sys.exit(1) 
 
 try:
@@ -164,7 +169,55 @@ def read_temperature_IDS(shot,run,**properties):
  
 def read_temperature_UDA(shot,time,**properties):
     """
+    notes:
+        needs NaN checking (replace with interpolated values)
+        this script heavily relies on the structure of UDA - please contant Stuart Henderson for updates
     """
+
+    print("reading temperature from UDA")
+
+    try:
+        import pyuda
+        udaClient=pyuda.Client()
+        getdata=udaClient.get
+        import numpy as np
+    except:
+        raise ImportError("ERROR: read_temperature_UDA could not import pyuda!\nreturning\n")
+
+    equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='',data_format='UDA',shot=shot,time=time) #needs to read corresponding equilibrium
+    input_data={}
+
+    if properties['species']=='electrons':
+
+        if shot<23000:
+            signal_T='atm_te'
+            signal_R='atm_R'
+        else:
+            signal_T='ayc_te'
+            signal_R='ayc_r'
+
+        T=getdata(signal_T,shot)
+        R_data=getdata(signal_R,shot) #electron and ion temperature signals are stored against different radial bases - must access another dataset for electrons
+        time_grid=T.dims[0].data
+        time_index=np.abs(time_grid-time).argmin()[0] #figure out what time we are wanting to output (pick closest)
+        R_grid=R_data.data[time_index]
+    
+    elif properties['species']=='ions':
+
+        T=getdata('act_ss_temperature',shot)
+        time_grid=T.dims[0].data
+        time_index=np.abs(time_grid-time).argmin()[0] #figure out what time we are wanting to output (pick closest)
+        R_grid=T.dims[1].data 
+
+    T=T.data[time_index,:]
+    psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are at along Z=0
+    interpolator_temperature=processing.utils.interpolate_1D(psi_grid,T)
+
+    input_data['flux_pol']=np.linspace(np.min(psi_grid),np.max(psi_grid),200)
+    input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol']-np.min(input_data['flux_pol'])))
+    input_data['T']=interpolator_temperature(input_data['flux_pol'])
+
+    print("finished reading temperature from UDA")
 
     return input_data
 
@@ -325,8 +378,16 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_temperature_IDS(self.shot,self.run,**self.properties)
  
+        elif data_format=='UDA':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from UDA - shot and time required\n",shot,time):
+                self.data_format=data_format
+                self.shot=shot
+                self.time=time
+                self.properties={**properties}
+                self.data=read_temperature_UDA(self.shot,self.time,**self.properties)
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -392,11 +453,11 @@ class Temperature(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
        
         ax.plot(self[axis],self['T'],color=colmap)
         ax.set_xlabel(axis)
         ax.set_ylabel('temperature [eV]')
-        ax.set_title(self.ID)
 
         if ax_flag is False and fig_flag is False:
             plt.show()

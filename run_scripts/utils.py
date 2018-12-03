@@ -322,7 +322,7 @@ class TRANSP_output_FI(TRANSP_output):
         self['dfn']=self.data.pop('F_D_NBI')
         self['E']=self.data.pop('E_D_NBI')
         self['V_pitch']=self.data.pop('A_D_NBI')
-        self['dfn_index']=['RZ','V_pitch','E']
+        self['dfn_index']=np.array(['RZ','V_pitch','E'])
 
         print("finished reading TRANSP fast ion distribution function")
 
@@ -401,10 +401,8 @@ class TRANSP_output_FI(TRANSP_output):
         if fig_flag is False:
             fig = plt.figure() #if user has not externally supplied figure, generate
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)   
-
-        ax.set_title(self.ID) #set title to object's ID descriptor
-
+            ax = fig.add_subplot(111)
+        ax.set_title(self.ID)   
         
         #add specific options for plotting here
         if axes==['R','Z']:
@@ -517,7 +515,12 @@ class TRANSP_output_FI(TRANSP_output):
             else:
                 print("ERROR: 'TRANSP_output_FI_list' not supplied in TRANSP_output_FI.dfn_plot(...**kwargs) - please see docstring for TRANSP_output_FI.dfn_plot()\n")
 
-        #elif axes==['E']:
+        elif axes==['E']: #integrate over all volume and plot as a function of energy in #/eV
+
+            dfn_copy=self.dfn_integrate(energy=False)
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'])
+            ax.set_xlabel('energy [eV]')
+            ax.set_ylabel('density [#/eV]',colmap)
 
         #elif axes==['R']:
 
@@ -966,7 +969,7 @@ class ASCOT_output:
 
         #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
 
-        def plot_distribution_function(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=vminmax,ax=False,fig=False):
+        def plot_distribution_function(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
             """
             plot the distribution function
 
@@ -1030,20 +1033,21 @@ class ASCOT_output:
             
             if ax_flag is False: #if user has not externally supplied axes, generate them
                 ax = fig.add_subplot(111)
+            ax.set_title(self.ID)
 
             #1D data
             if self[key].ndim==1:
-                ax.plot(self[axes[0]],self[key])
+                ax.plot(self[axes[0]],self[key],colmap)
                 ax.set_ylabel(key)
-                ax.set_title(self.ID)
 
             #plot distribution function
             elif key=='dfn':
                 
                 #transform distribution function to the coordinates we want
-                dfn_copy=copy.deepcopy(self)
                 if transform is True:
                     dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
+                else:
+                    dfn_copy=copy.deepcopy(self)
 
                 if vminmax:
                     vmin=vminmax[0]
@@ -1056,7 +1060,7 @@ class ASCOT_output:
                 if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                     pass #XXX incomplete - should add scatter point
                 elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                    ax.plot(self[key])
+                    ax.plot(dfn_copy[axes[0]],dfn_copy[key],colmap)
                     ax.set_xlabel(axes[0])
                     ax.set_ylabel(key)
                 elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
@@ -1083,14 +1087,13 @@ class ASCOT_output:
                         '''for c in mesh.collections: #for use in contourf
                             c.set_edgecolor("face")'''
                     else:
-                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                         #ax.clabel(mesh,inline=1,fontsize=10)
 
                     if fig_flag is False:    
                         fig.colorbar(mesh,ax=ax,orientation='horizontal')
                     ax.set_xlabel(axes[0])
                     ax.set_ylabel(axes[1])
-                    ax.set_title(self.ID)
                     
                     if real_scale is True: #set x and y plot limits to real scales
                         ax.set_aspect('equal')
@@ -1111,11 +1114,12 @@ class ASCOT_output:
             if ax_flag is False and fig_flag is False:
                 plt.show()
 
+
         #XXX - THIS IS FUDGE CODE COPIED FROM DFN.PLOT METHOD
 
         if transform: 
             dfn_copy=self.dfn_transform(axes=axes)
-        return plot_distribution_function(dfn_copy,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
+        return plot_distribution_function(dfn_copy,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,vminmax=vminmax,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
 
 
 
@@ -1301,7 +1305,7 @@ class FINT_LOCUST:
             self['E_norm']=np.asarray(self['E_norm'])
             self['Pdep']=np.asarray(self['Pdep'])
             self['time']=np.asarray(self['time'])
-            self['PFC_power']=np.asarray(self['PFC_power'])
+            self['PFC_power']=np.asarray(self['PFC_power'])*1.e6 #convert from [MW] to [W]
             self['dfn']=np.asarray(self['dfn'])
             self['dfn']=self['dfn'].reshape(int(len(self['time'])),int(self['nE'])) #XXX check order of this
 
@@ -1326,6 +1330,7 @@ class FINT_LOCUST:
             fig = plt.figure() #if user has not externally supplied figure, generate
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         E,time=np.meshgrid(self['E'],self['time'])
 
@@ -1338,7 +1343,6 @@ class FINT_LOCUST:
 
         ax.set_xlabel('time [s]')
         ax.set_ylabel('energy [eV]')                
-        ax.set_title(self.ID)
         
         if fig_flag is False:    
             fig.colorbar(mesh,ax=ax,orientation='horizontal')
@@ -1348,6 +1352,54 @@ class FINT_LOCUST:
 
         if ax_flag is False and fig_flag is False:
             plt.show()
+
+
+def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
+    """
+    generates the point_data.inp file for checking magnetic perturbations using LOCUST -DBCHECK
+
+    args:
+        BCHECK - coordinate format setting for LOCUST field checking (1=RPhiZ,2=XYZ)  
+    notes:
+    usage:
+       dump_perturbation_point_data_input(R=[1],phi=[2],Z=[3],time=[0]) 
+       dump_perturbation_point_data_input(BCHECK=2,X=[1],Y=[2],Z=[3],time=[0])
+    """
+
+
+    print("writing point_inp.dat test points")
+
+    filepath=support.dir_input_files+'point_data.inp'
+ 
+    with open(filepath,'w') as file: #open file
+
+        if BCHECK==1:
+            for R,Phi,Z,time in zip(kwargs['R'],kwargs['phi'],kwargs['Z'],kwargs['time']):
+                line=' '
+                line+=processing.utils.fortran_string(R,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Phi,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Z,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(time,11,6,exponential=False)
+                line+='  '
+                file.write('{}\n'.format(line))
+
+        elif BCHECK==2:
+            for X,Y,Z,time in zip(kwargs['X'],kwargs['Y'],kwargs['Z'],kwargs['time']):
+                line=' '
+                line+=processing.utils.fortran_string(X,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Y,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Z,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(time,11,6,exponential=False)
+                line+='  '
+                file.write('{}\n'.format(line))
+
+    print("finished writing point_inp.dat test points")
 
 ################################################################################################### misc functions
 
