@@ -119,6 +119,39 @@ def read_perturbation_LOCUST(filepath):
     
     return input_data
 
+def read_perturbation_LOCUST_field_data(filepath):
+    """
+    notes:
+        reads from the file_data.out file produced by LOCUST BCHECK mode
+    """
+
+    print("reading LOCUST test field data")
+
+    with open(filepath,'r') as file: #open file
+
+        input_data={}
+
+        lines=file.readlines()
+        del(lines[0]) #delete headerline
+
+        for quantity in ['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']:
+            input_data[quantity]=[]
+
+        for line in lines:
+            for counter,quantity in enumerate(['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']):
+            
+                try:
+                    input_data[quantity].append(float(line.split()[counter]))
+                except:
+                    input_data[quantity].append(0.0)
+
+        for quantity in ['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']:
+            input_data[quantity]=np.asarray(input_data[quantity])
+
+    print("reading LOCUST test field data")
+
+    return input_data
+
 def read_perturbation_IDS(shot,run):
     """
     notes:
@@ -211,6 +244,15 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath) #read the file
 
+        elif data_format=='LOCUST_field_data': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_field_data - filename required\n",filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_perturbation_LOCUST_field_data(self.filepath) #read the file
+
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from magnetics IDS - shot and run required\n",shot,run):
  
@@ -244,22 +286,23 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (MARSF)\n")
 
-    def plot(self,key='Br',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """
+        plots a perturbation
+        
         notes:
+            
         args:
-            key - select which data to plot
-            axes - define plot axes in x,y order or as full list of indices/slices (see dfn_transform())
-            LCFS - object which contains LCFS data lcfs_r and lcfs_z
+            key - selects which data in perturbation to plot
+            LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
             limiters - object which contains limiter data rlim and zlim
-            real_scale - plot to Tokamak scale
-            colmap - set the colour map (use get_cmap names)
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
+            colmap - set the colour map (use get_cmap names)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
-        
+
         import scipy
         import numpy as np
         import matplotlib
@@ -268,7 +311,78 @@ class Perturbation(classes.base_input.LOCUST_input):
         from mpl_toolkits import mplot3d #import 3D plotting axes
         from mpl_toolkits.mplot3d import Axes3D
 
-        pass
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        #0D data
+        if self[key].ndim==0:
+            print([key])
+            return
+        
+        #>0D data is plottable
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
+
+        #1D data
+        if self[key].ndim==1:
+            ax.plot(self[key])
+            ax.set_ylabel(key)
+
+        #2D data
+        elif self[key].ndim==2:
+
+            X=self['R_1D'] #make a mesh
+            Y=self['Z_1D'] 
+            Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
+            Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+            
+            #2D plot
+            if fill is True:
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                for c in mesh.collections: #for use in contourf
+                    c.set_edgecolor("face")
+            else:
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                ax.clabel(mesh,inline=1,fontsize=10)
+                
+            #mesh=ax.pcolormesh(X,Y,Z,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+
+            #3D plot
+            #ax=ax.axes(projection='3d')
+            #ax.view_init(elev=90, azim=None) #rotate the camera
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            ax.set_aspect('equal')
+            ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+            ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+            ax.set_xlabel('R [m]')
+            ax.set_ylabel('Z [m]')
+
+            if LCFS:
+                ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+            if limiters: #add boundaries if desired
+                ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
+
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
+            
 #################################
  
 ##################################################################

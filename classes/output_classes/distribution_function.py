@@ -512,20 +512,21 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key])
+            ax.plot(self[axes[0]],self[key],colmap)
             ax.set_ylabel(key)
-            ax.set_title(self.ID)
 
         #plot distribution function
         elif key=='dfn':
             
             #transform distribution function to the coordinates we want
-            dfn_copy=copy.deepcopy(self)
             if transform is True:
                 dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
+            else:
+                dfn_copy=copy.deepcopy(self)
 
             if vminmax:
                 vmin=vminmax[0]
@@ -538,7 +539,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
             elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                ax.plot(self[key])
+                ax.plot(dfn_copy[axes[0]],dfn_copy[key],colmap)
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(key)
             elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
@@ -572,7 +573,6 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(axes[1])
-                ax.set_title(self.ID)
                 
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')

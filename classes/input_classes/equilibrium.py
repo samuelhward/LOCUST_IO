@@ -324,6 +324,7 @@ def read_equilibrium_UDA(shot,time):
     input_data['rleft']=input_data['R_1D'][0]
     input_data['zdim']=input_data['Z_1D'][-1]-input_data['Z_1D'][0]
     input_data['zmid']=np.asarray((input_data['Z_1D'][-1]+input_data['Z_1D'][0])*.5)
+    input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],100)
     
     '''
     input_data['rlim'] = np.array([
@@ -667,8 +668,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
         args:
             key - selects which data in equilibrium to plot
-            LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
-            limiters - object which contains limiter data rlim and zlim
+            LCFS - toggles plasma boundary on/off in 2D plots
+            limiters - toggles limiters on/off in 2D plots
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             colmap - set the colour map (use get_cmap names)
@@ -705,6 +706,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         #1D data
         if self[key].ndim==1:
@@ -742,7 +744,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
             ax.set_xlabel('R [m]')
             ax.set_ylabel('Z [m]')
-            ax.set_title(self.ID)
 
             if LCFS:
                 ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
@@ -802,6 +803,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
         ax.set_aspect('equal')
         
         dr=np.abs(self['R_1D'][1]-self['R_1D'][0])
@@ -893,7 +895,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.set_ylabel('Z [m]')
                     ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
                     ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
-                    ax.set_title(self.ID)
 
                 elif axes==['X','Y']: #top-down plot
                     ax.plot(X_points,Y_points,color=colmap(np.random.uniform()))
@@ -916,7 +917,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.set_ylabel('Y [m]')
                     ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
                     ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
-                    ax.set_title(self.ID)
                 
                 else: #3D plot
                     if start_mark: 
@@ -977,6 +977,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+            ax.set_title(self.ID)
         ax.set_aspect('equal')
             
         if 'B_field' not in self.data.keys(): #calculate B field if missing
@@ -996,7 +997,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         ax.set_xlabel('R [m]')
         ax.set_ylabel('Z [m]')
-        ax.set_title(self.ID)
 
         if ax_flag is False and fig_flag is False:
             plt.show()

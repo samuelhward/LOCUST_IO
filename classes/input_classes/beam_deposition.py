@@ -899,6 +899,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         ndim=len(axes) #infer how many dimensions user wants to plot
         if ndim==1: #plot 1D histograms
@@ -909,7 +910,6 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
             ax.plot(self_binned_centres,self_binned)
             ax.set_xlabel(axes[0])
-            ax.set_title(self.ID)
 
         elif ndim==2: #plot 2D histograms
 
@@ -987,7 +987,6 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
-            ax.set_title(self.ID)
            
         elif ndim==3: #plot 3D scatter - assume X,Y,Z
 

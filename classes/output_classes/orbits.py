@@ -233,6 +233,7 @@ class Orbits(classes.base_output.LOCUST_output):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
 
         if ndim==2: #2D plotting
             
@@ -279,8 +280,6 @@ class Orbits(classes.base_output.LOCUST_output):
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
-            ax.set_title(self.ID)
-
 
         elif ndim==3: #3D plotting
 
@@ -312,7 +311,6 @@ class Orbits(classes.base_output.LOCUST_output):
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
             ax.set_zlabel(axes[2])
-            ax.set_title(self.ID)
 
         if ax_flag is False and fig_flag is False:
             plt.show()

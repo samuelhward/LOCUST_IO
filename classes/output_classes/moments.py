@@ -151,10 +151,24 @@ def read_moments_TRANSP(filepath):
     input_data={}
 
     input_data['density']=np.array(file.variables['BDENS'].data)*1.e6 #convert to [m^-3]
+
+    input_data['energy']=np.array(file.variables['UTHRM'].data)*1.e6 #convert to [m^-3]     thermal energy density
+    input_data['energy_para']=np.array(file.variables['UFASTPA'].data)*1.e6 #convert to [m^-3]
+    input_data['energy_perp']=np.array(file.variables['UFASTPP'].data)*1.e6 #convert to [m^-3]
+
     input_data['NBI-heating-power(i1)']=np.array(file.variables['PBI'].data)*1.e6 #convert to [m^-3]
     input_data['NBI-heating-power(e-)']=np.array(file.variables['PBE'].data)*1.e6 #convert to [m^-3]
+
+    input_data['torque-density(JxB-inst)']=np.array(file.variables['TQJJXBT'].data)*1.e6 #convert to [m^-3]
+    input_data['torque-density(JxB-inst)_deposited']=np.array(file.variables['TQJBD'].data)*1.e6 #convert to [m^-3]
+
+    input_data['torque-density(coll)']=np.array(file.variables['BPHCL'].data)
+
+    input_data['residual-angular-momentum-density_err']=np.array(file.variables['BPHI'].data)
+
     input_data['beam_source']=np.array(file.variables['BDEP_D'].data)*1.e6 #convert to [m^-3]
     input_data['beam_source_captured']=np.array(file.variables['BPCAP'].data)[:,np.newaxis]
+    input_data['beam_source_loss']=np.array(file.variables['BSORB'].data)[:,np.newaxis]
     input_data['beam_source_loss_fraction']=np.array(file.variables['BSORBPR'].data)[:,np.newaxis]
 
     input_data['time']=np.array(file.variables['TIME3'].data)

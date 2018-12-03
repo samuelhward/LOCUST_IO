@@ -208,9 +208,11 @@ def dfn_crop(some_dfn,**kwargs):
     """
     notes:
         warning! to work, dfn_index and 1D dfn axes must accurately reflect dfn which is still stored e.g. dfn['dfn'][r,z] must contain dfn['R'],dfn['Z'] and dfn['dfn_index']=['R','Z']
+        always maintains shape of dfn
     args:
         kwargs - axes and their limits 
     usage:
+        new_dfn=dfn_crop(R=[1]) generates dfn at point closest to R=1
         new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1
     """
 
@@ -225,15 +227,19 @@ def dfn_crop(some_dfn,**kwargs):
         else:
 
             dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
+            
+            if len(value)==2: #user has supplied range
+                i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
+                i=i[0] #get first element of returned tuple
+            elif len(value)==1: #user has supplied single value for nearest neighbour
+                i=[np.abs(dfn[key]-value[0]).argmin()]
 
-            i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
-            i=i[0] #get first element of returned tuple
             dfn[key]=dfn[key][i] #crop 1D arrays accordingly
             nkey='n{}'.format(key) #reset associated nkey values too e.g. reset nR if cropping R
             dfn[nkey]=np.array(len(dfn[key]))
 
             dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
-            dfn['dfn']=dfn['dfn'][i,:] #crop dfn
+            dfn['dfn']=dfn['dfn'][i] #crop dfn
             dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
     return dfn
