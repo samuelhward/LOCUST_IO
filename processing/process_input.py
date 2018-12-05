@@ -97,9 +97,7 @@ def fpolrz_calc(some_equilibrium):
 
     notes:
         fpol is defined over the poloidal flux points flux_pol
-
         assumes flux_pol and fpol are defined from magnetic axis to plasma boundary
-        
         if the grid extends outside of the plasma radius, where poloidal flux function is not defined, then use a given vacuum toroidal field and work
         backwards to get the value of the flux function (since f is constant in vacuum)
     """
@@ -111,7 +109,7 @@ def fpolrz_calc(some_equilibrium):
     for w in np.arange(some_equilibrium['nR_1D']): #loop over 2D grid
         for h in np.arange(some_equilibrium['nZ_1D']):
             
-            if np.abs(some_equilibrium['psirz'][w,h])<=np.max(np.abs(some_equilibrium['flux_pol'])) and np.abs(some_equilibrium['psirz'][w,h])>=np.min(np.abs(some_equilibrium['flux_pol'])): #if the poloidal flux function is defined for this poloidal flux
+            if some_equilibrium['psirz'][w,h]<=np.max(some_equilibrium['flux_pol']) and some_equilibrium['psirz'][w,h]>=np.min(some_equilibrium['flux_pol']): #if the poloidal flux function is defined for this poloidal flux
                 fpolrz[w,h]=fpolrz_interpolator(some_equilibrium['psirz'][w,h])
             else:
                 fpolrz[w,h]=some_equilibrium['bcentr']*some_equilibrium['rcentr']
