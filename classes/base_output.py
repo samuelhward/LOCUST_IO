@@ -113,7 +113,7 @@ class LOCUST_output:
         if hasattr(self,'properties') and self.properties:
             print("Properties:".format(properties=self.properties))
             for key in self.properties:
-                if self.properties[key]: #do not print if the data is empty
+                if self.properties[key] or self.properties[key]==0: #do not print if the data is empty
                     print("{key} - {value}".format(key=key,value=self.properties[key])) 
         
         print("|")

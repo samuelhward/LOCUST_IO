@@ -159,7 +159,7 @@ def read_moments_TRANSP(filepath):
     input_data['NBI-heating-power(i1)']=np.array(file.variables['PBI'].data)*1.e6 #convert to [m^-3]
     input_data['NBI-heating-power(e-)']=np.array(file.variables['PBE'].data)*1.e6 #convert to [m^-3]
 
-    input_data['torque-density(JxB-inst)']=np.array(file.variables['TQJJXBT'].data)*1.e6 #convert to [m^-3]
+    #input_data['torque-density(JxB-inst)']=np.array(file.variables['TQJJXBT'].data)*1.e6 #convert to [m^-3]
     input_data['torque-density(JxB-inst)_deposited']=np.array(file.variables['TQJBD'].data)*1.e6 #convert to [m^-3]
 
     input_data['torque-density(coll)']=np.array(file.variables['BPHCL'].data)

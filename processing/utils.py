@@ -315,10 +315,30 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,1])
     B_field_Z_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,2])
 
-    Br_at_particles=B_field_R_interpolator(some_particle_list['R'],some_particle_list['Z']) #interpolate B to particles
-    Btor_at_particles=B_field_tor_interpolator(some_particle_list['R'],some_particle_list['Z'])
-    Bz_at_particles=B_field_Z_interpolator(some_particle_list['R'],some_particle_list['Z'])
-    B_at_particles=np.sqrt(Br_at_particles**2+Btor_at_particles**2+Bz_at_particles**2) #calculate |B| at particles - quicker than interpolating
+    print("pitch_calc_2D - interpolating B_field to particles\n")
+
+    #to stop memory errors, doing element-wise
+
+    Br_at_particles=[]
+    Btor_at_particles=[]
+    Bz_at_particles=[]
+    B_at_particles=[]
+
+    for R,Z in zip(some_particle_list['R'],some_particle_list['Z']):
+
+        Br=B_field_R_interpolator(R,Z)
+        Btor=B_field_tor_interpolator(R,Z)
+        Bz=B_field_Z_interpolator(R,Z)
+        Br_at_particles.append(Br) #interpolate B to particles
+        Btor_at_particles.append(Btor)
+        Bz_at_particles.append(Bz)
+        B_at_particles.append(np.sqrt(Br**2+Btor**2+Bz**2)) #calculate |B| at particles - quicker than interpolating
+
+    print("pitch_calc_2D - finished interpolating B_field to particles\n")
+
+    Br_at_particles=np.asarray(Br_at_particles)
+    Btor_at_particles=np.asarray(Btor_at_particles)
+    Bz_at_particles=np.asarray(Bz_at_particles)
 
     Br_at_particles/=B_at_particles #calculate B_hat
     Btor_at_particles/=B_at_particles
