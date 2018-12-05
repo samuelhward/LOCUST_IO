@@ -106,7 +106,7 @@ def read_beam_depo_LOCUST(filepath):
         input_data['V_R']=np.asarray(input_data['V_R'])
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
-        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*mass_deuterium)
+        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass)
 
     print("finished reading beam deposition from LOCUST")
  
@@ -155,7 +155,7 @@ def read_beam_depo_LOCUST_weighted(filepath):
         input_data['phi']=np.asarray(input_data['phi'])
         input_data['Z']=np.asarray(input_data['Z'])
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
-        input_data['E']=np.asarray(input_data['E'])*.5*mass_deuterium/e_charge
+        input_data['E']=np.asarray(input_data['E'])*.5*species_mass/species_charge
         input_data['weight']=np.asarray(input_data['weight'])
         
     print("finished reading weighted beam deposition from LOCUST")
@@ -270,7 +270,7 @@ def read_beam_depo_TRANSP_fbm(filepath):
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
-        input_data['E']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*mass_deuterium)
+        input_data['E']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)
 
     print("finished reading beam deposition from TRANSP FBM format")
 
@@ -437,7 +437,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath,equilibrium):
         file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
         file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
 
-        V=np.sqrt(e_charge*output_data['E']*2./mass_deuterium)
+        V=np.sqrt(species_charge*output_data['E']*2./species_mass)
         V_parallel=V*output_data['V_pitch']
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
@@ -568,7 +568,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(mass_deuterium_amu,14,5)
+            line+=processing.utils.fortran_string(species_mass_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             
@@ -646,7 +646,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*mass_deuterium*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/e_charge
+            output_data['E']=0.5*species_mass*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/species_charge
 
         #interpolate B field to particle locations with supplied equilibrium
         if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
@@ -679,7 +679,7 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(mass_deuterium_amu,14,5)
+            line+=processing.utils.fortran_string(species_mass_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             

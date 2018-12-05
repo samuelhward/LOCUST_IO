@@ -60,10 +60,10 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         remember dimensions of unedited dfn are my_dfn['dfn'][P,V/E,V_pitch,R,Z]
         assumes unedited dfn
         assumes the bin widths for a given dimension are constant
-        assumes deuterium in energy conversion to energy space
         assumes toroidal symmetry (no toroidal dimension in dfn)
         if an array of indices is given, then slice the dfn accordingly and return without any integration
             note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
+        dimension P is meaningless in EBASE mode 
 
     axes options:
         R,Z - integrate over pitch, gyrophase and velocity [m]^-3
@@ -142,7 +142,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             #applying velocity space and gyrophase Jacobian
             for v in range(len(dfn['V'])):
                 dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-            dfn['dfn']*=dfn['dP']*e_charge/(mass_deuterium)
+            dfn['dfn']*=dfn['dP']*species_charge/(species_mass)
 
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
@@ -157,7 +157,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             #applying velocity space and gyrophase Jacobian
             for v in range(len(dfn['V'])):
                 dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-            dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*e_charge/(mass_deuterium)
+            dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*species_charge/(species_mass)
 
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):

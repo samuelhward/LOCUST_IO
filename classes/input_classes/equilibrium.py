@@ -629,6 +629,19 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
+
+        if 'GEQDSKFIX' in properties:
+            if properties['GEQDSKFIX']==0:
+                pass
+
+            elif properties['GEQDSKFIX']==1:
+                self['psirz']*=-1
+                self['sibry']*=-1
+                self['simag']*=-1
+                self['current']*=-1
+
+            elif properties['GEQDSKFIX']==2:
+                pass
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
@@ -794,9 +807,12 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             fig_flag=True
 
-        if 'B_field' not in self.data: #check we have a B field first
-            print("ERROR: 'B_field' missing in equilibrium object (calculate first with B_calc)")
-            return
+        if 'fpolrz' not in self.data.keys(): #first go about calculating the magnetic field if missing
+            print("plot_field_line - found no fpolrz in equilibrium - calculating!")
+            self.set(fpolrz=processing.process_input.fpolrz_calc(self)) 
+        if 'B_field' not in self.data.keys():
+            print("plot_field_line - found no B_field in equilibrium - calculating!")
+            self.set(B_field=processing.process_input.B_calc(self))
 
         if fig_flag is False:
             fig = plt.figure() #if user has not externally supplied figure, generate
@@ -979,13 +995,13 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax = fig.add_subplot(111)
             ax.set_title(self.ID)
         ax.set_aspect('equal')
-            
-        if 'B_field' not in self.data.keys(): #calculate B field if missing
-            print("plot_field_stream found no B_field in equilibrium - calculating!")
-            if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
-                print("plot_field_stream found no fpolrz in equilibrium - calculating!")
-                self.set(fpolrz=processing.process_input.fpolrz_calc(equilibrium))
-            self.set(B_field=processing.process_input.B_calc(equilibrium))
+
+        if 'fpolrz' not in self.data.keys(): #first go about calculating the magnetic field if missing
+            print("plot_field_stream - found no fpolrz in equilibrium - calculating!")
+            self.set(fpolrz=processing.process_input.fpolrz_calc(self)) 
+        if 'B_field' not in self.data.keys():
+            print("plot_field_stream - found no B_field in equilibrium - calculating!")
+            self.set(B_field=processing.process_input.B_calc(self))
 
         B_mag=np.sqrt(self['B_field'][:,:,0]**2+self['B_field'][:,:,2]**2) #calculate poloidal field magnitude
         strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0].T,self['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)

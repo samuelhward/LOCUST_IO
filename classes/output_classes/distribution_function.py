@@ -282,12 +282,12 @@ def read_distribution_function_LOCUST(filepath,**properties):
         if properties['EBASE']:
             #E+dE/2 (nE long)
             input_data['E']=file.read_reals(dtype=np.float32) #energy space of dfn
-            input_data['E']/=e_charge #convert energy to [eV]
-            input_data['V']=np.array(np.sqrt(2.*input_data['E']*e_charge/mass_deuterium)) #[m/s]
+            input_data['E']/=species_charge #convert energy to [eV]
+            input_data['V']=np.array(np.sqrt(2.*input_data['E']*species_charge/species_mass)) #[m/s]
         else:
             #V+dV/2 (nV long)
             input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
-            input_data['E']=np.array((0.5*mass_deuterium*input_data['V']**2)/e_charge) #calculate energy [eV]
+            input_data['E']=np.array((0.5*species_mass*input_data['V']**2)/species_charge) #calculate energy [eV]
         
         #PG+dPG/2 (nP long)
         input_data['P']=file.read_reals(dtype=np.float32) #special dimension - simulation specific (e.g. gyrophase)
@@ -356,6 +356,65 @@ def read_distribution_function_LOCUST(filepath,**properties):
     print("finished reading distribution function from LOCUST")
     return input_data
 
+def read_distribution_function_ASCOT(filepath):
+    """
+    read distribution as written out in hdf5 file by ASCOT
+
+    notes:
+
+    """
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_distribution_function_ASCOT could not import h5py module!\n") 
+        return
+
+    with h5py.File(filepath,'r') as file:
+
+        print("reading distribution function from ASCOT")
+
+        ''' 
+        extract dfn to #[m^-3 eV^-1 dpitch^-1] format
+
+        file['distributions/rzPitchEdist/ordinate'].value=[species,time,E,V_pitch,Z,R,ordinate]
+        file['distributions/rzPitchEdist/abscissae']['dim1']=R
+                                                 ...['dim2']=Z
+                                                 ...['dim3']=V_pitch
+                                                 ...['dim4']=E [J]
+                                                 ...['dim5']=time
+                                                 ...['dim6']=species'''
+            
+        input_data['R']=.5*(file['distributions/rzPitchEdist/abscissae/dim1'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim1'].value[:-1]) #bin centres [m]
+        input_data['Z']=.5*(file['distributions/rzPitchEdist/abscissae/dim2'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim2'].value[:-1]) #[m]
+        input_data['V_pitch']=.5*(file['distributions/rzPitchEdist/abscissae/dim3'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim3'].value[:-1])
+        input_data['E']=.5*(file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/species_charge #[eV]
+        input_data['V']=np.sqrt(2.*input_data['E']/species_mass)
+
+        input_data['dR']=np.abs(input_data['R'][1]-input_data['R'][0])
+        input_data['dZ']=np.abs(input_data['Z'][1]-input_data['Z'][0])
+        input_data['dV_pitch']=np.abs(input_data['V_pitch'][1]-input_data['V_pitch'][0])
+        input_data['dE']=np.abs(input_data['E'][1]-input_data['E'][0])
+        
+        input_data['nR']=np.array(len(input_data['R']))
+        input_data['nZ']=np.array(len(input_data['Z']))
+        input_data['nV_pitch']=np.array(len(input_data['V_pitch']))
+        input_data['nE']=np.array(len(input_data['E']))
+
+        input_data['dfn']=file['distributions/rzPitchEdist/ordinate'].value #[m^-3 J^-1 dpitch^-1]
+        input_data['dfn']=np.sum(input_data['dfn'],axis=0)
+        input_data['dfn']=np.sum(input_data['dfn'],axis=0)
+        input_data['dfn']=np.sum(input_data['dfn'],axis=-1)
+        input_data['dfn']=np.swapaxes(input_data['dfn'],-1,-2) 
+        input_data['dfn']=input_data['dfn'][np.newaxis,:] #insert dummy P dimension
+        input_data['dfn']*=species_charge #[m^-3 eV^-1 dpitch^-1]
+        
+        input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z'])
+ 
+    print("finished reading distribution function from ASCOT")
+
+    return input_data
+
 ################################################################## Distribution_Function write functions
 
 def dump_distribution_function_LOCUST(output_data,filepath,**properties): 
@@ -401,7 +460,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         DoF for Fh (in order of array index i.e. my_dfn['dfn'][P,V/E,V_pitch,R,Z])
             IDFTYP=1
-                P       - special, rare simulation specific (e.g. gyro phase dimension)
+                P       - special, rare simulation specific (e.g. gyro phase dimension) - not used in EBASE mode
                 V/E     - velocity dimension/energy dimension (dictated by EBASE)
                 V_pitch - pitch dimension
                 R       - r dimension of bin centres
@@ -429,8 +488,19 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 self.properties={**properties}
                 self.properties={'ITER':True,'wtot':False,'WIPE':False,'TEST':False,'EBASE':True,'dfn_s':True,'Jh':True,'Jh_s':True,'cpu_time':True} #override properties here with read_data settings
                 self.data=read_distribution_function_LOCUST(self.filepath,**self.properties) #read the file
+
+        elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from ASCOT - filename required\n",filename): #must check we have all info required for reading GEQDSKs
+
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.properties={'EBASE':True} #override properties here with read_data settings
+                self.data=read_distribution_function_ASCOT(self.filepath,**self.properties) #read the file
+
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST)\n")            
+            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
