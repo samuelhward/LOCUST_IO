@@ -61,7 +61,7 @@ except:
 
 ################################################################## Equilibrium read functions
 
-def read_equilibrium_GEQDSK(filepath): 
+def read_equilibrium_GEQDSK(filepath,**properties): 
     """ 
     generic function for reading a G-EQDSK-formatted equilibrium file
  
@@ -177,7 +177,20 @@ def read_equilibrium_GEQDSK(filepath):
             return rb,zb,rl,zl
      
         input_data['lcfs_r'],input_data['lcfs_z'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['lcfs_n'],input_data['limitr'])
-        
+
+        if 'GEQDSKFIX' in properties:
+            if properties['GEQDSKFIX']==0:
+                pass
+
+            elif properties['GEQDSKFIX']==1:
+                input_data['psirz']*=-1
+                input_data['sibry']*=-1
+                input_data['simag']*=-1
+                input_data['current']*=-1
+
+            elif properties['GEQDSKFIX']==2:
+                pass
+
         #additional data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nR_1D'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nZ_1D']) 
@@ -188,7 +201,7 @@ def read_equilibrium_GEQDSK(filepath):
 
     return input_data
 
-def read_equilibrium_IDS(shot,run): 
+def read_equilibrium_IDS(shot,run,**properties): 
     """
     reads relevant LOCUST equilibrium data from an equilibrium IDS and returns as a dictionary
  
@@ -256,7 +269,7 @@ def read_equilibrium_IDS(shot,run):
 
     return input_data
 
-def read_equilibrium_UDA(shot,time):
+def read_equilibrium_UDA(shot,time,**properties):
     """
     reads equilibrium from analysed EFIT signals from MAST UDA database
 
@@ -280,12 +293,12 @@ def read_equilibrium_UDA(shot,time):
         raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda!\nreturning\n")
 
     #time dependent data first
-    input_data['psirz']=getdata('efm_psi(r,z)',       shot)
-    input_data['simag']=getdata('efm_psi_axis',       shot)
-    input_data['sibry']=getdata('efm_psi_boundary',   shot)
-    input_data['current']=getdata('efm_plasma_curr(C)', shot)
-    input_data['bcentr']=getdata('efm_bvac_val',       shot)
-    input_data['rcentr']=getdata('efm_bvac_r',       shot)
+    input_data['psirz']=getdata('efm_psi(r,z)',shot)
+    input_data['simag']=getdata('efm_psi_axis',shot)
+    input_data['sibry']=getdata('efm_psi_boundary',shot)
+    input_data['current']=getdata('efm_plasma_curr(C)',shot)
+    input_data['bcentr']=getdata('efm_bvac_val',shot)
+    input_data['rcentr']=getdata('efm_bvac_r',shot)
     input_data['pres']=getdata('efm_p(psi)_(c)',shot)
     input_data['fpol']=getdata('efm_f(psi)_(c)',shot)
     input_data['rmaxis']=getdata('efm_magnetic_axis_r',shot)
@@ -353,7 +366,7 @@ def read_equilibrium_UDA(shot,time):
 
 ################################################################## Equilibrium write functions
 
-def dump_equilibrium_GEQDSK(output_data,filepath):
+def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
     """
     generic function for writing GEQDSK-formatted data to file
  
@@ -456,7 +469,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath):
 
         print("finished writing equilibrium to GEQDSK")
  
-def dump_equilibrium_IDS(ID,output_data,shot,run):
+def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     """
     writes relevant LOCUST equilibrium data to an equilibrium IDS
  
@@ -536,14 +549,14 @@ def dump_equilibrium_IDS(ID,output_data,shot,run):
 
     print("finished writing equilibrium to IDS")
 
-def dump_equilibrium_ASCOT(output_data,filepath):
+def dump_equilibrium_ASCOT(output_data,filepath,**properties):
     """
     writes equilibrium data to ASCOT input files
 
     notes:
     """
 
-    dump_equilibrium_GEQDSK(output_data,filepath) #ASCOT also requires GEQDSK so write out just in case
+    dump_equilibrium_GEQDSK(output_data,filepath,**properties) #ASCOT also requires GEQDSK so write out just in case
 
     #XXX under construction
 
@@ -609,7 +622,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_equilibrium_GEQDSK(self.filepath) #read the file
+                self.data=read_equilibrium_GEQDSK(self.filepath,**properties) #read the file
             
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run required\n",shot,run):
@@ -617,7 +630,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
-                self.data=read_equilibrium_IDS(self.shot,self.run)
+                self.data=read_equilibrium_IDS(self.shot,self.run,**properties)
 
         elif data_format=='UDA':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from UDA - shot and time required\n",shot,time):
@@ -625,23 +638,10 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.time=time
                 self.properties={**properties}
-                self.data=read_equilibrium_UDA(self.shot,self.time)
+                self.data=read_equilibrium_UDA(self.shot,self.time,**properties)
 
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
-
-        if 'GEQDSKFIX' in properties:
-            if properties['GEQDSKFIX']==0:
-                pass
-
-            elif properties['GEQDSKFIX']==1:
-                self['psirz']*=-1
-                self['sibry']*=-1
-                self['simag']*=-1
-                self['current']*=-1
-
-            elif properties['GEQDSKFIX']==2:
-                pass
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None):
         """
@@ -659,16 +659,16 @@ class Equilibrium(classes.base_input.LOCUST_input):
         elif data_format=='GEQDSK':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to GEQDSK - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_equilibrium_GEQDSK(self.data,filepath)
+                dump_equilibrium_GEQDSK(self.data,filepath,**properties)
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to equilibrium IDS - shot and run required\n",shot,run):
-                dump_equilibrium_IDS(self.ID,self.data,shot,run)
+                dump_equilibrium_IDS(self.ID,self.data,shot,run,**properties)
  
         elif data_format=='ASCOT':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_equilibrium_ASCOT(self.data,filepath)
+                dump_equilibrium_ASCOT(self.data,filepath,**properties)
 
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
