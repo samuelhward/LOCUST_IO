@@ -111,6 +111,16 @@ def dfn_transform(some_dfn,axes=['R','Z']):
                 dfn['dfn']=np.sum(dfn['dfn'],axis=0)
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
+        elif axes==['V_pitch']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn['R'])):
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dE']
+            #then need to integrate over the unwanted coordinates
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+            dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over E
+
         elif axes==['N']:
             #applying full Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
@@ -136,7 +146,6 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             #then need to integrate over the first 3 dimensions which we do not need
             for counter in range(3):
                 dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
-
 
         elif axes==['E','V_pitch']:
             #applying velocity space and gyrophase Jacobian

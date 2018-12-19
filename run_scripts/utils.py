@@ -419,8 +419,8 @@ class TRANSP_output_FI(TRANSP_output):
                 vmin=vminmax[0]
                 vmax=vminmax[1]
             else:
-                vmin=np.amin(new_dfn['dfn'])
-                vmax=np.amax(new_dfn['dfn'])
+                vmin=np.amin(new_dfn)
+                vmax=np.amax(new_dfn)
 
             if fill:
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
@@ -1341,6 +1341,15 @@ class ASCOT_output:
                 dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=0)
             dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=-1) #sum over Z
 
+        elif axes==['V_pitch']:
+            #applying real space Jacobian and integrate over toroidal angle
+            for r in range(len(dfn_copy['R'])):
+                dfn_copy['dfn'][:,:,r,:]*=dfn_copy['R'][r]*2.*pi*dfn_copy['dR']*dfn_copy['dZ']*dfn_copy['dE']
+            #then need to integrate over the unwanted coordinates
+            dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=-1) #over Z
+            dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=-1) #over R
+            dfn_copy['dfn']=np.sum(dfn_copy['dfn'],axis=0) #over E
+
         elif axes==['N']:
             #applying full Jacobian and integrate over toroidal angle
             for r in range(len(dfn_copy['R'])):
@@ -1484,7 +1493,7 @@ class ASCOT_output:
                         '''for c in mesh.collections: #for use in contourf
                             c.set_edgecolor("face")'''
                     else:
-                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                        mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                         #ax.clabel(mesh,inline=1,fontsize=10)
 
                     if fig_flag is False:    

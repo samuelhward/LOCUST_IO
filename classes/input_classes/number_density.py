@@ -193,6 +193,22 @@ def read_number_density_UDA(shot,time,**properties):
     except:
         raise ImportError("ERROR: read_number_density_UDA could not import pyuda!\nreturning\n")
 
+    def replace_nan(quantity,time_index):
+        """
+        quick little function to replace NaNs in data with 1D interpolated values
+        """
+
+        def nan_helper(y): 
+            return np.isfinite(y), lambda z:z.nonzero()[0]
+
+        nansid, xdim = nan_helper(quantity.data[time_index,:])
+        try:
+            quantity.data[time_index,~nansid] = np.interp(xdim(~nansid),xdim(nansid),quantity.data[time_index,nansid])
+        except:
+            quantity.data[time_index,~nansid] = np.full(len(~nansid),-1.)
+
+        return
+
     equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='',data_format='UDA',shot=shot,time=time) #needs to read corresponding equilibrium
     input_data={}
 
@@ -207,10 +223,15 @@ def read_number_density_UDA(shot,time,**properties):
 
         N=getdata(signal_N,shot)
         R_data=getdata(signal_R,shot) #electron and ion temperature signals are stored against different radial bases - must access another dataset for electrons
+
         time_grid=N.dims[0].data
-        time_index=np.abs(time_grid-time).argmin()[0] #figure out what time we are wanting to output (pick closest)
-        R_grid=R_data.data[time_index]
+        time_index=np.abs(time_grid-time).argmin() #figure out what time we are wanting to output (pick closest)
+        
+        replace_nan(N,time_index)
+        replace_nan(R_data,time_index)
+        
         N=N.data[time_index,:]
+        R_grid=R_data.data[time_index]
 
         psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are at along Z=0
         interpolator_temperature=processing.utils.interpolate_1D(psi_grid,N)
@@ -349,7 +370,7 @@ class Number_Density(classes.base_input.LOCUST_input):
  
     LOCUST_input_type='number_density'
  
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,time=None,**properties):
         """
         read number density from file 
  
