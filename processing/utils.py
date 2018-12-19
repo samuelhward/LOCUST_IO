@@ -267,17 +267,21 @@ def RZ_to_Psi(R_coordinate,Z_coordinate,equilibrium):
     maps RZ point to corresponding poloidal flux
 
     args:
-        R_coordinate - cooresponding 1D R coordinates  
-        Z_coordinate - cooresponding 1D Z coordinates
+        R_coordinate - corresponding 1D R coordinates  
+        Z_coordinate - corresponding 1D Z coordinates
         equilibrium - equilibrium object with psi over 2D grid
     notes:
         returned flux is in [Wb/rad]
     """
 
     interpolator_psi=interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['psirz'])
-    psi_at_coordinate=interpolator_psi(R_coordinate,Z_coordinate)
+    psi_at_coordinate=[]
 
-    return psi_at_coordinate    
+    for R,Z in zip(R_coordinate,Z_coordinate): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
+        psi_point=interpolator_psi(R,Z)
+        psi_at_coordinate.append(np.squeeze(psi_point))
+
+    return np.asarray(psi_at_coordinate)
 
 def dot_product(vec1,vec2):
     """

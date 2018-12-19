@@ -356,7 +356,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
     print("finished reading distribution function from LOCUST")
     return input_data
 
-def read_distribution_function_ASCOT(filepath):
+def read_distribution_function_ASCOT(filepath,**properties):
     """
     read distribution as written out in hdf5 file by ASCOT
 
@@ -373,6 +373,8 @@ def read_distribution_function_ASCOT(filepath):
     with h5py.File(filepath,'r') as file:
 
         print("reading distribution function from ASCOT")
+
+        input_data={}
 
         ''' 
         extract dfn to #[m^-3 eV^-1 dpitch^-1] format
@@ -819,10 +821,12 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             #general option
             elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
                 dfn['dfn']=dfn['dfn'][tuple(axes)]
-                #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+                #XXX need to then reset dfn['nV'],dfn['R'],dfn['dfn_index'] etc data here?
             else:
                 print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
 
+        if len(axes)!=dfn['dfn'].ndim: #if user has not supplied all axes
+            dfn['dfn_index']=np.array(axes)
 
         return dfn
 

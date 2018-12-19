@@ -222,18 +222,19 @@ def read_temperature_UDA(shot,time,**properties):
 
         T=getdata('act_ss_temperature',shot)
         time_grid=T.dims[0].data
-        time_index=np.abs(time_grid-time).argmin()[0] #figure out what time we are wanting to output (pick closest)
-        R_grid=T.dims[1].data 
+        time_index=np.abs(time_grid-time).argmin() #figure out what time we are wanting to output (pick closest)
+        R_grid=T.dims[1].data
 
     replace_nan(T,time_index)
     T=T.data[time_index,:]
 
-    psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are at along Z=0
-    interpolator_temperature=processing.utils.interpolate_1D(psi_grid,T)
+    psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
+    psi_grid_norm=(psi_grid-psi_grid[0])/(psi_grid[-1]-psi_grid[0]) #assume monotonic psi grid - i.e. no current holes!
+    interpolator_temperature=processing.utils.interpolate_1D(psi_grid_norm,T) #create interpolator against normalised flux so we can crop easily later
 
-    input_data['flux_pol']=np.linspace(np.min(psi_grid),np.max(psi_grid),200)
-    input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol']-np.min(input_data['flux_pol'])))
-    input_data['T']=interpolator_temperature(input_data['flux_pol'])
+    input_data['time']=time_grid[time_index]
+    input_data['flux_pol_norm']=np.linspace(0.01,1.10,200) #crop out the middle of the plasma
+    input_data['T']=interpolator_temperature(input_data['flux_pol_norm'])
 
     print("finished reading temperature from UDA")
 
@@ -439,7 +440,7 @@ class Temperature(classes.base_input.LOCUST_input):
  
     def plot(self,axis='flux_pol_norm',colmap='blue',ax=False,fig=False):
         """
-        plots number density
+        plots temperature
 
         notes:
             axis - selects x axis of plot

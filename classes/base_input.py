@@ -112,6 +112,9 @@ class LOCUST_input:
         if hasattr(self,'run'):
             print("Run - {run}".format(run=self.run))
 
+        if hasattr(self,'time'):
+            print("Time - {time}".format(time=self.time))
+
         if hasattr(self,'properties') and self.properties:
             print("Properties:".format(properties=self.properties))
             for key in self.properties:
