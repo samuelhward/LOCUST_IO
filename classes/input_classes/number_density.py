@@ -233,12 +233,13 @@ def read_number_density_UDA(shot,time,**properties):
         N=N.data[time_index,:]
         R_grid=R_data.data[time_index]
 
-        psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are at along Z=0
-        interpolator_temperature=processing.utils.interpolate_1D(psi_grid,N)
+        psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
+        psi_grid_norm=(psi_grid-psi_grid[0])/(psi_grid[-1]-psi_grid[0]) #assume monotonic psi grid - i.e. no current holes!
+        interpolator_temperature=processing.utils.interpolate_1D(psi_grid_norm,N) #create interpolator against normalised flux so we can crop easily later
 
-        input_data['flux_pol']=np.linspace(np.min(psi_grid),np.max(psi_grid),200)
-        input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol']-np.min(input_data['flux_pol'])))
-        input_data['n']=interpolator_temperature(input_data['flux_pol'])
+        input_data['time']=time_grid[time_index]
+        input_data['flux_pol_norm']=np.linspace(0.01,1.10,200) #crop out the middle of the plasma
+        input_data['n']=interpolator_temperature(input_data['flux_pol_norm'])
 
     elif properties['species']=='ions':
         print("ERROR: read_number_density_UDA cannot read ion temperature!")

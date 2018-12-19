@@ -601,7 +601,11 @@ class Equilibrium(classes.base_input.LOCUST_input):
         filepath                    full path to output file in input_files folder
  
     notes:
- 
+        MACHINE - GEQDSKFIX
+            MAST    0
+            DIII-D  1
+            ITER    
+            AUG     0
     """
  
     LOCUST_input_type='equilibrium'
