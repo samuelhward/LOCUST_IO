@@ -1017,6 +1017,96 @@ class Equilibrium(classes.base_input.LOCUST_input):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
+    def fpolrz_calc(self):
+        """
+        interpolates 1D poloidal flux function fpol onto an r,z grid given  
+
+        notes:
+            fpol is defined over the poloidal flux points flux_pol
+            assumes flux_pol and fpol are defined from magnetic axis to plasma boundary
+            if the grid extends outside of the plasma radius, where poloidal flux function is not defined, then use a given vacuum toroidal field and work
+            backwards to get the value of the flux function (since f is constant in vacuum)
+        """
+
+        print("fpolrz_calc - calculating 2D flux function")
+
+        fpolrz=np.zeros((self['nR_1D'],self['nZ_1D'])) #initialise 2D grid
+        fpolrz_interpolator=processing.utils.interpolate_1D(self['flux_pol'],self['fpol']) #generate the interpolator
+
+        for w in np.arange(self['nR_1D']): #loop over 2D grid
+            for h in np.arange(self['nZ_1D']):
+                
+                if self['psirz'][w,h]<=np.max(self['flux_pol']) and self['psirz'][w,h]>=np.min(self['flux_pol']): #if the poloidal flux function is defined for this poloidal flux
+                    fpolrz[w,h]=fpolrz_interpolator(self['psirz'][w,h])
+                else:
+                    fpolrz[w,h]=self['bcentr']*self['rcentr']
+
+        print("fpolrz_calc - finished calculating 2D flux function")
+        
+        self.set(fpolrz=fpolrz)
+
+    def B_calc(self): #ordering OK - for Z[X,Y].shape=(2,3), gradient(Z,X,Y) --> gradient[0] along X, gradient[1] along Y
+        """
+        calculates r, phi, z axisymmetric magnetic field at coordinates R_1D, Z_1D
+
+        notes:
+            see Wesson, based on RH coordinate system [R,Phi,Z]
+            returns B(r,z,i), a 3D array holding component i of B field at grid indices r, z
+            i=0 - B_r
+            i=1 - B_toroidal
+            i=2 - B_z
+
+            remember - A[i,j,k] is an array nested such as i*[j*[k*[some_number]]]
+                     - [row,column] in numpy
+        """
+        
+        if 'fpolrz' not in self.data: #could have a try except statement here to accommodate for both dictionaries (which may not contain .data) and LOCUST_IO objects 
+            print("WARNING: B_calc - fpolrz missing in equilibrium object")
+            self['fpolrz']=fpolrz_calc(self) #if fpolrz is missing calculate it
+
+        print("B_calc - calculating 2D magnetic field")
+
+        gradient=np.gradient(self['psirz'],self['R_1D'],self['Z_1D']) #calculate gradient along both axes (gradient[i] is 2D)
+
+        one_R=1.0/self['R_1D']
+        one_R=one_R[:,np.newaxis]
+
+        B_field_Z=(gradient[0])*one_R
+        B_field_R=(gradient[1])*one_R*(-1.0)
+        B_field_tor=self['fpolrz']*one_R
+
+        B_field=np.array([[[B_field_R[w,h],B_field_tor[w,h],B_field_Z[w,h]] for h in range(len(self['Z_1D']))] for w in range(len(self['R_1D']))],ndmin=3)
+        
+        print("B_calc - finished calculating 2D magnetic field")
+        
+        self.set(B_field=B_field)
+
+    def mag_axis_calc(self,index=False):
+        """
+        returns psirz index of magnetic axis 
+        
+        args:
+            index - if True, returns index of axis otherwise return location in metres 
+        notes:
+            works by calculating a contour at 10% poloidal flux and averaging the position of the contour
+            XXX does not work well
+        """
+
+        Z_2D,R_2D=np.meshgrid(self['Z_1D'],self['R_1D'])
+        contour=plt.contour(R_2D,Z_2D,np.abs(self['psirz']),levels=[0.0,np.amin(np.abs(self['psirz']))+0.1*np.amax(np.abs(self['psirz']))])  
+        contour=contour.collections[1].get_paths()[0]
+        contour=contour.vertices
+        r=contour[:,0]
+        z=contour[:,1]
+        r_av=np.mean(r)
+        z_av=np.mean(z)
+
+        if index is True: #convert to psirz indices
+            r_av=(np.abs(self['R_1D']-r_av)).argmin()
+            z_av=(np.abs(self['Z_1D']-z_av)).argmin()
+        
+        return r_av,z_av
+
 #################################
  
 ##################################################################

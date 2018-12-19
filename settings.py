@@ -29,7 +29,7 @@ plot_style_LCFS='m-' #set plot style for LCFS
 plot_style_limiters='w-' #set plot style for limiters
 font = {'family' : 'normal', #set figure font
         'weight' : 'bold',
-        'size'   :  20}
+        'size'   :  10}
 matplotlib.rc('font', **font)
 colour_start_mark='red' #set colour of starting markers in plots
 

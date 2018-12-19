@@ -632,11 +632,11 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
                     mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
-                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
-                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(np.amin(dfn_copy[key]),np.amax(dfn_copy[key]),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     #ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
@@ -662,6 +662,209 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         if ax_flag is False and fig_flag is False:
             plt.show()
+
+    def transform(self,axes=['R','Z']):
+        """
+        transforms and integrates the distribution function according to pre-defined configurations 
+        
+        args:
+            axes - the dimensions over which to transform the DFN to
+        notes:
+            remember dimensions of unedited dfn are my_dfn['dfn'][P,V/E,V_pitch,R,Z]
+            assumes unedited dfn
+            assumes the bin widths for a given dimension are constant
+            assumes toroidal symmetry (no toroidal dimension in dfn)
+            if an array of indices is given, then slice the dfn accordingly and return without any integration
+                note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
+            dimension P is meaningless in EBASE mode 
+
+        axes options:
+            R,Z - integrate over pitch, gyrophase and velocity [m]^-3
+            E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+            E - [eV]^-1 
+            R - [m]^-3
+            N - total # 
+            list of indices and slices
+        """
+
+        dfn=copy.deepcopy(self) #make deep copy here since functions designed to repeatedly take fresh DFNs would otherwise permanently change it
+
+        #begin list of specific options
+
+        if dfn.properties['EBASE'] is True: #if LOCUST dfn is against energy
+
+            if axes==['R','Z']:
+                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                for counter in range(3): #sum
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+
+            elif axes==['E','V_pitch']:
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                #then need to integrate over the unwanted coordinates
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+
+            elif axes==['E']:
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
+                
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over R
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over V_pitch
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+
+            elif axes==['R']:
+                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                for counter in range(3): #sum over gyrophase, pitch and energy
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+
+            elif axes==['V_pitch']:
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dE']
+                #then need to integrate over the unwanted coordinates
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over E
+
+            elif axes==['N']:
+                #applying full Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
+                for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
+
+            #general option
+            elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+                dfn['dfn']=dfn['dfn'][tuple(axes)]
+                #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+            else:
+                print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
+        else: #if LOCUST dfn is against velocity
+
+            if axes==['R','Z']:
+                #apply velocity space Jacobian
+                for v in range(len(dfn['V'])):
+                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+                #then need to integrate over the first 3 dimensions which we do not need
+                for counter in range(3):
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+
+            elif axes==['E','V_pitch']:
+                #applying velocity space and gyrophase Jacobian
+                for v in range(len(dfn['V'])):
+                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+                dfn['dfn']*=dfn['dP']*species_charge/(species_mass)
+
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+
+                #then need to integrate over the unwanted coordinates
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+
+            elif axes==['E']:
+                #applying velocity space and gyrophase Jacobian
+                for v in range(len(dfn['V'])):
+                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+                dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*species_charge/(species_mass)
+
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+
+                #then need to integrate over the unwanted coordinates
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
+
+            elif axes==['R']:
+                #apply velocity space Jacobian
+                for v in range(len(dfn['V'])):
+                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+                #then need to integrate over the first 3 dimensions which we do not need
+                for counter in range(3):
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+
+            elif axes==['N']:
+                #apply velocity space Jacobian
+                for v in range(len(dfn['V'])):
+                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+                #applying real space Jacobian and integrate over toroidal angle
+                for r in range(len(dfn['R'])):
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+
+                #sum over all axes
+                for all_axes in range(dfn['dfn'].ndim):
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+
+            #general option
+            elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+                dfn['dfn']=dfn['dfn'][tuple(axes)]
+                #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+            else:
+                print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+
+
+        return dfn
+
+    def crop(self,**kwargs):
+        """
+        notes:
+            warning! to work, dfn_index and 1D dfn axes must accurately reflect dfn which is still stored e.g. dfn['dfn'][r,z] must contain dfn['R'],dfn['Z'] and dfn['dfn_index']=['R','Z']
+            always maintains shape of dfn
+        args:
+            kwargs - axes and their limits 
+        usage:
+            new_dfn=dfn_crop(R=[1]) generates dfn at point closest to R=1
+            new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1
+        """
+
+        dfn=copy.deepcopy(self)
+
+        keys=list(kwargs.keys())
+        values=list(kwargs.values())
+
+        for key,value in zip(keys,values):
+            if key not in dfn['dfn_index']:
+                print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
+            else:
+
+                dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
+                
+                if len(value)==2: #user has supplied range
+                    i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
+                    i=i[0] #get first element of returned tuple
+                elif len(value)==1: #user has supplied single value for nearest neighbour
+                    i=[np.abs(dfn[key]-value[0]).argmin()]
+
+                dfn[key]=dfn[key][i] #crop 1D arrays accordingly
+                nkey='n{}'.format(key) #reset associated nkey values too e.g. reset nR if cropping R
+                dfn[nkey]=np.array(len(dfn[key]))
+
+                dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
+                dfn['dfn']=dfn['dfn'][i] #crop dfn
+                dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
+
+        return dfn
 
 #################################
 

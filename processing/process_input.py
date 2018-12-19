@@ -101,6 +101,7 @@ def fpolrz_calc(some_equilibrium):
         if the grid extends outside of the plasma radius, where poloidal flux function is not defined, then use a given vacuum toroidal field and work
         backwards to get the value of the flux function (since f is constant in vacuum)
     """
+    
     print("fpolrz_calc - calculating 2D flux function")
 
     fpolrz=np.zeros((some_equilibrium['nR_1D'],some_equilibrium['nZ_1D'])) #initialise 2D grid
