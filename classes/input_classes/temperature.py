@@ -449,13 +449,9 @@ class Temperature(classes.base_input.LOCUST_input):
             fig - take input fig (can be used to add colourbars etc)
         """
         
-        import scipy
-        import numpy as np
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt
-        from mpl_toolkits import mplot3d #import 3D plotting axes
-        from mpl_toolkits.mplot3d import Axes3D
 
         if ax is False:
             ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later

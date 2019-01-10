@@ -1105,11 +1105,51 @@ class Equilibrium(classes.base_input.LOCUST_input):
         r_av=np.mean(r)
         z_av=np.mean(z)
 
-        if index is True: #convert to psirz indices
+        if index is True: #convert to psirz indicesself
             r_av=(np.abs(self['R_1D']-r_av)).argmin()
             z_av=(np.abs(self['Z_1D']-z_av)).argmin()
         
         return r_av,z_av
+
+    def B_calc_point(self,R,Z):
+        """
+        returns the three components of magnetic field at a point in the plasma 
+        
+        args:
+            R - list of R coordinates to calculate magnetic field components at 
+            Z - list of Z coordinates to calculate magnetic field components at
+        notes:
+
+        usage:
+            B_R,B_tor,B_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
+        """
+
+        if 'B_field' not in self.data.keys(): #calculate B field if missing
+            print("B_calc_point found no B_field in equilibrium - calculating!")
+            if 'fpolrz' not in self.data.keys(): #calculate flux if missing
+                print("B_calc_point found no fpolrz in equilibrium - calculating!")
+                self.fpolrz_calc()
+            self.B_calc()
+
+        print("B_calc_point generating B_field interpolators")
+        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0]) #construct interpolators here
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,1])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,2])
+        print("B_calc_point finished generating B_field interpolators")
+
+        B_R=[]
+        B_tor=[]
+        B_Z=[]  
+
+        for R_point,Z_point in zip(R,Z):
+            B_R.append(float(B_field_R_interpolator(R_point,Z_point)))
+            B_tor.append(float(B_field_tor_interpolator(R_point,Z_point)))
+            B_Z.append(float(B_field_Z_interpolator(R_point,Z_point)))
+
+        for component in [B_R,B_tor,B_Z]:
+            component=np.asarray(component)
+
+        return B_R,B_tor,B_Z
 
 #################################
  
