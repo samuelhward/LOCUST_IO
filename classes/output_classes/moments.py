@@ -266,6 +266,51 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
+    def plot(self,key,axis='flux_pol_norm',colmap='b',ax=False,fig=False):
+        """
+        plots moments
+
+        notes:
+            key - selects which data to plot
+            axis - selects x axis of plot
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        """
+
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+        ax.set_title(self.ID)
+       
+        ax.plot(self[axis],self[key],color=colmap)
+        ax.set_xlabel(axis)
+        ax.set_ylabel(key)
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+ 
+#################################
+ 
+##################################################################
+ 
+###################################################################################################
 
 
 #################################
