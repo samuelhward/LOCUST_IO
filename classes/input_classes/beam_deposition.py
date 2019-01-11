@@ -61,15 +61,15 @@ except:
 
 ################################################################## Beam_Deposition read functions
  
-def read_beam_depo_LOCUST(filepath):
+def read_beam_depo_LOCUST_full_orbit(filepath):
     """
     reads birth profile stored in LOCUST format - R Z phi V_R V_Z V_tor
 
     notes:
+        calculates energy in eV
     """
  
- 
-    print("reading beam deposition from LOCUST")
+    print("reading full orbit beam deposition from LOCUST")
     
     with open(filepath,'r') as file:
      
@@ -106,13 +106,69 @@ def read_beam_depo_LOCUST(filepath):
         input_data['V_R']=np.asarray(input_data['V_R'])
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
-        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass)
+        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
 
-    print("finished reading beam deposition from LOCUST")
+    print("finished reading full orbit beam deposition from LOCUST")
  
     return input_data
 
-def read_beam_depo_LOCUST_weighted(filepath):
+def read_beam_depo_LOCUST_full_orbit_weighted(filepath):
+    """
+    reads birth profile stored in LOCUST format - R Z phi V_R V_Z V_tor weight
+
+    notes:
+        calculates energy in eV
+    """
+ 
+    print("reading weighted full orbit beam deposition from LOCUST")
+    
+    with open(filepath,'r') as file:
+     
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+     
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['absorption_fraction']=np.array(float(lines[0]))
+        input_data['absorption_scaling']=np.array(float(lines[1]))
+        del(lines[0])
+        del(lines[0])
+     
+        input_data['R']=[] #initialise the arrays 
+        input_data['phi']=[]
+        input_data['Z']=[]
+        input_data['V_R']=[]
+        input_data['V_tor']=[]
+        input_data['V_Z']=[]
+        input_data['weight']=[]
+     
+        for line in lines:
+     
+            split_line=line.split()
+            input_data['R'].append(float(split_line[0]))
+            input_data['phi'].append(float(split_line[1]))
+            input_data['Z'].append(float(split_line[2]))
+            input_data['V_R'].append(float(split_line[3]))
+            input_data['V_tor'].append(float(split_line[4]))
+            input_data['V_Z'].append(float(split_line[5]))
+            input_data['weight'].append(float(split_line[6]))
+     
+        input_data['R']=np.asarray(input_data['R']) #convert to arrays
+        input_data['phi']=np.asarray(input_data['phi'])
+        input_data['Z']=np.asarray(input_data['Z'])
+        input_data['V_R']=np.asarray(input_data['V_R'])
+        input_data['V_tor']=np.asarray(input_data['V_tor'])
+        input_data['V_Z']=np.asarray(input_data['V_Z'])
+        input_data['weight']=np.asarray(input_data['weight'])
+        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+
+    print("finished reading weighted full orbit beam deposition from LOCUST")
+ 
+    return input_data
+
+#def read_beam_depo_LOCUST_guiding_centre(): missing this option in LOCUST
+
+def read_beam_depo_LOCUST_guiding_centre_weighted(filepath):
     """
     reads birth profile stored in LOCUST format - R Z phi V_parallel V weight
 
@@ -120,7 +176,7 @@ def read_beam_depo_LOCUST_weighted(filepath):
         calculates energy in eV
     """
 
-    print("reading weighted beam deposition from LOCUST")
+    print("reading weighted guiding centre beam deposition from LOCUST")
     
     with open(filepath,'r') as file:
      
@@ -158,7 +214,7 @@ def read_beam_depo_LOCUST_weighted(filepath):
         input_data['E']=np.asarray(input_data['E'])*.5*species_mass/species_charge
         input_data['weight']=np.asarray(input_data['weight'])
         
-    print("finished reading weighted beam deposition from LOCUST")
+    print("finished reading weighted guiding centre beam deposition from LOCUST")
  
     return input_data
 
@@ -397,7 +453,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
 
 ################################################################## Beam_Deposition write functions 
 
-def dump_beam_depo_LOCUST(output_data,filepath):
+def dump_beam_depo_LOCUST_full_orbit(output_data,filepath):
     """
     writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor
      
@@ -405,7 +461,7 @@ def dump_beam_depo_LOCUST(output_data,filepath):
 
     """
  
-    print("writing beam deposition to LOCUST")
+    print("writing full orbit beam deposition to LOCUST")
 
     with open(filepath,'w') as file: #open file
  
@@ -416,17 +472,40 @@ def dump_beam_depo_LOCUST(output_data,filepath):
 
             file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
     
-    print("finished writing beam deposition to LOCUST") 
+    print("finished writing full orbit beam deposition to LOCUST") 
 
-def dump_beam_depo_LOCUST_weighted(output_data,filepath,equilibrium):
+def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath):
+    """
+    writes birth profile to LOCUST format - R Z phi V_R V_Z V_tor weight
+     
+    notes:
+
+    """
+ 
+    print("writing weighted full orbit beam deposition to LOCUST")
+
+    with open(filepath,'w') as file: #open file
+ 
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction lines
+        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+ 
+        for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
+
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
+    
+    print("finished writing weighted full orbit beam deposition to LOCUST") 
+
+#def dump_beam_depo_LOCUST_guiding_centre(): missing this option in LOCUST
+
+def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibrium):
     """
     writes weighted birth profile to LOCUST format - R Z phi V_parallel V weight
      
     notes:
-        assumes quantities are at the guiding centre
+        assumes R,Z,V_parallel are at the guiding centre
     """
  
-    print("writing weighted beam deposition to LOCUST")
+    print("writing weighted guiding centre beam deposition to LOCUST")
 
     if 'V_pitch' not in output_data:
         print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
@@ -444,7 +523,7 @@ def dump_beam_depo_LOCUST_weighted(output_data,filepath,equilibrium):
 
             file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
     
-    print("finished writing weighted beam deposition to LOCUST") 
+    print("finished writing weighted guiding centre beam deposition to LOCUST") 
   
 def dump_beam_depo_IDS(ID,output_data,shot,run):
     """
@@ -751,23 +830,32 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
             pass
  
-        elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
+        elif data_format=='LOCUST_FO': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_FO - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_LOCUST(self.filepath) #read the file
+                self.data=read_beam_depo_LOCUST_full_orbit(self.filepath) #read the file
 
-        elif data_format=='LOCUST_weighted': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_weighted - filename required\n",filename): #must check we have all info required for reading
+        elif data_format=='LOCUST_FO_weighted': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_FO_weighted - filename required\n",filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_LOCUST_weighted(self.filepath) #read the file
+                self.data=read_beam_depo_LOCUST_full_orbit_weighted(self.filepath) #read the file
+
+        elif data_format=='LOCUST_GC_weighted': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_GC_weighted - filename required\n",filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_LOCUST_guiding_centre_weighted(self.filepath) #read the file
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from distribution_sources IDS - shot and run required\n",shot,run):
@@ -830,15 +918,20 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
             pass
          
-        elif data_format=='LOCUST':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+        elif data_format=='LOCUST_FO':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_FO - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST(self.data,filepath)
+                dump_beam_depo_LOCUST_full_orbit(self.data,filepath)
 
-        elif data_format=='LOCUST_weighted':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_weighted - filename and equilibrium required\n",filename,equilibrium):
+        elif data_format=='LOCUST_FO_weighted':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_FO_weighted - filename required\n",filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST_weighted(self.data,filepath,equilibrium)
+                dump_beam_depo_LOCUST_full_orbit_weighted(self.data,filepath)
+
+        elif data_format=='LOCUST_GC_weighted':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_GC_weighted - filename and equilibrium required\n",filename,equilibrium):
+                filepath=support.dir_input_files+filename
+                dump_beam_depo_LOCUST_guiding_centre_weighted(self.data,filepath,equilibrium) 
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to distribution_sources IDS - shot and run required\n",shot,run):
