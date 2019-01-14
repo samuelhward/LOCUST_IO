@@ -596,7 +596,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             
             #transform distribution function to the coordinates we want
             if transform is True:
-                dfn_copy=processing.process_output.dfn_transform(self,axes=axes) #user-supplied axes are checked for validity here
+                dfn_copy=self.transform(axes=axes) #user-supplied axes are checked for validity here
             else:
                 dfn_copy=copy.deepcopy(self)
 
