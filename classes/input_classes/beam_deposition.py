@@ -905,7 +905,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc)\n")            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None,**properties):
         """
         write beam_deposition to file
  
