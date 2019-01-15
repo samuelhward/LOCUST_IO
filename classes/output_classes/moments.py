@@ -250,7 +250,7 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
 
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         write moments to file
 
