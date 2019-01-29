@@ -417,11 +417,11 @@ class Wall(classes.base_input.LOCUST_input):
         notes:
         """
  
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='LOCUST_3D': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_3D - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_3D - filename required\n".format(self.ID),filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -430,7 +430,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_LOCUST_3D(self.filepath) #read the file
 
         elif data_format=='LOCUST_2D':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from LOCUST_2D - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_2D - filename required\n".format(self.ID),filename): #must check we have all info required for reading
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -439,7 +439,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_LOCUST_2D(self.filepath) #read the file
 
         elif data_format=='GEQDSK':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from GEQDSK - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from GEQDSK - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -448,7 +448,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_GEQDSK(self.filepath)
 
         elif data_format=='ufile':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from Ufile - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from Ufile - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -457,7 +457,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_ufile(self.filepath)
 
         elif data_format=='ASCOT_2D_input':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from 2D ASCOT input file - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from 2D ASCOT input file - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -466,7 +466,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_ASCOT_2D_input(self.filepath)
 
         elif data_format=='ASCOT_2D_output':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from 2D ASCOT output file - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from 2D ASCOT output file - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -475,7 +475,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_ASCOT_2D_output(self.filepath)
 
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/ufile/ASCOT_2D_input/ASCOT_2D_output)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/ufile/ASCOT_2D_input/ASCOT_2D_output)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -487,21 +487,21 @@ class Wall(classes.base_input.LOCUST_input):
         if not self.run_check():
             print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
 
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
          
         elif data_format=='LOCUST_2D':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to LOCUST_2D - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_2D - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
                 dump_wall_LOCUST_2D(self.data,filepath)
 
         elif data_format=='ASCOT_2D_input':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
                 dump_wall_ASCOT_2D_input(self.data,filepath)                
 
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n")
 
 
     def plot(self,LCFS=False,real_scale=False,colmap=plot_style_limiters,ax=False,fig=False): 

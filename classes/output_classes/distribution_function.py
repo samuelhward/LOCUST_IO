@@ -478,31 +478,33 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         notes:
         """
 
-        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading GEQDSKs
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from LOCUST - filename required\n".format(self.ID),filename): #must check we have all info required for reading GEQDSKs
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
+                if not properties:
+                    properties={'ITER':True,'wtot':False,'WIPE':False,'TEST':False,'EBASE':True,'dfn_s':True,'Jh':True,'Jh_s':True,'cpu_time':True} #default properties settings
                 self.properties={**properties}
-                self.properties={'ITER':True,'wtot':False,'WIPE':False,'TEST':False,'EBASE':True,'dfn_s':True,'Jh':True,'Jh_s':True,'cpu_time':True} #override properties here with read_data settings
                 self.data=read_distribution_function_LOCUST(self.filepath,**self.properties) #read the file
 
         elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from ASCOT - filename required\n",filename): #must check we have all info required for reading GEQDSKs
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): #must check we have all info required for reading GEQDSKs
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
+                if not properties:
+                    properties={'EBASE':True} #default properties settings
                 self.properties={**properties}
-                self.properties={'EBASE':True} #override properties here with read_data settings
                 self.data=read_distribution_function_ASCOT(self.filepath,**self.properties) #read the file
 
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -510,15 +512,15 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         notes: 
         """
-        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
         
         elif data_format=='LOCUST':
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_output_files+filename
                 dump_distribution_function_LOCUST(self.data,filepath,**self.properties)
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
     def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
