@@ -617,11 +617,11 @@ class Equilibrium(classes.base_input.LOCUST_input):
         notes:
         """
  
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
  
         elif data_format=='GEQDSK': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from GEQDSK - filename required\n",filename): #check we have all info for reading GEQDSKs
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from GEQDSK - filename required\n".format(self.ID),filename): #check we have all info for reading GEQDSKs
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
@@ -629,7 +629,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.data=read_equilibrium_GEQDSK(self.filepath,**properties) #read the file
             
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from equilibrium IDS - shot and run required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from equilibrium IDS - shot and run required\n".format(self.ID),shot,run):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
@@ -637,7 +637,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.data=read_equilibrium_IDS(self.shot,self.run,**properties)
 
         elif data_format=='UDA':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot read_data() from UDA - shot and time required\n",shot,time):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UDA - shot and time required\n".format(self.ID),shot,time):
                 self.data_format=data_format
                 self.shot=shot
                 self.time=time
@@ -645,7 +645,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.data=read_equilibrium_UDA(self.shot,self.time,**properties)
 
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -661,21 +661,21 @@ class Equilibrium(classes.base_input.LOCUST_input):
             pass
          
         elif data_format=='GEQDSK':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to GEQDSK - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to GEQDSK - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
                 dump_equilibrium_GEQDSK(self.data,filepath,**properties)
          
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to equilibrium IDS - shot and run required\n",shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to equilibrium IDS - shot and run required\n".format(self.ID),shot,run):
                 dump_equilibrium_IDS(self.ID,self.data,shot,run,**properties)
  
         elif data_format=='ASCOT':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: cannot dump_data() to ASCOT - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
                 dump_equilibrium_ASCOT(self.data,filepath,**properties)
 
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
 
     def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """

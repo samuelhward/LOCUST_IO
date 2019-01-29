@@ -168,8 +168,7 @@ def read_moments_TRANSP(filepath):
 
     input_data['beam_source']=np.array(file.variables['BDEP_D'].data)*1.e6 #convert to [m^-3]
     input_data['beam_source_captured']=np.array(file.variables['BPCAP'].data)[:,np.newaxis]
-    input_data['beam_source_loss']=np.array(file.variables['BSORB'].data)[:,np.newaxis]
-    input_data['beam_source_loss_fraction']=np.array(file.variables['BSORBPR'].data)[:,np.newaxis]
+    input_data['PFC_power']=np.array(file.variables['BPLIM'].data)[:,np.newaxis]
 
     input_data['time']=np.array(file.variables['TIME3'].data)
 
@@ -227,11 +226,11 @@ class Moments(classes.base_output.LOCUST_output):
         notes:
         """
 
-        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() - data_format required\n",data_format): #must always have data_format if reading in data
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
 
         elif data_format=='LOCUST': #here are the blocks for various file types, they all follow the same pattern
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from LOCUST - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from LOCUST - filename required\n".format(self.ID),filename): #must check we have all info required for reading
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -240,7 +239,7 @@ class Moments(classes.base_output.LOCUST_output):
                 self.data=read_moments_LOCUST(self.filepath) #read the file
 
         elif data_format=='TRANSP':
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot read_data() from TRANSP - filename required\n",filename): #must check we have all info required for reading
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from TRANSP - filename required\n".format(self.ID),filename): #must check we have all info required for reading
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -248,7 +247,7 @@ class Moments(classes.base_output.LOCUST_output):
                 self.properties={**properties}
                 self.data=read_moments_TRANSP(self.filepath) #read the file
         else:
-            print("ERROR: cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -256,15 +255,15 @@ class Moments(classes.base_output.LOCUST_output):
 
         notes: 
         """
-        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() - self.data and compatible data_format required\n",self.data,data_format):
+        if processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
         
         elif data_format=='LOCUST':
-            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: cannot dump_data() to LOCUST - filename required\n",filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_output_files+filename
                 dump_moments_LOCUST(self.data,filepath)
         else:
-            print("ERROR: cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
     def plot(self,key,axis='flux_pol_norm',colmap='b',ax=False,fig=False):
         """

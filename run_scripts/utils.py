@@ -520,7 +520,7 @@ class TRANSP_output_FI(TRANSP_output):
             dfn_copy=self.dfn_integrate(energy=False)
             ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'])
             ax.set_xlabel('energy [eV]')
-            ax.set_ylabel('density [#/eV]',colmap)
+            ax.set_ylabel('density [#/eV]')
 
         #elif axes==['R']:
 
@@ -575,6 +575,8 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
     notes:
     """
 
+    print("dumping ASCOT run file")
+
     filepath=support.dir_input_files+run_file+tag
     if initialdir is None:
         initialdir=os.path.dirname(os.path.abspath(__file__)) #use cwd
@@ -593,6 +595,8 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
         file.write('date\n')
         file.write('mpirun -np $NSLOTS {executable} -output ascot_freia_$JOB_ID\n'.format(executable=executable))
         file.write('date\n')
+
+    print("finished dumping ASCOT run file")
 
 def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e,rotation_toroidal):
     """
@@ -628,7 +632,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
         flux_pol_norm_sqrt,te,ne,rot,ti,ni=processing.utils.sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
-        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,rot,ti,ni): 
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,'i',ti,ni): 
             line=processing.utils.fortran_string(RHO,16,7)+processing.utils.fortran_string(Te,16,7)+processing.utils.fortran_string(Ne,16,7)+processing.utils.fortran_string(Vtor_I,15,7)+processing.utils.fortran_string(Ti1,17,7)+processing.utils.fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 
@@ -667,7 +671,8 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     print("dumping ASCOT input options")
 
-    with open(filename,'w') as file:
+    filepath=support.dir_input_files+filename
+    with open(filepath,'w') as file:
         file_contents="""
          !  -*-f90-*-  (for emacs)    vim:set filetype=fortran:  (for vim)
 
@@ -1087,8 +1092,8 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
 
     dump_run_file_ASCOT(initialdir=support.dir_input_files,tag=tag) #generate run file
     dump_profiles_ASCOT(filename='input.plasma_1d'+tag,temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
-    dump_wall_ASCOT(filename='input.wall_2d'+tag,wall=wall)
     dump_input_options_ASCOT(filename='input.options'+tag)
+    wall.dump_data(data_format='ASCOT_2D_input',filename='input.wall_2d'+tag)
     if guiding_centre:
         beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles'+tag,equilibrium=equilibrium)
     else:
