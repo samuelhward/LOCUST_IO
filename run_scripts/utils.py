@@ -1,4 +1,4 @@
-#processing.utils.py
+#run_scripts.utils.py
  
 """
 Samuel Ward
@@ -36,6 +36,33 @@ except:
     raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 
+
+try:
+    import classes.input_classes.equilibrium
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/equilibrium.py could not be imported!\nreturning\n")
+    sys.exit(1)  
+try:
+    import classes.input_classes.temperature
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/temperature.py could not be imported!\nreturning\n")
+    sys.exit(1)  
+try:
+    import classes.input_classes.number_density
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/number_density.py could not be imported!\nreturning\n")
+    sys.exit(1)  
+try:
+    import classes.input_classes.beam_deposition
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/beam_deposition.py could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
+    import classes.input_classes.wall
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/wall.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
 try:
     import support
 except:
@@ -52,43 +79,45 @@ except:
     raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-
 ###################################################################################################
 #Main Code
 
 
 ################################################################################################### TRANSP classes and functions
 
-def TRANSP_get_fbm_FI_CDF(run_ID,number_files,particle_position=True,guiding_centre=True,device='d3d'):
+def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True,guiding_centre=True,device='d3d'):
     """
     notes:
         looks for files in output_files
     args:
-        run_ID - full transp run number e.g. 157418S01
+        run_ID - TRANSP run_ID e.g. W01
+        shot_number - TRANSP shot number e.g. 29034
         number_files - total number of .DATA# files to extract CDF from 
         particle_position - toggle whether to generate set of CDFs at particle positions
         guiding_centre - toggle whether to generate set of CDFs at guiding centres
         device - device code for machine under study
     """
 
+    ID=str(shot_number)+str(run_ID)
+
     project_dir=os.getcwd()
     os.chdir(support.dir_output_files) #change working directory to output files briefly due to bug in CCFE get_fbm installation
     
     for file_ID in range(number_files):
         file_ID+=1
-        output_filename='{}{}{}{}'.format(run_ID,'_fi_',file_ID,'.cdf') #current output file
-        output_filename_gc='{}{}{}{}'.format(run_ID,'_fi_',file_ID,'_gc.cdf')
+        output_filename='{}{}{}{}'.format(ID,'_fi_',file_ID,'.cdf') #current output file
+        output_filename_gc='{}{}{}{}'.format(ID,'_fi_',file_ID,'_gc.cdf')
 
         if guiding_centre:
             fbm_input = """
-                        {run_ID}
+                        {ID}
                         {path}
                         {file_ID}
                         t
                         {device}
                         w
                         c
-                        """.format(run_ID=run_ID,path='q',file_ID=file_ID,device=device)
+                        """.format(ID=ID,path='q',file_ID=file_ID,device=device)
 
             print("writing TRANSP FI netCDF file {}".format(output_filename_gc))
             proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
@@ -102,14 +131,14 @@ def TRANSP_get_fbm_FI_CDF(run_ID,number_files,particle_position=True,guiding_cen
 
         if particle_position:
             fbm_input = """
-                        {run_ID}
+                        {ID}
                         {path}
                         {file_ID}
                         t
                         {device}
                         w
                         p
-                        """.format(run_ID=run_ID,path='q',file_ID=file_ID,device=device)
+                        """.format(ID=ID,path='q',file_ID=file_ID,device=device)
 
             print("writing TRANSP FI netCDF file {}".format(output_filename))
             proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
@@ -118,7 +147,7 @@ def TRANSP_get_fbm_FI_CDF(run_ID,number_files,particle_position=True,guiding_cen
 
     os.chdir(project_dir) #change back to original working directory    
 
-def TRANSP_get_fbm_FI_birth_deposition(run_ID,number_files,device='d3d'):
+def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,device='d3d'):
     """
     notes:
         looks for files in output_files
@@ -131,20 +160,23 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,number_files,device='d3d'):
             random seed = 1
             sample size = 1,000,000
     args:
-        run_ID - full transp run number e.g. 157418S01
+        run_ID - TRANSP run_ID e.g. W01
+        shot_number - TRANSP shot number e.g. 29034
         number_files - total number of .DATA# files to extract CDF from 
         device - device code for machine under study
     """
+
+    ID=str(shot_number)+str(run_ID)
 
     project_dir=os.getcwd()
     os.chdir(support.dir_output_files) #change working directory to output files briefly due to bug in CCFE get_fbm installation
     
     for file_ID in range(number_files):
         file_ID+=1
-        output_filename='{}{}{}{}'.format(run_ID,'_fdep_nb_en_',file_ID,'.out') #current output file
+        output_filename='{}{}{}{}'.format(ID,'_fdep_nb_en_',file_ID,'.out') #current output file
 
         fbm_input = """
-                    {run_ID}
+                    {ID}
                     {path}
                     {file_ID}
                     t
@@ -161,7 +193,7 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,number_files,device='d3d'):
                     1
                     1000000
                     {output_filename}
-                    """.format(run_ID=run_ID,path='q',file_ID=file_ID,device=device,output_filename=output_filename)
+                    """.format(ID=ID,path='q',file_ID=file_ID,device=device,output_filename=output_filename)
 
         print("writing TRANSP FI random sample birth deposition {}".format(output_filename))
         proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
@@ -169,7 +201,6 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,number_files,device='d3d'):
         print("finished writing TRANSP FI random sample birth deposition {}".format(output_filename))
 
     os.chdir(project_dir) #change back to original working directory  
-
 
 class TRANSP_output:
     """
@@ -557,6 +588,68 @@ class TRANSP_output_FI(TRANSP_output):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
+def read_inputs_TRANSP(run_ID,shot_number,input_path='',output_path='',beam_depo_GC=True):
+    """
+    reads full input_data from TRANSP run
+
+    notes:
+        assumes some default filenames based on the TRANSP run_ID
+        equilibrium must be stored in format shot_number+run_ID.GEQDSK
+        XXX reading UFILE data (e.g. for kinetic profiles) will currently break if more than one timestep is stored
+        XXX only reads first beam deposition file
+    args:
+        run_ID - TRANSP run_ID e.g. W01
+        shot_number - TRANSP shot number e.g. 29034
+        input_path - path to target in input_files dir (input_files/path/)
+        output_path - path to target in output_files dir (output_files/path/)
+        beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
+    """
+    
+    filepath_temperature_i=input_path+'OMF'+shot_number+'.TI2'
+    filepath_temperature_e=input_path+'OMF'+shot_number+'.TER'
+    filepath_number_density_e=input_path+'OMF'+shot_number+'.NER'
+    filepath_equilibrium=input_path+'g'+shot_number
+    filepath_beam_deposition=output_path+shot_number+run_ID+'_birth.cdf1'
+    filepath_wall=input_path+'OMF'+shot_number+'.LIM'
+
+    if beam_depo_GC:
+        data_format_beam_depo='TRANSP_birth_gc'
+    else:
+        data_format_beam_depo='TRANSP_birth'
+
+    try:
+        temperature_i=classes.input_classes.temperature(ID=shot_number+run_ID,data_format='UFILE',species='ions',filename=filepath_temperature_i)
+    except:
+        print("read_inputs_TRANSP() could not read ion temperature from {} - returning None".format())
+        temperature_i=None
+    try:
+        temperature_e=classes.input_classes.temperature(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_temperature_e)
+    except:
+        print("read_inputs_TRANSP() could not read electron temperature from {} - returning None".format())
+        temperature_e=None
+    try:
+        density_e=classes.input_classes.number_density(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_number_density_e)
+    except:
+        print("read_inputs_TRANSP() could not read electron density from {} - returning None".format())
+        density_e=None
+    try:
+        equilibrium=classes.input_classes.equilibrium(ID=shot_number+run_ID,data_format='GEQDSK',filename=filepath_equilibrium)
+    except:
+        print("read_inputs_TRANSP() could not read equilibrium from {} - returning None".format(filepath_equilibrium))
+        equilibrium=None
+    try:
+        beam_deposition=classes.input_classes.beam_deposition(ID=shot_number+run_ID,data_format=data_format_beam_depo,filename=filepath_beam_deposition)
+    except:
+        print("read_inputs_TRANSP() could not read beam deposition from {} - returning None".format(filepath_beam_deposition))
+        beam_deposition=None
+    try:
+        wall=classes.input_classes.wall(ID=shot_number+run_ID,data_format='UFILE',filename=filepath_wall)
+    except:
+        print("read_inputs_TRANSP() could not read wall from {} - returning None".format(filepath_wall))
+        wall=None
+
+    return temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall
+
 ################################################################################################### ASCOT classes and functions
 
 def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot',tag='',user='sward'):
@@ -637,32 +730,6 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
             file.write(line)
 
     print("finished dumping profiles to ASCOT format")
-
-def dump_wall_ASCOT(filename,wall):
-    """
-    dumps 2D wall outline to ASCOT input.wall_2d format
-    
-    notes:
-        currently sets all divertor flags = 0 i.e. treats everything as 'wall'
-    args:
-        filename - output filename
-        wall - data structure holding wall with same wall variable names as GEQDSK equilibrium e.g. rlim,zlim - i.e. a GEQDSK equilibrium object 
-
-    """
-
-    print("dumping wall to ASCOT format")
-
-    filepath=support.dir_input_files+filename
-
-    with open(filepath,'w') as file:
-
-        file.write("{number_points} (R,z) wall points & divertor flag (1 = divertor, 0 = wall)\n".format(number_points=int(wall['rlim'].size)))
-        
-        for r,z in zip(wall['rlim'],wall['zlim']):
-            line=processing.utils.fortran_string(r,16,7)+processing.utils.fortran_string(z,16,7)+processing.utils.fortran_string(0.0,4,0,False)+"\n"
-            file.write(line)
-
-    print("finished dumping wall to ASCOT format")
 
 def dump_input_options_ASCOT(filename='input.options'):
     """
@@ -1058,7 +1125,7 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     print("finished dumping ASCOT input options")
 
-def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,guiding_centre=True,tag=''):
+def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,beam_depo_GC=True,tag=''):
     """
     generates full run input data for ASCOT
 
@@ -1084,22 +1151,25 @@ def ASCOT_run_gen(temperature_i,temperature_e,density_i,density_e,rotation_toroi
         equilibrium - equilibrium object 
         beam_deposition - beam deposition object
         wall - wall object
-        guiding_centre - toggle dumping birth list at guiding-centre or particle position
+        beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
         tag - optional identifier tag for each set of run files produced
     """
 
-    print("ASCOT_run_gen creating ASCOT inputs")
+    print("dump_inputs_ASCOT creating ASCOT inputs")
 
     dump_run_file_ASCOT(initialdir=support.dir_input_files,tag=tag) #generate run file
     dump_profiles_ASCOT(filename='input.plasma_1d'+tag,temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
     dump_input_options_ASCOT(filename='input.options'+tag)
     wall.dump_data(data_format='ASCOT_2D_input',filename='input.wall_2d'+tag)
-    if guiding_centre:
+    if beam_depo_GC:
         beam_deposition.dump_data(data_format='ASCOT_gc',filename='input.particles'+tag,equilibrium=equilibrium)
     else:
         beam_deposition.dump_data(data_format='ASCOT',filename='input.particles'+tag,equilibrium=equilibrium)
 
-    print("ASCOT_run_gen finished")
+    print("dump_inputs_ASCOT finished")
+
+
+################################################################## XXX deprecated from here (now in distribution_function class)
 
 class ASCOT_output:
     """
@@ -1532,7 +1602,7 @@ class ASCOT_output:
             dfn_copy=self.dfn_transform(axes=axes)
         return plot_distribution_function(dfn_copy,key=key,axes=axes,LCFS=LCFS,limiters=limiters,real_scale=real_scale,colmap=colmap,transform=False,number_bins=number_bins,fill=fill,vminmax=vminmax,ax=ax,fig=fig) #call standard plot_distribution function but with LOCUST_IO version of transform disabled
 
-
+################################################################## XXX deprecated to here (now in distribution_function class)
 
 ################################################################################################### MARSF classes and functions
 
@@ -1777,7 +1847,6 @@ def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
        dump_perturbation_point_data_input(BCHECK=2,X=[1],Y=[2],Z=[3],time=[0])
     """
 
-
     print("writing point_inp.dat test points")
 
     filepath=support.dir_input_files+'point_data.inp'
@@ -1811,6 +1880,69 @@ def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
                 file.write('{}\n'.format(line))
 
     print("finished writing point_inp.dat test points")
+
+def dump_inputs_LOCUST(temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall=None,perturbation=None,beam_depo_GC=False,beam_depo_weighted=True,BCHECK=False,wall_type='2D',tag=''):
+    """
+    generates full run input data for LOCUST
+
+    notes:
+        dumps everything into input_files folder
+        uses default LOCUST filenames
+        some inputs from list below are missing and must be generated by hand for now
+        LOCUST run requires:
+            - collisions.dat = cross-section data (needs to be retrieved externally)
+            - ptcles.dat = particle birth list
+            - profile_ne.dat = electron density profile
+            - profile_Te.dat = electron temperature profile
+            - profile_Ti.dat = ion temperature profile
+            - GEQDSK = B field
+            - wall = 2D (supported) or 3D wall (not supported) - optional
+            - point_data.inp = B field sample points for use with -DBCHECK mode - optional
+            - dB_map.dat = perturbation input - optional
+            - BPLASMA_n = perturbation input - optional
+    args:
+        temperature_i - ion temperature object (eV)
+        temperature_e - electron temperature object (eV)
+        density_e - electron density object (#/m^3)
+        equilibrium - equilibrium object 
+        beam_deposition - beam deposition object
+        wall - wall object
+        perturbation - perturbation object
+        beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
+        beam_depo_weighted - toggle dumping weighted birth list 
+        BCHECK - toggle dumping point_data.inp file for use with LOCUST -DBCHECK mode
+        wall_type - set wall type to '2D' or '3D'
+        tag - optional identifier tag for each set of run files produced
+    """
+
+    print("dump_inputs_LOCUST creating LOCUST inputs")
+
+    temperature_i.dump_data(data_format='LOCUST',filename='profile_Ti.dat'+tag)
+    temperature_e.dump_data(data_format='LOCUST',filename='profile_Te.dat'+tag)
+    density_e.dump_data(data_format='LOCUST',filename='profile_ne.dat'+tag)
+    equilibrium.dump_data(data_format='LOCUST',filename='LOCUST_GEQDSK'+tag)
+    
+    if beam_depo_GC:
+        if beam_depo_weighted:
+            beam_deposition.dump_data(data_format='LOCUST_GC_weighted',filename='ptcles.dat'+tag)
+        else:
+            beam_deposition.dump_data(data_format='LOCUST_GC',filename='ptcles.dat'+tag) #XXX not implemented yet            
+    else:
+        if beam_depo_weighted:
+            beam_deposition.dump_data(data_format='LOCUST_FO_weighted',filename='ptcles.dat'+tag)
+        else:
+            beam_deposition.dump_data(data_format='LOCUST_FO',filename='ptcles.dat'+tag)
+
+    if wall:
+        data_format_wall='LOCUST_'+wall_type
+        wall.dump_data(data_format=data_format_wall,filename='LOCUST_wall'+tag)
+
+    if perturbation:
+        perturbation.dump_data(data_format='LOCUST',filename=''+tag) #XXX not implemented yet
+        if BCHECK:
+            perturbation.dump_data(data_format='point_data',filename='point_data.inp'+tag)
+
+    print("dump_inputs_LOCUST finished")
 
 ################################################################################################### misc functions
 

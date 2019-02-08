@@ -198,6 +198,50 @@ def dump_perturbation_LOCUST(output_data,filepath):
      
     print("finished writing LOCUST perturbation")
 
+def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BCHECK=1):
+    """
+    generates the point_data.inp file for checking magnetic perturbations using LOCUST -DBCHECK
+
+    args:
+        BCHECK - coordinate format setting for LOCUST field checking (1=RPhiZ,2=XYZ)  
+    notes:
+        uses R_point_data, phi_point_data, Z_point_data and time_point_data arrays stored in perturbation class as point_data.inp coordinates 
+    """
+
+    print("writing point_inp.dat test points")
+
+    filepath=support.dir_input_files+'point_data.inp'
+ 
+    with open(filepath,'w') as file: #open file
+
+        if BCHECK==1:
+            for R,Phi,Z,time in zip(output_data['R_point_data'],output_data['phi_point_data'],output_data['Z_point_data'],output_data['time_point_data']):
+                line=' '
+                line+=processing.utils.fortran_string(R,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Phi,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Z,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(time,11,6,exponential=False)
+                line+='  '
+                file.write('{}\n'.format(line))
+
+        elif BCHECK==2:
+            for X,Y,Z,time in zip(output_data['X_point_data'],output_data['Y_point_data'],output_data['Z_point_data'],output_data['time_point_data']):
+                line=' '
+                line+=processing.utils.fortran_string(X,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Y,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(Z,11,6,exponential=False)
+                line+=' '
+                line+=processing.utils.fortran_string(time,11,6,exponential=False)
+                line+='  '
+                file.write('{}\n'.format(line))
+
+    print("finished writing point_inp.dat test points")
+
 ################################################################## perturbation class
  
 class Perturbation(classes.base_input.LOCUST_input):
@@ -263,9 +307,9 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data=read_perturbation_IDS(self.shot,self.run)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (MARSF/IDS)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/IDS)\n")            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """
         write perturbation to file
  
@@ -283,8 +327,13 @@ class Perturbation(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files+filename
                 dump_perturbation_LOCUST(self.data,filepath)
 
+        elif data_format=='point_data':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to point_data.inp - filename required\n".format(self.ID),filename):
+                filepath=support.dir_input_files+filename
+                dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK)
+
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (MARSF)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n")
 
     def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """
