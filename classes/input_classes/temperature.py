@@ -169,8 +169,9 @@ def read_temperature_IDS(shot,run,**properties):
  
 def read_temperature_UDA(shot,time,**properties):
     """
+    reads ion or electron temperature profiles from CCFE UDA database
+
     notes:
-        needs NaN checking (replace with interpolated values)
         this script heavily relies on the structure of UDA - please contant Stuart Henderson for updates
     """
 
@@ -228,15 +229,58 @@ def read_temperature_UDA(shot,time,**properties):
     replace_nan(T,time_index)
     T=T.data[time_index,:]
 
-    psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
-    psi_grid_norm=(psi_grid-psi_grid[0])/(psi_grid[-1]-psi_grid[0]) #assume monotonic psi grid - i.e. no current holes!
-    interpolator_temperature=processing.utils.interpolate_1D(psi_grid_norm,T) #create interpolator against normalised flux so we can crop easily later
+    flux_pol_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
+    flux_pol_grid_norm=(flux_pol_grid-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag'])
+    flux_pol_grid_norm,T=processing.utils.sort_arrays(flux_pol_grid_norm,T) #take all data points along the line of sight
 
     input_data['time']=time_grid[time_index]
-    input_data['flux_pol_norm']=np.linspace(0.01,1.10,200) #crop out the middle of the plasma
-    input_data['T']=interpolator_temperature(input_data['flux_pol_norm'])
+    input_data['flux_pol_norm']=flux_pol_grid_norm #or could interpolate here onto new grid
+    input_data['T']=T
 
     print("finished reading temperature from UDA")
+
+    return input_data
+
+def read_temperature_UFILE(filepath):
+    """
+    reads number density profiles from UFILE 
+
+    notes:
+        if more than one time point then temperature field is multidimensional-[time_point,flux_pol_norm]        
+    """
+
+    print("reading temperature from UFILE")
+
+    with open(filepath,'r') as file:
+
+        input_data={}
+        lines=file.readlines()
+
+        for line_number,line in enumerate(lines): #extract dimensionality of the data
+            split_line=line.split()
+        
+            if 'X0' in split_line:
+                length_temperature=int(split_line[0])
+            elif 'X1' in split_line:
+                length_time=int(split_line[0])
+                del(lines[:line_number+1]) #delete all lines up to this point
+                del(lines[-1]) #remove the last two lines with Ufile authorship
+                del(lines[-1])
+                break    
+
+        data=[]
+        for line_number,line in enumerate(lines): #extract data now
+            split_line=line.split()   
+            for number in split_line:
+                data.append(float(number))
+
+        input_data['flux_pol_norm']=np.array(data[:length_temperature])
+        del(data[:length_temperature])
+        input_data['time']=np.array(data[:length_time])
+        del(data[:length_time])
+        input_data['temperature']=np.array(data).reshape(length_time,length_temperature)
+
+    print("finished reading temperature from UFILE")
 
     return input_data
 
@@ -271,6 +315,12 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
 
     print("writing temperature to IDS")
  
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_temperature_IDS could not import IMAS module!\nreturning\n")
+        return
+
     output_IDS=imas.ids(shot,run) 
     output_IDS.create() #this will overwrite any existing IDS for this shot/run
  
@@ -351,8 +401,6 @@ class Temperature(classes.base_input.LOCUST_input):
         filepath                    full path to output file in input_files folder
  
     notes:
-        data is stored such that a reading of temperature at coordinate 'coord' is:
-            my_temperature['flux_tor'][coord], my_temperature['T'][coord]
     """
  
     LOCUST_input_type='temperature'
@@ -405,8 +453,16 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_temperature_UDA(self.shot,self.time,**self.properties)
 
+        elif data_format=='UFILE': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_temperature_UFILE(self.filepath)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

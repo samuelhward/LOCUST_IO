@@ -113,7 +113,7 @@ def read_number_density_LOCUST_h5(filepath,**properties):
     try:
         import h5py
     except:
-        raise ImportError("ERROR: read_temperature_LOCUST_h5 could not import h5py module!\n") 
+        raise ImportError("ERROR: read_number_density_LOCUST_h5 could not import h5py module!\n") 
         return
 
     with h5py.File(filepath,'r') as file:
@@ -178,8 +178,9 @@ def read_number_density_IDS(shot,run,**properties):
  
 def read_number_density_UDA(shot,time,**properties):
     """
+    reads ion or electron number density profiles from CCFE UDA database
+
     notes:
-        needs NaN checking (replace with interpolated values)
         this script heavily relies on the structure of UDA - please contant Stuart Henderson for updates
     """
 
@@ -222,30 +223,74 @@ def read_number_density_UDA(shot,time,**properties):
             signal_R='ayc_r'
 
         N=getdata(signal_N,shot)
-        R_data=getdata(signal_R,shot) #electron and ion temperature signals are stored against different radial bases - must access another dataset for electrons
+        R_data=getdata(signal_R,shot) #electron and ion number density signals are stored against different radial bases - must access another dataset for electrons
 
         time_grid=N.dims[0].data
         time_index=np.abs(time_grid-time).argmin() #figure out what time we are wanting to output (pick closest)
-        
+
         replace_nan(N,time_index)
         replace_nan(R_data,time_index)
-        
+
         N=N.data[time_index,:]
         R_grid=R_data.data[time_index]
 
-        psi_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
-        psi_grid_norm=(psi_grid-psi_grid[0])/(psi_grid[-1]-psi_grid[0]) #assume monotonic psi grid - i.e. no current holes!
-        interpolator_temperature=processing.utils.interpolate_1D(psi_grid_norm,N) #create interpolator against normalised flux so we can crop easily later
+        flux_pol_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
+        flux_pol_grid_norm=(flux_pol_grid-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag'])
+        flux_pol_grid_norm,N=processing.utils.sort_arrays(flux_pol_grid_norm,N) #take all data points along the line of sight
 
         input_data['time']=time_grid[time_index]
-        input_data['flux_pol_norm']=np.linspace(0.01,1.10,200) #crop out the middle of the plasma
-        input_data['n']=interpolator_temperature(input_data['flux_pol_norm'])
+        input_data['flux_pol_norm']=flux_pol_grid_norm #or could interpolate here onto new grid
+        input_data['n']=N
 
     elif properties['species']=='ions':
-        print("ERROR: read_number_density_UDA cannot read ion temperature!")
+        print("ERROR: read_number_density_UDA cannot read ion number density!")
         return
 
     print("finished reading number density from UDA")
+
+    return input_data
+
+def read_number_density_UFILE(filepath):
+    """
+    reads number density profiles from UFILE 
+
+    notes:
+        if more than one time point then number density field is multidimensional-[time_point,flux_pol_norm]        
+    """
+
+    print("reading number density from UFILE")
+
+    with open(filepath,'r') as file:
+
+        input_data={}
+        lines=file.readlines()
+
+        for line_number,line in enumerate(lines): #extract dimensionality of the data
+            split_line=line.split()
+        
+            if 'X0' in split_line:
+                length_number_density=int(split_line[0])
+            elif 'X1' in split_line:
+                length_time=int(split_line[0])
+                del(lines[:line_number+1]) #delete all lines up to this point
+                del(lines[-1]) #remove the last two lines with Ufile authorship
+                del(lines[-1])
+                break    
+
+        data=[]
+        for line_number,line in enumerate(lines): #extract data now
+            split_line=line.split()   
+            for number in split_line:
+                data.append(float(number))
+
+        input_data['flux_pol_norm']=np.array(data[:length_number_density])
+        del(data[:length_number_density])
+        input_data['time']=np.array(data[:length_time])
+        del(data[:length_time])
+        input_data['n']=np.array(data).reshape(length_time,length_number_density)
+        input_data['n']*=10.e6 #convert to m^-3
+
+    print("finished reading number density from UFILE")
 
     return input_data
 
@@ -365,8 +410,6 @@ class Number_Density(classes.base_input.LOCUST_input):
         filepath                    full path to output file in input_files folder
  
     notes:
-        data is stored such that a reading of number density at coordinate 'coord' is:
-            my_number_density['flux_tor'][coord], my_number_density['n'][coord]
     """
  
     LOCUST_input_type='number_density'
@@ -419,8 +462,16 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_number_density_UDA(self.shot,self.time,**self.properties)
 
+        elif data_format=='UFILE': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_number_density_UFILE(self.filepath)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

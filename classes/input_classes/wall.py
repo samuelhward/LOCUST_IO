@@ -447,8 +447,8 @@ class Wall(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_wall_GEQDSK(self.filepath)
 
-        elif data_format=='ufile':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from Ufile - filename required\n".format(self.ID),filename):
+        elif data_format=='UFILE':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -475,7 +475,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_ASCOT_2D_output(self.filepath)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/ufile/ASCOT_2D_input/ASCOT_2D_output)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/UFILE/ASCOT_2D_input/ASCOT_2D_output)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

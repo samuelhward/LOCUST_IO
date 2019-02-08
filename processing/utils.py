@@ -181,7 +181,7 @@ def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smoot
         rect_grid - toggle whether X_axis, Y_axis are regular rectangular grid edges or arbitrary cordinates 
     usage:
         my_interpolator=interpolate_2D(X_axis,Y_axis,data)
-        interpolated_value=my_interpolator(x,y)
+        interpolated_value=my_interpolator(x,y) #may need to convert to float or take first array value here
     """
 
     try:
@@ -288,10 +288,10 @@ def dot_product(vec1,vec2):
     performs dot products of two vectors sharing same orthogonal basis
     
     notes:
-    vec1,vec2 - lists of orthogonal vector components  
+        vec1,vec2 - lists of orthogonal vector components  
     """
 
-    dot_product=0.
+    dot_product=0
     for vec_1_component,vec_2_component in zip(vec1,vec2):
         dot_product+=vec_1_component*vec_2_component
 
@@ -302,18 +302,20 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     calculates the pitch angles of a given set of particle positions for axisymmetric B_field 
 
     notes:
-        XXX untested
+        assumes RHS=R Phi Z (positive toroidal direction is counter-clockwise) 
     args:
         some_equilibrium - equilibrium object
         some_particle_list - generic particle list with positions some_particle_list['R'],some_particle_list['Z']
     """
 
+    print("pitch_calc_2D - start\n")
+
     eq=copy.deepcopy(some_equilibrium)
 
-    if 'fpolrz' not in some_equilibrium.data.keys(): #first go about calculating the magnetic field if missing
-        eq.set(fpolrz=processing.process_input.fpolrz_calc(eq)) 
-    if 'B_field' not in some_equilibrium.data.keys():
-        eq.set(B_field=processing.process_input.B_calc(eq))
+    if 'B_field' not in some_equilibrium.data.keys(): #first go about calculating the magnetic field if missing
+        if 'fpolrz' not in some_equilibrium.data.keys(): 
+            eq.set(fpolrz=processing.process_input.fpolrz_calc(eq)) 
+    eq.set(B_field=processing.process_input.B_calc(eq))
 
     B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,0]) #generate interpolators for B
     B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,1])
@@ -330,13 +332,13 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
 
     for R,Z in zip(some_particle_list['R'],some_particle_list['Z']):
 
-        Br=B_field_R_interpolator(R,Z)
-        Btor=B_field_tor_interpolator(R,Z)
-        Bz=B_field_Z_interpolator(R,Z)
-        Br_at_particles.append(Br) #interpolate B to particles
-        Btor_at_particles.append(Btor)
-        Bz_at_particles.append(Bz)
-        B_at_particles.append(np.sqrt(Br**2+Btor**2+Bz**2)) #calculate |B| at particles - quicker than interpolating
+        Br=float(B_field_R_interpolator(R,Z))
+        Btor=float(B_field_tor_interpolator(R,Z))
+        Bz=float(B_field_Z_interpolator(R,Z))
+        Br_at_particles.extend([Br]) #interpolate B to particles
+        Btor_at_particles.extend([Btor])
+        Bz_at_particles.extend([Bz])
+        B_at_particles.extend([np.sqrt(Br**2+Btor**2+Bz**2)]) #calculate |B| at particles - quicker than interpolating
 
     print("pitch_calc_2D - finished interpolating B_field to particles\n")
 
@@ -352,6 +354,8 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
 
     V=np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_tor']**2+some_particle_list['V_Z']**2)
     V_pitch=V_parallel/V
+
+    print("pitch_calc_2D - finished\n")
 
     return V_pitch
 

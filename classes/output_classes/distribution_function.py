@@ -486,9 +486,10 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
-                if not properties:
-                    properties={'ITER':True,'wtot':False,'WIPE':False,'TEST':False,'EBASE':True,'dfn_s':True,'Jh':True,'Jh_s':True,'cpu_time':True} #default properties settings
+                self.filepath=support.dir_output_files+filename                
+                for variable, default_value in zip(['ITER','wtot','WIPE','TEST','EBASE','dfn_s','Jh','Jh_s','cpu_time'],[True,False,False,False,True,True,True,True,True]): #default properties settings
+                    if variable not in properties:
+                        properties[variable]=default_value
                 self.properties={**properties}
                 self.data=read_distribution_function_LOCUST(self.filepath,**self.properties) #read the file
 
@@ -498,8 +499,9 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
-                if not properties:
-                    properties={'EBASE':True} #default properties settings
+                for variable, default_value in zip(['EBASE'],[True]): #default properties settings
+                    if variable not in properties:
+                        properties[variable]=default_value
                 self.properties={**properties}
                 self.data=read_distribution_function_ASCOT(self.filepath,**self.properties) #read the file
 
