@@ -515,7 +515,8 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                         #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
                         mesh=ax.contour(self_binned_x,self_binned_y,weight*self_binned,levels=np.linspace(np.amin(weight*self_binned),np.amax(weight*self_binned),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
-                        ax.clabel(mesh,inline=1,fontsize=10)
+                        if plot_contour_labels:
+                            ax.clabel(mesh,inline=1,fontsize=10)
                         
                     if fig_flag is False:    
                         fig.colorbar(mesh,ax=ax,orientation='horizontal')

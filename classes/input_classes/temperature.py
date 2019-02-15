@@ -258,7 +258,10 @@ def read_temperature_UFILE(filepath):
 
         for line_number,line in enumerate(lines): #extract dimensionality of the data
             split_line=line.split()
-        
+
+            if 'TemperatureKEV' in split_line or 'KEV' in split_line:
+                in_kev=True        
+
             if 'X0' in split_line:
                 length_temperature=int(split_line[0])
             elif 'X1' in split_line:
@@ -278,7 +281,11 @@ def read_temperature_UFILE(filepath):
         del(data[:length_temperature])
         input_data['time']=np.array(data[:length_time])
         del(data[:length_time])
-        input_data['temperature']=np.array(data).reshape(length_time,length_temperature)
+        input_data['T']=np.array(data).reshape(length_time,length_temperature)
+        input_data['T']=np.squeeze(input_data['T']) #get rid of redundant axis if time is only 1 element long
+
+        if in_kev:
+            input_data['T']*=1e3
 
     print("finished reading temperature from UFILE")
 

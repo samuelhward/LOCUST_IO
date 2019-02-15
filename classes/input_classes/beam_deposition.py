@@ -376,7 +376,7 @@ def read_beam_depo_TRANSP_fbm_gc(filepath):
         input_data['Z']=0.01*np.asarray(input_data['Z'])
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
         input_data['E']=np.asarray(input_data['E'])
-        input_data['phi']=2.0*pi*np.asarray(input_data['phi'])/360.0
+        input_data['phi']=2.0*pi*np.asarray(input_data['phi'])/360.0 #convert to radians
 
     print("finished reading beam deposition from TRANSP FBM guiding centre format")
 
@@ -402,9 +402,9 @@ def read_beam_depo_TRANSP_birth(filepath):
     file=ncdf.netcdf_file(filepath,'r')
     input_data={}
 
-    input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01
-    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
-    input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01
+    input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01 #convert to metres
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360 #convert to radians
+    input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01 
     input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
@@ -437,7 +437,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
     input_data={}
 
     input_data['R']=file.variables['bs_rgc_D_MCBEAM'].data*.01
-    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360 #convert to radians
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
     input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
@@ -479,7 +479,7 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath):
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z weight
      
     notes:
-
+        -DWLIST -DWREAL are corresponding LOCUST flags
     """
  
     print("writing weighted full orbit beam deposition to LOCUST")
@@ -596,7 +596,6 @@ def dump_beam_depo_ASCOT(output_data,filepath):
     dumps birth profile to ASCOT ACII format at particle position
 
     notes:
-        assumes output_data stores energy in eV, phi in rad
     """
     print("writing beam deposition to ASCOT format")
 
@@ -679,7 +678,6 @@ def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
     dumps birth profile to ASCOT ACII format at guiding centre
 
     notes:
-        assumes output_data stores energy in eV, phi in rad
     """
 
     print("writing beam deposition to ASCOT guiding centre format")
@@ -1037,7 +1035,8 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                 else:
                     mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
-                    ax.clabel(mesh,inline=1,fontsize=10)
+                    if plot_contour_labels:
+                        ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')

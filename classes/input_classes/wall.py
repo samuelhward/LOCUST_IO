@@ -241,23 +241,17 @@ def read_wall_ufile(filepath):
                 break
 
         input_data={}
-        rlim=[]
-        zlim=[]
+        wall=[]
         i=0
         for line in lines:
             split_line=line.split()
             for number in split_line:
-                if i<number_points:
-                    rlim+=[float(number)]
+                if i<2*number_points:
+                    wall.append(float(number))
                     i+=1
-                elif i<2.*number_points:
-                    zlim+=[float(number)]
-                    i+=1
-                else:
-                    break
-
-        input_data['rlim']=np.asarray(rlim)
-        input_data['zlim']=np.asarray(zlim)
+                    
+        input_data['rlim']=np.asarray(wall[:number_points])
+        input_data['zlim']=np.asarray(wall[number_points:])
         input_data['limitr']=np.asarray(len(input_data['rlim']))
 
     print("finished reading 2D wall from TRANSP Ufile")

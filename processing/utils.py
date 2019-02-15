@@ -424,3 +424,53 @@ def get_dfn_point(dfn,type='LOCUST',**kwargs):
 
     dfn_values=np.asarray(dfn_values)
     return dfn_values
+
+def Zeff_calc(density,charge):
+    """
+    calculates Zeff for given ion species
+    
+    args:
+        density - list of relative densities given in arbitrary units
+        charge - list of charges for given species in units of e
+    usage:
+        Zeff=Zeff_calc(density=[1,1,1],charge=[1,1,6]) #to calculate Zeff for equal parts Deuterium, Tritium and Carbon
+    
+    notes:
+
+    """
+
+    density=np.asarray(density)
+    charge=np.asarray(charge)
+    density_electron=np.sum(density*charge)
+
+    Zeff=0
+    for species_density,species_charge in zip(density,charge):
+        Zeff+=species_density*species_charge**2/density_electron
+
+    return Zeff
+
+def Zeff_calc_density(Zeff,density,charge,fractions=False):
+    """
+    calculates missing impurity density fraction for given ion species and desired Zeff
+    
+    args:
+        Zeff - desired Zeff
+        density - list of relative densities given in arbitrary units
+        charge - list of charges for given species in units of e
+        fractions - toggle to return array of density fractions normalised to 1
+    usage:
+        relative_density=Zeff_calc_density(Zeff=2.5,density=[1,1],charge=[1,1,6]) #to calculate relative carbon density to achieve Zeff=2.5 in a hydrogen plasma
+        density must be of length len(charge)-1 (always calculates density of final species in charge array)
+    notes:
+
+    """
+    density=np.asarray(density)
+    missing_charge=charge[-1]
+    charge=np.asarray(charge[:-1])
+    missing_density=np.sum(Zeff*density*charge-density*charge**2)/(missing_charge**2-Zeff*missing_charge)
+    
+    if fractions:
+        density=np.append(density,missing_density)
+        return density/np.sum(density)
+    else:
+        return missing_density
