@@ -643,7 +643,8 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                         c.set_edgecolor("face")'''
                 else:
                     mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                    #ax.clabel(mesh,inline=1,fontsize=10)
+                    if plot_contour_labels:
+                        ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')

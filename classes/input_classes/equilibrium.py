@@ -745,7 +745,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     c.set_edgecolor("face")
             else:
                 mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-                ax.clabel(mesh,inline=1,fontsize=10)
+                if plot_contour_labels:
+                    ax.clabel(mesh,inline=1,fontsize=10)
                 
             #mesh=ax.pcolormesh(X,Y,Z,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 

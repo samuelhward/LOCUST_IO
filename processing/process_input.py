@@ -163,6 +163,7 @@ def mag_axis_calc(some_equilibrium,index=False):
     notes:
         works by calculating a contour at 10% poloidal flux and averaging the position of the contour
         XXX does not work well
+        XXX needs more testing
     """
 
     Z_2D,R_2D=np.meshgrid(some_equilibrium['Z_1D'],some_equilibrium['R_1D'])

@@ -268,6 +268,9 @@ def read_number_density_UFILE(filepath):
         for line_number,line in enumerate(lines): #extract dimensionality of the data
             split_line=line.split()
         
+            if 'CM**-3' in split_line:
+                in_cm=True
+
             if 'X0' in split_line:
                 length_number_density=int(split_line[0])
             elif 'X1' in split_line:
@@ -288,7 +291,12 @@ def read_number_density_UFILE(filepath):
         input_data['time']=np.array(data[:length_time])
         del(data[:length_time])
         input_data['n']=np.array(data).reshape(length_time,length_number_density)
-        input_data['n']*=10.e6 #convert to m^-3
+        #input_data['n']*=1.e6 #convert to m^-3
+
+        input_data['n']=np.squeeze(input_data['n']) #get rid of redundant axis if time is only 1 element long        
+
+        if in_cm:
+            input_data['n']*=1e6            
 
     print("finished reading number density from UFILE")
 

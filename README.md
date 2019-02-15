@@ -250,7 +250,7 @@ LOCUST reads an equilibrium in GEQDSK format.
 
     1D data
         R/...source[0].markers[0].positions[0][p]/                      #R coordinates of particle p
-        phi/...source[0].markers[0].positions[1][p]/                    #toroidal angle of particle p
+        phi/...source[0].markers[0].positions[1][p]/                    #toroidal angle of particle p [rad]
         Z/...source[0].markers[0].positions[2][p]/                      #Z coordinates of particle p
         V_R/...source[0].markers[0].positions[3][p]/                    #R component of v of particle p
         V_tor/...source[0].markers[0].positions[4][p]/                  #toroidal component of v of particle p
@@ -333,7 +333,7 @@ LOCUST dumps orbits in ASCII format as (number_particles \n R | phi | Z \n numbe
         number_particles/-/-                                            #total number of particles = n*ngpu
     1D data
         R/R/                                                            #r coordinate of particle
-        phi/-/                                                          #phi coordinate of particle
+        phi/-/                                                          #phi coordinate of particle [rad]
         Z/Z/                                                            #z coordinate of particle
         V_R/-/                                                          #v_r coordinate of particle
         V_tor/-/                                                        #v_tor coordinate of particle

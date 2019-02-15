@@ -73,59 +73,57 @@ def read_moments_LOCUST(filepath):
         raise ImportError("ERROR: read_moments_LOCUST could not import h5py!\nreturning\n")
         return
 
-    file = h5py.File(filepath, 'r')
+    with h5py.File(filepath,'r') as file:        
 
-    input_data['flux_pol_norm_sqrt']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
-    input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
-    input_data['dVOL']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['dVOL'])
-    input_data['beam_source']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['data'])
-    input_data['beam_source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['error'])
-    input_data['density']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Density']['data'])
-    input_data['density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Density']['error'])
-    input_data['energy_para']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (para)']['data'])
-    input_data['energy_para_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (para)']['error'])
-    input_data['energy_perp']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (perp)']['data'])
-    input_data['energy_perp_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (perp)']['error'])
-    input_data['energy']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['data'])
-    input_data['energy_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['error'])
-    input_data['J(NBCD)-raw']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['data'])
-    input_data['J(NBCD)-raw_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['error'])
-    input_data['NBI-heating-power(TOT)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['data'])
-    input_data['NBI-heating-power(TOT)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['error'])
-    input_data['NBI-heating-power(e-)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['data'])
-    input_data['NBI-heating-power(e-)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['error'])
-    input_data['NBI-heating-power(i1)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (i1)']['data'])
-    input_data['NBI-heating-power(i1)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (i1)']['error'])
-    input_data['residual-angular-momentum-density']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Residual Angular Momentum Density']['data'])
-    input_data['residual-angular-momentum-density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Residual Angular Momentum Density']['error'])
-    input_data['torque-density(JxB-inst)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB inst)']['data'])
-    input_data['torque-density(JxB-inst)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB inst)']['error'])
-    input_data['torque-density(JxB-sweep)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['data'])
-    input_data['torque-density(JxB-sweep)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['error'])
-    input_data['torque-density(coll)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['data'])
-    input_data['torque-density(coll)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['error'])
-    
-    ''' out of date or not needed for now
+        input_data['flux_pol_norm_sqrt']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
+        input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
+        input_data['dVOL']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['dVOL'])
+        input_data['beam_source']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['data'])
+        input_data['beam_source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['error'])
+        input_data['density']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Density']['data'])
+        input_data['density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Density']['error'])
+        input_data['energy_para']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (para)']['data'])
+        input_data['energy_para_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (para)']['error'])
+        input_data['energy_perp']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (perp)']['data'])
+        input_data['energy_perp_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (perp)']['error'])
+        input_data['energy']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['data'])
+        input_data['energy_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['error'])
+        input_data['J(NBCD)-raw']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['data'])
+        input_data['J(NBCD)-raw_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['error'])
+        input_data['NBI-heating-power(TOT)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['data'])
+        input_data['NBI-heating-power(TOT)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['error'])
+        input_data['NBI-heating-power(e-)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['data'])
+        input_data['NBI-heating-power(e-)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['error'])
+        input_data['NBI-heating-power(i1)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (i1)']['data'])
+        input_data['NBI-heating-power(i1)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (i1)']['error'])
+        input_data['residual-angular-momentum-density']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Residual Angular Momentum Density']['data'])
+        input_data['residual-angular-momentum-density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Residual Angular Momentum Density']['error'])
+        input_data['torque-density(JxB-inst)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB inst)']['data'])
+        input_data['torque-density(JxB-inst)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB inst)']['error'])
+        input_data['torque-density(JxB-sweep)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['data'])
+        input_data['torque-density(JxB-sweep)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['error'])
+        input_data['torque-density(coll)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['data'])
+        input_data['torque-density(coll)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['error'])
+        
+        ''' out of date or not needed for now
 
-    input_data['temperature_e']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['Te']['data']) 
-    input_data['temperature_i']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['Ti']['data']) 
-    input_data['density_e']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['ne']['data']) 
+        input_data['temperature_e']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['Te']['data']) 
+        input_data['temperature_i']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['Ti']['data']) 
+        input_data['density_e']=np.array(file['Input Data']['Kinetic Data']['Profiles (1D)']['ne']['data']) 
 
-    input_data['NBI-heating-power(i1)A']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i1)']['A'])
-    input_data['NBI-heating-power(i1)Z']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i1)']['Z'])
-    input_data['NBI-heating-power(i2)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['data'])
-    input_data['NBI-heating-power(i2)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['error'])
-    input_data['NBI-heating-power(i2)Z']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['Z'])
-    input_data['NBI-heating-power(i2)A']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['A'])
-    input_data['P(para)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(para)']['data'])
-    input_data['P(para)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(para)']['error'])
-    input_data['P(perp)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(perp)']['data'])
-    input_data['P(perp)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(perp)']['error'])
-    input_data['e-source']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['e-Source']['data'])
-    input_data['e-source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['e-Source']['error'])
-    '''
-
-    file.close()
+        input_data['NBI-heating-power(i1)A']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i1)']['A'])
+        input_data['NBI-heating-power(i1)Z']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i1)']['Z'])
+        input_data['NBI-heating-power(i2)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['data'])
+        input_data['NBI-heating-power(i2)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['error'])
+        input_data['NBI-heating-power(i2)Z']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['Z'])
+        input_data['NBI-heating-power(i2)A']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI-heating-power(i2)']['A'])
+        input_data['P(para)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(para)']['data'])
+        input_data['P(para)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(para)']['error'])
+        input_data['P(perp)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(perp)']['data'])
+        input_data['P(perp)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['P(perp)']['error'])
+        input_data['e-source']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['e-Source']['data'])
+        input_data['e-source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['e-Source']['error'])
+        '''
 
     print("finished reading moments from LOCUST")
 
@@ -192,6 +190,45 @@ def read_moments_TRANSP(filepath):
 
     return input_data
 
+def read_moments_ASCOT(filepath):
+    """
+    reads moments from ASCOT hdf5 output file
+
+    notes:
+        assumes si units
+    """
+
+    print("reading moments from ASCOT")
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_moments_ASCOT could not import h5py!\nreturning\n")
+
+    with file as h5py.File(filepath, 'r'):
+
+        input_data={} #initialise data dictionary
+
+        input_data['flux_pol_norm']=file['distributions/rhoDist/abscissae/dim1'].value
+        input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
+
+        data=file['distributions/rhoDist/ordinate'].value
+        data=np.swapaxes(data,-1,0)
+        data=np.swapaxes(data,-2,1)
+        data=np.squeeze(data) #so now we should have data[profile,flux_pol_norm,...]
+
+        for profile in file['distributions/rhoDist/ordinates'].keys():    
+            if profile[0:4]=='unit':
+                pass
+            elif profile[0:4]=='name':
+                profile_path='distributions/rhoDist/ordinates/'+profile
+                profile_number=int(profile[-1])
+                profile_name=file[profile_path].value.decode('utf-8')
+                input_data[profile_name]=data[profile_number,:]
+
+    print("finished reading moments from ASCOT")
+
+    return input_data
 
 
 ################################################################## Orbits class

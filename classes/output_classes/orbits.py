@@ -80,7 +80,10 @@ def read_orbits_LOCUST(filepath):
         del(lines[-1])
 
         input_data = {} #initialise the dictionary to hold the dat
-        input_data['orbits']=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
+        orbit_data=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
+        input_data['R']=orbit_data[:,0,:]
+        input_data['phi']=orbit_data[:,1,:]
+        input_data['Z']=orbit_data[:,2,:]
         input_data['number_particles']=np.asarray(number_particles)
         input_data['number_timesteps']=np.asarray(number_timesteps)
    
@@ -88,9 +91,71 @@ def read_orbits_LOCUST(filepath):
 
     return input_data
 
+def read_orbits_ASCOT(filepath,**properties):
+    """
+    reads orbits stored in ASCOT
+
+    notes:
+        reads only one particle
+        optionally read the particle with ID stored in properties['ID'] 
+    """
+
+    print("reading orbits from ASCOT")
+
+    with open(filepath) as file:
+
+        if 'ID' in properties:
+            ID_desired=properties['ID']
+        else:
+            ID_desired=0 #by default read particle 0
+
+        undesired_variables=['rho']
+
+        input_data={} #to store the desired data that is output
+        data_key={} #to tell us which column corresponds to which data field
+
+        for line in file:
+            if '# Number of different fields for each particle [10 first letters are significant]' in line:
+                number_of_data_fields=int(line.split()[0])
+                break #now at the point where the data fields are defined
+
+        for data_field in range(number_of_data_fields):
+            variable=file.readline().split()[0]
+            if variable=='pitch':
+                variable='V_pitch'
+            if variable=='z':
+                variable='Z'
+            if variable=='energy':
+                variable='E'
+            if variable=='id':
+                variable='ID'
+            input_data[variable]=[]
+            data_key[variable]=int(data_field)
+
+        for variable in undesired_variables: #get rid of data we do not want to read
+            del(data_key[variable])
+
+        line=file.readline() #read a blank line 
+
+        for line in file:
+            split_line=line.split()
+            if len(split_line)<number_of_data_fields: #reached end of file
+                break
+            elif int(split_line[data_key['ID']])!=ID_desired: #check if this is the particle we care about
+                pass
+            else:
+               for variable_name,field_number in data_key.items():
+                    input_data[variable_name].append(float(split_line[field_number]))
+
+        for variable in input_data:
+            input_data[variable]=np.asarray(input_data[variable])[:,np.newaxis] #add fake axis to match LOCUST format
+
+    print("finished reading orbits from ASCOT")
+
+    return input_data
+
 ################################################################## Orbit write functions
 
-'''
 def dump_orbits_LOCUST(output_data,filepath): 
     """
     writes orbits to LOCUST format - r phi z
@@ -100,8 +165,10 @@ def dump_orbits_LOCUST(output_data,filepath):
         writes out a footerline for number of time steps
     """
 
+    print("ERROR: dump_orbits_LOCUST not yet implemented!\nreturning\n")
+    
+    '''
     print("writing orbits to LOCUST")
-
     with open(filepath,'w') as file: #open file
 
         file.write("{}\n".format(output_data['number_particles'].size)) #re-insert line containing number of particles
@@ -113,7 +180,8 @@ def dump_orbits_LOCUST(output_data,filepath):
         file.write("{}".format(output_data['number_timesteps'].size)) #re-insert line containing number of time steps
 
     print("finished writing orbits to LOCUST")
-'''
+    '''
+
 '''
 def dump_orbits_vtk(output_data,filepath)
     """
@@ -150,8 +218,7 @@ class Orbits(classes.base_output.LOCUST_output):
         filepath                    full path to output file in output_files folder
 
     notes:
-        data is stored such that coordinate i at time t for particle p is my_orbit['orbits'][t,i,p]
-        in this way, a single particle's trajectory is my_orbit['orbits'][:,i,p] where i=0,1,2=r,phi,z
+        data is stored such that coordinate coord at time t for particle p is my_orbit[coord][t,p]
     """
 
     LOCUST_output_type='orbits'
@@ -174,8 +241,18 @@ class Orbits(classes.base_output.LOCUST_output):
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
                 self.data=read_orbits_LOCUST(self.filepath) #read the file
+
+        elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): #must check we have all info required for reading
+
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_orbits_ASCOT(self.filepath,**properties) #read the file
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -236,7 +313,12 @@ class Orbits(classes.base_output.LOCUST_output):
         ax.set_title(self.ID)
 
         if ndim==2: #2D plotting
-            
+
+            for particle in particles:
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap,linewidth=plot_linewidth)
+                if start_mark:
+                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],color=colour_start_mark,marker=marker_start_mark,markersize=markersize_start_mark)
+
             if axes==['R','Z']: #if we're plotting along poloidal projection, then give options to include full cross-section and plasma boundary
                
                 if real_scale is True:
@@ -246,11 +328,6 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
                 if limiters: #add boundaries if desired
                     ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
-
-                for particle in particles: #plot all the particle tracks one by one
-                    ax.plot(self['orbits'][1::2,0,particle],self['orbits'][1::2,2,particle],color=colmap,linewidth=0.5) #plot every other position along trajectory
-                    if start_mark: #show birth point
-                        ax.plot(self['orbits'][0,0,particle],self['orbits'][0,2,particle],color=colour_start_mark,marker='o',markersize=1)
 
             elif axes==['X','Y']: #plotting top-down
                 
@@ -269,14 +346,6 @@ class Orbits(classes.base_output.LOCUST_output):
                     limiters_min_R=np.min(limiters['rlim'])
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
-
-                for particle in particles: #plot all the particle tracks one by one
-                    x_points=self['orbits'][1::2,0,particle]*np.cos(self['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
-                    y_points=self['orbits'][1::2,0,particle]*np.sin(self['orbits'][1::2,1,particle])   
-                    ax.plot(x_points,y_points,color=colmap,linewidth=1) 
-                    
-                    if start_mark: #show birth point
-                        ax.plot(x_points[0],y_points[0],color=colour_start_mark,marker='o',markersize=1)
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
@@ -299,14 +368,10 @@ class Orbits(classes.base_output.LOCUST_output):
                 if limiters: #add boundaries if desired
                     ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
 
-            for particle in particles: #plot all the particle tracks one by one
-                x_points=self['orbits'][1::2,0,particle]*np.cos(self['orbits'][1::2,1,particle]) #calculate using every other position along trajectory
-                y_points=self['orbits'][1::2,0,particle]*np.sin(self['orbits'][1::2,1,particle])   
-                z_points=self['orbits'][1::2,2,particle]
-                ax.plot(x_points,y_points,zs=z_points,color=colmap) 
-                
-                if start_mark: #show birth point
-                    mesh=ax.scatter(x_points[0],y_points[0],z_points[0],color=colour_start_mark,marker='o',s=10,label=self.ID)
+            for particle in particles:
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap,linewidth=plot_linewidth)
+                if start_mark:
+                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=colour_start_mark,marker=marker_start_mark,s=markersize_start_mark)
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
