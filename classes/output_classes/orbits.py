@@ -55,7 +55,7 @@ except:
 
 ################################################################## Orbit read functions
 
-def read_orbits_LOCUST(filepath):
+def read_orbits_LOCUST(filepath,**properties):
     """
     reads orbits stored in LOCUST format - r phi z
 
@@ -156,7 +156,7 @@ def read_orbits_ASCOT(filepath,**properties):
 
 ################################################################## Orbit write functions
 
-def dump_orbits_LOCUST(output_data,filepath): 
+def dump_orbits_LOCUST(output_data,filepath,**properties): 
     """
     writes orbits to LOCUST format - r phi z
     
@@ -183,7 +183,7 @@ def dump_orbits_LOCUST(output_data,filepath):
     '''
 
 '''
-def dump_orbits_vtk(output_data,filepath)
+def dump_orbits_vtk(output_data,filepath,**properties)
     """
     notes:
     
@@ -240,7 +240,7 @@ class Orbits(classes.base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_orbits_LOCUST(self.filepath) #read the file
+                self.data=read_orbits_LOCUST(self.filepath,**properties)
 
         elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -249,7 +249,7 @@ class Orbits(classes.base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_orbits_ASCOT(self.filepath,**properties) #read the file
+                self.data=read_orbits_ASCOT(self.filepath,,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
@@ -266,7 +266,7 @@ class Orbits(classes.base_output.LOCUST_output):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_output_files+filename
-                dump_orbits_LOCUST(self.data,filepath)
+                dump_orbits_LOCUST(self.data,filepath,**properties)
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 

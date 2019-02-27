@@ -67,7 +67,7 @@ except:
 
 ################################################################## Number_Density read functions
  
-def read_number_density_LOCUST(filepath):
+def read_number_density_LOCUST(filepath,**properties):
     """
     reads number density profile stored in LOCUST format - normalised_poloidal_flux n [m^-3]
  
@@ -250,7 +250,7 @@ def read_number_density_UDA(shot,time,**properties):
 
     return input_data
 
-def read_number_density_UFILE(filepath):
+def read_number_density_UFILE(filepath,**properties):
     """
     reads number density profiles from UFILE 
 
@@ -304,7 +304,7 @@ def read_number_density_UFILE(filepath):
 
 ################################################################## Number_Density write functions
 
-def dump_number_density_LOCUST(output_data,filepath):
+def dump_number_density_LOCUST(output_data,filepath,**properties):
     """
     writes number density profile to LOCUST format - normalised_poloidal_flux n [m^-3]
      
@@ -372,7 +372,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
 
     print("finished writing number density to IDS")
 
-def dump_number_density_MARSF(output_data,filepath):
+def dump_number_density_MARSF(output_data,filepath,**properties):
     """
     writes number density data to MARSF Mogui ASCII format 
 
@@ -442,7 +442,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_number_density_LOCUST(self.filepath) #read the file
+                self.data=read_number_density_LOCUST(self.filepath,**properties)
 
         elif data_format=='LOCUST_h5': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_h5 - filename and ion species property required\n".format(self.ID),filename,properties['species']): #must check we have all info required for reading
@@ -451,7 +451,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename #remember this is in output files director!
                 self.properties={**properties}
-                self.data=read_number_density_LOCUST_h5(self.filepath,**self.properties) #read the file
+                self.data=read_number_density_LOCUST_h5(self.filepath,**properties)
 
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,properties['species']):
@@ -460,7 +460,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
-                self.data=read_number_density_IDS(self.shot,self.run,**self.properties)
+                self.data=read_number_density_IDS(self.shot,self.run,**properties)
  
         elif data_format=='UDA':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UDA - shot and time required\n".format(self.ID),shot,time):
@@ -468,7 +468,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.time=time
                 self.properties={**properties}
-                self.data=read_number_density_UDA(self.shot,self.time,**self.properties)
+                self.data=read_number_density_UDA(self.shot,self.time,**properties)
 
         elif data_format=='UFILE': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename): 
@@ -476,7 +476,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_number_density_UFILE(self.filepath)
+                self.data=read_number_density_UFILE(self.filepath,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE)\n")            
@@ -497,7 +497,7 @@ class Number_Density(classes.base_input.LOCUST_input):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_number_density_LOCUST(self.data,filepath)
+                dump_number_density_LOCUST(self.data,filepath,**properties)
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,self.properties):
@@ -506,7 +506,7 @@ class Number_Density(classes.base_input.LOCUST_input):
         elif data_format=='MARSF':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to MARSF - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_number_density_MARSF(self.data,filepath)
+                dump_number_density_MARSF(self.data,filepath,**properties)
  
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")

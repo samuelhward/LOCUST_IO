@@ -56,13 +56,13 @@ except:
 
 ################################################################## Wall read functions
 
-def read_wall_LOCUST_3D(filepath):
+def read_wall_LOCUST_3D(filepath,**properties):
     """
     notes:
     """
     pass
 
-def read_wall_LOCUST_2D(filepath):
+def read_wall_LOCUST_2D(filepath,**properties):
     """
 
     notes:
@@ -102,7 +102,7 @@ def read_wall_LOCUST_2D(filepath):
 
     return input_data
 
-def read_wall_GEQDSK(filepath):
+def read_wall_GEQDSK(filepath,**properties):
     """
     notes:
     """
@@ -221,7 +221,7 @@ def read_wall_GEQDSK(filepath):
 
     return input_data
 
-def read_wall_ufile(filepath):
+def read_wall_ufile(filepath,**properties):
     """
     reads 2D wall limiter profile from TRANSP Ufile format
 
@@ -258,7 +258,7 @@ def read_wall_ufile(filepath):
 
     return input_data 
 
-def read_wall_ASCOT_2D_input(filepath):
+def read_wall_ASCOT_2D_input(filepath,**properties):
     """
     reads 2D wall limiter profile from ASCOT input file format
 
@@ -286,7 +286,7 @@ def read_wall_ASCOT_2D_input(filepath):
 
     return input_data
 
-def read_wall_ASCOT_2D_output(filepath):
+def read_wall_ASCOT_2D_output(filepath,**properties):
     """
     reads 2D wall limiter profile from ASCOT input file format
 
@@ -313,7 +313,7 @@ def read_wall_ASCOT_2D_output(filepath):
 
 ################################################################## Wall write functions
 
-def dump_wall_LOCUST_2D(output_data,filepath):
+def dump_wall_LOCUST_2D(output_data,filepath,**properties):
     """
     dumps 2D wall limiter profile to LOCUST format
 
@@ -353,7 +353,7 @@ def dump_wall_LOCUST_2D(output_data,filepath):
 
     print("finished writing 2D limiter wall to LOCUST format")
 
-def dump_wall_ASCOT_2D_input(output_data,filepath):
+def dump_wall_ASCOT_2D_input(output_data,filepath,**properties):
     """
     dumps 2D wall outline to ASCOT input.wall_2d input file format
     
@@ -421,7 +421,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_wall_LOCUST_3D(self.filepath) #read the file
+                self.data=read_wall_LOCUST_3D(self.filepath,**properties)
 
         elif data_format=='LOCUST_2D':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_2D - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -430,7 +430,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_wall_LOCUST_2D(self.filepath) #read the file
+                self.data=read_wall_LOCUST_2D(self.filepath,**properties)
 
         elif data_format=='GEQDSK':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from GEQDSK - filename required\n".format(self.ID),filename):
@@ -439,7 +439,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_wall_GEQDSK(self.filepath)
+                self.data=read_wall_GEQDSK(self.filepath,**properties)
 
         elif data_format=='UFILE':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename):
@@ -448,7 +448,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_wall_ufile(self.filepath)
+                self.data=read_wall_ufile(self.filepath,**properties)
 
         elif data_format=='ASCOT_2D_input':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from 2D ASCOT input file - filename required\n".format(self.ID),filename):
@@ -457,7 +457,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_wall_ASCOT_2D_input(self.filepath)
+                self.data=read_wall_ASCOT_2D_input(self.filepath,**properties)
 
         elif data_format=='ASCOT_2D_output':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from 2D ASCOT output file - filename required\n".format(self.ID),filename):
@@ -466,7 +466,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_wall_ASCOT_2D_output(self.filepath)
+                self.data=read_wall_ASCOT_2D_output(self.filepath,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/UFILE/ASCOT_2D_input/ASCOT_2D_output)\n")            
@@ -487,12 +487,12 @@ class Wall(classes.base_input.LOCUST_input):
         elif data_format=='LOCUST_2D':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_2D - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_wall_LOCUST_2D(self.data,filepath)
+                dump_wall_LOCUST_2D(self.data,filepath,**properties)
 
         elif data_format=='ASCOT_2D_input':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_wall_ASCOT_2D_input(self.data,filepath)                
+                dump_wall_ASCOT_2D_input(self.data,filepath,**properties)                
 
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n")
