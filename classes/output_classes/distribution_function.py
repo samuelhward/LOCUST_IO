@@ -429,7 +429,7 @@ def dump_distribution_function_LOCUST(output_data,filepath,**properties):
 
     pass
 
-def dump_distribution_function_TRANSP(output_data,filepath):
+def dump_distribution_function_TRANSP(output_data,filepath,**properties):
     """
     notes:
         check old LOCUST_IO code for functions which can generate new netCDF variables easily
@@ -491,7 +491,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     if variable not in properties:
                         properties[variable]=default_value
                 self.properties={**properties}
-                self.data=read_distribution_function_LOCUST(self.filepath,**self.properties) #read the file
+                self.data=read_distribution_function_LOCUST(self.filepath,**self.properties,**properties)
 
         elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): #must check we have all info required for reading GEQDSKs
@@ -503,7 +503,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     if variable not in properties:
                         properties[variable]=default_value
                 self.properties={**properties}
-                self.data=read_distribution_function_ASCOT(self.filepath,**self.properties) #read the file
+                self.data=read_distribution_function_ASCOT(self.filepath,**self.properties,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            

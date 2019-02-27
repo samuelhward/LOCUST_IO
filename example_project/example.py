@@ -60,7 +60,7 @@ my_orbit.plot(colmap='red')
 #start by creating some axis objects
 fig,(ax1,ax2)=plt.subplots(1,2)
 #then let us add an x,y plot of the orbits to this figure on the first axis
-my_orbit.plot(axes=['X','Y'],colmap=mycmap(numpy.random.uniform()),ax=ax1,fig=fig)
+my_orbit.plot(axes=['R','Z'],colmap=mycmap(numpy.random.uniform()),ax=ax1,fig=fig)
 #now add a plot of number density on the second axis
 my_Ne.plot(ax=ax2,fig=fig)
 #if I do not like the default axis labels, I can always overwrite them

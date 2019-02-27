@@ -61,7 +61,7 @@ except:
 
 ################################################################## Temperature read functions
  
-def read_temperature_LOCUST(filepath):
+def read_temperature_LOCUST(filepath,**properties):
     """
     reads temperature profile stored in LOCUST format - normalised_poloidal_flux T(ev)
     """
@@ -241,7 +241,7 @@ def read_temperature_UDA(shot,time,**properties):
 
     return input_data
 
-def read_temperature_UFILE(filepath):
+def read_temperature_UFILE(filepath,**properties):
     """
     reads number density profiles from UFILE 
 
@@ -293,7 +293,7 @@ def read_temperature_UFILE(filepath):
 
 ################################################################## Temperature write functions
 
-def dump_temperature_LOCUST(output_data,filepath):
+def dump_temperature_LOCUST(output_data,filepath,**properties):
     """
     writes temperature profile to LOCUST format - normalised_poloidal_flux T(ev)    
      
@@ -362,7 +362,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
 
     print("finished writing temperature to IDS")
 
-def dump_temperature_MARSF(output_data,filepath):
+def dump_temperature_MARSF(output_data,filepath,**properties):
     """
     writes temperature profile to MARSF Mogui ASCII format
      
@@ -432,7 +432,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_temperature_LOCUST(self.filepath) #read the file
+                self.data=read_temperature_LOCUST(self.filepath,**properties)
     
         elif data_format=='LOCUST_h5': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_h5 - filename and ion species property required\n".format(self.ID),filename,properties['species']): #must check we have all info required for reading
@@ -441,7 +441,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename #remember this is in output files director!
                 self.properties={**properties}
-                self.data=read_temperature_LOCUST_h5(self.filepath,**self.properties) #read the file
+                self.data=read_temperature_LOCUST_h5(self.filepath,**properties)
 
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,properties['species']):
@@ -450,7 +450,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
-                self.data=read_temperature_IDS(self.shot,self.run,**self.properties)
+                self.data=read_temperature_IDS(self.shot,self.run,**properties)
  
         elif data_format=='UDA':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UDA - shot and time required\n".format(self.ID),shot,time):
@@ -458,7 +458,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.time=time
                 self.properties={**properties}
-                self.data=read_temperature_UDA(self.shot,self.time,**self.properties)
+                self.data=read_temperature_UDA(self.shot,self.time,**properties)
 
         elif data_format=='UFILE': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename): 
@@ -466,7 +466,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_temperature_UFILE(self.filepath)
+                self.data=read_temperature_UFILE(self.filepath,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE)\n")            
@@ -496,7 +496,7 @@ class Temperature(classes.base_input.LOCUST_input):
         elif data_format=='MARSF':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to MARSF - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_temperature_MARSF(self.data,filepath)
+                dump_temperature_MARSF(self.data,filepath,**properties)
  
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")

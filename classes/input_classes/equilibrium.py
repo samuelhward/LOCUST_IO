@@ -386,19 +386,19 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
     def write_number(file,number,counter):
         
         if number==0:
-            separator = "  "
+            separator = " "
             number = np.abs(number)
         elif number < 0:
-            separator = " -"
+            separator = "-"
             number = np.abs(number)
         else:
-            separator = "  "
+            separator = " "
         if processing.utils.get_next(counter) == 4:
             last = "\n"
         else:
             last = ""
          
-        string = '{:.8e}'.format(float(number))
+        string = '{:.9e}'.format(float(number))
         #mant,exp = string.split('E')
         file.write(separator+string+last)
  
@@ -437,35 +437,29 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         cnt = itertools.cycle([0,1,2,3,4]) #reset the counter (otherwise our newlines will be out of sync)
         write_1d(file,output_data['fpol'],cnt)
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pres'],cnt)
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again        
         write_1d(file,output_data['ffprime'],cnt)
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pprime'],cnt)
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_2d(file,output_data['psirz'],cnt)    
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['qpsi'],cnt) 
         
-        file.write("\n"+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
+        file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
         
-        file.write("\n")
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['lcfs_r'],output_data['lcfs_z'],cnt)
         
-        file.write("\n") #file has a newline here
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
+        file.write("\n") #file has a newline here
 
         print("finished writing equilibrium to GEQDSK")
  
@@ -626,7 +620,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_equilibrium_GEQDSK(self.filepath,**properties) #read the file
+                self.data=read_equilibrium_GEQDSK(self.filepath,**properties)
             
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from equilibrium IDS - shot and run required\n".format(self.ID),shot,run):

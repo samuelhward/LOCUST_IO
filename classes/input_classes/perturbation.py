@@ -55,7 +55,7 @@ except:
 
 ################################################################## Perturbation read functions
  
-def read_perturbation_LOCUST(filepath):
+def read_perturbation_LOCUST(filepath,**properties):
     """
     reads perturbation stored in LOCUST format
 
@@ -119,7 +119,7 @@ def read_perturbation_LOCUST(filepath):
     
     return input_data
 
-def read_perturbation_LOCUST_field_data(filepath):
+def read_perturbation_LOCUST_field_data(filepath,**properties):
     """
     notes:
         reads from the file_data.out file produced by LOCUST BCHECK mode
@@ -152,7 +152,7 @@ def read_perturbation_LOCUST_field_data(filepath):
 
     return input_data
 
-def read_perturbation_IDS(shot,run):
+def read_perturbation_IDS(shot,run,**properties):
     """
     notes:
 
@@ -164,7 +164,7 @@ def read_perturbation_IDS(shot,run):
         raise ImportError("ERROR: read_perturbation_IDS could not import IMAS module!\nreturning\n")
         return
 
-def read_perturbation_JOREK(filepath):
+def read_perturbation_JOREK(filepath,**properties):
     """
     notes:
     """
@@ -184,7 +184,7 @@ def read_perturbation_JOREK(filepath):
     
 ################################################################## Perturbation write functions
  
-def dump_perturbation_LOCUST(output_data,filepath):
+def dump_perturbation_LOCUST(output_data,filepath,**properties):
     """
     writes perturbation to LOCUST format
 
@@ -198,7 +198,7 @@ def dump_perturbation_LOCUST(output_data,filepath):
      
     print("finished writing LOCUST perturbation")
 
-def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BCHECK=1):
+def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BCHECK=1,**properties):
     """
     generates the point_data.inp file for checking magnetic perturbations using LOCUST -DBCHECK
 
@@ -286,7 +286,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_perturbation_LOCUST(self.filepath) #read the file
+                self.data=read_perturbation_LOCUST(self.filepath,**properties)
 
         elif data_format=='LOCUST_field_data': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_field_data - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -295,7 +295,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_perturbation_LOCUST_field_data(self.filepath) #read the file
+                self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from magnetics IDS - shot and run required\n".format(self.ID),shot,run):
@@ -304,7 +304,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
-                self.data=read_perturbation_IDS(self.shot,self.run)
+                self.data=read_perturbation_IDS(self.shot,self.run,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/IDS)\n")            
@@ -325,12 +325,12 @@ class Perturbation(classes.base_input.LOCUST_input):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_perturbation_LOCUST(self.data,filepath)
+                dump_perturbation_LOCUST(self.data,filepath,**properties)
 
         elif data_format=='point_data':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to point_data.inp - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK)
+                dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n")

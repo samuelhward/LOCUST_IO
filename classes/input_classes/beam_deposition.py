@@ -453,7 +453,7 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
 
 ################################################################## Beam_Deposition write functions 
 
-def dump_beam_depo_LOCUST_full_orbit(output_data,filepath):
+def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
     """
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z 
      
@@ -474,7 +474,7 @@ def dump_beam_depo_LOCUST_full_orbit(output_data,filepath):
     
     print("finished writing full orbit beam deposition to LOCUST") 
 
-def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath):
+def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties):
     """
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z weight
      
@@ -497,7 +497,7 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath):
 
 #def dump_beam_depo_LOCUST_guiding_centre(): missing this option in LOCUST
 
-def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibrium):
+def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibrium,**properties):
     """
     writes weighted birth profile to LOCUST format - R phi Z V_parallel V weight
      
@@ -525,7 +525,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
     
     print("finished writing weighted guiding centre beam deposition to LOCUST") 
   
-def dump_beam_depo_IDS(ID,output_data,shot,run):
+def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     """
     writes birth profile to a distribution_sources IDS
  
@@ -591,7 +591,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run):
 
     print("finished writing beam deposition to IDS")
 
-def dump_beam_depo_ASCOT(output_data,filepath):
+def dump_beam_depo_ASCOT(output_data,filepath,**properties):
     """
     dumps birth profile to ASCOT ACII format at particle position
 
@@ -673,7 +673,7 @@ def dump_beam_depo_ASCOT(output_data,filepath):
 
     print("finished writing beam deposition to ASCOT format")
 
-def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium):
+def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium,**properties):
     """
     dumps birth profile to ASCOT ACII format at guiding centre
 
@@ -833,7 +833,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_LOCUST_full_orbit(self.filepath) #read the file
+                self.data=read_beam_depo_LOCUST_full_orbit(self.filepath,**properties)
 
         elif data_format=='LOCUST_FO_weighted': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_FO_weighted - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -842,7 +842,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_LOCUST_full_orbit_weighted(self.filepath) #read the file
+                self.data=read_beam_depo_LOCUST_full_orbit_weighted(self.filepath,**properties)
 
         elif data_format=='LOCUST_GC_weighted': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from LOCUST_GC_weighted - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -851,7 +851,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_LOCUST_guiding_centre_weighted(self.filepath) #read the file
+                self.data=read_beam_depo_LOCUST_guiding_centre_weighted(self.filepath,**properties)
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from distribution_sources IDS - shot and run required\n".format(self.ID),shot,run):
@@ -860,7 +860,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.shot=shot
                 self.run=run
                 self.properties={**properties}
-                self.data=read_beam_depo_IDS(self.shot,self.run)
+                self.data=read_beam_depo_IDS(self.shot,self.run,**properties)
 
         elif data_format=='TRANSP_fbm':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from TRANSP_fbm - filename required\n".format(self.ID),filename):
@@ -869,7 +869,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_fbm(self.filepath) #read the file
+                self.data=read_beam_depo_TRANSP_fbm(self.filepath,**properties)
 
         elif data_format=='TRANSP_fbm_gc':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from TRANSP_fbm_gc - filename required\n".format(self.ID),filename):
@@ -878,7 +878,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath) #read the file
+                self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath,**properties)
 
         elif data_format=='TRANSP_birth':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from TRANSP_birth - filename required\n".format(self.ID),filename):
@@ -887,7 +887,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_birth(self.filepath) #read the file 
+                self.data=read_beam_depo_TRANSP_birth(self.filepath,**properties) 
 
         elif data_format=='TRANSP_birth_gc':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from TRANSP_birth_gc - filename required\n".format(self.ID),filename):
@@ -896,7 +896,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_birth_gc(self.filepath) #read the file 
+                self.data=read_beam_depo_TRANSP_birth_gc(self.filepath,**properties) 
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc)\n")
@@ -917,31 +917,31 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         elif data_format=='LOCUST_FO':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_FO - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST_full_orbit(self.data,filepath)
+                dump_beam_depo_LOCUST_full_orbit(self.data,filepath,**properties)
 
         elif data_format=='LOCUST_FO_weighted':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_FO_weighted - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST_full_orbit_weighted(self.data,filepath)
+                dump_beam_depo_LOCUST_full_orbit_weighted(self.data,filepath,**properties)
 
         elif data_format=='LOCUST_GC_weighted':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_GC_weighted - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_LOCUST_guiding_centre_weighted(self.data,filepath,equilibrium) 
+                dump_beam_depo_LOCUST_guiding_centre_weighted(self.data,filepath,equilibrium,**properties) 
          
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to distribution_sources IDS - shot and run required\n".format(self.ID),shot,run):
-                dump_beam_depo_IDS(self.ID,self.data,shot,run)
+                dump_beam_depo_IDS(self.ID,self.data,shot,run,**properties)
 
         elif data_format=='ASCOT':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT(self.data,filepath)
+                dump_beam_depo_ASCOT(self.data,filepath,**properties)
 
         elif data_format=='ASCOT_gc':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_gc - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium)
+                dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium,**properties)
  
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT/ASCOT_gc)\n")

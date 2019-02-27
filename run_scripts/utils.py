@@ -85,7 +85,7 @@ except:
 
 ################################################################################################### TRANSP classes and functions
 
-def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True,guiding_centre=True,device='d3d'):
+def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True,guiding_centre=True,path_TRANSP='',device='d3d'):
     """
     notes:
         looks for files in output_files
@@ -95,14 +95,16 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
         number_files - total number of .DATA# files to extract CDF from 
         particle_position - toggle whether to generate set of CDFs at particle positions
         guiding_centre - toggle whether to generate set of CDFs at guiding centres
+        path_TRANSP - path to TRANSP files in input_files dir (input_files/path_TRANSP...)
         device - device code for machine under study
     """
 
     ID=str(shot_number)+str(run_ID)
 
     project_dir=os.getcwd()
-    os.chdir(support.dir_output_files) #change working directory to output files briefly due to bug in CCFE get_fbm installation
-    
+    target_dir=os.path.join(support.dir_output_files,path_TRANSP)
+    os.chdir(target_dir) #change working directory to output files briefly due to bug in CCFE get_fbm installation
+
     for file_ID in range(number_files):
         file_ID+=1
         output_filename='{}{}{}{}'.format(ID,'_fi_',file_ID,'.cdf') #current output file
@@ -147,7 +149,7 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
 
     os.chdir(project_dir) #change back to original working directory    
 
-def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,device='d3d'):
+def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,path_TRANSP='',device='d3d'):
     """
     notes:
         looks for files in output_files
@@ -163,13 +165,15 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,device='d
         run_ID - TRANSP run_ID e.g. W01
         shot_number - TRANSP shot number e.g. 29034
         number_files - total number of .DATA# files to extract CDF from 
+        path_TRANSP - path to TRANSP files in input_files dir (input_files/path_TRANSP...)
         device - device code for machine under study
     """
 
     ID=str(shot_number)+str(run_ID)
 
     project_dir=os.getcwd()
-    os.chdir(support.dir_output_files) #change working directory to output files briefly due to bug in CCFE get_fbm installation
+    target_dir=os.path.join(support.dir_output_files,path_TRANSP)
+    os.chdir(target_dir) #change working directory to output files briefly due to bug in CCFE get_fbm installation
     
     for file_ID in range(number_files):
         file_ID+=1
@@ -401,6 +405,8 @@ class TRANSP_output_FI(TRANSP_output):
         notes:
             functions differently to LOCUST_IO's plot_distribution_function() (see args list below)
             assumes distribution function has already been integrated to specified 'axes' option
+            try tricontourf for TRANSP plotting instead of interpolation? unstructured grid contours!
+                https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.tricontour.html
         args:
             axes - array specifying plot type from list of options below
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
@@ -743,7 +749,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
         flux_pol_norm_sqrt,te,ne,rot,ti,ni=processing.utils.sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
-        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,'i',ti,ni): 
+        for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,rot,ti,ni): 
             line=processing.utils.fortran_string(RHO,16,7)+processing.utils.fortran_string(Te,16,7)+processing.utils.fortran_string(Ne,16,7)+processing.utils.fortran_string(Vtor_I,15,7)+processing.utils.fortran_string(Ti1,17,7)+processing.utils.fortran_string(Ni1,15,7)+"\n"
             file.write(line)
 

@@ -55,7 +55,7 @@ except:
 
 ################################################################## Orbits functions
 
-def read_moments_LOCUST(filepath):
+def read_moments_LOCUST(filepath,**properties):
     """
     reads generic moments data output from LOCUST
 
@@ -129,7 +129,7 @@ def read_moments_LOCUST(filepath):
 
     return input_data
 
-def read_moments_TRANSP(filepath):
+def read_moments_TRANSP(filepath,**properties):
     """
     reads moments from TRANSP <run_id>.CDF output file
     
@@ -190,7 +190,7 @@ def read_moments_TRANSP(filepath):
 
     return input_data
 
-def read_moments_ASCOT(filepath):
+def read_moments_ASCOT(filepath,**properties):
     """
     reads moments from ASCOT hdf5 output file
 
@@ -273,7 +273,7 @@ class Moments(classes.base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_moments_LOCUST(self.filepath) #read the file
+                self.data=read_moments_LOCUST(self.filepath,**properties)
 
         elif data_format=='TRANSP':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from TRANSP - filename required\n".format(self.ID),filename): #must check we have all info required for reading
@@ -282,7 +282,7 @@ class Moments(classes.base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
-                self.data=read_moments_TRANSP(self.filepath) #read the file
+                self.data=read_moments_TRANSP(self.filepath,**properties)
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
 
@@ -298,7 +298,7 @@ class Moments(classes.base_output.LOCUST_output):
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
                 filepath=support.dir_output_files+filename
-                dump_moments_LOCUST(self.data,filepath)
+                dump_moments_LOCUST(self.data,filepath,**properties)
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
 
