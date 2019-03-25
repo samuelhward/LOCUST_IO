@@ -742,7 +742,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         file.write("# 18Jan08 for testing (first 3 lines are comment lines)\n")
         file.write(str(temperature_e['flux_pol_norm'].size)+"   "+"1"+" # Nrad,Nion\n")
         file.write("1           # ion Znum\n")
-        file.write("1           # ion Amass\n")
+        file.write("2           # ion Amass\n")
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
         file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n") #rho_pol is defined as sqrt((psi - psi_axis)/(psi_sep - psi_axis)), where psi is the poloidal magnetic flux, and psi_axis/psi_sep are its value evaluated on-axis/at the separatrix
  
