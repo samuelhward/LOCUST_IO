@@ -204,9 +204,9 @@ def read_moments_ASCOT(filepath,**properties):
         import h5py
     except:
         raise ImportError("ERROR: read_moments_ASCOT could not import h5py!\nreturning\n")
-
-    with file as h5py.File(filepath, 'r'):
-
+    
+    with h5py.File(filepath,'r') as file:
+    
         input_data={} #initialise data dictionary
 
         input_data['flux_pol_norm']=file['distributions/rhoDist/abscissae/dim1'].value

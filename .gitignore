@@ -35,5 +35,9 @@ __pycache__
 #changes file
 changes
 
+#VS code things
+.vscode/*
+tempCodeRunnerFile.python
+
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME
