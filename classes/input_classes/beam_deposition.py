@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 
 try:
     import numpy as np
+    import copy
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -61,7 +62,7 @@ except:
 
 ################################################################## Beam_Deposition read functions
  
-def read_beam_depo_LOCUST_full_orbit(filepath):
+def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
     """
     reads birth profile stored in LOCUST format - R phi Z V_R V_tor V_Z
 
@@ -112,7 +113,7 @@ def read_beam_depo_LOCUST_full_orbit(filepath):
  
     return input_data
 
-def read_beam_depo_LOCUST_full_orbit_weighted(filepath):
+def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
     """
     reads birth profile stored in LOCUST format - R phi Z V_R V_tor V_Z weight
 
@@ -168,7 +169,7 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath):
 
 #def read_beam_depo_LOCUST_guiding_centre(): missing this option in LOCUST
 
-def read_beam_depo_LOCUST_guiding_centre_weighted(filepath):
+def read_beam_depo_LOCUST_guiding_centre_weighted(filepath,**properties):
     """
     reads birth profile stored in LOCUST format - R phi Z V_parallel V weight
 
@@ -218,7 +219,7 @@ def read_beam_depo_LOCUST_guiding_centre_weighted(filepath):
  
     return input_data
 
-def read_beam_depo_IDS(shot,run):
+def read_beam_depo_IDS(shot,run,**properties):
     """
     reads birth profile from a distribution_sources IDS and returns as a dictionary
  
@@ -267,7 +268,7 @@ def read_beam_depo_IDS(shot,run):
  
     return input_data
 
-def read_beam_depo_TRANSP_fbm(filepath):
+def read_beam_depo_TRANSP_fbm(filepath,**properties):
     """
     reads birth profile from TRANSP ASCII file at particle position
  
@@ -332,7 +333,7 @@ def read_beam_depo_TRANSP_fbm(filepath):
 
     return input_data
 
-def read_beam_depo_TRANSP_fbm_gc(filepath):
+def read_beam_depo_TRANSP_fbm_guiding_centre(filepath,**properties):
     """
     reads birth profile from TRANSP ASCII file at guiding centre
  
@@ -344,7 +345,7 @@ def read_beam_depo_TRANSP_fbm_gc(filepath):
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_TRANSP_fbm_gc() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_TRANSP_fbm_guiding_centre() cannot read from "+filepath)
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if str(line.split()[0])=='<start-of-data>':
@@ -382,7 +383,7 @@ def read_beam_depo_TRANSP_fbm_gc(filepath):
 
     return input_data
 
-def read_beam_depo_TRANSP_birth(filepath):
+def read_beam_depo_TRANSP_birth(filepath,**properties):
     """
     reads birth profile from TRANSP birth CDF file at particle position
 
@@ -417,7 +418,7 @@ def read_beam_depo_TRANSP_birth(filepath):
     
     return input_data
 
-def read_beam_depo_TRANSP_birth_gc(filepath):
+def read_beam_depo_TRANSP_birth_guiding_centre(filepath,**properties):
     """
     reads birth profile from TRANSP birth CDF file at guiding centre
 
@@ -449,6 +450,99 @@ def read_beam_depo_TRANSP_birth_gc(filepath):
 
     print("finished reading beam deposition from TRANSP birth CDF guiding centre format")
 
+    return input_data
+
+
+def read_beam_depo_ASCOT_full_orbit(fileoath,**properties):
+    """
+    reads birth profile from full orbit ASCOT birth ASCII file 
+
+    notes:
+    """
+
+    with open(filepath,'w') as file: #open file
+
+        for line in file:
+            if 'Number of particles' in line:
+                number_particles=int(line.split()[0])
+            if 'Number of different fields' in line:
+                number_fields=int(line.split()[0])
+                break
+
+        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        counter=0
+        for line in file:
+            fields.append(line.split()[0])
+            counter+=1
+            if counter==number_fields:
+                break
+
+        blank_line=file.readline() #remove read blank line XXX check this
+
+        raw_data={} #create data dictionaries for holding all data and final returned data
+        input_data={}
+        for field in fields:
+            raw_data[field]=[]
+        
+        for line_number in range(number_particles):
+            line=file.readline() #XXX check this
+            for number,field in zip(line.split(),fields):
+                raw_data[field].extend([float(number)])
+
+        #rename variables to LOCUST_IO conventions
+        ascot_names=['energy','rho','phiprt','Rprt','zprt','vphi','vR','vz','weight'] #possible ASCOT fields
+        locust_names['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
+            if ascot_name in raw_data.keys():
+                input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
+                input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
+    
+    return input_data
+
+def read_beam_depo_ASCOT_guiding_centre(fileoath,**properties):
+    """
+    reads birth profile from guiding centre ASCOT birth ASCII file 
+
+    notes:
+    """
+
+    with open(filepath,'w') as file: #open file
+
+        for line in file:
+            if 'Number of particles' in line:
+                number_particles=int(line.split()[0])
+            if 'Number of different fields' in line:
+                number_fields=int(line.split()[0])
+                break
+
+        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        counter=0
+        for line in file:
+            fields.append(line.split()[0])
+            counter+=1
+            if counter==number_fields:
+                break
+
+        blank_line=file.readline() #remove read blank line XXX check this
+
+        raw_data={} #create data dictionaries for holding all data and final returned data
+        input_data={}
+        for field in fields:
+            raw_data[field]=[]
+        
+        for line_number in range(number_particles):
+            line=file.readline() #XXX check this
+            for number,field in zip(line.split(),fields):
+                raw_data[field].extend([float(number)])
+
+        #rename variables to LOCUST_IO conventions
+        ascot_names=['energy','pitch' ,'rho','phi','R','z','vphi','vR','vz','weight'] #possible ASCOT fields
+        locust_names['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
+            if ascot_name in raw_data.keys():
+                input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
+                input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
+    
     return input_data
 
 ################################################################## Beam_Deposition write functions 
@@ -591,7 +685,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
 
     print("finished writing beam deposition to IDS")
 
-def dump_beam_depo_ASCOT(output_data,filepath,**properties):
+def dump_beam_depo_ASCOT_full_orbit(output_data,filepath,**properties):
     """
     dumps birth profile to ASCOT ACII format at particle position
 
@@ -673,7 +767,7 @@ def dump_beam_depo_ASCOT(output_data,filepath,**properties):
 
     print("finished writing beam deposition to ASCOT format")
 
-def dump_beam_depo_ASCOT_gc(output_data,filepath,equilibrium,**properties):
+def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**properties):
     """
     dumps birth profile to ASCOT ACII format at guiding centre
 
@@ -878,7 +972,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_fbm_gc(self.filepath,**properties)
+                self.data=read_beam_depo_TRANSP_fbm_guiding_centre(self.filepath,**properties)
 
         elif data_format=='TRANSP_birth':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from TRANSP_birth - filename required\n".format(self.ID),filename):
@@ -896,10 +990,28 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.filename=filename
                 self.filepath=support.dir_input_files+filename
                 self.properties={**properties}
-                self.data=read_beam_depo_TRANSP_birth_gc(self.filepath,**properties) 
+                self.data=read_beam_depo_TRANSP_birth_guiding_centre(self.filepath,**properties) 
+
+        elif data_format=='ASCOT_FO':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_FO - filename required\n".format(self.ID),filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_ASCOT_full_orbit(self.filepath,**properties) 
+
+        elif data_format=='ASCOT_GC':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_FO - filename required\n".format(self.ID),filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_ASCOT_guiding_centre(self.filepath,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc)\n")
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC)\n")
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None,**properties):
         """
@@ -933,18 +1045,18 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to distribution_sources IDS - shot and run required\n".format(self.ID),shot,run):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run,**properties)
 
-        elif data_format=='ASCOT':
+        elif data_format=='ASCOT_FO':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT(self.data,filepath,**properties)
+                dump_beam_depo_ASCOT_full_orbit(self.data,filepath,**properties)
 
-        elif data_format=='ASCOT_gc':
+        elif data_format=='ASCOT_GC':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_gc - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
                 filepath=support.dir_input_files+filename
-                dump_beam_depo_ASCOT_gc(self.data,filepath,equilibrium,**properties)
+                dump_beam_depo_ASCOT_guiding_centre(self.data,filepath,equilibrium,**properties)
  
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT/ASCOT_gc)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT_FO/ASCOT_GC)\n")
 
     def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,fill=True,ax=False,fig=False):
         """
