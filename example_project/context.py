@@ -22,9 +22,14 @@ import os
 ##################################################################
 #Main
 
+tail=''
 thisdirectory=os.path.dirname(os.path.abspath(__file__)) #get the directory this script is in
-thisdirectory_up1=os.path.dirname(thisdirectory) #go one level up from that (should be LOCUST_IO directory)
-sys.path.insert(1,thisdirectory_up1) #append Python sys path
+LOCUST_IO_dir=thisdirectory
+
+while tail!='LOCUST_IO':
+	LOCUST_IO_dir=os.path.dirname(LOCUST_IO_dir) #keep moving up levels until LOCUST_IO dir is found
+	tail=LOCUST_IO_dir[-9:]
+sys.path.insert(1,LOCUST_IO_dir) #append Python sys path
 
 #################################
 

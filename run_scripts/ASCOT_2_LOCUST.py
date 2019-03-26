@@ -65,7 +65,6 @@ except:
 #Main
 
 #read in all relevant ASCOT inputs and outputs
-
 def ASCOT_2_LOCUST(path_LOCUST='',path_ASCOT='',beam_depo_GC=True,filename_ASCOT_equilibrium='ASCOT_GEQDSK',GEQDSKFIX=0,species_numbers=[1],wall_type='2D',tag=''):
     """
     read all LOCUST inputs from ASCOT run data  
