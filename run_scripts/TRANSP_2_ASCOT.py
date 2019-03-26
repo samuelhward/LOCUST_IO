@@ -93,13 +93,13 @@ if __name__=='__main__':
 
     import argparse #take user command line input here
     parser=argparse.ArgumentParser(description='convert TRANSP files to ASCOT input files')
-    parser.add_argument('--run_ID',type=str,action='store',dest='run_ID',help='TRANSP run ID',required=True)
-    parser.add_argument('--shot_number',type=str,action='store',dest='shot_number',help='TRANSP shot number',required=True)
-    parser.add_argument('--path_ASCOT',type=str,action='store',default='',dest='path_ASCOT',help='source path to TRANSP inputs within input_files',required=False)
-    parser.add_argument('--path_TRANSP',type=str,action='store',default='',dest='path_TRANSP',help='target path to ASCOT inputs within input_files',required=False)
-    parser.add_argument('--GC',action='store_true',default=False,dest='beam_depo_GC',help='toggle guiding centre particle list (default False)',required=False)
-    parser.add_argument('--GEQDSKFIX',type=int,action='store',default=0,dest='GEQDSKFIX',help='LOCUST-equivalent flag to optionally flip fields in GEQDSK',required=False)        
-    parser.add_argument('--tag',type=str,action='store',default='',dest='tag',help='optional identifier tag for each set of run files produced',required=False)    
+    parser.add_argument('--run_ID',type=str,action='store',dest='run_ID',help="TRANSP run ID",required=True)
+    parser.add_argument('--shot_number',type=str,action='store',dest='shot_number',help="TRANSP shot number",required=True)
+    parser.add_argument('--path_ASCOT',type=str,action='store',default='',dest='path_ASCOT',help="source path to TRANSP inputs within input_files",required=False)
+    parser.add_argument('--path_TRANSP',type=str,action='store',default='',dest='path_TRANSP',help="target path to ASCOT inputs within input_files",required=False)
+    parser.add_argument('--GC',action='store_true',default=False,dest='beam_depo_GC',help="toggle guiding centre particle list (default False)",required=False)
+    parser.add_argument('--GEQDSKFIX',type=int,action='store',default=0,dest='GEQDSKFIX',help="LOCUST-equivalent flag to optionally flip fields in GEQDSK",required=False)        
+    parser.add_argument('--tag',type=str,action='store',default='',dest='tag',help="optional identifier tag for each set of run files produced",required=False)    
     
     args=parser.parse_args()
 

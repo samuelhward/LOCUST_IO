@@ -1149,6 +1149,83 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     print("finished dumping ASCOT input options")
 
+def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_type='2D'):
+    """
+    reads full run input data from ASCOT inputs
+
+    notes:
+        XXX currently no way to asssimilate ASCOT equilibrium so ignore for now
+        currently assumes 2D wall
+        assumes all kinetic profiles for all desired species stored in same location
+        uses default ASCOT filenames
+    args:
+        input_path - path to target in input_files dir (input_files/path/)
+        beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
+        species_numbers - species number labels from input particle list to read in
+        wall_type - set wall type to '2D' or '3D'
+    """
+
+    print("read_inputs_ASCOT()")
+
+    filepath_temperature_i=input_path+'input.plasma_1d' 
+    filepath_number_density_i=input_path+'input.plasma_1d' 
+    filepath_temperature_e=input_path+'input.plasma_1d' 
+    filepath_number_density_e=input_path+'input.plasma_1d' 
+    filepath_beam_deposition=input_path+'input.particles'
+    filepath_wall=input_path+'input.wall_2d'
+
+    temperature_array=[] #arrays to hold kinetic profile data for each species
+    number_density_array=[]
+    for species_number in species_numbers: #cycle through species and read corresponding kinetic profiles
+
+        try:
+            temperature=classes.input_classes.temperature.Temperature(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_temperature_i,species_number=species_number,species='ions')
+            temperature_array.append(temperature)
+        except:
+            print("WARNING: read_inputs_ASCOT() could not read ion temperature for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_temperature_i))
+        try:
+            number_density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_number_density_i,species_number=species_number,species='ions')
+            number_density_array.append(number_density)
+        except:
+            print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_number_density_i))
+
+    try:
+        temperature_e=classes.input_classes.temperature.Temperature(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_temperature_e,species_number=species_number,species='electrons')
+    except:
+        print("WARNING: read_inputs_ASCOT() could not read electron temperature from LOCUST_IO/input_files/{}".format(filepath_temperature_e))
+
+    try:
+        number_density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_number_density_e,species_number=species_number,species='electrons')
+    except:
+        print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/input_files/{}".format(filepath_number_density_i))
+
+    if beam_depo_GC:
+        data_format_beam_depo='ASCOT_GC'
+    else: 
+        data_format_beam_depo='ASCOT_FO'
+    try:
+        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='made using read_inputs_ASCOT()',data_format=data_format_beam_depo,filename=filepath_beam_deposition)
+    except:
+        print("WARNING: read_inputs_ASCOT() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
+        beam_deposition=None
+
+    if wall_type=='2D' or wall_type=='3D':
+        pass
+    else:
+        wall_type='2D'
+        print("read_inputs_ASCOT() assuming 2D wall")
+    data_format_wall='ASCOT_'+wall_type
+
+    try:
+        wall=classes.input_classes.wall.Wall(ID='made using read_inputs_ASCOT()',data_format=data_format_wall,filename=filepath_wall)
+    except:
+        print("WARNING: read_inputs_ASCOT() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
+        wall=None
+
+    print("finished read_inputs_ASCOT()")
+
+    return temperature_array,number_density_array,temperature_e,number_density_e,beam_deposition,wall
+
 def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,beam_depo_GC=True,input_path='',tag=''):
     """
     generates full run input data for ASCOT
@@ -1204,9 +1281,9 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
 
     try:
         if beam_depo_GC:
-            beam_deposition.dump_data(data_format='ASCOT_gc',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
+            beam_deposition.dump_data(data_format='ASCOT_GC',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
         else:
-            beam_deposition.dump_data(data_format='ASCOT',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
+            beam_deposition.dump_data(data_format='ASCOT_FO',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
     except:
         print("WARNING: dump_inputs_ASCOT() could not dump beam_deposition to LOCUST_IO/input_files/{}".format(input_path+'input.particles'+tag))
 
@@ -1924,7 +2001,7 @@ def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
 
     print("finished writing point_inp.dat test points")
 
-def dump_inputs_LOCUST(temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall=None,perturbation=None,beam_depo_GC=False,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path='',tag=''):
+def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equilibrium=None,beam_deposition=None,wall=None,perturbation=None,beam_depo_GC=False,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path='',tag=''):
     """
     generates full run input data for LOCUST
 
@@ -1970,39 +2047,44 @@ def dump_inputs_LOCUST(temperature_i,temperature_e,density_e,equilibrium,beam_de
     filepath_perturbation='{}/pert'.format(input_path)+tag
     filepath_point_data='{}/point_data.inp'.format(input_path)+tag
 
-    try:
-        temperature_i.dump_data(data_format='LOCUST',filename=filepath_temperature_i)
-    except:
-        print("WARNING: dump_inputs_LOCUST() could not dump ion temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_i))
+    if temperature_i:
+        try:
+            temperature_i.dump_data(data_format='LOCUST',filename=filepath_temperature_i)
+        except:
+            print("WARNING: dump_inputs_LOCUST() could not dump ion temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_i))
 
-    try:
-        temperature_e.dump_data(data_format='LOCUST',filename=filepath_temperature_e)
-    except:
-        print("WARNING: dump_inputs_LOCUST() could not dump electron temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_e))
+    if temperature_e:
+        try:
+            temperature_e.dump_data(data_format='LOCUST',filename=filepath_temperature_e)
+        except:
+            print("WARNING: dump_inputs_LOCUST() could not dump electron temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_e))
 
-    try:
-        density_e.dump_data(data_format='LOCUST',filename=filepath_number_density_e)
-    except:
-        print("WARNING: dump_inputs_LOCUST() could not dump number density to LOCUST_IO/input_files/{}".format(filepath_number_density_e))
+    if density_e:
+        try:
+            density_e.dump_data(data_format='LOCUST',filename=filepath_number_density_e)
+        except:
+            print("WARNING: dump_inputs_LOCUST() could not dump number density to LOCUST_IO/input_files/{}".format(filepath_number_density_e))
 
-    try:
-        equilibrium.dump_data(data_format='GEQDSK',filename=filepath_equilibrium)
-    except:
-        print("WARNING: dump_inputs_LOCUST() could not dump equilibrium to LOCUST_IO/input_files/{}".format(filepath_equilibrium))
+    if equilibrium:
+        try:
+            equilibrium.dump_data(data_format='GEQDSK',filename=filepath_equilibrium)
+        except:
+            print("WARNING: dump_inputs_LOCUST() could not dump equilibrium to LOCUST_IO/input_files/{}".format(filepath_equilibrium))
 
-    try:
-        if beam_depo_GC:
-            if beam_depo_weighted:
-                beam_deposition.dump_data(data_format='LOCUST_GC_weighted',filename=filepath_beam_deposition,equilibrium=equilibrium)
+    if beam_deposition:
+        try:
+            if beam_depo_GC:
+                if beam_depo_weighted:
+                    beam_deposition.dump_data(data_format='LOCUST_GC_weighted',filename=filepath_beam_deposition,equilibrium=equilibrium)
+                else:
+                    beam_deposition.dump_data(data_format='LOCUST_GC',filename=filepath_beam_deposition,equilibrium=equilibrium) #XXX not implemented yet            
             else:
-                beam_deposition.dump_data(data_format='LOCUST_GC',filename=filepath_beam_deposition,equilibrium=equilibrium) #XXX not implemented yet            
-        else:
-            if beam_depo_weighted:
-                beam_deposition.dump_data(data_format='LOCUST_FO_weighted',filename=filepath_beam_deposition)
-            else:
-                beam_deposition.dump_data(data_format='LOCUST_FO',filename=filepath_beam_deposition)
-    except:
-        print("WARNING: dump_inputs_LOCUST() could not dump beam deposition to LOCUST_IO/input_files/{}".format(filepath_beam_deposition))
+                if beam_depo_weighted:
+                    beam_deposition.dump_data(data_format='LOCUST_FO_weighted',filename=filepath_beam_deposition)
+                else:
+                    beam_deposition.dump_data(data_format='LOCUST_FO',filename=filepath_beam_deposition)
+        except:
+            print("WARNING: dump_inputs_LOCUST() could not dump beam deposition to LOCUST_IO/input_files/{}".format(filepath_beam_deposition))
 
     if wall:
         try:

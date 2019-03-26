@@ -152,6 +152,57 @@ def read_perturbation_LOCUST_field_data(filepath,**properties):
 
     return input_data
 
+def read_perturbation_ASCOT_field_data(filepath,**properties):
+    """
+    read perturbation field data equivalent from ASCOT input particles file
+
+    notes:
+        since the input particles file essentially contains the magnetic field at different points where ions are born, this can be used to calibrate a 3D field
+    """
+
+    with open(filepath,'w') as file: #open file
+
+        for line in file:
+            if 'Number of particles' in line:
+                number_particles=int(line.split()[0])
+            if 'Number of different fields' in line:
+                number_fields=int(line.split()[0])
+                break
+
+        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        counter=0
+        for line in file:
+            fields.append(line.split()[0])
+            counter+=1
+            if counter==number_fields:
+                break
+
+        blank_line=file.readline() #remove read blank line XXX check this
+
+        raw_data={} #create data dictionaries for holding all data and final returned data
+        input_data={}
+        for field in fields:
+            raw_data[field]=[]
+        
+        for line_number in range(number_particles):
+            line=file.readline() #XXX check this
+            for number,field in zip(line.split(),fields):
+                raw_data[field].extend([float(number)])
+
+        #rename variables to LOCUST_IO conventions
+        ascot_names_1=['Rprt','phiprt' ,'zprt','BR','Bphi','Bz'] #possible ASCOT fields - full orbit
+        ascot_names_2=['R','phi' ,'z','BR','Bphi','Bz'] #possible ASCOT fields - guiding centre
+        locust_names['R','phi','Z','B_field_R_mag','B_field_tor_mag','B_field_Z_mag'] #corresponding LOCUST_IO fields that we want to retain
+        for ascot_name_1,ascot_name_2,locust_io_name in zip(ascot_names_1,ascot_names_2,locust_io_names):
+            if ascot_name_1 in raw_data.keys():
+                input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name_1])
+                input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
+            elif ascot_name_2 in raw_data.keys():
+                input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name_2])
+                input_data[locust_io_name]=np.asarray(input_data[locust_io_name])                
+    
+    return input_data
+
 def read_perturbation_IDS(shot,run,**properties):
     """
     notes:
@@ -180,6 +231,76 @@ def read_perturbation_JOREK(filepath,**properties):
 
     input_data['']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
 
+    return input_data
+
+def read_perturbation_MARSF(filepath,**properties):
+    """
+    reads perturbation stored in MARSF format
+
+    notes:
+        assumes R is quickly-varying dimension in file when inferring dimensions
+    """
+
+    print("reading MARSF perturbation")
+
+    with open(filepath,'r') as file:
+                 
+        #initialise data
+        input_data={}
+        input_data['R_2D']=[]
+        input_data['Z_2D']=[]
+        input_data['B_field_R_real']=[]
+        input_data['B_field_R_imag']=[]
+        input_data['B_field_Z_real']=[]
+        input_data['B_field_Z_imag']=[]
+        input_data['B_field_tor_real']=[]
+        input_data['B_field_tor_imag']=[]
+
+        #read lazily 
+        #skip header lines
+        counter=0
+        number_headerlines=3
+        for line in file:
+            counter+=1
+            if counter==number_headerlines:
+                break
+
+        for line in file:
+            split_line=line.split()
+            input_data['R_2D'].append(float(split_line[0]))
+            input_data['Z_2D'].append(float(split_line[1]))
+            input_data['B_field_R_real'].append(float(split_line[2]))
+            input_data['B_field_R_imag'].append(float(split_line[3]))
+            input_data['B_field_Z_real'].append(float(split_line[4]))
+            input_data['B_field_Z_imag'].append(float(split_line[5]))
+            input_data['B_field_tor_real'].append(float(split_line[6]))
+            input_data['B_field_tor_imag'].append(float(split_line[7]))
+
+        input_data['R_2D']=np.asarray(input_data['R_2D'])
+        input_data['Z_2D']=np.asarray(input_data['Z_2D'])
+        input_data['B_field_R_real']=np.asarray(input_data['B_field_R_real'])
+        input_data['B_field_R_imag']=np.asarray(input_data['B_field_R_imag'])
+        input_data['B_field_Z_real']=np.asarray(input_data['B_field_Z_real'])
+        input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
+        input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
+        input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
+        
+        #infer the grid dimensions
+        Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+        R_dim=int((input_data['R_2D'].size)/Z_dim)
+
+        #reshape to grid dimensions
+        input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
+        input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
+        input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
+        input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
+        input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
+        input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
+        input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
+        input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
+        
+    print("finished reading MARSF perturbation")
+    
     return input_data
     
 ################################################################## Perturbation write functions
@@ -297,6 +418,15 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
+        elif data_format=='ASCOT_field_data': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_field_data - filename required\n".format(self.ID),filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
+
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from magnetics IDS - shot and run required\n".format(self.ID),shot,run):
  
@@ -307,7 +437,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data=read_perturbation_IDS(self.shot,self.run,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/IDS)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """

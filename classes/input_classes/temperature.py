@@ -118,7 +118,8 @@ def read_temperature_LOCUST_h5(filepath,**properties):
         elif properties['species']=='ions':
             input_data['T']=file['Input Data/Kinetic Data/Profiles (1D)/Ti/data'].value
         else:
-            print("WARNING: cannot read_temperature_LOCUST_h5 - Temperature.properties['species'] must be set to 'electrons' or 'ions'\n") 
+            print("ERROR: cannot read_temperature_LOCUST_h5 - properties['species'] must be set to 'electrons' or 'ions'\n") 
+            return
 
     print("finished reading temperature from LOCUST_h5")
 
@@ -152,8 +153,9 @@ def read_temperature_IDS(shot,run,**properties):
     elif properties['species']=='ions':
         input_data['T']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].temperature)
     else:
-        print("WARNING: cannot read_temperature_IDS - Temperature.properties['species'] must be set to 'electrons' or 'ions'\n")
- 
+        print("ERROR: cannot read_temperature_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
+        return
+     
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
@@ -291,6 +293,52 @@ def read_temperature_UFILE(filepath,**properties):
 
     return input_data
 
+def read_temperature_ASCOT(filepath,**properties):
+    """
+    notes:
+        must include 'species' in properties - either 'electrons' or 'ions'
+        include species_number in properties to select species (1 by default)
+    """
+
+    with open(filepath,'r') as file:
+
+        for line in file:
+            if 'collision mode' in line:
+                break
+        line=file.readline()
+        split_line=line.split()
+
+        fields=[]
+
+        if properties['species']=='electrons':
+            desired_field='Te'
+        elif properties['species']=='ions':
+            if 'species_number' in properties.keys():
+                desired_field='Ti'+str(properties['species_number'])    
+            else:
+                desired_field='Ti1'
+        else:
+            print("ERROR: cannot read_number_density_ASCOT - properties['species'] must be set to 'electrons' or 'ions' ")
+            return 
+
+        for counter,field in enumerate(split_line)[1::2]:
+            if field==desired_field:
+                desired_column_T=counter
+            if field=='RHO':
+                desired_column_flux_pol_norm_sqrt=counter
+
+        input_data={}
+        for line in file:
+            split_line=line.split()
+            input_data['T'].extend([float(line.split()[desired_column_T])])
+            input_data['flux_pol_norm_sqrt'].extend([float(line.split()[desired_column_flux_pol_norm_sqrt])])
+
+        input_data['T']=np.asarray(input_data['T'])
+        input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
+        input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
+
+    return input_data
+
 ################################################################## Temperature write functions
 
 def dump_temperature_LOCUST(output_data,filepath,**properties):
@@ -349,8 +397,9 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
         #TODO need to add additional species data here e.g. mass, charge
         output_IDS.core_profiles.profiles_1d[0].ion[0].temperature=output_data['T']
     else:
-        print("WARNING: cannot dump_temperature_IDS - Temperature.properties['species'] must be set to 'electrons' or 'ions'\n")
-
+        print("ERROR: cannot dump_temperature_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
+        return
+        
     #write out the axes
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
@@ -468,8 +517,16 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_temperature_UFILE(self.filepath,**properties)
 
+        elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_temperature_ASCOT(self.filepath,**properties)              
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
