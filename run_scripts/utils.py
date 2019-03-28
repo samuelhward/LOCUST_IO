@@ -424,7 +424,6 @@ class TRANSP_output_FI(TRANSP_output):
             E,time - [eV]^-1 over multiple timesteps (supply list of additional objects in **kwargs e.g. ...fig=False, TRANSP_output_FI_list=[FI_CDF_Time1,FI_CDF_Time2])
             E - [eV]^-1
             R - [m]^-3 x
-            N - total #
         """
         
         if not ax:
@@ -1158,6 +1157,7 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
         currently assumes 2D wall
         assumes all kinetic profiles for all desired species stored in same location
         uses default ASCOT filenames
+        takes wall from ASCOT input, not output
     args:
         input_path - path to target in input_files dir (input_files/path/)
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
@@ -1168,14 +1168,14 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
     print("read_inputs_ASCOT()")
 
     filepath_temperature_i=input_path+'input.plasma_1d' 
-    filepath_number_density_i=input_path+'input.plasma_1d' 
+    filepath_density_i=input_path+'input.plasma_1d' 
     filepath_temperature_e=input_path+'input.plasma_1d' 
-    filepath_number_density_e=input_path+'input.plasma_1d' 
+    filepath_density_e=input_path+'input.plasma_1d' 
     filepath_beam_deposition=input_path+'input.particles'
     filepath_wall=input_path+'input.wall_2d'
 
     temperature_array=[] #arrays to hold kinetic profile data for each species
-    number_density_array=[]
+    density_array=[]
     for species_number in species_numbers: #cycle through species and read corresponding kinetic profiles
 
         try:
@@ -1184,10 +1184,10 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
         except:
             print("WARNING: read_inputs_ASCOT() could not read ion temperature for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_temperature_i))
         try:
-            number_density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_number_density_i,species_number=species_number,species='ions')
-            number_density_array.append(number_density)
+            density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_density_i,species_number=species_number,species='ions')
+            density_array.append(density)
         except:
-            print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_number_density_i))
+            print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_density_i))
 
     try:
         temperature_e=classes.input_classes.temperature.Temperature(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_temperature_e,species_number=species_number,species='electrons')
@@ -1195,9 +1195,9 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
         print("WARNING: read_inputs_ASCOT() could not read electron temperature from LOCUST_IO/input_files/{}".format(filepath_temperature_e))
 
     try:
-        number_density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_number_density_e,species_number=species_number,species='electrons')
+        density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_density_e,species_number=species_number,species='electrons')
     except:
-        print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/input_files/{}".format(filepath_number_density_i))
+        print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/input_files/{}".format(filepath_density_i))
 
     if beam_depo_GC:
         data_format_beam_depo='ASCOT_GC'
@@ -1210,9 +1210,9 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
         beam_deposition=None
 
     if wall_type=='2D' or wall_type=='3D':
-        pass
+        wall_type+='_input'
     else:
-        wall_type='2D'
+        wall_type='2D_input'
         print("read_inputs_ASCOT() assuming 2D wall")
     data_format_wall='ASCOT_'+wall_type
 
@@ -1224,7 +1224,7 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
 
     print("finished read_inputs_ASCOT()")
 
-    return temperature_array,number_density_array,temperature_e,number_density_e,beam_deposition,wall
+    return temperature_array,density_array,temperature_e,density_e,beam_deposition,wall
 
 def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,beam_depo_GC=True,input_path='',tag=''):
     """

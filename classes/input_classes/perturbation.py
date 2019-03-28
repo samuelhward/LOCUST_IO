@@ -98,22 +98,34 @@ def read_perturbation_LOCUST(filepath,**properties):
         input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
         input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
         input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
-
-        
-        #infer the grid dimensions
-        Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
-        R_dim=int((input_data['R_2D'].size)/Z_dim)
-
-        #reshape to grid dimensions
-        input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
-        input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
-        input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
-        input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
-        input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
-        
+  
+        #infer the grid dimensions and axes
+        if input_data['Z_2D'][0]==input_data['Z_2D'][1]: #Z is slowly-varying
+            R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
+            Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+            input_data['R_2D']=input_data['R_2D'].reshape(Z_dim,R_dim).T
+            input_data['Z_2D']=input_data['Z_2D'].reshape(Z_dim,R_dim).T
+            input_data['R_1D']=input_data['R_2D'][:,0]
+            input_data['Z_1D']=input_data['Z_2D'][0,:]
+            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(Z_dim,R_dim).T
+            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(Z_dim,R_dim).T
+            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(Z_dim,R_dim).T
+        else: #R is slowly-varying
+            R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
+            Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+            input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
+            input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
+            input_data['R_1D']=input_data['R_2D'][:,0]
+            input_data['Z_1D']=input_data['Z_2D'][0,:]
+            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
+            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
+            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
 
     print("finished reading LOCUST perturbation")
     
@@ -169,7 +181,7 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
                 number_fields=int(line.split()[0])
                 break
 
-        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        fields=[] #this will hold the names of the quantites stored in the file - in order
         counter=0
         for line in file:
             fields.append(line.split()[0])
@@ -284,20 +296,34 @@ def read_perturbation_MARSF(filepath,**properties):
         input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
         input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
         input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
-        
-        #infer the grid dimensions
-        Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
-        R_dim=int((input_data['R_2D'].size)/Z_dim)
-
-        #reshape to grid dimensions
-        input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
-        input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
-        input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
-        input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
-        input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
-        input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
+    
+        #infer the grid dimensions and axes
+        if input_data['Z_2D'][0]==input_data['Z_2D'][1]: #Z is slowly-varying
+            R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
+            Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+            input_data['R_2D']=input_data['R_2D'].reshape(Z_dim,R_dim).T
+            input_data['Z_2D']=input_data['Z_2D'].reshape(Z_dim,R_dim).T
+            input_data['R_1D']=input_data['R_2D'][:,0]
+            input_data['Z_1D']=input_data['Z_2D'][0,:]
+            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(Z_dim,R_dim).T
+            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(Z_dim,R_dim).T
+            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(Z_dim,R_dim).T
+            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(Z_dim,R_dim).T
+        else: #R is slowly-varying
+            R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
+            Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
+            input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
+            input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
+            input_data['R_1D']=input_data['R_2D'][0,:]
+            input_data['Z_1D']=input_data['Z_2D'][:,0]
+            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
+            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
+            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
+            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
         
     print("finished reading MARSF perturbation")
     
@@ -310,13 +336,16 @@ def dump_perturbation_LOCUST(output_data,filepath,**properties):
     writes perturbation to LOCUST format
 
     notes:
+        dumps data with quickly-varying Z like usual LOCUST input
     """
  
     print("writing LOCUST perturbation")
 
     with open(filepath,'w') as file: #open file
-        pass
-     
+        
+        quantities=['R_2D','Z_2D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
+        np.savetxt(filepath,np.array([output_data[quantity].flatten() for quantity in quantities]).T,fmt='%1.10E',delimiter=' ')
+
     print("finished writing LOCUST perturbation")
 
 def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BCHECK=1,**properties):
@@ -331,8 +360,6 @@ def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BC
 
     print("writing point_inp.dat test points")
 
-    filepath=support.dir_input_files+'point_data.inp'
- 
     with open(filepath,'w') as file: #open file
 
         if BCHECK==1:
@@ -436,8 +463,17 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_perturbation_IDS(self.shot,self.run,**properties)
 
+        elif data_format=='MARSF': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from MARSF - filename required\n".format(self.ID),filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_perturbation_MARSF(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """
@@ -465,7 +501,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n")
 
-    def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key='B_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """
         plots a perturbation
         

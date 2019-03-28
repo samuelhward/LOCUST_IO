@@ -453,14 +453,14 @@ def read_beam_depo_TRANSP_birth_guiding_centre(filepath,**properties):
     return input_data
 
 
-def read_beam_depo_ASCOT_full_orbit(fileoath,**properties):
+def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
     """
     reads birth profile from full orbit ASCOT birth ASCII file 
 
     notes:
     """
 
-    with open(filepath,'w') as file: #open file
+    with open(filepath,'r') as file: #open file
 
         for line in file:
             if 'Number of particles' in line:
@@ -491,22 +491,26 @@ def read_beam_depo_ASCOT_full_orbit(fileoath,**properties):
 
         #rename variables to LOCUST_IO conventions
         ascot_names=['energy','rho','phiprt','Rprt','zprt','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_names['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
             if ascot_name in raw_data.keys():
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
+
+        input_data['phi']*=2.*pi/360.
+        input_data['X']=input_data['R']*np.cos(input_data['phi'])
+        input_data['Y']=input_data['R']*np.sin(input_data['phi'])
     
     return input_data
 
-def read_beam_depo_ASCOT_guiding_centre(fileoath,**properties):
+def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
     """
     reads birth profile from guiding centre ASCOT birth ASCII file 
 
     notes:
     """
 
-    with open(filepath,'w') as file: #open file
+    with open(filepath,'r') as file: #open file
 
         for line in file:
             if 'Number of particles' in line:
@@ -537,12 +541,16 @@ def read_beam_depo_ASCOT_guiding_centre(fileoath,**properties):
 
         #rename variables to LOCUST_IO conventions
         ascot_names=['energy','pitch' ,'rho','phi','R','z','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_names['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
             if ascot_name in raw_data.keys():
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
     
+        input_data['phi']*=2.*pi/360.
+        input_data['X']=input_data['R']*np.cos(input_data['phi'])
+        input_data['Y']=input_data['R']*np.sin(input_data['phi']) 
+
     return input_data
 
 ################################################################## Beam_Deposition write functions 
@@ -1002,7 +1010,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.data=read_beam_depo_ASCOT_full_orbit(self.filepath,**properties) 
 
         elif data_format=='ASCOT_GC':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_FO - filename required\n".format(self.ID),filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_GC - filename required\n".format(self.ID),filename):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
@@ -1046,12 +1054,12 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 dump_beam_depo_IDS(self.ID,self.data,shot,run,**properties)
 
         elif data_format=='ASCOT_FO':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_FO - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_ASCOT_full_orbit(self.data,filepath,**properties)
 
         elif data_format=='ASCOT_GC':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_gc - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_GC - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
                 filepath=support.dir_input_files+filename
                 dump_beam_depo_ASCOT_guiding_centre(self.data,filepath,equilibrium,**properties)
  
@@ -1220,7 +1228,20 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         
         if ax_flag is False and fig_flag is False:
             plt.show() 
- 
+
+    def combine(self,targets):
+        """
+        combine multiple beam_deposition particle lists into single object
+
+        notes:
+
+        """
+
+        keys_self=self.data.keys()
+        for target in targets: #best to loop this way around since inner loop can be random order
+            for key in keys_self:
+                self[key].extend(target[key])
+
 #################################
  
 ##################################################################
