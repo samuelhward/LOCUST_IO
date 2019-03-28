@@ -331,13 +331,16 @@ def read_number_density_ASCOT(filepath,**properties):
             print("ERROR: cannot read_number_density_ASCOT - properties['species'] must be set to 'electrons' or 'ions' ")
             return 
 
-        for counter,field in enumerate(split_line)[1::2]:
+        for counter,field in enumerate(split_line[0::2]):
             if field==desired_field:
                 desired_column_n=counter
             if field=='RHO':
                 desired_column_flux_pol_norm_sqrt=counter
 
         input_data={}
+        input_data['n']=[]
+        input_data['flux_pol_norm_sqrt']=[]
+
         for line in file:
             split_line=line.split()
             input_data['n'].extend([float(line.split()[desired_column_n])])
