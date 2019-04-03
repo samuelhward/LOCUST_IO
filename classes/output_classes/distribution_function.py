@@ -690,6 +690,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
             E - [eV]^-1 
             R - [m]^-3
+            V_pitch - [dPitch]^-1  
             N - total # 
             list of indices and slices
         """
