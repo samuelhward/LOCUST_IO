@@ -344,7 +344,13 @@ def dump_perturbation_LOCUST(output_data,filepath,**properties):
     with open(filepath,'w') as file: #open file
         
         quantities=['R_2D','Z_2D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
-        np.savetxt(filepath,np.array([output_data[quantity].flatten() for quantity in quantities]).T,fmt='%1.10E',delimiter=' ')
+
+        for row in np.array([output_data[quantity].flatten() for quantity in quantities]).T:
+            line=''
+            for number in row:
+                line+=processing.utils.fortran_string(number_out=number,length=18,decimals=10,exponential=True)
+            line+=' \n' 
+            file.write(line)
 
     print("finished writing LOCUST perturbation")
 

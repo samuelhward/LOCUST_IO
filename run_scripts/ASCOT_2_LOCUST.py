@@ -95,10 +95,10 @@ def ASCOT_2_LOCUST(path_LOCUST='',path_ASCOT='',beam_depo_GC=True,filename_ASCOT
     run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type=wall_type,input_path=path_LOCUST,tag=tag)
         
     for temperature in temperature_array:
-        temperature.dump_data(data_format='LOCUST',filename='profile_Ti{}.dat'.format(temperature.properties['species_number']))
+        temperature.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_Ti{}.dat'.format(temperature.properties['species_number']))
     
     for density in density_array:
-        density.dump_data(data_format='LOCUST',filename='profile_ni{}.dat'.format(density.properties['species_number']))
+        density.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_ni{}.dat'.format(density.properties['species_number']))
 
     #except:
     #    print("ERROR: ASCOT_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))

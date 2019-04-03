@@ -423,6 +423,7 @@ class TRANSP_output_FI(TRANSP_output):
             E,V_pitch - assumes integrated over space and transform to [eV]^-1[dpitch]^-1  
             E,time - [eV]^-1 over multiple timesteps (supply list of additional objects in **kwargs e.g. ...fig=False, TRANSP_output_FI_list=[FI_CDF_Time1,FI_CDF_Time2])
             E - [eV]^-1
+            V_pitch - [dPitch]^-1
             R - [m]^-3 x
         """
         
@@ -558,7 +559,12 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('density [#/eV]')
 
-        #elif axes==['R']:
+        elif axes==['V_pitch']:
+
+            dfn_copy=self.dfn_integrate(pitch=False)
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'])
+            ax.set_xlabel('pitch [V||/V]')
+            ax.set_ylabel('density [#/dPitch]')
 
         elif len(axes)==self['dfn'].ndim: #assume user wants to plot energy pitch at point in real space
 

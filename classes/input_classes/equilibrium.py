@@ -452,7 +452,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['qpsi'],cnt) 
         
-        file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)) #write out number of limiter/plasma boundary points
+        file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
         
         cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['lcfs_r'],output_data['lcfs_z'],cnt)
