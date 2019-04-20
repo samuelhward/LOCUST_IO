@@ -452,8 +452,6 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt

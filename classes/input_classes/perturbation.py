@@ -871,8 +871,6 @@ class Perturbation(classes.base_input.LOCUST_input):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt

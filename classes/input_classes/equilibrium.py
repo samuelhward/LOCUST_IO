@@ -289,8 +289,6 @@ def read_equilibrium_UDA(shot,time,**properties):
         import pyuda
         udaClient=pyuda.Client()
         getdata=udaClient.get
-        import numpy as np
-    import pathlib
     except:
         raise ImportError("ERROR: read_equilibrium_UDA could not import pyuda!\nreturning\n")
 
@@ -674,8 +672,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt
@@ -775,8 +771,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt
@@ -954,8 +948,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt
