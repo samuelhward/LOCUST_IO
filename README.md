@@ -32,7 +32,6 @@ Tested with:
 
 * IMAS v3.16.0
 * Python ≥v3.6
-    * copy, re, itertools, math and time modules in the standard library 
     * numpy ≥v1.14.2
     * matplotlib ≥v2.0.0
     * scipy ≥v0.17.0
