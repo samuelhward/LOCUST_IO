@@ -40,8 +40,9 @@ Since this package aims to bridge the gap between various file formats for diffe
     2D data
         psirz                                                           #poloidal flux at coordinate [r,z] in (Weber / rad) 
         fpolrz                                                          #poloidal current function at coordinate [r,z] (m T) calculated by fpolrz_calc
-    3D data
-        B_field                                                         #magnetic field component [i] at position [r,z] (T) calculate by B_calc
+        B_field_R                                                       #magnetic field Rcomponent at position [r,z] (T) calculate by B_calc
+        B_field_tor                                                     #magnetic field phi component at position [r,z] (T) calculate by B_calc
+        B_field_Z                                                       #magnetic field Z component at position [r,z] (T) calculate by B_calc
 
 #### Beam Deposition:
 
@@ -82,15 +83,18 @@ Since this package aims to bridge the gap between various file formats for diffe
 
 ##### Perturbation
 
+    1D data
+        R_1D                                                            #R dimension (m)
+        Z_1D                                                            #Z dimension (m)
     2D data
         R_2D                                                            #R coordinate of field grid (m)
         Z_2D                                                            #Z coordinate of field grid (m)
-        B_field_R_real                                                  #real R component of magnetic field (T)
-        B_field_R_imag                                                  #imaginary R component of magnetic field (T)
-        B_field_Z_real                                                  #real Z component of magnetic field (T)
-        B_field_Z_imag                                                  #imaginary Z component of magnetic field (T)
-        B_field_tor_real                                                #real toroidal component of magnetic field (T)
-        B_field_tor_imag                                                #imaginary toroidal component of magnetic field (T)
+        B_field_R_real                                                  #real R component of magnetic field (T) at point [r,z] to be expanded
+        B_field_R_imag                                                  #imaginary R component of magnetic field (T) at point [r,z] to be expanded
+        B_field_Z_real                                                  #real Z component of magnetic field (T) at point [r,z] to be expanded
+        B_field_Z_imag                                                  #imaginary Z component of magnetic field (T) at point [r,z] to be expanded
+        B_field_tor_real                                                #real toroidal component of magnetic field (T) at point [r,z] to be expanded
+        B_field_tor_imag                                                #imaginary toroidal component of magnetic field (T) at point [r,z] to be expanded
 
 #### Orbits:
 
@@ -209,9 +213,9 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
 There are many moments of the distribution function which are provided by various codes, included below are those used by LOCUST_IO from LOCUST, however reading outputs from other codes may yield additional moments not yet shown here. Eventually all moments should be mapped and calculated to common variable names. 
 
     1D data
-        flux_pol_norm_sqrt                                              # 
-        flux_pol_norm                                                   #
-        dVOL=(dVOL)                                                     #
+        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
+        flux_pol_norm                                                   #normalised poloidal flux
+        dVOL                                                            #
         beam_source                                                     #
         density                                                         #
         energy_para                                                     #

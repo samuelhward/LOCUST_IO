@@ -89,7 +89,7 @@ my_equilibrium.set(**some_dict)
 #copy all data from one object to another
 my_equilibrium.copy(some_other_equilibrium)
 #copy specific fields                                        
-my_equilibrium.copy(some_other_equilibrium,'B_field','some_key','some_other_key')  
+my_equilibrium.copy(some_other_equilibrium,'B_field_R','some_key','some_other_key')  
 
 
 #to get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data: 
@@ -106,10 +106,8 @@ my_equilibrium.compare(another_equilibrium,verbose=True)
 my_equilibrium.run_check(verbose=True)                                            
 
 
-#you can also calculate new pieces of data using methods in the processing folder
-#on the whole, these return data - so use them as follows:
-import processing.process_input as pro
-my_equilibrium.set(B_field=pro.B_calc(my_equilibrium)) #ugly but flexible, e.g. my_equilibrium.set(B_field=pro.B_calc(a_different_equilibriu))         
+#you can also calculate new pieces of data using methods or functions in the processing folder
+my_equilibrium.B_calc()         
 ```
 
 

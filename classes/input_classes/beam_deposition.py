@@ -971,17 +971,14 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
             output_data['E']=0.5*species_mass*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/species_charge
 
         #interpolate B field to particle locations with supplied equilibrium
-        if 'B_field' not in equilibrium.data.keys(): #calculate B field if missing
+        if not np.all([component in equilibrium.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]):
             print("dump_beam_depo_ASCOT_gc found no B_field in equilibrium - calculating!")
-            if 'fpolrz' not in equilibrium.data.keys(): #calculate flux if missing
-                print("dump_beam_depo_ASCOT_gc found no fpolrz in equilibrium - calculating!")
-                equilibrium.set(fpolrz=processing.process_input.fpolrz_calc(equilibrium))
-            equilibrium.set(B_field=processing.process_input.B_calc(equilibrium))
+            equilibrium.B_calc()
 
         print("dump_beam_depo_ASCOT_gc generating B_field interpolators")
-        B_field_R_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,0]) #construct interpolators here
-        B_field_tor_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,1])
-        B_field_Z_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field'][:,:,2])
+        B_field_R_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field_R']) #construct interpolators here
+        B_field_tor_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field_tor'])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['B_field_Z'])
         print("dump_beam_depo_ASCOT_gc finished generating B_field interpolators")
 
         if 'V_pitch' not in output_data:

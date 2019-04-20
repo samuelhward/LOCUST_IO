@@ -310,14 +310,12 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
 
     eq=copy.deepcopy(some_equilibrium)
 
-    if 'B_field' not in some_equilibrium.data.keys(): #first go about calculating the magnetic field if missing
-        if 'fpolrz' not in some_equilibrium.data.keys(): 
-            eq.set(fpolrz=processing.process_input.fpolrz_calc(eq)) 
-    eq.set(B_field=processing.process_input.B_calc(eq))
+    if not np.all([component in eq.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
+        eq.B_calc()
 
-    B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,0]) #generate interpolators for B
-    B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,1])
-    B_field_Z_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field'][:,:,2])
+    B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_R']) #generate interpolators for B
+    B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_tor'])
+    B_field_Z_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_Z'])
 
     print("pitch_calc_2D - interpolating B_field to particles\n")
 
