@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 
 try:
     import numpy as np
+    import pathlib
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -184,6 +185,7 @@ def read_temperature_UDA(shot,time,**properties):
         udaClient=pyuda.Client()
         getdata=udaClient.get
         import numpy as np
+    import pathlib
     except:
         raise ImportError("ERROR: read_temperature_UDA could not import pyuda!\nreturning\n")
 

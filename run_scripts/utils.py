@@ -23,6 +23,7 @@ try:
     import copy
     import subprocess
     import numpy as np
+    import pathlib
     import matplotlib
     from matplotlib import cm
     import matplotlib.pyplot as plt
