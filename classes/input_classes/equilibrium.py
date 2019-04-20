@@ -789,12 +789,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             fig_flag=True
 
-        if 'fpolrz' not in self.data.keys(): #first go about calculating the magnetic field if missing
-            print("plot_field_line - found no fpolrz in equilibrium - calculating!")
-            self.set(fpolrz=processing.process_input.fpolrz_calc(self)) 
-        if 'B_field' not in self.data.keys():
+        if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]):
             print("plot_field_line - found no B_field in equilibrium - calculating!")
-            self.set(B_field=processing.process_input.B_calc(self))
+            self.B_calc()
 
         if fig_flag is False:
             fig = plt.figure() #if user has not externally supplied figure, generate
@@ -822,9 +819,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 ax = fig.gca(projection='3d')
             
         print('plot_B_field_line - generating B field interpolators')
-        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0])
-        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,2])
-        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,1])
+        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R'])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
         print('plot_B_field_line - finished generating B field interpolators')
 
         for line in range(number_field_lines): 
@@ -978,15 +975,12 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_title(self.ID)
         ax.set_aspect('equal')
 
-        if 'fpolrz' not in self.data.keys(): #first go about calculating the magnetic field if missing
-            print("plot_field_stream - found no fpolrz in equilibrium - calculating!")
-            self.set(fpolrz=processing.process_input.fpolrz_calc(self)) 
-        if 'B_field' not in self.data.keys():
+        if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
             print("plot_field_stream - found no B_field in equilibrium - calculating!")
-            self.set(B_field=processing.process_input.B_calc(self))
+            self.B_calc()
 
-        B_mag=np.sqrt(self['B_field'][:,:,0]**2+self['B_field'][:,:,2]**2) #calculate poloidal field magnitude
-        strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0].T,self['B_field'][:,:,2].T, color=B_mag.T, linewidth=1, cmap=colmap)
+        B_mag=np.sqrt(self['B_field_R']**2+self['B_field_Z']**2) #calculate poloidal field magnitude
+        strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
 
         if fig_flag is False:    
             fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
@@ -1033,18 +1027,15 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         notes:
             see Wesson, based on RH coordinate system [R,Phi,Z]
-            returns B(r,z,i), a 3D array holding component i of B field at grid indices r, z
-            i=0 - B_r
-            i=1 - B_toroidal
-            i=2 - B_z
+            calculates B_field_i(r,z) (3 2D arrays holding component i of B field at grid indices r, z)
 
             remember - A[i,j,k] is an array nested such as i*[j*[k*[some_number]]]
                      - [row,column] in numpy
         """
         
-        if 'fpolrz' not in self.data: #could have a try except statement here to accommodate for both dictionaries (which may not contain .data) and LOCUST_IO objects 
-            print("WARNING: B_calc - fpolrz missing in equilibrium object")
-            self['fpolrz']=fpolrz_calc(self) #if fpolrz is missing calculate it
+        if 'fpolrz' not in self.data: 
+            print("WARNING: B_calc - fpolrz missing in equilibrium object - calculating!")
+            self['fpolrz']=self.fpolrz_calc(self) #if fpolrz is missing calculate it
 
         print("B_calc - calculating 2D magnetic field")
 
@@ -1057,11 +1048,11 @@ class Equilibrium(classes.base_input.LOCUST_input):
         B_field_R=(gradient[1])*one_R*(-1.0)
         B_field_tor=self['fpolrz']*one_R
 
-        B_field=np.array([[[B_field_R[w,h],B_field_tor[w,h],B_field_Z[w,h]] for h in range(len(self['Z_1D']))] for w in range(len(self['R_1D']))],ndmin=3)
-        
+        self.set(B_field_R=B_field_R)
+        self.set(B_field_tor=B_field_tor)
+        self.set(B_field_Z=B_field_Z)
+
         print("B_calc - finished calculating 2D magnetic field")
-        
-        self.set(B_field=B_field)
 
     def mag_axis_calc(self,index=False):
         """
@@ -1101,18 +1092,14 @@ class Equilibrium(classes.base_input.LOCUST_input):
         usage:
             B_R,B_tor,B_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
         """
-
-        if 'B_field' not in self.data.keys(): #calculate B field if missing
+        if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
             print("B_calc_point found no B_field in equilibrium - calculating!")
-            if 'fpolrz' not in self.data.keys(): #calculate flux if missing
-                print("B_calc_point found no fpolrz in equilibrium - calculating!")
-                self.fpolrz_calc()
             self.B_calc()
 
         print("B_calc_point generating B_field interpolators")
-        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,0]) #construct interpolators here
-        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,1])
-        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field'][:,:,2])
+        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R']) #construct interpolators here
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
         print("B_calc_point finished generating B_field interpolators")
 
         B_R=[]
