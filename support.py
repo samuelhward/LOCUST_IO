@@ -28,7 +28,7 @@ numpy_version=np.version.version.split('.')
 python_version=sys.version_info
 
 #get the paths to folders within the package for importing modules, opening files etc
-pwd=pathlib.Path('.') #get the directory this script is in
+pwd=pathlib.Path.cwd() #get the directory this script is in
 dir_locust_io=pwd.parent  #go one level up from that
 dir_input_files=dir_locust_io / 'input_files'  #add the / at the end so the user only needs to append filenames
 dir_output_files=dir_locust_io / 'output_files'

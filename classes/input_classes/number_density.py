@@ -193,8 +193,6 @@ def read_number_density_UDA(shot,time,**properties):
         import pyuda
         udaClient=pyuda.Client()
         getdata=udaClient.get
-        import numpy as np
-    import pathlib
     except:
         raise ImportError("ERROR: read_number_density_UDA could not import pyuda!\nreturning\n")
 
@@ -584,8 +582,6 @@ class Number_Density(classes.base_input.LOCUST_input):
         """
 
         import scipy
-        import numpy as np
-    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt
