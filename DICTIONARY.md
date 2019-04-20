@@ -17,8 +17,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         zmid                                                            #Z at middle of domain (from origin)
         rmaxis                                                          #R at magnetic axis (O-point)
         zmaxis                                                          #Z at magnetic axis (O-point)
-        simag                                                           #poloidal flux psi at magnetic axis (Weber / rad)
-        sibry                                                           #poloidal flux psi at plasma boundary (Weber / rad)
+        simag                                                           #poloidal flux psi at magnetic axis [Weber / rad]
+        sibry                                                           #poloidal flux psi at plasma boundary [Weber / rad]
         current                                                         #plasma current [Amps]   
         xdum                                                            #dummy variable - just contains int(zero)
         lcfs_n                                                          #number of points in the plasma boundary
@@ -33,16 +33,16 @@ Since this package aims to bridge the gap between various file formats for diffe
         zlim                                                            #z coordinates of wall boundary
         lcfs_r                                                          #r coordinates of plasma boundary
         lcfs_z                                                          #z coordinates of plasma boundary
-        R_1D                                                            #R dimension (m)
-        Z_1D                                                            #Z dimension (m)
-        flux_pol                                                        #poloidal flux from magnetic axis up to the plasma boundary (Weber / rad)
-        flux_tor                                                        #toroidal flux from magnetic axis up to the plasma boundary (Weber / rad)
+        R_1D                                                            #R dimension [m]
+        Z_1D                                                            #Z dimension [m]
+        flux_pol                                                        #poloidal flux from magnetic axis up to the plasma boundary [Weber / rad]
+        flux_tor                                                        #toroidal flux from magnetic axis up to the plasma boundary [Weber / rad]
     2D data
-        psirz                                                           #poloidal flux at coordinate [r,z] in (Weber / rad) 
-        fpolrz                                                          #poloidal current function at coordinate [r,z] (m T) calculated by fpolrz_calc
-        B_field_R                                                       #magnetic field Rcomponent at position [r,z] (T) calculate by B_calc
-        B_field_tor                                                     #magnetic field phi component at position [r,z] (T) calculate by B_calc
-        B_field_Z                                                       #magnetic field Z component at position [r,z] (T) calculate by B_calc
+        psirz                                                           #poloidal flux at coordinate [r,z] in [Weber / rad] 
+        fpolrz                                                          #poloidal current function at coordinate [r,z] [m T] calculated by fpolrz_calc
+        B_field_R                                                       #magnetic field Rcomponent at position [r,z] [T] calculate by B_calc
+        B_field_tor                                                     #magnetic field phi component at position [r,z] [T] calculate by B_calc
+        B_field_Z                                                       #magnetic field Z component at position [r,z] [T] calculate by B_calc
 
 #### Beam Deposition:
 
@@ -54,7 +54,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         V_tor                                                           #toroidal component of v of particle p
         V_Z                                                             #Z component of v of particle p
         V_pitch                                                         #v_parallel/v
-        E                                                               #energy of particle (eV)
+        E                                                               #energy of particle [eV]
         weight                                                          #Monte Carlo weights of each particle
         absorption_fraction                                             #absorption fraction
         absorption_scaling                                              #scaling to allow for missing particles
@@ -63,38 +63,44 @@ Since this package aims to bridge the gap between various file formats for diffe
 #### Temperature:
 
     1D data
-        flux_pol                                                        #poloidal flux (Weber / rad)
+        flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
-        T                                                               #ion temperature (eV)
-        T                                                               #electron temperature (eV)
+        T                                                               #ion temperature [eV]
+        T                                                               #electron temperature [eV]
         flux_tor_coord                                                  #toroidal flux coordinate
-        flux_tor                                                        #toroidal flux (Weber / rad)
+        flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
 
 #### Number Density:
 
     1D data
-        flux_pol                                                        #poloidal flux (Weber / rad)
+        flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
-        n                                                               #ion or electron number density (#/m^3)
+        n                                                               #ion or electron number density [#/m^3]
         flux_tor_coord                                                  #toroidal flux coordinate
-        flux_tor                                                        #toroidal flux (Weber / rad)
+        flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
 
 ##### Perturbation
 
     1D data
-        R_1D                                                            #R dimension (m)
-        Z_1D                                                            #Z dimension (m)
+        R_1D                                                            #R dimension [m]
+        Z_1D                                                            #Z dimension [m]
+        R_point_data                                                    #R coordinate of point_data.inp point for B field checking [m]
+        phi_point_data                                                  #phi coordinate of point_data.inp point for B field checking [m]
+        Z_point_data                                                    #Z coordinate of point_data.inp point for B field checking [m]
+        time_point_data                                                 #time coordinate of point_data.inp point for B field checking [m]
+        X_point_data                                                    #X coordinate of point_data.inp point for B field checking [m]
+        Y_point_data                                                    #Y coordinate of point_data.inp point for B field checking [m]
     2D data
-        R_2D                                                            #R coordinate of field grid (m)
-        Z_2D                                                            #Z coordinate of field grid (m)
-        B_field_R_real                                                  #real R component of magnetic field (T) at point [r,z] to be expanded
-        B_field_R_imag                                                  #imaginary R component of magnetic field (T) at point [r,z] to be expanded
-        B_field_Z_real                                                  #real Z component of magnetic field (T) at point [r,z] to be expanded
-        B_field_Z_imag                                                  #imaginary Z component of magnetic field (T) at point [r,z] to be expanded
-        B_field_tor_real                                                #real toroidal component of magnetic field (T) at point [r,z] to be expanded
-        B_field_tor_imag                                                #imaginary toroidal component of magnetic field (T) at point [r,z] to be expanded
+        R_2D                                                            #R coordinate of field grid [m]
+        Z_2D                                                            #Z coordinate of field grid [m]
+        B_field_R_real                                                  #real R component of magnetic field [T] at point [r,z] to be expanded
+        B_field_R_imag                                                  #imaginary R component of magnetic field [T] at point [r,z] to be expanded
+        B_field_Z_real                                                  #real Z component of magnetic field [T] at point [r,z] to be expanded
+        B_field_Z_imag                                                  #imaginary Z component of magnetic field [T] at point [r,z] to be expanded
+        B_field_tor_real                                                #real toroidal component of magnetic field [T] at point [r,z] to be expanded
+        B_field_tor_imag                                                #imaginary toroidal component of magnetic field [T] at point [r,z] to be expanded
 
 #### Orbits:
 
