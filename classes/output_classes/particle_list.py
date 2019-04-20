@@ -381,7 +381,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_final_particle_list_LOCUST(self.filepath,**properties)
 
@@ -390,7 +390,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_final_particle_list_TRANSP(self.filepath,**properties)
 
@@ -399,7 +399,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_final_particle_list_ASCOT(self.filepath,**properties) 
 
@@ -418,12 +418,12 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
-                filepath=support.dir_output_files+filename
+                filepath=support.dir_output_files / filename
                 dump_final_particle_list_LOCUST(self.data,filepath,**properties)
 
         elif data_format=='TRANSP':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to TRANSP - filename required\n".format(self.ID),filename):
-                filepath=support.dir_output_files+filename
+                filepath=support.dir_output_files / filename
                 dump_final_particle_list_TRANSP(self.data,filepath,**properties)
         
         else:

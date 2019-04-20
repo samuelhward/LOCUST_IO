@@ -482,7 +482,7 @@ class Temperature(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_temperature_LOCUST(self.filepath,**properties)
     
@@ -491,7 +491,7 @@ class Temperature(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename #remember this is in output files director!
+                self.filepath=support.dir_output_files / filename #remember this is in output files director!
                 self.properties={**properties}
                 self.data=read_temperature_LOCUST_h5(self.filepath,**properties)
 
@@ -516,7 +516,7 @@ class Temperature(classes.base_input.LOCUST_input):
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from UFILE - filename required\n".format(self.ID),filename): 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_temperature_UFILE(self.filepath,**properties)
 
@@ -524,7 +524,7 @@ class Temperature(classes.base_input.LOCUST_input):
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_temperature_ASCOT(self.filepath,**properties)              
 
@@ -545,7 +545,7 @@ class Temperature(classes.base_input.LOCUST_input):
          
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_temperature_LOCUST(self.data,filepath)
          
         elif data_format=='IDS':
@@ -554,7 +554,7 @@ class Temperature(classes.base_input.LOCUST_input):
 
         elif data_format=='MARSF':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to MARSF - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_temperature_MARSF(self.data,filepath,**properties)
  
         else:

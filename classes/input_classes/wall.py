@@ -419,7 +419,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_wall_LOCUST_3D(self.filepath,**properties)
 
@@ -428,7 +428,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_wall_LOCUST_2D(self.filepath,**properties)
 
@@ -437,7 +437,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_wall_GEQDSK(self.filepath,**properties)
 
@@ -446,7 +446,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_wall_ufile(self.filepath,**properties)
 
@@ -455,7 +455,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_wall_ASCOT_2D_input(self.filepath,**properties)
 
@@ -464,7 +464,7 @@ class Wall(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_wall_ASCOT_2D_output(self.filepath,**properties)
 
@@ -485,12 +485,12 @@ class Wall(classes.base_input.LOCUST_input):
          
         elif data_format=='LOCUST_2D':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_2D - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_wall_LOCUST_2D(self.data,filepath,**properties)
 
         elif data_format=='ASCOT_2D_input':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_wall_ASCOT_2D_input(self.data,filepath,**properties)                
 
         else:

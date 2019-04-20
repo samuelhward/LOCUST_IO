@@ -282,7 +282,7 @@ class Moments(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_moments_LOCUST(self.filepath,**properties)
 
@@ -291,7 +291,7 @@ class Moments(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_moments_TRANSP(self.filepath,**properties)
 
@@ -300,7 +300,7 @@ class Moments(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_moments_ASCOT(self.filepath,**properties)
 
@@ -318,7 +318,7 @@ class Moments(classes.base_output.LOCUST_output):
         
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
-                filepath=support.dir_output_files+filename
+                filepath=support.dir_output_files / filename
                 dump_moments_LOCUST(self.data,filepath,**properties)
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
