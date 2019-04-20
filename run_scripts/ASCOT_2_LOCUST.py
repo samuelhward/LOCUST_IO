@@ -79,7 +79,7 @@ def ASCOT_2_LOCUST(path_LOCUST='',path_ASCOT='',beam_depo_GC=True,filename_ASCOT
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
         filename_ASCOT_equilibrium - filename of equilibrium stored AS GEQDSK in path_ASCOT
         GEQDSKFIX - LOCUST-equivalent flag to optionally flip fields in GEQDSK
-        species_numbers - species number labels from input particle list to read in
+        species_numbers - list or array of integer species number labels from input particle list to read in
         wall_type - set wall type to '2D' or '3D'
         tag - optional identifier tag for each set of run files produced
     """

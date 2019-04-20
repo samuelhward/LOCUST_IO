@@ -434,30 +434,14 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         for key in float_keys:
             write_number(file,output_data[key],cnt)
  
-        cnt = itertools.cycle([0,1,2,3,4]) #reset the counter (otherwise our newlines will be out of sync)
         write_1d(file,output_data['fpol'],cnt)
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pres'],cnt)
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again        
         write_1d(file,output_data['ffprime'],cnt)
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['pprime'],cnt)
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_2d(file,output_data['psirz'],cnt)    
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_1d(file,output_data['qpsi'],cnt) 
-        
-        file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
+        file.write('\n'+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
         write_bndry(file,output_data['lcfs_r'],output_data['lcfs_z'],cnt)
-        
-        cnt = itertools.cycle([0,1,2,3,4]) #reset again
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
         file.write("\n") #file has a newline here
 
@@ -649,8 +633,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
- 
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID)) 
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"dump_data requires self.data and data_format\n",self.data,data_format):
             pass
          
@@ -734,20 +717,20 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 if plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
-            #mesh=ax.pcolormesh(X,Y,Z,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
             #3D plot
             #ax=ax.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')

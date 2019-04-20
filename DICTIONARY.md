@@ -57,17 +57,18 @@ Since this package aims to bridge the gap between various file formats for diffe
         weight                                                          #Monte Carlo weights of each particle
         absorption_fraction                                             #absorption fraction
         absorption_scaling                                              #scaling to allow for missing particles
+        number_particles                                                #number of particles in beam (if multiple numbers, .combine() may have been used)
 
 #### Temperature:
 
     1D data
-        flux_pol                                                       #poloidal flux (Weber / rad)
-        flux_pol_norm                                                  #normalised poloidal flux
-        T                                                              #ion temperature (eV)
-        T                                                              #electron temperature (eV)
-        flux_tor_coord                                                 #toroidal flux coordinate
-        flux_tor                                                       #toroidal flux (Weber / rad)
-        q                                                              #safety factor
+        flux_pol                                                        #poloidal flux (Weber / rad)
+        flux_pol_norm                                                   #normalised poloidal flux
+        T                                                               #ion temperature (eV)
+        T                                                               #electron temperature (eV)
+        flux_tor_coord                                                  #toroidal flux coordinate
+        flux_tor                                                        #toroidal flux (Weber / rad)
+        q                                                               #safety factor
 
 #### Number Density:
 
@@ -205,27 +206,22 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
     
 ##### Moments
 
+There are many moments of the distribution function which are provided by various codes, included below are those used by LOCUST_IO from LOCUST, however reading outputs from other codes may yield additional moments not yet shown here. Eventually all moments should be mapped and calculated to common variable names. 
+
     1D data
-
-        sqrt(PSIn)
-        density
-        energy
-        J(NBCD)-raw
-        NBI-heating-power(TOT)
-        NBI-heating-power(e-)
-        NBI-heating-power(i1)
-        NBI-heating-power(i1)A
-        NBI-heating-power(i1)Z
-        NBI-heating-power(i2)
-        NBI-heating-power(i2)Z
-        NBI-heating-power(i2)A
-        P(para)
-        P(perp)
-        residual-angular-momentum-density
-        torque-density(JxB-inst)
-        torque-density(JxB-sweep)
-        torque-density(coll)
-        e-source
-
-LOCUST dumps some types of data to HDF5, which are opened via h5py.
-
+        flux_pol_norm_sqrt                                              # 
+        flux_pol_norm                                                   #
+        dVOL=(dVOL)                                                     #
+        beam_source                                                     #
+        density                                                         #
+        energy_para                                                     #
+        energy_perp                                                     #
+        energy                                                          #
+        J(NBCD)-raw                                                     #
+        NBI-heating-power(TOT)                                          #
+        NBI-heating-power(e-)                                           #
+        NBI-heating-power(i1)                                           #
+        residual-angular-momentum-density                               #
+        torque-density(JxB-inst)                                        #
+        torque-density(JxB-sweep)                                       #
+        torque-density(coll)                                            #

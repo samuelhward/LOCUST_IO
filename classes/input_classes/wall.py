@@ -298,7 +298,7 @@ def read_wall_ASCOT_2D_output(filepath,**properties):
     try:
         import h5py
     except:
-        raise ImportError("ERROR: read_temperature_LOCUST_h5 could not import h5py module!\n") 
+        raise ImportError("ERROR: read_wall_ASCOT_2D_output could not import h5py module!\n") 
         return
 
     with h5py.File(filepath,'r') as file:
@@ -479,8 +479,7 @@ class Wall(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
-
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID))
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
          

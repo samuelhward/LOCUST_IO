@@ -162,7 +162,7 @@ def read_moments_TRANSP(filepath,**properties):
 
     input_data['torque-density(coll)']=np.array(file.variables['BPHCL'].data)
 
-    input_data['residual-angular-momentum-density_err']=np.array(file.variables['BPHI'].data)
+    input_data['residual-angular-momentum-density']=np.array(file.variables['BPHI'].data)
 
     input_data['beam_source']=np.array(file.variables['BDEP_D'].data)*1.e6 #convert to [m^-3]
     input_data['beam_source_captured']=np.array(file.variables['BPCAP'].data)[:,np.newaxis]
@@ -212,6 +212,10 @@ def read_moments_ASCOT(filepath,**properties):
         input_data['flux_pol_norm']=file['distributions/rhoDist/abscissae/dim1'].value
         input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
 
+        #convert flux coordinates to bin centres
+        for flux_coordinate in ['flux_pol_norm','flux_pol_norm_sqrt']:
+            input_data[flux_coordinate]=(input_data[flux_coordinate][:-1]+input_data[flux_coordinate][1:])*0.5
+
         data=file['distributions/rhoDist/ordinate'].value
         data=np.swapaxes(data,-1,0)
         data=np.swapaxes(data,-2,1)
@@ -225,6 +229,13 @@ def read_moments_ASCOT(filepath,**properties):
                 profile_number=int(profile[-1])
                 profile_name=file[profile_path].value.decode('utf-8')
                 input_data[profile_name]=data[profile_number,:]
+
+        #rename variables to LOCUST_IO conventions
+        ascot_names=['Power deposition to electrons','Power deposition to background species  1','parallel energy density','energy density','Pphi torque','total toroidal current density','jxB Torque']
+        locust_io_names=['NBI-heating-power(e-)','NBI-heating-power(i1)','energy_para','energy','torque-density(JxB-inst)','J(NBCD)-raw','torque-density(JxB-sweep)']
+
+        for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
+            input_data[locust_io_name]=input_data.pop(ascot_name)
 
     print("finished reading moments from ASCOT")
 
@@ -283,8 +294,18 @@ class Moments(classes.base_output.LOCUST_output):
                 self.filepath=support.dir_output_files+filename
                 self.properties={**properties}
                 self.data=read_moments_TRANSP(self.filepath,**properties)
+
+        elif data_format=='ASCOT': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from ASCOT - filename required\n".format(self.ID),filename): #must check we have all info required for reading
+
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_output_files+filename
+                self.properties={**properties}
+                self.data=read_moments_ASCOT(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT)\n")            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
