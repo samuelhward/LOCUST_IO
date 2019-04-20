@@ -28,6 +28,7 @@ if __name__=='__main__':
 
 try:
     import numpy as np
+    import pathlib
     import argparse
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")

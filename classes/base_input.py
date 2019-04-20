@@ -18,6 +18,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 
 try:
     import numpy as np
+    import pathlib
     import copy
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")

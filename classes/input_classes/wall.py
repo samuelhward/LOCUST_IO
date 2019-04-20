@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 
 try:
     import numpy as np
+    import pathlib
     import re
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
@@ -510,6 +511,7 @@ class Wall(classes.base_input.LOCUST_input):
 
         import scipy
         import numpy as np
+    import pathlib
         import matplotlib
         from matplotlib import cm
         import matplotlib.pyplot as plt

@@ -19,6 +19,7 @@ import sys
 try:
     import scipy.integrate
     import numpy as np
+    import pathlib
     import matplotlib.pyplot as plt
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
