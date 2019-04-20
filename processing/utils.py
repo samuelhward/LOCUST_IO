@@ -98,7 +98,6 @@ def safe_set(target,source):
     """
     if source is not None: #use 'is' since we may want to set data to 0
         target=source
-
  
 def fortran_string(number_out,length,decimals=None,exponential=True):
     """
@@ -128,7 +127,6 @@ def fortran_string(number_out,length,decimals=None,exponential=True):
     else:
         print('ERROR: fortran_string() too many decimal places for requested string length!')
 
-
 def sort_arrays(main_array,*args):
     """
     sort an arbitrary number of arrays in parallel (*args) according to main_array
@@ -136,8 +134,8 @@ def sort_arrays(main_array,*args):
     notes:
         assumes all arrays are numpy arrays
     usage:
-        to sort ascending according to array x, 
-        x_sorted,y_sorted,z_sorted,...=sort_arrays(x,y,z,...)
+        to sort ascending according to array x: 
+            x_sorted,y_sorted,z_sorted,...=sort_arrays(x,y,z,...)
     """
 
     sorted_indices=main_array.argsort() #get the order of sorted indices

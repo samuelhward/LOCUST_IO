@@ -89,7 +89,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
     elif DFN_HEAD=='I':
         IDFTYP=4
     else:
-        print('ERROR: cannot infer IDFTYPE from filename\n')
+        print('ERROR: cannot infer IDFTYPE from filename - {filename}\n'.format(filename))
 
     try:
         from scipy.io import FortranFile 
@@ -417,6 +417,23 @@ def read_distribution_function_ASCOT(filepath,**properties):
 
     return input_data
 
+def read_distribution_function_particle_list(source,**properties):
+    """
+    generate a distribution function from a pre-existing list of markers e.g. beam dsitribution or a loss list
+
+    notes:
+    """
+
+    print("generating reading distribution function from particle list")
+
+    input_data={}
+
+    #do something with an nD histogram here
+
+    print("finished generating reading distribution function from particle list")
+
+    return input_data
+
 ################################################################## Distribution_Function write functions
 
 def dump_distribution_function_LOCUST(output_data,filepath,**properties): 
@@ -638,7 +655,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
                     mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
-                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
@@ -754,7 +771,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 dfn['dfn']=dfn['dfn'][tuple(axes)]
                 #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
             else:
-                print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+                print("ERROR: dfn_transform given invalid axes arguement: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
 
         else: #if LOCUST dfn is against velocity
 
@@ -829,7 +846,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 dfn['dfn']=dfn['dfn'][tuple(axes)]
                 #XXX need to then reset dfn['nV'],dfn['R'],dfn['dfn_index'] etc data here?
             else:
-                print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+                print("ERROR: dfn_transform given invalid axes arguement: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
 
         if len(axes)!=dfn['dfn'].ndim: #if user has not supplied all axes
             dfn['dfn_index']=np.array(axes)

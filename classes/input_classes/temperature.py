@@ -297,7 +297,7 @@ def read_temperature_ASCOT(filepath,**properties):
     """
     notes:
         must include 'species' in properties - either 'electrons' or 'ions'
-        include species_number in properties to select species (1 by default)
+        include integer species_number in properties to select species (1 by default)
     """
 
     with open(filepath,'r') as file:
@@ -539,8 +539,7 @@ class Temperature(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
-
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID))
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
          

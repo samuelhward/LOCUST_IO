@@ -127,6 +127,11 @@ def read_perturbation_LOCUST(filepath,**properties):
             input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
             input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
 
+    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
+    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
+    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
+    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+
     print("finished reading LOCUST perturbation")
     
     return input_data
@@ -215,6 +220,7 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
     
     return input_data
 
+'''
 def read_perturbation_IDS(shot,run,**properties):
     """
     notes:
@@ -226,7 +232,8 @@ def read_perturbation_IDS(shot,run,**properties):
     except:
         raise ImportError("ERROR: read_perturbation_IDS could not import IMAS module!\nreturning\n")
         return
-
+'''
+'''
 def read_perturbation_JOREK(filepath,**properties):
     """
     notes:
@@ -244,6 +251,7 @@ def read_perturbation_JOREK(filepath,**properties):
     input_data['']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['sqrt(PSIn)']) 
 
     return input_data
+'''
 
 def read_perturbation_MARSF(filepath,**properties):
     """
@@ -316,17 +324,346 @@ def read_perturbation_MARSF(filepath,**properties):
             Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
             input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
             input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
-            input_data['R_1D']=input_data['R_2D'][0,:]
-            input_data['Z_1D']=input_data['Z_2D'][:,0]
+            input_data['R_1D']=input_data['R_2D'][0,:].flatten()
+            input_data['Z_1D']=input_data['Z_2D'][:,0].flatten()
             input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
             input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
             input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
             input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
             input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
             input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
-        
+
+    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
+    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
+    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
+    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+
     print("finished reading MARSF perturbation")
     
+    return input_data
+
+def read_perturbation_MARSF_bplas(filepath='',response=True,ideal=False,phase_shift=0,bcentr=1.75660107,rmaxis=1.70210874):
+    """
+    read perturbation bplas files produced by MARSF for individual harmonics and coil sets 
+    
+    args:
+       filepath - path to files in input_files/
+       response - toggle whether vacuum field or with plasma response i.e. bplas_vac_upper/lower or bplas_ideal/resist_resp_upper/lower
+       ideal - toggle whether resistive or ideal bplasma i.e. bplas_ideal_resp_upper/lower or bplas_resist_resp_upper/lower
+       phase_shift - phase shift between upper and lower rows (applied to upper coils) [degrees]
+       bcentr - vacuum toroidal magnetic field at rcentr
+       rmaxis - R at magnetic axis (O-point)
+    notes:
+       adapted from David Ryan's scripts david.ryan@ukaea.uk
+       response overrides ideal toggle setting
+       assumes following default filenames within filepath directory:
+          rmzm_geom
+          rmzm_pest
+          profeq
+          bplas_vac_upper/bplas_ideal_resp_upper/bplas_resist_resp_upper
+          bplas_vac_lower/bplas_ideal_resp_lower/bplas_resist_resp_lower
+       e.g. of file name from MARS-F for individual harmonic=bplas_resist_resp_lower
+       reading this way allows one to rotate coil sets with respect to each other
+    """
+
+    print("reading MARSF_bplas perturbation")
+
+    class rzcoords():
+ 
+        def __init__(self, path, nchi):
+            rmzm=scipy.loadtxt(path)
+            Nm0=int(rmzm[0,0]) #Num. poloidal harmonics for equilibrium quantities (not necessarily same as for perturbation quantities, but should be).
+            Ns_plas=int(rmzm[0,1]) #Num. radial points in plasma
+            Ns_vac=int(rmzm[0,2]) #Num. radial points in vacuum
+            Ns=Ns_plas+Ns_vac
+            R0EXP=rmzm[0,3]
+            B0EXP=rmzm[1,3]
+            s=rmzm[1:Ns+1, 0]
+            RM=rmzm[Ns+1:,0]+1j*rmzm[Ns+1:,1]
+            ZM=rmzm[Ns+1:,2]+1j*rmzm[Ns+1:,3]
+            RM=RM.reshape((Nm0, Ns))
+            RM=scipy.transpose(RM)
+            ZM=ZM.reshape((Nm0, Ns))
+            ZM=scipy.transpose(ZM)
+            RM[:,1:]=2*RM[:,1:]
+            ZM[:,1:]=2*ZM[:,1:]
+            
+            m=scipy.arange(0,Nm0,1)
+            chi=scipy.linspace(-scipy.pi, scipy.pi,nchi)
+            expmchi=scipy.exp(scipy.tensordot(m,chi,0)*1j)
+            R=scipy.dot(RM[:,:Nm0],expmchi)
+            Z=scipy.dot(ZM[:,:Nm0],expmchi)
+            
+            self.R=scipy.array(R.real) #R coordinates
+            self.Z=scipy.array(Z.real) #Z coordinates
+            self.Nchi=nchi
+            self.Nm0=Nm0
+            self.Ns_plas=Ns_plas       #number is s points in plasma
+            self.Ns_vac=Ns_vac         #number of s points in vacuum
+            self.Ns=Ns                 #total number of s points
+            self.R0EXP=R0EXP           #normalisation length
+            self.B0EXP=B0EXP           #normalisation magnetic field
+            self.m=m                   #equilibrium poloidal harmonics
+            self.chi=chi               #poloidal angle coordinate
+            self.s=s                   #radial coordinate=sqrt(psi_pol)
+ 
+    class jacobian():
+ 
+        #decide what stuff is needed later, and add a self. in front of it.
+        def __init__(self, rz):
+            if not isinstance(rz, rzcoords):
+                print("read_perturbation_MARSF_bplas.jacobian - must pass in coordinate system of type plotting_base.rzcoords")
+                return
+
+            self.Ns=rz.Ns #Used in jacobian.plot(), so pass in from rzcoords
+            
+            self.dRds=scipy.copy(rz.R) 
+            self.dZds=scipy.copy(rz.R)
+            self.dRdchi=scipy.copy(rz.R)
+            self.dZdchi=scipy.copy(rz.R)
+            self.jacobian=scipy.copy(rz.R)
+    
+            #this is for the vacuum region. these are overwritten for the plasma region
+            #just having a number to denote the boundary index might be simpler in the future.
+            #Vac_start variable should be all that's needed. II is way too complicated
+            II_start=int(rz.Ns_plas)-1; II_end=len(rz.R[:,0])
+            II2_start=int(rz.Ns_plas); II2_end=len(rz.R[:,0])
+           
+            s0=scipy.copy(rz.s[II_start:II_end]); R0=scipy.copy(rz.R[II_start:II_end, :])
+            chi0=scipy.squeeze(scipy.copy(scipy.array(rz.chi))); Z0=scipy.copy(rz.Z[II_start:II_end, :])
+           
+            hs=0.5*(s0[1:]-s0[:-1]).min(); hs=min(hs,  2e-5)
+            hchi=0.5*(chi0[1:]-chi0[:-1]).min(); hchi=min(hchi,  1e-4)
+            s1=s0-hs; s2=s0+hs
+            chi1=chi0-hchi;  chi2=chi0+hchi
+           
+            #compute dR/ds using R(s,chi)
+            R1=scipy.zeros(scipy.shape(R0))
+            R2=scipy.zeros(scipy.shape(R0))
+            for i in range(rz.Nchi):
+               R1[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,R0[:,i], bbox=[s1[0], s0[-1]])(s1)
+               R2[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,R0[:,i], bbox=[s0[0], s2[-1]])(s2)
+            self.dRds[II_start:II_end,:]=(R2-R1)/(2*hs)
+    
+            #compute dZ/ds using Z(s,chi) 
+            Z1=scipy.zeros(scipy.shape(Z0))
+            Z2=scipy.zeros(scipy.shape(Z0))
+            for i in range(rz.Nchi):
+               Z1[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,Z0[:,i], bbox=[s1[0], s0[-1]])(s1)
+               Z2[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,Z0[:,i], bbox=[s0[0], s2[-1]])(s2)
+            self.dZds[II_start:II_end,:]=(Z2-Z1)/(2*hs)
+    
+            # compute dR/dchi using R(s,chi) 
+            R1=scipy.zeros(scipy.shape(R0))
+            R2=scipy.zeros(scipy.shape(R0))
+            for i in range(int(rz.Ns_vac)+1):
+               R1[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,R0[i,:], bbox=[chi1[0], chi0[-1]])(chi1)
+               R2[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,R0[i,:], bbox=[chi0[0], chi2[-1]])(chi2) 
+               self.dRdchi[i+II_start,:]=(R2[i,:]-R1[i,:])/(2*hchi) 
+       
+            #compute dZ/dchi using Z(s,chi) 
+            Z1=scipy.zeros(scipy.shape(Z0))
+            Z2=scipy.zeros(scipy.shape(Z0))
+            for i in range(int(rz.Ns_vac)+1):
+               Z1[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,Z0[i,:], bbox=[chi1[0], chi0[-1]])(chi1)
+               Z2[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,Z0[i,:], bbox=[chi0[0], chi2[-1]])(chi2)
+            self.dZdchi[II_start:II_end,:]=(Z2-Z1)/(2*hchi)
+       
+            #Now do same calculations for plasma region
+            II_start=0; II_end=rz.Ns_plas;
+       
+            s0=scipy.copy(rz.s[II_start:II_end]); R0=scipy.copy(rz.R[II_start:II_end, :])
+            chi0=scipy.squeeze(scipy.copy(scipy.array(rz.chi))); Z0=scipy.copy(rz.Z[II_start:II_end, :])
+       
+            hs=0.5*(s0[1:]-s0[:-1]).min(); hs=min(hs,  2e-5)
+            hchi=0.5*(chi0[1:]-chi0[:-1]).min(); hchi=min(hchi,  1e-4)
+            s1=s0-hs; s2=s0+hs
+            chi1=chi0-hchi;  chi2=chi0+hchi
+       
+            #compute dR/ds using R(s,chi) 
+            R1=scipy.zeros(scipy.shape(R0))
+            R2=scipy.zeros(scipy.shape(R0))
+            for i in range(rz.Nchi):
+                R1[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,R0[:,i], bbox=[s1[0], s0[-1]])(s1)
+                R2[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,R0[:,i], bbox=[s0[0], s2[-1]])(s2)
+            self.dRds[II_start:II_end,:]=(R2-R1)/(2*hs)
+    
+            #compute dZ/ds using Z(s,chi) 
+            Z1=scipy.zeros(scipy.shape(Z0))
+            Z2=scipy.zeros(scipy.shape(Z0))
+            for i in range(rz.Nchi):
+                Z1[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,Z0[:,i], bbox=[s1[0], s0[-1]])(s1)
+                Z2[:,i]=scipy.interpolate.InterpolatedUnivariateSpline(s0,Z0[:,i], bbox=[s0[0], s2[-1]])(s2)
+                self.dZds[:II_end,i]=(Z2[:,i]-Z1[:,i])/(2*hs)
+    
+            # compute dR/dchi using R(s,chi)
+            R1=scipy.zeros(scipy.shape(R0))
+            R2=scipy.zeros(scipy.shape(R0))
+            for i in range(int(rz.Ns_plas)):
+               R1[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,R0[i,:], bbox=[chi1[0], chi0[-1]])(chi1)
+               R2[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,R0[i,:], bbox=[chi0[0], chi2[-1]])(chi2)
+            self.dRdchi[II_start:II_end,:]=(R2-R1)/(2*hchi)
+    
+            #compute dZ/dchi using Z(s,chi) 
+            Z1=scipy.zeros(scipy.shape(Z0))
+            Z2=scipy.zeros(scipy.shape(Z0))
+            for i in range(int(rz.Ns_plas)):
+               Z1[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,Z0[i,:], bbox=[chi1[0], chi0[-1]])(chi1)
+               Z2[i,:]=scipy.interpolate.InterpolatedUnivariateSpline(chi0,Z0[i,:], bbox=[chi0[0], chi2[-1]])(chi2)
+            self.dZdchi[II_start:II_end,:]=(Z2-Z1)/(2*hchi)
+    
+            G11=scipy.square(self.dRds)+scipy.square(self.dZds)
+            G12=scipy.multiply(self.dRds, self.dRdchi)+scipy.multiply(self.dZds, self.dZdchi)
+            G22=scipy.square(self.dRdchi)+scipy.square(self.dZdchi)
+            G22[0,:]=G22[1,:]
+            G33=scipy.square(rz.R)
+    
+            #Metrics elements
+            self.G11=G11
+            self.G12=G12
+            self.G22=G22
+            self.G33=G33
+    
+            self.jacobian=(-self.dRdchi*self.dZds+self.dRds*self.dZdchi)*rz.R
+            self.jacobian[0,:]=self.jacobian[1,:]
+    
+    class bplasma():
+ 
+        def __init__(self, path, rz, jc):
+        
+            self.path=path
+            bplasma=scipy.loadtxt(self.path)
+            Nm1=int(bplasma[0,0]) #Number of perturbation poloidal harmonics (should be same as equilibrium harmonics)
+            self.bm1=bplasma[Nm1+1:, 0]+1j*bplasma[Nm1+1:, 1]
+            self.bm2=bplasma[Nm1+1:, 2]+1j*bplasma[Nm1+1:, 3]
+            self.bm3=bplasma[Nm1+1:, 4]+1j*bplasma[Nm1+1:, 5]
+        
+            self.bm1=self.bm1.reshape((Nm1, rz.Ns))
+            self.bm2=self.bm2.reshape((Nm1, rz.Ns))
+            self.bm3=self.bm3.reshape((Nm1, rz.Ns))
+        
+            #bm2 and bm3 are defined at half int points. 
+            #3 ways to recompute at int points, see MacReadBPLASMA.m, lines 109-124
+            #For now, simplest implemented. Assume spline_B23==2.
+            for i in range(len(self.bm2[:,1])):
+                self.bm2[i, 1:]=self.bm2[i, :-1]
+                self.bm3[i, 1:]=self.bm3[i, :-1]
+        
+            m=scipy.array(bplasma[1:Nm1+1,0])
+        
+            expmchi=scipy.exp(scipy.tensordot(m,rz.chi,0)*1j)
+        
+            self.b1=scipy.dot(self.bm1.T,expmchi)
+            self.b2=scipy.dot(self.bm2.T,expmchi)
+            self.b3=scipy.dot(self.bm3.T,expmchi)
+        
+            self.bn=self.b1/scipy.sqrt(jc.G22*jc.G33)
+        
+            self.m=m 
+        
+            self.Br=scipy.divide(scipy.multiply(self.b1, jc.dRds)+scipy.multiply(self.b2, jc.dRdchi), jc.jacobian)
+            self.Bz=scipy.divide(scipy.multiply(self.b1, jc.dZds)+scipy.multiply(self.b2,jc.dZdchi), jc.jacobian)
+            self.Bphi=scipy.divide(scipy.multiply(self.b3, rz.R), jc.jacobian)
+        
+            self.Br[0,:]=self.Br[1,:]
+            self.Bz[0,:]=self.Bz[1,:]
+            self.Bphi[0:2,:]=self.Bphi[3,:]
+        
+            self.AbsB=scipy.sqrt(scipy.square(scipy.absolute(self.Br))+scipy.square(scipy.absolute(self.Bz))+scipy.square(scipy.absolute(self.Bphi)))
+        
+            self.Nm1=Nm1
+        
+            self.rz=rz
+            self.jc=jc
+       
+    #start of function
+ 
+    import scipy
+    import scipy.interpolate
+
+    rmzm_geom_path=filepath+'/rmzm_geom'
+    rmzm_pest_path=filepath+'/rmzm_pest'
+    profeq_path=filepath+'/profeq'
+
+    if response:
+        if ideal: #ideal plasma response
+          bplas_u_path=filepath+'/bplas_ideal_resp_upper'
+          bplas_l_path=filepath+'/bplas_ideal_resp_lower'
+        else: #resistive plasma response
+            bplas_u_path=filepath+'/bplas_resist_resp_upper'
+            bplas_l_path=filepath+'/bplas_resist_resp_lower'
+    else:
+        bplas_u_path=filepath+'/bplas_vac_upper'
+        bplas_l_path=filepath+'/bplas_vac_lower'
+ 
+    #make ascot input from B field
+    nchi=2400
+  
+    R_min=0.5
+    R_max=2.5
+  
+    Z_min=-1.5
+    Z_max=1.5
+  
+    numR=400
+    numZ=600
+    
+    phase_shift_rad=phase_shift*(scipy.pi/180.0)
+  
+    rz_geom=rzcoords(rmzm_geom_path, nchi)
+    jc_geom=jacobian(rz_geom)
+    bplas_u_geom=bplasma(bplas_u_path, rz_geom,jc_geom)
+    bplas_l_geom=bplasma(bplas_l_path, rz_geom,jc_geom)
+  
+    BN=(bplas_u_geom.bn*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.bn)*bcentr
+    BR=(bplas_u_geom.Br*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Br)*bcentr
+    BZ=(bplas_u_geom.Bz*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Bz)*bcentr
+    BP=(bplas_u_geom.Bphi*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Bphi)*bcentr
+  
+    B=scipy.sqrt(scipy.square(scipy.absolute(BR))+scipy.square(scipy.absolute(BZ))+scipy.square(scipy.absolute(BP)))
+  
+    R1=rz_geom.R*rmaxis
+    Z1=rz_geom.Z*rmaxis
+  
+    B1=B
+    BR1=BR
+    BZ1=BZ
+    BP1=BP
+  
+    R_rect=scipy.linspace(R_min, R_max, numR)
+    Z_rect=scipy.linspace(Z_min, Z_max, numZ)
+  
+    R_grid, Z_grid=scipy.meshgrid(R_rect,Z_rect)
+  
+    BR_rect=scipy.interpolate.griddata((R1.ravel(), Z1.ravel()), BR1.ravel(), (R_grid, Z_grid), method='linear')
+    BR_rect=BR_rect.reshape((numZ,numR))
+  
+    BZ_rect=scipy.interpolate.griddata((R1.ravel(), Z1.ravel()), BZ1.ravel(), (R_grid, Z_grid), method='linear')
+    BZ_rect=BZ_rect.reshape((numZ,numR))
+  
+    BP_rect=scipy.interpolate.griddata((R1.ravel(), Z1.ravel()), BP1.ravel(), (R_grid, Z_grid), method='linear')
+    BP_rect=BP_rect.reshape((numZ,numR))
+  
+    B_rect=scipy.sqrt(scipy.absolute(BR_rect)**2+scipy.absolute(BZ_rect)**2+scipy.absolute(BP_rect)**2)
+ 
+    input_data={}
+    input_data['R_2D']=np.array(R_grid,ndmin=2).swapaxes(0,1)
+    input_data['Z_2D']=np.array(Z_grid,ndmin=2).swapaxes(0,1)
+    input_data['R_1D']=np.array(input_data['R_2D'][:,0],ndmin=2)
+    input_data['Z_1D']=np.array(input_data['Z_2D'][0,:],ndmin=2)
+    input_data['B_field_R_real']=np.array(BR_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['B_field_R_imag']=np.array(BR_rect.imag,ndmin=2).swapaxes(0,1)
+    input_data['B_field_Z_real']=np.array(BZ_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['B_field_Z_imag']=np.array(BZ_rect.imag,ndmin=2).swapaxes(0,1)
+    input_data['B_field_tor_real']=np.array(BP_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['B_field_tor_imag']=np.array(BP_rect.imag,ndmin=2).swapaxes(0,1)
+    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
+    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
+    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
+    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+
+    print("finished reading MARSF_bplas perturbation")
+
     return input_data
     
 ################################################################## Perturbation write functions
@@ -361,7 +698,7 @@ def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BC
     args:
         BCHECK - coordinate format setting for LOCUST field checking (1=RPhiZ,2=XYZ)  
     notes:
-        uses R_point_data, phi_point_data, Z_point_data and time_point_data arrays stored in perturbation class as point_data.inp coordinates 
+        uses R_point_data, phi_point_data, Z_point_data and time_point_data arrays stored in perturbation class 
     """
 
     print("writing point_inp.dat test points")
@@ -478,8 +815,17 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF(self.filepath,**properties)
 
+        elif data_format=='MARSF_bplas': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from MARSF_bplas - filename required\n".format(self.ID),filename): #must check we have all info required for reading
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF/MARSF_bplas)\n")            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """
@@ -489,8 +835,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
-
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID))
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
          
@@ -570,20 +915,20 @@ class Perturbation(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
                 if plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
-            #mesh=ax.pcolormesh(X,Y,Z,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
             #3D plot
             #ax=ax.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')

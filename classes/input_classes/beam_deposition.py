@@ -107,7 +107,8 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
         input_data['V_R']=np.asarray(input_data['V_R'])
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
-        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading full orbit beam deposition from LOCUST")
  
@@ -161,7 +162,8 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
         input_data['weight']=np.asarray(input_data['weight'])
-        input_data['E']=np.asarray(np.sqrt(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading weighted full orbit beam deposition from LOCUST")
  
@@ -214,7 +216,8 @@ def read_beam_depo_LOCUST_guiding_centre_weighted(filepath,**properties):
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
         input_data['E']=np.asarray(input_data['E'])*.5*species_mass/species_charge
         input_data['weight']=np.asarray(input_data['weight'])
-        
+        input_data['number_particles']=np.asarray(len(input_data['R']))
+     
     print("finished reading weighted guiding centre beam deposition from LOCUST")
  
     return input_data
@@ -327,7 +330,8 @@ def read_beam_depo_TRANSP_fbm(filepath,**properties):
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
-        input_data['E']=np.asarray(np.sqrt(input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)
+        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)
+        input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from TRANSP FBM format")
 
@@ -378,6 +382,7 @@ def read_beam_depo_TRANSP_fbm_guiding_centre(filepath,**properties):
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
         input_data['E']=np.asarray(input_data['E'])
         input_data['phi']=2.0*pi*np.asarray(input_data['phi'])/360.0 #convert to radians
+        input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from TRANSP FBM guiding centre format")
 
@@ -410,6 +415,7 @@ def read_beam_depo_TRANSP_birth(filepath,**properties):
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
+    input_data['number_particles']=np.asarray(len(input_data['R']))
 
     file.close()
     file.close()
@@ -444,6 +450,7 @@ def read_beam_depo_TRANSP_birth_guiding_centre(filepath,**properties):
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
     input_data['V_pitch']=-1.*file.variables['bs_xksid_D_MCBEAM'].data
     input_data['weight']=file.variables['bs_wght_D_MCBEAM'].data
+    input_data['number_particles']=np.asarray(len(input_data['R']))
 
     file.close()
     file.close()
@@ -452,15 +459,17 @@ def read_beam_depo_TRANSP_birth_guiding_centre(filepath,**properties):
 
     return input_data
 
-
 def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
     """
-    reads birth profile from full orbit ASCOT birth ASCII file 
+    reads birth profile from full orbit ASCOT birth ASCII file
 
     notes:
+        typically named input.particles
     """
 
     with open(filepath,'r') as file: #open file
+
+        print("reading beam deposition from ASCOT full orbit input.particles format")
 
         for line in file:
             if 'Number of particles' in line:
@@ -469,7 +478,7 @@ def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
                 number_fields=int(line.split()[0])
                 break
 
-        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        fields=[] #this will hold the names of the quantities stored in the file - in order
         counter=0
         for line in file:
             fields.append(line.split()[0])
@@ -500,7 +509,10 @@ def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
         input_data['phi']*=2.*pi/360.
         input_data['X']=input_data['R']*np.cos(input_data['phi'])
         input_data['Y']=input_data['R']*np.sin(input_data['phi'])
-    
+        input_data['number_particles']=np.asarray(len(input_data['R']))
+
+    print("finished reading beam deposition from ASCOT full orbit input.particles format")
+
     return input_data
 
 def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
@@ -512,6 +524,8 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
 
     with open(filepath,'r') as file: #open file
 
+        print("reading beam deposition from ASCOT guiding centre input.particles format")
+
         for line in file:
             if 'Number of particles' in line:
                 number_particles=int(line.split()[0])
@@ -519,7 +533,7 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
                 number_fields=int(line.split()[0])
                 break
 
-        fields=[] #this will hold the names of the quantiies stored in the file - in order
+        fields=[] #this will hold the names of the quantities stored in the file - in order
         counter=0
         for line in file:
             fields.append(line.split()[0])
@@ -550,6 +564,124 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
         input_data['phi']*=2.*pi/360.
         input_data['X']=input_data['R']*np.cos(input_data['phi'])
         input_data['Y']=input_data['R']*np.sin(input_data['phi']) 
+        input_data['number_particles']=np.asarray(len(input_data['R']))
+
+    print("finished reading beam deposition from ASCOT guiding centre input.particles format")
+
+    return input_data
+
+def read_beam_depo_ASCOT_full_orbit_hdf5_ini(filepath,**properties):
+    """
+    reads full orbit birth profile from ASCOT inistate stored in output hdf5 file 
+
+    notes:
+    """
+
+    print("reading beam deposition from ASCOT full orbit hdf5 inistate")
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_beam_depo_ASCOT_full_orbit_hdf5_ini could not import h5py module!\n") 
+        return
+
+    with h5py.File(filepath,'r') as file:
+        
+        ascot_names=['energy','rho','phiprt','Rprt','zprt','vphi','vR','vz','weight'] #possible ASCOT fields
+        locust_io_names=['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        input_data={}
+
+        for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
+            input_data[locust_io_name]=file['inistate/'+ascot_name].value
+
+        input_data['phi']*=2.*pi/360.
+
+    print("finished reading beam deposition from ASCOT full orbit hdf5 inistate")
+
+    return input_data
+
+def read_beam_depo_ASCOT_guiding_centre_hdf5_ini(filepath,**properties):
+    """
+    reads guiding centre birth profile from ASCOT inistate stored in output hdf5 file
+
+    notes:
+    """
+
+    print("reading beam deposition from ASCOT guiding centre hdf5 inistate")
+
+    try:
+        import h5py
+    except:
+        raise ImportError("ERROR: read_beam_depo_ASCOT_guiding_centre_hdf5_ini could not import h5py module!\n") 
+        return
+
+    with h5py.File(filepath,'r') as file:
+
+        ascot_names=['energy','pitch' ,'rho','phi','R','z','vphi','vR','vz','weight'] #possible ASCOT fields
+        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        input_data={}
+
+        for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
+            input_data[locust_io_name]=file['inistate/'+ascot_name].value
+
+        input_data['phi']*=2.*pi/360.
+
+    print("finished reading beam deposition from ASCOT guiding centre hdf5 inistate")
+    
+    return input_data
+
+def read_beam_depo_SPIRAL_FO(filepath,**properties):
+    """
+    reads birth profile from full orbit SPIRAL birth ASCII file 
+
+    notes:
+    """
+
+    with open(filepath,'r') as file:
+
+        print("reading beam deposition from SPIRAL full orbit format")
+
+        input_data={}
+        column_numbers={} #keep track of which quantity is stored in which column
+
+        split_line=file.readline().split()
+        input_data['A']=np.asarray(split_line[1])
+        input_data['Z']=np.asarray(split_line[3])
+        split_line=file.readline() #read number of particles line
+        split_line=file.readline().split() #read dat field headers
+
+        for counter,quantity in enumerate(split_line): #add field headers as new quantities in input_data
+            input_data[quantity]=[]
+            column_numbers[str(counter)]=quantity
+
+        split_line=file.readline().strip()#assume this is the <start-of-data> line
+        if split_line!='<start-of-data>':
+            print("ERROR: read_beam_depo_SPIRAL_FO encountered unknown file format!\nreturning!\n")
+            return
+
+        lines=file.readlines()
+        for line in lines:
+            split_line=line.split()
+            for counter,number in enumerate(split_line):
+                input_data[column_numbers[str(counter)]].extend([float(number)])
+
+        #rename and recalculate variables to LOCUST_IO conventions
+        spiral_names=['x[cm]','y[cm]','z[cm]','v_x[cm/s]','v_y[cm/s]','v_z[cm/s]'] #possible SPIRAL fields
+        locust_io_names=['X','Y','Z','V_X','V_Y','V_Z'] #corresponding LOCUST_IO fields that we want to retain
+        
+        for spiral_name,locust_io_name in zip(spiral_names,locust_io_names):
+            if spiral_name in input_data.keys():
+                input_data[spiral_name]=0.01*np.asarray(input_data[spiral_name]) #convert everything from cm to m and to np arrays
+                input_data[locust_io_name]=input_data.pop(spiral_name)
+
+        input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
+        input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
+        input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
+        input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
+        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)/species_charge
+        input_data['number_particles']=np.asarray(len(input_data['R']))
+
+    print("finished reading beam deposition from SPIRAL full orbit format")
 
     return input_data
 
@@ -560,16 +692,20 @@ def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z 
      
     notes:
-
+        if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
+        if absorption_fraction or absorption_scaling have length>1 it writes first value
     """
  
     print("writing full orbit beam deposition to LOCUST")
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction lines
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
- 
+        for quantity in ['absorption_fraction','absorption_scaling']:
+            if quantity in output_data:
+                file.write("{}\n".format(processing.utils.fortran_string(output_data[quantity].item(0),13,decimals=1))) #use .item() since disregards shape of array - could be length 0 or greater
+            else:
+                file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
             file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
@@ -582,14 +718,18 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties)
      
     notes:
         -DWLIST -DWREAL are corresponding LOCUST flags
+        if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
     """
  
     print("writing weighted full orbit beam deposition to LOCUST")
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction lines
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+        for quantity in ['absorption_fraction','absorption_scaling']:
+            if quantity in output_data:
+                file.write("{}\n".format(processing.utils.fortran_string(output_data[quantity].item(0),13,decimals=1)))
+            else:
+                file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
@@ -605,6 +745,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
      
     notes:
         assumes R,Z,V_parallel are at the guiding centre
+        if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
     """
  
     print("writing weighted guiding centre beam deposition to LOCUST")
@@ -615,8 +756,11 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
 
     with open(filepath,'w') as file: #open file
  
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13))) #re-insert absorption fraction and scaling factor lines
-        file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
+        for quantity in ['absorption_fraction','absorption_scaling']:
+            if quantity in output_data:
+                file.write("{}\n".format(processing.utils.fortran_string(output_data[quantity].item(0),13,decimals=1)))
+            else:
+                file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
 
         V=np.sqrt(species_charge*output_data['E']*2./species_mass)
         V_parallel=V*output_data['V_pitch']
@@ -1018,8 +1162,17 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_beam_depo_ASCOT_guiding_centre(self.filepath,**properties)
 
+        elif data_format=='SPIRAL_FO':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from SPIRAL_FO - filename required\n".format(self.ID),filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files+filename
+                self.properties={**properties}
+                self.data=read_beam_depo_SPIRAL_FO(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC)\n")
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC/SPIRAL_FO)\n")
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None,**properties):
         """
@@ -1029,8 +1182,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run:"+self.ID)
- 
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID)) 
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() - self.data and compatible data_format required\n".format(self.ID),self.data,data_format):
             pass
          
@@ -1113,7 +1265,10 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         ndim=len(axes) #infer how many dimensions user wants to plot
         if ndim==1: #plot 1D histograms
             if weight:
-                self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins,weights=self['weight'])
+                try:
+                    self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins,weights=self['weight'])
+                except:
+                    print("ERROR: beam_deposition.plot could not find weight\n")
             else:
                 self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins)
             self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
@@ -1154,7 +1309,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.set_facecolor(colmap(np.amin(self_binned)))
                     mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                 else:
-                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colours=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     if plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 
@@ -1229,18 +1384,30 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         if ax_flag is False and fig_flag is False:
             plt.show() 
 
-    def combine(self,targets):
+    def combine(self,*targets):
         """
         combine multiple beam_deposition particle lists into single object
 
-        notes:
+        args:
+            targets - target objects to steal data from
 
+        usage:
+            my_beam_depo.combine(another_beam_depo,yet_another_beam_depo) #take everything
+
+        notes:
+            takes ALL data from target and generates new data fields in self if they do not exist already
+            able to generate empty object and then populate with data from other objects this way
         """
 
         keys_self=self.data.keys()
         for target in targets: #best to loop this way around since inner loop can be random order
-            for key in keys_self:
-                self[key].extend(target[key])
+            keys_target=target.data.keys() #keys_target is dict_keys
+            for key in keys_target:
+                if key not in keys_self:
+                    self[key]=np.asarray([])
+                    keys_self=self.data.keys() #reset keys_self after new key is created
+                self[key]=np.append(self[key],target[key])
+
 
 #################################
  
