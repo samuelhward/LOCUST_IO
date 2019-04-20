@@ -1074,7 +1074,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_LOCUST_full_orbit(self.filepath,**properties)
 
@@ -1083,7 +1083,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_LOCUST_full_orbit_weighted(self.filepath,**properties)
 
@@ -1092,7 +1092,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_LOCUST_guiding_centre_weighted(self.filepath,**properties)
          
@@ -1110,7 +1110,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_fbm(self.filepath,**properties)
 
@@ -1119,7 +1119,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_fbm_guiding_centre(self.filepath,**properties)
 
@@ -1128,7 +1128,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_birth(self.filepath,**properties) 
 
@@ -1137,7 +1137,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_TRANSP_birth_guiding_centre(self.filepath,**properties) 
 
@@ -1146,7 +1146,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_ASCOT_full_orbit(self.filepath,**properties) 
 
@@ -1155,7 +1155,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_ASCOT_guiding_centre(self.filepath,**properties)
 
@@ -1164,7 +1164,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_beam_depo_SPIRAL_FO(self.filepath,**properties)
 
@@ -1185,17 +1185,17 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
          
         elif data_format=='LOCUST_FO':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_FO - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_beam_depo_LOCUST_full_orbit(self.data,filepath,**properties)
 
         elif data_format=='LOCUST_FO_weighted':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_FO_weighted - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_beam_depo_LOCUST_full_orbit_weighted(self.data,filepath,**properties)
 
         elif data_format=='LOCUST_GC_weighted':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST_GC_weighted - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_beam_depo_LOCUST_guiding_centre_weighted(self.data,filepath,equilibrium,**properties) 
          
         elif data_format=='IDS':
@@ -1204,12 +1204,12 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
 
         elif data_format=='ASCOT_FO':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_FO - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_beam_depo_ASCOT_full_orbit(self.data,filepath,**properties)
 
         elif data_format=='ASCOT_GC':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT_GC - filename and equilibrium required\n".format(self.ID),filename,equilibrium):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_beam_depo_ASCOT_guiding_centre(self.data,filepath,equilibrium,**properties)
  
         else:

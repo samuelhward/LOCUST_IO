@@ -602,7 +602,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from GEQDSK - filename required\n".format(self.ID),filename): #check we have all info for reading GEQDSKs
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_equilibrium_GEQDSK(self.filepath,**properties)
             
@@ -639,7 +639,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
          
         elif data_format=='GEQDSK':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to GEQDSK - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_equilibrium_GEQDSK(self.data,filepath,**properties)
          
         elif data_format=='IDS':
@@ -648,7 +648,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
  
         elif data_format=='ASCOT':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to ASCOT - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_equilibrium_ASCOT(self.data,filepath,**properties)
 
         else:

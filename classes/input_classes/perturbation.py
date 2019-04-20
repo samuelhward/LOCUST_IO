@@ -775,7 +775,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath,**properties)
 
@@ -784,7 +784,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
@@ -793,7 +793,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
                 self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
 
@@ -811,7 +811,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF(self.filepath,**properties)
 
@@ -820,7 +820,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_input_files+filename
+                self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
 
@@ -841,12 +841,12 @@ class Perturbation(classes.base_input.LOCUST_input):
          
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_perturbation_LOCUST(self.data,filepath,**properties)
 
         elif data_format=='point_data':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to point_data.inp - filename required\n".format(self.ID),filename):
-                filepath=support.dir_input_files+filename
+                filepath=support.dir_input_files / filename
                 dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
         else:

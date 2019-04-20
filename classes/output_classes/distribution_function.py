@@ -503,7 +503,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename                
+                self.filepath=support.dir_output_files / filename                
                 for variable, default_value in zip(['ITER','wtot','WIPE','TEST','EBASE','dfn_s','Jh','Jh_s','cpu_time'],[True,False,False,False,True,True,True,True,True]): #default properties settings
                     if variable not in properties:
                         properties[variable]=default_value
@@ -515,7 +515,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 self.data_format=data_format #add to the member data
                 self.filename=filename
-                self.filepath=support.dir_output_files+filename
+                self.filepath=support.dir_output_files / filename
                 for variable, default_value in zip(['EBASE'],[True]): #default properties settings
                     if variable not in properties:
                         properties[variable]=default_value
@@ -536,7 +536,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         
         elif data_format=='LOCUST':
             if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot dump_data() to LOCUST - filename required\n".format(self.ID),filename):
-                filepath=support.dir_output_files+filename
+                filepath=support.dir_output_files / filename
                 dump_distribution_function_LOCUST(self.data,filepath,**self.properties)
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")

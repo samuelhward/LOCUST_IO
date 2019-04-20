@@ -226,7 +226,7 @@ class TRANSP_output:
 
         self.ID=ID
         self.filename=filename
-        self.filepath=support.dir_output_files+filename
+        self.filepath=support.dir_output_files / filename
         self.data={}
         self.read_data(self.filename)
 
@@ -297,7 +297,7 @@ class TRANSP_output:
             return
 
         self.filename=filename
-        self.filepath=support.dir_output_files+filename
+        self.filepath=support.dir_output_files / filename
         file=ncdf.netcdf_file(self.filepath,'r') #open netCDF file
 
         for key in file.variables.keys(): #read everything into a nested dictionary
@@ -335,7 +335,7 @@ class TRANSP_output_FI(TRANSP_output):
             return
 
         self.filename=filename
-        self.filepath=support.dir_output_files+filename
+        self.filepath=support.dir_output_files / filename
         file=ncdf.netcdf_file(self.filepath,'r') #open netCDF file
 
         for key in file.variables.keys(): #read everything into a nested dictionary
@@ -699,9 +699,9 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
 
     print("dumping ASCOT run file")
 
-    filepath=support.dir_input_files+input_path+run_file+tag
+    filepath=support.dir_input_files / input_path / run_file / tag
     if initialdir is None:
-        initialdir=support.dir_input_files+input_path #use write location as default
+        initialdir=support.dir_input_files / input_path #use write location as default
     
     with open(filepath,'w') as file:
         file.write('# @ input = dev/null/\n')
@@ -739,7 +739,7 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
 
     print("dumping profiles to ASCOT format")
  
-    filepath=support.dir_input_files+filename
+    filepath=support.dir_input_files / filename
     with open(filepath,'w') as file:
 
         file.write("# Input file for ASCOT containing radial 1D information of plasma temperature,density and toroidal rotation\n")
@@ -767,7 +767,7 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     print("dumping ASCOT input options")
 
-    filepath=support.dir_input_files+filename
+    filepath=support.dir_input_files / filename
     with open(filepath,'w') as file:
         file_contents="""
          !  -*-f90-*-  (for emacs)    vim:set filetype=fortran:  (for vim)
@@ -1313,7 +1313,7 @@ def dump_rotation_MARSF(filename,output_data):
 
     print("writing rotation to MARSF mogui")
 
-    filepath=support.dir_input_files+filename
+    filepath=support.dir_input_files / filename
 
     with open(filepath,'w') as file: #open file
 
@@ -1353,7 +1353,7 @@ def dump_coil_currents_MARSF(filename,output_data):
 
     print("writing coil currents to MARSF mogui")
 
-    filepath=support.dir_input_files+filename
+    filepath=support.dir_input_files / filename
 
     with open(filepath,'w') as file: #open file
 
@@ -1398,7 +1398,7 @@ class FINT_LOCUST:
         self.ID=ID
         self.data={}
         self.filename=filename
-        self.filepath=support.dir_output_files+filename
+        self.filepath=support.dir_output_files / filename
         self.read_data(self.filepath)
 
     def __getitem__(self,key):
@@ -1540,7 +1540,7 @@ def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
 
     print("writing point_inp.dat test points")
 
-    filepath=support.dir_input_files+'point_data.inp'
+    filepath=support.dir_input_files / 'point_data.inp'
  
     with open(filepath,'w') as file: #open file
 
