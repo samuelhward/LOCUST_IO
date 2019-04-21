@@ -470,7 +470,7 @@ class Wall(classes.base_input.LOCUST_input):
                 self.data=read_wall_ASCOT_2D_output(self.filepath,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/UFILE/ASCOT_2D_input/ASCOT_2D_output)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_3D/LOCUST_2D/GEQDSK/UFILE/ASCOT_2D_input/ASCOT_2D_output)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -495,7 +495,7 @@ class Wall(classes.base_input.LOCUST_input):
                 dump_wall_ASCOT_2D_input(self.data,filepath,**properties)                
 
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input)\n".format(self.ID))
 
 
     def plot(self,LCFS=False,real_scale=False,colmap=plot_style_limiters,ax=False,fig=False): 

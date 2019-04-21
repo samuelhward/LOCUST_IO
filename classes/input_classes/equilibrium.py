@@ -623,7 +623,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 self.data=read_equilibrium_UDA(self.shot,self.time,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n")
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (GEQDSK/IDS/UDA)\n".format(self.ID))
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -652,7 +652,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 dump_equilibrium_ASCOT(self.data,filepath,**properties)
 
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
     def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """
