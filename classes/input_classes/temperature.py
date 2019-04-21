@@ -529,7 +529,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.data=read_temperature_ASCOT(self.filepath,**properties)              
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -558,7 +558,7 @@ class Temperature(classes.base_input.LOCUST_input):
                 dump_temperature_MARSF(self.data,filepath,**properties)
  
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n".format(self.ID))
  
     def plot(self,axis='flux_pol_norm',colmap='blue',ax=False,fig=False):
         """

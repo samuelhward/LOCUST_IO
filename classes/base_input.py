@@ -243,30 +243,11 @@ class LOCUST_input:
                 print("no data")
             return False
 
-        if self.LOCUST_input_type=='equilibrium':
-            for key in support.required_equilibrium:
-                if key not in self.data:
-                    missing_data.append(key)
-
-        elif self.LOCUST_input_type=='beam_deposition':
-            for key in support.required_beam_deposition:            
-                if key not in self.data:
-                    missing_data.append(key)
-
-        elif self.LOCUST_input_type=='temperature':
-            for key in support.required_temperature:
-                if key not in self.data:
-                    missing_data.append(key)
-
-        elif self.LOCUST_input_type=='number_density':
-            for key in support.required_number_density:
-                if key not in self.data:
-                    missing_data.append(key)
-
-        elif self.LOCUST_input_type=='perturbation':
-            for key in support.required_perturbation:
-                if key not in self.data:
-                    missing_data.append(key)
+        for input_type,required_data in zip(['equilibrium','beam_deposition','temperature','number_density','perturbation','rotation'],[support.required_equilibrium,support.required_beam_deposition,support.required_temperature,support.required_number_density,support.required_perturbation,support.required_rotation]):
+            if self.LOCUST_input_type==input_type: #assess which input type this object is and find corresponding required data
+                for key in required_data:
+                    if key not in self.data:
+                        missing_data.append(key)
  
         if missing_data: #object is not ready
             if verbose is True: #if wanting to print summary

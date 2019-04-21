@@ -582,20 +582,20 @@ def read_perturbation_MARSF_bplas(filepath='',response=True,ideal=False,phase_sh
     import scipy
     import scipy.interpolate
 
-    rmzm_geom_path=filepath+'/rmzm_geom'
-    rmzm_pest_path=filepath+'/rmzm_pest'
-    profeq_path=filepath+'/profeq'
+    rmzm_geom_path=filepath / 'rmzm_geom'
+    rmzm_pest_path=filepath / 'rmzm_pest'
+    profeq_path=filepath / 'profeq'
 
     if response:
         if ideal: #ideal plasma response
-          bplas_u_path=filepath+'/bplas_ideal_resp_upper'
-          bplas_l_path=filepath+'/bplas_ideal_resp_lower'
+          bplas_u_path=filepath / 'bplas_ideal_resp_upper'
+          bplas_l_path=filepath / 'bplas_ideal_resp_lower'
         else: #resistive plasma response
-            bplas_u_path=filepath+'/bplas_resist_resp_upper'
-            bplas_l_path=filepath+'/bplas_resist_resp_lower'
+            bplas_u_path=filepath / 'bplas_resist_resp_upper'
+            bplas_l_path=filepath / 'bplas_resist_resp_lower'
     else:
-        bplas_u_path=filepath+'/bplas_vac_upper'
-        bplas_l_path=filepath+'/bplas_vac_lower'
+        bplas_u_path=filepath / 'bplas_vac_upper'
+        bplas_l_path=filepath / 'bplas_vac_lower'
  
     #make ascot input from B field
     nchi=2400
@@ -826,7 +826,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF/MARSF_bplas)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF/MARSF_bplas)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """
@@ -851,7 +851,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n".format(self.ID))
 
     def plot(self,key='B_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """

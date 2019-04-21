@@ -524,7 +524,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 self.data=read_distribution_function_ASCOT(self.filepath,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n".format(self.ID))            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -540,7 +540,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 filepath=support.dir_output_files / filename
                 dump_distribution_function_LOCUST(self.data,filepath,**self.properties)
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
     def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """

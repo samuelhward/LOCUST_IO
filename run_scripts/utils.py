@@ -1298,7 +1298,7 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
 
 ################################################################################################### MARSF classes and functions
 
-def dump_rotation_MARSF(filename,output_data):
+def dump_rotation_MARSF(filename,some_rotation):
     """
     writes rotation profile to MARSF Mogui ASCII format 
 
@@ -1309,7 +1309,7 @@ def dump_rotation_MARSF(filename,output_data):
         MARSF mogui written by David Ryan
     args:
         filename - output filename
-        output_data - data structure holding 'rotation' against normalised poloidal flux
+        some_rotation - data structure holding 'rotation' against normalised poloidal flux
     """
 
     print("writing rotation to MARSF mogui")
@@ -1318,8 +1318,8 @@ def dump_rotation_MARSF(filename,output_data):
 
     with open(filepath,'w') as file: #open file
 
-        flux_pol_norm_sqrt=np.sqrt(np.abs(output_data['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
-        flux_pol_norm_sqrt,rotation=processing.utils.sort_arrays(flux_pol_norm_sqrt,output_data['rotation']) #check order
+        flux_pol_norm_sqrt=np.sqrt(np.abs(some_rotation['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt,rotation=processing.utils.sort_arrays(flux_pol_norm_sqrt,some_rotation['rotation']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
         

@@ -405,7 +405,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 self.data=read_final_particle_list_ASCOT(self.filepath,**properties) 
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT)\n")            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT)\n".format(self.ID))            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -428,7 +428,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 dump_final_particle_list_TRANSP(self.data,filepath,**properties)
         
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n")
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
     def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
         """

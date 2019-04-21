@@ -101,6 +101,10 @@ Since this package aims to bridge the gap between various file formats for diffe
         B_field_Z_imag                                                  #imaginary Z component of magnetic field [T] at point [r,z] to be expanded
         B_field_tor_real                                                #real toroidal component of magnetic field [T] at point [r,z] to be expanded
         B_field_tor_imag                                                #imaginary toroidal component of magnetic field [T] at point [r,z] to be expanded
+        B_field_R                                                       #magnetic field Rcomponent at position [r,z] [T] calculate by B_calc
+        B_field_tor                                                     #magnetic field phi component at position [r,z] [T] calculate by B_calc
+        B_field_Z                                                       #magnetic field Z component at position [r,z] [T] calculate by B_calc
+        B_field_mag                                                     #absolute magnitude of perturbation [T]
 
 #### Orbits:
 
