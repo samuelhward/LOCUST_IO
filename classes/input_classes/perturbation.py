@@ -343,7 +343,7 @@ def read_perturbation_MARSF(filepath,**properties):
     
     return input_data
 
-def read_perturbation_MARSF_bplas(filepath='',response=True,ideal=False,phase_shift=0,bcentr=1.75660107,rmaxis=1.70210874):
+def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=False,phase_shift=0,bcentr=1.75660107,rmaxis=1.70210874):
     """
     read perturbation bplas files produced by MARSF for individual harmonics and coil sets 
     
