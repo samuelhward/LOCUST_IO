@@ -61,7 +61,7 @@ except:
 
 #read in all relevant TRANSP inputs and outputs
 
-def TRANSP_2_ASCOT(run_ID,shot_number,path_ASCOT='',path_TRANSP='',beam_depo_GC=True,GEQDSKFIX=0,tag=''):
+def TRANSP_2_ASCOT(run_ID,shot_number,path_ASCOT=pathlib.Path(''),path_TRANSP=pathlib.Path(''),beam_depo_GC=True,beam_depo_number=None,GEQDSKFIX=0,tag=''):
     """
     read all ASCOT inputs from TRANSP run data  
 
@@ -74,12 +74,13 @@ def TRANSP_2_ASCOT(run_ID,shot_number,path_ASCOT='',path_TRANSP='',beam_depo_GC=
         path_ASCOT - path to ASCOT files in input_files dir (input_files/path_ASCOT...)
         path_TRANSP - path to TRANSP files in input_files dir (input_files/path_TRANSP...)
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
+        beam_depo_number - integer number of beam depo file to read elif None then read all available beam depositions and combine into single object 
         GEQDSKFIX - LOCUST-equivalent flag to optionally flip fields in GEQDSK 
         tag - optional identifier tag for each set of run files produced
     """
 
     try:
-        temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall=run_scripts.utils.read_inputs_TRANSP(run_ID=run_ID,shot_number=shot_number,input_path=path_TRANSP,beam_depo_GC=beam_depo_GC,GEQDSKFIX=GEQDSKFIX)
+        temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall=run_scripts.utils.read_inputs_TRANSP(run_ID=run_ID,shot_number=shot_number,input_path=path_TRANSP,beam_depo_GC=beam_depo_GC,beam_depo_number=beam_depo_number,GEQDSKFIX=GEQDSKFIX)
     except:
         print("ERROR: TRANSP_2_ASCOT could not read_inputs_TRANSP from LOCUST_IO/input_files/{}\n".format(path_TRANSP))
         return 
@@ -99,13 +100,17 @@ if __name__=='__main__':
     parser.add_argument('--path_ASCOT',type=str,action='store',default='',dest='path_ASCOT',help="source path to TRANSP inputs within input_files",required=False)
     parser.add_argument('--path_TRANSP',type=str,action='store',default='',dest='path_TRANSP',help="target path to ASCOT inputs within input_files",required=False)
     parser.add_argument('--GC',action='store_true',default=False,dest='beam_depo_GC',help="toggle guiding centre particle list (default False)",required=False)
+    parser.add_argument('--beam_depo_number',action='store',default=None,dest='beam_depo_number',help="integer number of beam depo file to read elif None then read all available beam depositions and combine into single object",required=False)
     parser.add_argument('--GEQDSKFIX',type=int,action='store',default=0,dest='GEQDSKFIX',help="LOCUST-equivalent flag to optionally flip fields in GEQDSK",required=False)        
     parser.add_argument('--tag',type=str,action='store',default='',dest='tag',help="optional identifier tag for each set of run files produced",required=False)    
     
     args=parser.parse_args()
 
+    path_ASCOT=pathlib.Path(args.path_ASCOT)
+    path_TRANSP=pathlib.Path(args.path_TRANSP)
+
     #convert 
-    TRANSP_2_ASCOT(run_ID=args.run_ID,shot_number=args.shot_number,path_ASCOT=args.path_ASCOT,path_TRANSP=args.path_TRANSP,beam_depo_GC=args.beam_depo_GC,GEQDSKFIX=args.GEQDSKFIX,tag=args.tag)
+    TRANSP_2_ASCOT(run_ID=args.run_ID,shot_number=args.shot_number,path_ASCOT=path_ASCOT,path_TRANSP=path_TRANSP,beam_depo_GC=args.beam_depo_GC,beam_depo_number=args.beam_depo_number,GEQDSKFIX=args.GEQDSKFIX,tag=args.tag)
 
 #################################
  

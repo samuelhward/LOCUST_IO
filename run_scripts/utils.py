@@ -600,7 +600,7 @@ class TRANSP_output_FI(TRANSP_output):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
-def read_inputs_TRANSP(run_ID,shot_number,input_path='',beam_depo_GC=True,GEQDSKFIX=0):
+def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_GC=True,beam_depo_number=None,GEQDSKFIX=0):
     """
     reads full input_data from TRANSP run
 
@@ -615,20 +615,24 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path='',beam_depo_GC=True,GEQDSK
         shot_number - TRANSP shot number e.g. 29034
         input_path - path to target in input_files dir (input_files/path/)
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
+        beam_depo_number - integer number of beam depo file to read elif None then read all available beam depositions and combine into single object 
         GEQDSKFIX - LOCUST-equivalent flag to optionally flip fields in GEQDSK
     """
     
     print("read_inputs_TRANSP()")
 
-    filepath_temperature_i_1=input_path+'OMF'+shot_number+'.TIO' 
-    filepath_temperature_i_2=input_path+'OMF'+shot_number+'.TI2'    
-    filepath_temperature_e_1=input_path+'OMF'+shot_number+'.TEL' 
-    filepath_temperature_e_2=input_path+'OMF'+shot_number+'.TER' 
-    filepath_number_density_e_1=input_path+'OMF'+shot_number+'.NEL' 
-    filepath_number_density_e_2=input_path+'OMF'+shot_number+'.NER' 
-    filepath_equilibrium=input_path+'g'+shot_number
-    filepath_beam_deposition=input_path+shot_number+run_ID+'_birth.cdf1'
-    filepath_wall=input_path+'OMF'+shot_number+'.LIM'
+    filepath_temperature_i_1=input_path / 'OMF'+shot_number+'.TIO' 
+    filepath_temperature_i_2=input_path / 'OMF'+shot_number+'.TI2'    
+    filepath_temperature_e_1=input_path / 'OMF'+shot_number+'.TEL' 
+    filepath_temperature_e_2=input_path / 'OMF'+shot_number+'.TER' 
+    filepath_number_density_e_1=input_path / 'OMF'+shot_number+'.NEL' 
+    filepath_number_density_e_2=input_path / 'OMF'+shot_number+'.NER' 
+    filepath_equilibrium=input_path / 'g'+shot_number
+    if beam_depo_number:
+        filepaths_beam_deposition=list(input_path / shot_number+run_ID+'_birth.cdf{}'.format(str(beam_depo_number))) #list is just one file long
+    else:
+        filepaths_beam_deposition=list(pathlib.Path(support.dir_input_files / input_path).glob('*_birth.cdf*')) #find all birth CDF files in supplied input_path directory  
+    filepath_wall=input_path / 'OMF'+shot_number+'.LIM'
 
     if beam_depo_GC:
         data_format_beam_depo='TRANSP_birth_gc'
@@ -664,11 +668,14 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path='',beam_depo_GC=True,GEQDSK
     except:
         print("WARNING: read_inputs_TRANSP() could not read equilibrium from LOCUST_IO/input_files/{} - returning None".format(filepath_equilibrium))
         equilibrium=None
-    try:
-        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID=shot_number+run_ID,data_format=data_format_beam_depo,filename=filepath_beam_deposition)
-    except:
-        print("WARNING: read_inputs_TRANSP() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
-        beam_deposition=None
+
+    beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID=shot_number+run_ID) #generate blank beam deposition which we will append to using .combine
+    for filepath_beam_deposition in filepaths_beam_deposition:
+        try:
+            beam_deposition.combine(classes.input_classes.beam_deposition.Beam_Deposition(ID=shot_number+run_ID,data_format=data_format_beam_depo,filename=filepath_beam_deposition))
+        except:
+            print("WARNING: read_inputs_TRANSP() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
+
     try:
         wall=classes.input_classes.wall.Wall(ID=shot_number+run_ID,data_format='UFILE',filename=filepath_wall)
     except:
@@ -681,7 +688,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path='',beam_depo_GC=True,GEQDSK
 
 ################################################################################################### ASCOT classes and functions
 
-def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot',input_path='',tag='',user='sward'):
+def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot.out',max_proc=50,min_proc=25,error_file='ascot.err',executable='test_ascot',input_path=pathlib.Path(''),tag='',user='sward'):
     """
     writes out freia batch file for ASCOT run
     args:
@@ -700,7 +707,7 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
 
     print("dumping ASCOT run file")
 
-    filepath=support.dir_input_files / input_path / run_file / tag
+    filepath=support.dir_input_files / input_path / str(run_file+tag)
     if initialdir is None:
         initialdir=support.dir_input_files / input_path #use write location as default
     
@@ -1155,7 +1162,7 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     print("finished dumping ASCOT input options")
 
-def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_type='2D'):
+def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numbers=[1],wall_type='2D'):
     """
     reads full run input data from ASCOT inputs
 
@@ -1174,12 +1181,12 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
 
     print("read_inputs_ASCOT()")
 
-    filepath_temperature_i=input_path+'input.plasma_1d' 
-    filepath_density_i=input_path+'input.plasma_1d' 
-    filepath_temperature_e=input_path+'input.plasma_1d' 
-    filepath_density_e=input_path+'input.plasma_1d' 
-    filepath_beam_deposition=input_path+'input.particles'
-    filepath_wall=input_path+'input.wall_2d'
+    filepath_temperature_i=input_path / 'input.plasma_1d' 
+    filepath_density_i=input_path / 'input.plasma_1d' 
+    filepath_temperature_e=input_path / 'input.plasma_1d' 
+    filepath_density_e=input_path / 'input.plasma_1d' 
+    filepath_beam_deposition=input_path / 'input.particles'
+    filepath_wall=input_path / 'input.wall_2d'
 
     temperature_array=[] #arrays to hold kinetic profile data for each species
     density_array=[]
@@ -1233,7 +1240,7 @@ def read_inputs_ASCOT(input_path='',beam_depo_GC=True,species_numbers=[1],wall_t
 
     return temperature_array,density_array,temperature_e,density_e,beam_deposition,wall
 
-def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,beam_depo_GC=True,input_path='',tag=''):
+def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_toroidal,equilibrium,beam_deposition,wall,beam_depo_GC=True,input_path=pathlib.Path(''),tag=''):
     """
     generates full run input data for ASCOT
 
@@ -1272,27 +1279,27 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
         print("WARNING: dump_inputs_ASCOT() could not dump_run_file_ASCOT to LOCUST_IO/input_files/{}".format(input_path))
 
     try:
-        dump_profiles_ASCOT(filename=input_path+'input.plasma_1d'+tag,temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
+        dump_profiles_ASCOT(filename=input_path / str('input.plasma_1d'+tag),temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump_profiles_ASCOT to LOCUST_IO/input_files/{}".format(input_path+'input.plasma_1d'+tag))
+        print("WARNING: dump_inputs_ASCOT() could not dump_profiles_ASCOT to LOCUST_IO/input_files/{}".format(input_path / str('input.plasma_1d'+tag)))
 
     try:
-        dump_input_options_ASCOT(filename=input_path+'input.options'+tag)
+        dump_input_options_ASCOT(filename=input_path / str('input.options'+tag))
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump_input_options_ASCOT to LOCUST_IO/input_files/{}".format(input_path+'input.options'+tag))
+        print("WARNING: dump_inputs_ASCOT() could not dump_input_options_ASCOT to LOCUST_IO/input_files/{}".format(input_path / str('input.options'+tag)))
 
     try:
-        wall.dump_data(data_format='ASCOT_2D_input',filename=input_path+'input.wall_2d'+tag)
+        wall.dump_data(data_format='ASCOT_2D_input',filename=input_path / str('input.wall_2d'+tag))
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump ion temperature to LOCUST_IO/input_files/{}".format(input_path+'input.wall_2d'+tag))
+        print("WARNING: dump_inputs_ASCOT() could not dump ion temperature to LOCUST_IO/input_files/{}".format(input_path / str('input.wall_2d'+tag)))
 
     try:
         if beam_depo_GC:
-            beam_deposition.dump_data(data_format='ASCOT_GC',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
+            beam_deposition.dump_data(data_format='ASCOT_GC',filename=input_path / str('input.particles'+tag),equilibrium=equilibrium)
         else:
-            beam_deposition.dump_data(data_format='ASCOT_FO',filename=input_path+'input.particles'+tag,equilibrium=equilibrium)
+            beam_deposition.dump_data(data_format='ASCOT_FO',filename=input_path / str('input.particles'+tag),equilibrium=equilibrium)
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump beam_deposition to LOCUST_IO/input_files/{}".format(input_path+'input.particles'+tag))
+        print("WARNING: dump_inputs_ASCOT() could not dump beam_deposition to LOCUST_IO/input_files/{}".format(input_path / str('input.particles'+tag)))
 
     print("dump_inputs_ASCOT finished creating ASCOT inputs")
 
@@ -1573,7 +1580,7 @@ def dump_perturbation_point_data_input(BCHECK=1,**kwargs):
 
     print("finished writing point_inp.dat test points")
 
-def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equilibrium=None,beam_deposition=None,wall=None,perturbation=None,beam_depo_GC=False,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path='',tag=''):
+def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equilibrium=None,beam_deposition=None,wall=None,perturbation=None,beam_depo_GC=False,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path=pathlib.Path(''),tag=''):
     """
     generates full run input data for LOCUST
 
@@ -1610,14 +1617,14 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
 
     print("dump_inputs_LOCUST creating LOCUST inputs")
 
-    filepath_temperature_i='{}/profile_Ti.dat'.format(input_path)+tag
-    filepath_temperature_e='{}/profile_Te.dat'.format(input_path)+tag
-    filepath_number_density_e='{}/profile_ne.dat'.format(input_path)+tag
-    filepath_equilibrium='{}/LOCUST_GEQDSK'.format(input_path)+tag
-    filepath_beam_deposition='{}/ptcles.dat'.format(input_path)+tag
-    filepath_wall='{}/LOCUST_wall'.format(input_path)+tag
-    filepath_perturbation='{}/pert'.format(input_path)+tag
-    filepath_point_data='{}/point_data.inp'.format(input_path)+tag
+    filepath_temperature_i=input_path / str('profile_Ti.dat'.+tag)
+    filepath_temperature_e=input_path / str('profile_Te.dat'+tag)
+    filepath_number_density_e=input_path / str('profile_ne.dat'+tag)
+    filepath_equilibrium=input_path / str('LOCUST_GEQDSK'+tag)
+    filepath_beam_deposition=input_path / str('ptcles.dat'+tag)
+    filepath_wall=input_path / str('LOCUST_wall'+tag)
+    filepath_perturbation=input_path / str('pert'+tag)
+    filepath_point_data=input_path / str('point_data.inp'+tag)
 
     if temperature_i:
         try:

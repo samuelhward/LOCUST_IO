@@ -46,8 +46,6 @@ except:
     raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-
-
 ################################################################## Base class
  
 class LOCUST_input:
