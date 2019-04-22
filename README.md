@@ -115,7 +115,7 @@ my_equilibrium.B_calc()
 
 
     LOCUST_IO
-    Copyright (C) 2018  Samuel Ward
+    Copyright (C) 2019  Samuel Ward
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public Licence as published by

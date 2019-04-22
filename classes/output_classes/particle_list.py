@@ -446,7 +446,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             status_flags - plot particles with these statuses
             weight - toggle whether to include marker weights in histograms
             colmap - set the colour map (use get_cmap names)
-            colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag)
+            colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag, where the numerical value of the status_flag will dictate the colour)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
