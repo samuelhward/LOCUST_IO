@@ -79,7 +79,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
 
     print("reading distribution function from LOCUST")
 
-    filename=filepath.split('/')[-1] #infer IDFTYP from first character of file name
+    filename=list(filepath.parts)[-1] #infer IDFTYP from first character of file name
     DFN_HEAD=filename[0] 
     if DFN_HEAD=='F': 
         IDFTYP=1
@@ -542,7 +542,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
         plot the distribution function
 
@@ -676,7 +676,18 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
                 if limiters: #add boundaries if desired
                     ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
-                
+                if gridlines:
+                    #get bin edges
+                    d_ax_0=dfn_copy[axes[0]][1]-dfn_copy[axes[0]][0]
+                    d_ax_1=dfn_copy[axes[1]][1]-dfn_copy[axes[1]][0]
+                    axes_0_edges=(dfn_copy[axes[0]][:-1]+dfn_copy[axes[0]][1:])*0.5 #get bin centres of bin centres i.e. bin edges
+                    axes_1_edges=(dfn_copy[axes[1]][:-1]+dfn_copy[axes[1]][1:])*0.5
+                    axes_0_edges=np.concatenate((axes_0_edges[0]-[d_ax_0],axes_0_edges,axes_0_edges[-1]+[d_ax_0])) #add outermost values to bin edges
+                    axes_1_edges=np.concatenate((axes_1_edges[0]-[d_ax_1],axes_1_edges,axes_1_edges[-1]+[d_ax_1]))
+                    for line_axis_0,line_axis_1 in zip(axes_0_edges,axes_1_edges):
+                        ax.axvline(line_axis_0,color='w') #assume that axis 0 is X axis and axis 1 is y axis
+                        ax.axhline(line_axis_1,color='w')
+
                 if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh
 
