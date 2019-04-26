@@ -1617,7 +1617,7 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
 
     print("dump_inputs_LOCUST creating LOCUST inputs")
 
-    filepath_temperature_i=input_path / str('profile_Ti.dat'.+tag)
+    filepath_temperature_i=input_path / str('profile_Ti.dat'+tag)
     filepath_temperature_e=input_path / str('profile_Te.dat'+tag)
     filepath_number_density_e=input_path / str('profile_ne.dat'+tag)
     filepath_equilibrium=input_path / str('LOCUST_GEQDSK'+tag)

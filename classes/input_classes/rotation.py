@@ -64,6 +64,94 @@ def read_rotation_LOCUST(filepath,**properties):
 
     pass #XXX not yet implemented
 
+def read_rotation_UFILE(filepath,**properties):
+    """
+    reads rotation profiles from UFILE 
+
+    notes:
+        XXX untested
+        XXX waiting to see which units LOCUST works in
+        if more than one time point then rotation field is multidimensional-[time_point,flux_pol_norm]        
+    """
+
+    print("reading rotation from UFILE")
+
+    with open(filepath,'r') as file:
+
+        input_data={}
+        lines=file.readlines()
+
+        for line_number,line in enumerate(lines): #extract dimensionality of the data
+            split_line=line.split()
+
+            if 'M/SEC' in split_line:
+                in_ms=True        
+
+            if 'X0' in split_line:
+                length_rotation=int(split_line[0])
+            elif 'X1' in split_line:
+                length_time=int(split_line[0])
+                del(lines[:line_number+1]) #delete all lines up to this point
+                del(lines[-1]) #remove the last two lines with Ufile authorship
+                del(lines[-1])
+                break    
+
+        data=[]
+        for line_number,line in enumerate(lines): #extract data now
+            split_line=line.split()   
+            for number in split_line:
+                data.append(float(number))
+
+        input_data['flux_pol_norm']=np.array(data[:length_rotation])
+        del(data[:length_rotation])
+        input_data['time']=np.array(data[:length_time])
+        del(data[:length_time])
+        input_data['rotation']=np.array(data).reshape(length_time,length_rotation)
+        input_data['rotation']=np.squeeze(input_data['rotation']) #get rid of redundant axis if time is only 1 element long
+
+    print("finished reading rotation from UFILE")
+
+    return input_data
+
+def read_rotation_ASCOT(filepath,**properties):
+    """
+    notes:
+        XXX untested
+        XXX waiting to see which units LOCUST works in
+    """
+
+    with open(filepath,'r') as file:
+
+        for line in file:
+            if 'collision mode' in line:
+                break
+        line=file.readline()
+        split_line=line.split()
+
+        fields=[]
+        desired_field='Vtor_I'
+
+        for counter,field in enumerate(split_line[0::2]):
+            if field==desired_field:
+                desired_column_rotation=counter
+            if field=='RHO':
+                desired_column_flux_pol_norm_sqrt=counter
+
+        input_data={}
+        input_data['rotation']=[]
+        input_data['flux_pol_norm_sqrt']=[]
+
+        for line in file:
+            split_line=line.split()
+            input_data['rotation'].extend([float(line.split()[desired_column_rotation])])
+            input_data['flux_pol_norm_sqrt'].extend([float(line.split()[desired_column_flux_pol_norm_sqrt])])
+
+        input_data['rotation']=np.asarray(input_data['rotation'])
+        input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
+        input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
+
+    return input_data
+
 ################################################################## rotation write functions
 
 def dump_rotation_LOCUST(output_data,filepath,**properties):
