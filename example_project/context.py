@@ -17,20 +17,19 @@ notes:
 #Preamble
 
 import sys
-import os
+import pathlib
 
 ##################################################################
 #Main
 
-tail=''
-thisdirectory=os.path.dirname(os.path.abspath(__file__)) #get the directory this script is in
-LOCUST_IO_dir=thisdirectory
-
-while tail!='LOCUST_IO':
-	LOCUST_IO_dir=os.path.dirname(LOCUST_IO_dir) #keep moving up levels until LOCUST_IO dir is found
-	tail=LOCUST_IO_dir[-9:]
-sys.path.insert(1,LOCUST_IO_dir) #append Python sys path
-
+thisdirectory=pathlib.Path.cwd()
+parts=list(thisdirectory.parts)
+parts.reverse()
+for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for licence, then if user deletes licence code will not work
+    if 'LOCUST_IO_LICENCE.md' in [str(list(path.parts)[-1]) for path in thisdirectory.parents[counter].glob('*')]:
+        LOCUST_IO_dir=thisdirectory.parents[counter]
+        sys.path.insert(1,str(LOCUST_IO_dir)) #append Python sys path
+        break
 #################################
 
 ##################################################################

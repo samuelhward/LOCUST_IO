@@ -83,7 +83,7 @@ def read_number_density_LOCUST(filepath,**properties):
          
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_number_density_LOCUST() cannot read from "+filepath)
+            raise IOError("ERROR: read_number_density_LOCUST() cannot read from "+str(filepath))
      
         del(lines[0]) #first line contains the number of points
      

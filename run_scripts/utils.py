@@ -645,7 +645,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             temperature_i=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='ions',filename=filepath_temperature_i_2)            
         except:
-            print("WARNING: read_inputs_TRANSP() could not read ion temperature from LOCUST_IO/input_files/{} - returning None".format(filepath_temperature_i_1+" or "+filepath_temperature_i_2))
+            print("WARNING: read_inputs_TRANSP() could not read ion temperature from LOCUST_IO/input_files/{} - returning None".format(str(filepath_temperature_i_1)+" or "+str(filepath_temperature_i_2)))
             temperature_i=None
     try:
         temperature_e=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_temperature_e_1)
@@ -653,7 +653,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             temperature_e=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_temperature_e_2)
         except:
-            print("WARNING: read_inputs_TRANSP() could not read electron temperature from LOCUST_IO/input_files/{} - returning None".format(filepath_temperature_e_1+" or "+filepath_temperature_e_2))
+            print("WARNING: read_inputs_TRANSP() could not read electron temperature from LOCUST_IO/input_files/{} - returning None".format(str(filepath_temperature_e_1)+" or "+str(filepath_temperature_e_2)))
             temperature_e=None
     try:
         density_e=classes.input_classes.number_density.Number_Density(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_number_density_e_1)
@@ -661,7 +661,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             density_e=classes.input_classes.number_density.Number_Density(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_number_density_e_2)            
         except:
-            print("WARNING: read_inputs_TRANSP() could not read electron density from LOCUST_IO/input_files/{} - returning None".format(filepath_number_density_e_1+" or "+filepath_number_density_e_2))
+            print("WARNING: read_inputs_TRANSP() could not read electron density from LOCUST_IO/input_files/{} - returning None".format(str(filepath_number_density_e_1)+" or "+str(filepath_number_density_e_2)))
             density_e=None
     try:
         equilibrium=classes.input_classes.equilibrium.Equilibrium(ID=shot_number+run_ID,data_format='GEQDSK',filename=filepath_equilibrium,GEQDSKFIX=GEQDSKFIX)
@@ -1439,7 +1439,7 @@ class FINT_LOCUST:
 
             lines=file.readlines() #reading entire file anyway so grab all at once
             if not lines: #check to see if the file opened
-                raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+                raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+str(filepath))
 
 
             self['nE']=float(lines[0])

@@ -61,31 +61,37 @@ except:
 
 ################################################################## Final_Particle_List read functions
 
-def read_final_particle_list_LOCUST(filepath='ptcl_cache.dat',compression=True,**properties):
+def read_final_particle_list_LOCUST(filepath,**properties):
     """
     reads final particle list stored in LOCUST format
 
     notes:
-        compression - toggle True for large files for efficient processing
-
+        filename typically ptcl_cache.dat
         contains lots of references to process_ptcles.pro, written by Rob Akers
         status_flag describes each particle's final status (guide stored in status_flags, verbose guide in LOCUST/ctrk_mod.f90/ctrk_kernel) 
+    args:
+        compression - toggle True for large files for efficient processing
+        coordinates - the particle coordinates to read in if compression enabled        
     """
 
     print("reading final particle list from LOCUST")
 
-    if compression is True: #for now just revert to the efficient compression version
-        input_data=processing.process_output.particle_list_compression(filepath)
-        print("finished reading compressed final particle list from LOCUST")
+    if 'compression' in properties and properties['compression'] is True: #for now just revert to the efficient compression version
+        if 'coordinates' in properties: 
+            input_data=processing.process_output.particle_list_compression(filepath,coordinates=properties['coordinates'])
+        else:
+            input_data=processing.process_output.particle_list_compression(filepath)
+        print("finished reading compressed final particle list from LOCUST with compression")
         return input_data
 
     else: #otherwise we can read the whole file - WARNING this can be huge
 
         with open(filepath) as file:
             
-            lines=file.readlines() #return lines as list
-            if not lines: #check to see if the file opened
-                raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+filepath)
+            try:
+                lines=file.readlines() #return lines as list            
+            except:
+                raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+str(filepath))
 
             #read in headerlines
             header=lines[0].split()
@@ -200,7 +206,7 @@ def read_final_particle_list_TRANSP_FLOST(filepath,**properties):
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_final_particle_list_TRANSP() cannot read from "+filepath)
+            raise IOError("ERROR: read_final_particle_list_TRANSP() cannot read from "+str(filepath))
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if 'R(cm)' in line: #check for line which has unit headers
@@ -430,7 +436,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=1.0,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=False,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -480,10 +486,12 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
             for status in status_flags:
                 p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
-                self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
+                if weight:
+                    self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins,weights=self['weight'])                
+                else:
+                    self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-                ax.plot(self_binned_centres,weight*self_binned)
-
+                ax.plot(self_binned_centres,self_binned,color=colmap)
                 ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -510,11 +518,11 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     self_binned_y,self_binned_x=np.meshgrid(self_binned_y,self_binned_x)
                     
                     if fill:
-                        ax.set_facecolor(colmap(np.amin(weight*self_binned)))
-                        mesh=ax.pcolormesh(self_binned_x,self_binned_y,weight*self_binned,cmap=colmap,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
+                        ax.set_facecolor(colmap(np.amin(self_binned)))
+                        mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                         #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
-                        mesh=ax.contour(self_binned_x,self_binned_y,weight*self_binned,levels=np.linspace(np.amin(weight*self_binned),np.amax(weight*self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(weight*self_binned),vmax=np.amax(weight*self_binned))
+                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                         if plot_contour_labels:
                             ax.clabel(mesh,inline=1,fontsize=10)
                         
@@ -530,7 +538,6 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 if limiters: #add boundaries if desired
                     ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
                 if real_scale is True: #set x and y plot limits to real scales
-
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
@@ -549,7 +556,6 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
                 if real_scale is True: #set x and y plot limits to real scales
-
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')

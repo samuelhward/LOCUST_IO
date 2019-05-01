@@ -254,7 +254,7 @@ def dfn_crop(some_dfn,**kwargs):
 
     return dfn
 
-def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor','V_Z','status_flag'],dump=False):
+def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status_flag'],dump=False):
     """
     opens huge particle lists in memory-efficient way
 
@@ -266,7 +266,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
         currently only reads the first phc values i.e. phc index = 0  
     """
 
-    print("compressing final particle list file: "+filepath)
+    print("compressing final particle list file: "+str(filepath))
 
     indices_coordinate={} #and need a dictionary to refer to locations of quantities in file
     indices_coordinate['0']='R'
@@ -275,7 +275,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
     indices_coordinate['3']='V_R'
     indices_coordinate['4']='V_tor'
     indices_coordinate['5']='V_Z'
-    indices_coordinate['6']='t'
+    indices_coordinate['6']='time'
     indices_coordinate['7']='status_flag'
     indices_coordinate['8']='additional_flag1'
     indices_coordinate['9']='additional_flag2'
@@ -286,8 +286,34 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
     indices_coordinate['14']='additional_flag7'
     indices_coordinate['15']='additional_flag8'
     indices_coordinate['16']='additional_flag9'
-    
+
     input_data={} #need to initialise dictionary to hold data we read from file
+
+    input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
+    input_data['status_flags']['ok_if_greater']=0.0 
+    input_data['status_flags']['undefined']=0.0
+    input_data['status_flags']['left_space_grid']=-1.0
+    input_data['status_flags']['not_poss_on_1st_call']=-1000.0 
+    input_data['status_flags']['track_failure']=-2000.0
+    input_data['status_flags']['unresolved_hit']=-3.0
+    input_data['status_flags']['left_mesh']=-3000.0
+    input_data['status_flags']['track_problem']=-4000.0
+    input_data['status_flags']['ptcl_disconnect']=-5000.0
+    input_data['status_flags']['PFC_intercept']=-5.0
+    input_data['status_flags']['left_field_grid']=-6.0
+    input_data['status_flags']['goose_fail']=-7000.0
+    input_data['status_flags']['left_plasma']=-8.0
+    input_data['status_flags']['thermalised']=-9.0
+    input_data['status_flags']['coll_op_fail']=-10000.0
+    input_data['status_flags']['GC_calc_fail']=-10.0 
+    input_data['status_flags']['CX_loss']=-11.0
+    input_data['status_flags']['gc_init_fail']=-11000.0
+    input_data['status_flags']['bin_fail_soft']=-12.0
+    input_data['status_flags']['bin_fail_hard_1']=-13000.0
+    input_data['status_flags']['time_limit_reached']=-14.0
+    input_data['status_flags']['cross_open_face']=-15.0
+    input_data['status_flags']['bin_fail_hard_2']=-16000.0
+    input_data['status_flags']['generic_fail_hard']=-99999.0
 
     for coordinate in coordinates: #set up arrays to hold the data
         input_data[coordinate]=np.array([])
@@ -295,41 +321,40 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','V_R','V_tor',
     with open(filepath) as file:
         file_buffer=[] #to hold 1D chunks of the file 
         dimension_counter=0 #since the file is laid out as R_1 R_2 ... R_n phi_1 phi_2 ... phi_n where n-> particle number, can keep track of which dimension we're currently reading 
-        
+                
+        line=file.readline().split() #read header line first
+        n=int(line[0]) 
+        ngpu=int(line[1]) #n*ngpu=number of particles
+        niter=int(line[2]) #time iterations
+        npt_=int(line[3]) #info slots
+        nphc=int(line[4]) #levels in -DSPLIT split cache (always use the first)
+        ntri=int(line[5]) #triangle grid "dimension" 
+
         for line_number,line in enumerate(file): #read line-by-line for memory efficiency
             line=line.split()
             
-            if line_number==0: #we are still on the header line
-                n=int(line[0]) 
-                ngpu=int(line[1]) #n*ngpu=number of particles
-                niter=int(line[2]) #time iterations
-                npt_=int(line[3]) #info slots
-                nphc=int(line[4]) #levels in -DSPLIT split cache (always use the first)
-                ntri=int(line[5]) #triangle grid "dimension" 
+            file_buffer.extend([float(number) for number in line]) #read a line and add to the file buffer 
+            if len(file_buffer) > n*ngpu: #if we have read in all values for this coordinate
+                
+                coordinate_completed=indices_coordinate[str(dimension_counter)] #check which coordinate we just finished reading in
+                if coordinate_completed in coordinates: #if we want this coordinate then keep
+                    input_data[coordinate_completed]=np.append(input_data[coordinate_completed],file_buffer[0:n*ngpu])
 
-            else:
-                file_buffer.extend([float(number) for number in line]) #read a line and add to the file buffer 
-                if len(file_buffer) > n*ngpu: #if we have read in all values for this coordinate
-                    
-                    coordinate_completed=indices_coordinate[str(dimension_counter)] #check which coordinate we just finished reading in
-                    if coordinate_completed in coordinates: #if we want this coordinate then keep
-                        input_data[coordinate_completed]=np.append(input_data[coordinate_completed],file_buffer[0:n*ngpu])
+                del(file_buffer[0:n*ngpu]) #clear the bit of the buffer which we have read in (might still contain some of next coordinate)
+                dimension_counter+=1
+                if dimension_counter==17: #stop after we read the first 16*number_particles values i.e. only phc=0
 
-                    del(file_buffer[0:n*ngpu]) #clear the bit of the buffer which we have read in (might still contain some of next coordinate)
-                    dimension_counter+=1
-                    if dimension_counter==17: #stop after we read the first 16*number_particles values i.e. only phc=0
+                    input_data['n']=np.array(n)
+                    input_data['ngpu']=np.array(ngpu)
+                    input_data['niter']=np.array(niter)
+                    input_data['npt_']=np.array(npt_)
+                    input_data['nphc']=np.array(nphc)
+                    input_data['ntri']=np.array(ntri)
+                    input_data['number_particles']=n*ngpu
 
-                        input_data['n']=np.array(n)
-                        input_data['ngpu']=np.array(ngpu)
-                        input_data['niter']=np.array(niter)
-                        input_data['npt_']=np.array(npt_)
-                        input_data['nphc']=np.array(nphc)
-                        input_data['ntri']=np.array(ntri)
-                        input_data['number_particles']=n*ngpu
+                    print("finished compressing final particle list file: "+str(filepath))
 
-                        print("finished compressing final particle list file: "+filepath)
-
-                        return input_data
+                    return input_data
 
 '''
 def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None):
