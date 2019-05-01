@@ -137,7 +137,7 @@ def read_wall_GEQDSK(filepath,**properties):
  
         line = file.readline() #first line should be case, id number and dimensions
         if not line:
-            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+filepath)
+            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+str(filepath))
          
         #extract case, id number and dimensions  
         conts = line.split()    #split by white space (no argument in .split())

@@ -77,7 +77,7 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
      
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+str(filepath))
      
         input_data = {} #initialise the dictionary to hold the data
         input_data['absorption_fraction']=np.array(float(lines[0]))
@@ -129,7 +129,7 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
      
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+str(filepath))
      
         input_data = {} #initialise the dictionary to hold the data
         input_data['absorption_fraction']=np.array(float(lines[0]))
@@ -186,7 +186,7 @@ def read_beam_depo_LOCUST_guiding_centre_weighted(filepath,**properties):
      
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_LOCUST() cannot read from "+str(filepath))
      
         input_data = {} #initialise the dictionary to hold the data
         input_data['absorption_fraction']=np.array(float(lines[0]))
@@ -285,7 +285,7 @@ def read_beam_depo_TRANSP_fbm(filepath,**properties):
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_TRANSP_fbm() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_TRANSP_fbm() cannot read from "+str(filepath))
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if str(line.split()[0])=='<start-of-data>':
@@ -350,7 +350,7 @@ def read_beam_depo_TRANSP_fbm_guiding_centre(filepath,**properties):
     with open(filepath,'r') as file:
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_beam_depo_TRANSP_fbm_guiding_centre() cannot read from "+filepath)
+            raise IOError("ERROR: read_beam_depo_TRANSP_fbm_guiding_centre() cannot read from "+str(filepath))
 
         for counter,line in enumerate(lines): #look for the start of the data, marked by a certain string
             if str(line.split()[0])=='<start-of-data>':

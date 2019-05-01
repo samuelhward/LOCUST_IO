@@ -685,8 +685,8 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     axes_0_edges=np.concatenate((axes_0_edges[0]-[d_ax_0],axes_0_edges,axes_0_edges[-1]+[d_ax_0])) #add outermost values to bin edges
                     axes_1_edges=np.concatenate((axes_1_edges[0]-[d_ax_1],axes_1_edges,axes_1_edges[-1]+[d_ax_1]))
                     for line_axis_0,line_axis_1 in zip(axes_0_edges,axes_1_edges):
-                        ax.axvline(line_axis_0,color='w') #assume that axis 0 is X axis and axis 1 is y axis
-                        ax.axhline(line_axis_1,color='w')
+                        ax.axvline(line_axis_0,color=settings.plot_style_gridlines) #assume that axis 0 is X axis and axis 1 is y axis
+                        ax.axhline(line_axis_1,color=settings.plot_style_gridlines)
 
                 if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh

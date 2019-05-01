@@ -98,7 +98,7 @@ def read_equilibrium_GEQDSK(filepath,**properties):
  
         line = file.readline() #first line should be case, id number and dimensions
         if not line:
-            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+filepath)
+            raise IOError("ERROR: read_equilibrium_GEQDSK() cannot read from "+str(filepath))
          
         #extract case, id number and dimensions  
         conts = line.split()    #split by white space (no argument in .split())
@@ -1032,7 +1032,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         
         if 'fpolrz' not in self.data: 
             print("WARNING: B_calc - fpolrz missing in equilibrium object - calculating!")
-            self['fpolrz']=self.fpolrz_calc(self) #if fpolrz is missing calculate it
+            self['fpolrz']=self.fpolrz_calc() #if fpolrz is missing calculate it
 
         print("B_calc - calculating 2D magnetic field")
 

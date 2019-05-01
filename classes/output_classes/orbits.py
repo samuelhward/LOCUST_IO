@@ -71,7 +71,7 @@ def read_orbits_LOCUST(filepath,**properties):
         
         lines=file.readlines() #return lines as list
         if not lines: #check to see if the file opened
-            raise IOError("ERROR: read_orbits_LOCUST() cannot read from "+filepath)
+            raise IOError("ERROR: read_orbits_LOCUST() cannot read from "+str(filepath))
     
         number_particles=int(lines[0]) #extract number of particles
         number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
@@ -250,7 +250,7 @@ class Orbits(classes.base_output.LOCUST_output):
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
                 self.properties={**properties}
-                self.data=read_orbits_ASCOT(self.filepath,,**properties)
+                self.data=read_orbits_ASCOT(self.filepath,**properties)
 
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n".format(self.ID))            

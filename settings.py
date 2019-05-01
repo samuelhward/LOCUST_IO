@@ -27,6 +27,7 @@ numpy.set_printoptions(precision=5,threshold=3) #set printing style of numpy arr
 cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
 plot_style_LCFS='m-' #set plot style for LCFS
 plot_style_limiters='k-' #set plot style for limiters
+plot_style_gridlines='w'
 plot_linewidth=0.5 #set plot line width
 plot_contour_labels=False #toggle level labels for contour plots
 font = {'family' : 'normal', #set figure font
