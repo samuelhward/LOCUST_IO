@@ -707,7 +707,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         notes:
             remember dimensions of unedited dfn are my_dfn['dfn'][P,V/E,V_pitch,R,Z]
             assumes unedited dfn
-            assumes the bin widths for a given dimension are constant
+            assumes the bin widths for a given dimension are constant (keep this as dfn_crop may add discontinuities in dimension axes)
             assumes toroidal symmetry (no toroidal dimension in dfn)
             if an array of indices is given, then slice the dfn accordingly and return without any integration
                 note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
@@ -864,43 +864,53 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         return dfn
 
-    def crop(self,**kwargs):
+    def crop(self,inside=True,**kwargs):
         """
         notes:
             warning! to work, dfn_index and 1D dfn axes must accurately reflect dfn which is still stored e.g. dfn['dfn'][r,z] must contain dfn['R'],dfn['Z'] and dfn['dfn_index']=['R','Z']
             always maintains shape of dfn
         args:
             kwargs - axes and their limits 
+            inside - toggle whether to crop inside or outside supplied limits if 2D
         usage:
             new_dfn=dfn_crop(R=[1]) generates dfn at point closest to R=1
-            new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1
+            new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1 (sets outside of this=0)
+            new_dfn=dfn_crop(R=[1,0]) crops dfn between 1<R and R<0 (sets inside of this=0)
         """
 
         dfn=copy.deepcopy(self)
 
-        keys=list(kwargs.keys())
-        values=list(kwargs.values())
+        if not inside:
+            dfn['dfn'][:]=0
 
-        for key,value in zip(keys,values):
+        for key,value in kwargs.items():
             if key not in dfn['dfn_index']:
                 print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
             else:
-
                 dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
+                if len(value)==2: #user has supplied range - get new indices which satisfy range
+                    if value[1]>value[0]: #range is a window - set outside to zero
+                        i=np.any([(value[0]>dfn[key]),(dfn[key]>value[1])],axis=0)
+                    else: #range is outside a window - set window to 0
+                        i=np.all([(value[1]<dfn[key]),(dfn[key]<value[0])],axis=0)
+                    
+                    dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
+                    if inside: #invert if not inside
+                        dfn['dfn'][i]=0 #crop dfn
+                    else:
+                        self['dfn']=np.moveaxis(self['dfn'],dimension_to_edit,0)
+                        dfn['dfn'][i]=self['dfn'][i]
+                        self['dfn']=np.moveaxis(self['dfn'],0,dimension_to_edit) 
+                    dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position                             
                 
-                if len(value)==2: #user has supplied range
-                    i=np.where((value[0]<dfn[key])&(dfn[key]<value[1])) #get new indices which satisfy range
-                    i=i[0] #get first element of returned tuple
                 elif len(value)==1: #user has supplied single value for nearest neighbour
                     i=[np.abs(dfn[key]-value[0]).argmin()]
-
-                dfn[key]=dfn[key][i] #crop 1D arrays accordingly
-                nkey='n{}'.format(key) #reset associated nkey values too e.g. reset nR if cropping R
-                dfn[nkey]=np.array(len(dfn[key]))
-
-                dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
-                dfn['dfn']=dfn['dfn'][i] #crop dfn
-                dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
+                    dfn[key]=dfn[key][i] #crop 1D arrays accordingly
+                    nkey='n{}'.format(key) #reset associated nkey values too e.g. reset nR if cropping R
+                    dfn[nkey]=np.array(len(dfn[key]))
+                    dfn['dfn']=np.moveaxis(dfn['dfn'],dimension_to_edit,0) #move desired axis of dfn array to front to crop
+                    dfn['dfn']=dfn['dfn'][i] #crop dfn
+                    dfn['dfn']=np.moveaxis(dfn['dfn'],0,dimension_to_edit) #move desired axis of dfn array back to original position             
 
         return dfn
 

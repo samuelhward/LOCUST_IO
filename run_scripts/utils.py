@@ -556,14 +556,14 @@ class TRANSP_output_FI(TRANSP_output):
         elif axes==['E']: #integrate over all volume and plot as a function of energy in #/eV
 
             dfn_copy=self.dfn_integrate(energy=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'])
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap)
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('density [#/eV]')
 
         elif axes==['V_pitch']:
 
             dfn_copy=self.dfn_integrate(pitch=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'])
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap)
             ax.set_xlabel('pitch [V||/V]')
             ax.set_ylabel('density [#/dPitch]')
 
@@ -1081,7 +1081,7 @@ def dump_input_options_ASCOT(filename='input.options'):
          !    - Time dependence mode: (0) Steady-state, (1) time-dependent using CPOs
         &DIST_OPTIONS
          DIST%SIMPLEDISTS=        0,
-         DIST%RHODISTS=           1,
+         DIST%RHODISTS=           2,
          DIST%RZDISTS=            0,
          DIST%RZVDIST=            1,
          DIST%RZPDIST=            0,
