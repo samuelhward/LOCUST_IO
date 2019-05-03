@@ -350,7 +350,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
                     input_data['npt_']=np.array(npt_)
                     input_data['nphc']=np.array(nphc)
                     input_data['ntri']=np.array(ntri)
-                    input_data['number_particles']=n*ngpu
+                    input_data['number_particles']=np.array(n*ngpu)
 
                     print("finished compressing final particle list file: "+str(filepath))
 

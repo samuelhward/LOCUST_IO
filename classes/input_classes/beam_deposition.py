@@ -521,6 +521,7 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
     reads birth profile from guiding centre ASCOT birth ASCII file 
 
     notes:
+        typically named input.particles
     """
 
     with open(filepath,'r') as file: #open file
@@ -1160,6 +1161,24 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_beam_depo_ASCOT_guiding_centre(self.filepath,**properties)
 
+        elif data_format=='ASCOT_FO_h5_ini':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_FO_h5_ini - filename required\n".format(self.ID),filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files / filename
+                self.properties={**properties}
+                self.data=read_beam_depo_ASCOT_full_orbit_hdf5_ini(self.filepath,**properties) 
+
+        elif data_format=='ASCOT_GC_h5_ini':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from ASCOT_GC_h5_ini - filename required\n".format(self.ID),filename):
+ 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files / filename
+                self.properties={**properties}
+                self.data=read_beam_depo_ASCOT_guiding_centre_hdf5_ini(self.filepath,**properties)
+
         elif data_format=='SPIRAL_FO':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from SPIRAL_FO - filename required\n".format(self.ID),filename):
  
@@ -1170,7 +1189,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 self.data=read_beam_depo_SPIRAL_FO(self.filepath,**properties)
 
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC/SPIRAL_FO)\n".format(self.ID))
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC/ASCOT_FO_h5_ini/ASCOT_GC_h5_ini/SPIRAL_FO)\n".format(self.ID))
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None,**properties):
         """

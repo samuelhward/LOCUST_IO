@@ -127,13 +127,13 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['npt_']=np.array(npt_)
             input_data['nphc']=np.array(nphc)
             input_data['ntri']=np.array(ntri)
-            input_data['number_particles']=n*ngpu
+            input_data['number_particles']=np.array(n*ngpu)
 
             #get rid of white space and completely flatten IDL/FORTRAN-style
             lines=[[float(number) for number in line.split()] for line in lines]
             lines=[number for line in lines for number  in line]
             del(lines[0:6])
-            input_data['f']=lines[-1]
+            input_data['f']=np.array(lines[-1])
 
             for i in range(0,niter):
                 

@@ -60,7 +60,7 @@ def QTP_calc(Q=None,T=None,P=None):
     notes:
         used to calculate the missing quantity out of Q, toroidal or poloidal flux
         http://theory.ipp.ac.cn/~yj/research_notes/tokamak_equilibrium/node11.html
-        returns profiles normalised to zero at origin 
+        returns profiles normalised to zero at magnetic axis 
     args:
         Q - first order at sides, second order at in the centre
         T - second order composite trapezium rule
