@@ -70,7 +70,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -757,9 +757,9 @@ def dump_profiles_ASCOT(filename,temperature_i,temperature_e,density_i,density_e
         file.write("1           # ion Znum\n")
         file.write("2           # ion Amass\n")
         file.write("1 1         # collision mode (0= no colls, 1=Maxw colls, 2=binary colls, 3=both colls) 1st number is for electrons\n")
-        file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n") #rho_pol is defined as sqrt((psi - psi_axis)/(psi_sep - psi_axis)), where psi is the poloidal magnetic flux, and psi_axis/psi_sep are its value evaluated on-axis/at the separatrix
+        file.write("    RHO (pol)       Te (eV)       Ne (1/m3)  Vtor_I (rad/s)        Ti1 (eV)     Ni1 (1/m3)\n") #rho_pol is defined as np.sqrt((psi - psi_axis)/(psi_sep - psi_axis)), where psi is the poloidal magnetic flux, and psi_axis/psi_sep are its value evaluated on-axis/at the separatrix
  
-        flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt=np.sqrt(np.abs(temperature_e['flux_pol_norm'])) #calculate profiles vs np.sqrt(flux_pol)
         flux_pol_norm_sqrt,te,ne,rot,ti,ni=processing.utils.sort_arrays(flux_pol_norm_sqrt,temperature_e['T'],density_e['n'],rotation_toroidal,temperature_i['T'],density_i['n']) #check order
 
         for RHO,Te,Ne,Vtor_I,Ti1,Ni1 in zip(flux_pol_norm_sqrt,te,ne,rot,ti,ni): 
@@ -1325,7 +1325,7 @@ def dump_rotation_MARSF(filename,some_rotation):
 
     with open(filepath,'w') as file: #open file
 
-        flux_pol_norm_sqrt=np.sqrt(np.abs(some_rotation['flux_pol_norm'])) #calculate profiles vs sqrt(flux_pol)
+        flux_pol_norm_sqrt=np.sqrt(np.abs(some_rotation['flux_pol_norm'])) #calculate profiles vs np.sqrt(flux_pol)
         flux_pol_norm_sqrt,rotation=processing.utils.sort_arrays(flux_pol_norm_sqrt,some_rotation['rotation']) #check order
  
         file.write("{length} {some_number}\n".format(length=int(flux_pol_norm_sqrt.size),some_number=1)) #re-insert line containing length
@@ -1684,6 +1684,99 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
             print("WARNING: dump_inputs_LOCUST() could not dump perturbation to LOCUST_IO/input_files/{}".format(filepath_perturbation))
 
     print("dump_inputs_LOCUST finished")
+
+
+def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod):
+    """
+    calculates the Coulomb logarithm at single test particle energy Et for arbitrary background species
+
+    notes: 
+        must pass all species information to this routine, since Rmax is sum over species
+        returns lnL, an array with a Coulomb logarithm corresponding to each species
+    args:
+        Et - test particle energy [eV]
+        n - array of densities for background species [m**-3]
+        T - array of temperatures for background species [eV]
+        Ai - array of atomic masses for background species [amu]
+        At - atomic mass for test particle species [amu]
+        Z - array of atomic charges for background species [int]
+        Zt - atomic charge for test particle species [int]
+        Bmod - magnetic field strength [T]
+    """
+    Et/=1000. #convert to keV
+    T/=1000. #convert to KeV
+
+    n=np.asarray(n)
+    T=np.asarray(T)
+    Ai=np.asarray(Ai)
+    Z=np.asarray(Z)
+
+    omega2 = 1.74*Z**2/Ai*n + 9.18e15*Z**2/Ai**2*Bmod**2
+    vrel2  = 9.58e10*(T/Ai + 2.0*Et/At)
+    rmx    = np.sqrt(1.0/np.sum(omega2/vrel2))
+
+    vrel2  = 9.58e10*(3.0*T/Ai+2.0*Et/At)
+    rmincl = 0.13793*np.abs(Z*Zt)*(Ai+At)/Ai/At/vrel2
+    rminqu = 1.9121e-08*(Ai+At)/Ai/At/np.sqrt(vrel2)
+
+    rmn=[]
+    for rmincl_,rminqu_ in zip(rmincl,rminqu): 
+        rmn.extend([np.max([rmincl_,rminqu_])])
+    rmn=np.asarray(rmn)
+
+    lnL=np.log(rmx/rmn)
+
+    return lnL
+
+def calc_chandrasekhar_function(x,mi,mt):
+    """
+    calculate Chandrasekhar function G(x)=(ERF(x) - x.d{ERF(x)}/dx)/2x**2
+
+    notes:
+        N.B. ERF(x) using function erf_7_1_26 breaks down at small x.
+        Routine resorts to small x analytic approximation for x<0.05.
+        Routine is only valid for x>=0.0
+        Handbook of Mathematical Functions. Edited by Milton Abramowitz and 
+        Irene A. Stegun, Dover Publications, Inc., New York, 1965.
+        Error function and Fresnel Integrals, EQN. 7.1.26.
+        Valid to |E(x)| <= 1.5e-7. Calculation in gpu precision
+        f1 - = ERF(x) - (1+mi/Mb).x.d{ERF(x)}/dx
+        f2 - = ERF(x) - G(x)
+    args:
+        x - X
+        mi - background particle mass [kg]
+        mt - test particle mass [kg]
+    """
+
+    a1 = 0.254829592
+    a2 =-0.284496736
+    a3 = 1.421413741
+    a4 =-1.453152027
+    a5 = 1.061405429
+    p  = 0.327591100
+          
+    i  = np.where(x<0.0)[0]
+    if len(i)>0:
+        print("ERROR: calc_chandrasekhar_function invalid for x<0!\nreturning!\n")
+        return
+
+    t     = 1.0/(1.0+p*x)          
+    exp_  = np.exp(-x**2)
+    erf_s = 1.0 - ((((a5*t + a4)*t + a3)*t + a2)*t + a1)*t*exp_
+    G     = ( erf_s - x*2.0*exp_/np.sqrt(constants.pi) )/( 2.0*x**2)
+
+    f1    = erf_s - (1.0+(mi/mt))*x*2.0*exp_/np.sqrt(constants.pi)
+    f2    = erf_s - G
+
+    i     = np.where( x<0.005)[0]
+    if len(i)!=0:     
+        #eqn. for G breaks down at low x - revert to analytic approximation:
+        x     = x[i]
+        G[i]  = 2.0*x/(3.0*np.sqrt(constants.pi))
+        f1[i] = (2.0/np.sqrt(constants.pi))*( ( (2.0/3.0) + (mi/mt) )*x**3 - x*(mi/mt) ) 
+        f2[i] = (2.0/(3.0*np.sqrt(constants.pi)))*(2.0-x**2)*x
+
+    return G,f1,f2
 
 ################################################################################################### misc functions
 

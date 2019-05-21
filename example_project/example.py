@@ -18,16 +18,36 @@ notes:
 ##################################################################
 #Preamble
 
-import sys
-import numpy
-import context
-import matplotlib.pyplot as plt
-from classes.input_classes import number_density
-from classes.output_classes import orbits
-import matplotlib
-from matplotlib import cm
-mycmap=matplotlib.cm.get_cmap('jet') #set default colourmap
+import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
 
+try:
+    import sys
+    import numpy
+    import context
+    import matplotlib.pyplot as plt
+    from classes.input_classes import number_density
+    from classes.output_classes import orbits
+    import matplotlib
+    from matplotlib import cm
+except:
+    raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    import constants
+except:
+    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from settings import *
+except:
+    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ##################################################################
 #Main Code
@@ -53,14 +73,15 @@ my_orbit=orbits.Orbits(ID='LOCUST_IO sample orbits',data_format='LOCUST',filenam
 my_orbit.set(number_of_orbits=1)
 
 #what do the orbits look like?
-my_orbit.plot(colmap='red')
+my_orbit.plot(colmap=cmap_g) #use default green colour map - see settings.py
 
 #what if I want to plot my orbits and the number density in one figure?
 
 #start by creating some axis objects
 fig,(ax1,ax2)=plt.subplots(1,2)
 #then let us add an x,y plot of the orbits to this figure on the first axis
-my_orbit.plot(axes=['R','Z'],colmap=mycmap(numpy.random.uniform()),ax=ax1,fig=fig)
+mycmap=matplotlib.cm.get_cmap('jet') #make a new colourmap
+my_orbit.plot(axes=['R','Z'],colmap=mycmap,ax=ax1,fig=fig)
 #now add a plot of number density on the second axis
 my_Ne.plot(ax=ax2,fig=fig)
 #if I do not like the default axis labels, I can always overwrite them

@@ -50,7 +50,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -108,7 +108,7 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
         input_data['V_R']=np.asarray(input_data['V_R'])
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
-        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading full orbit beam deposition from LOCUST")
@@ -163,7 +163,7 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
         input_data['V_tor']=np.asarray(input_data['V_tor'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
         input_data['weight']=np.asarray(input_data['weight'])
-        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*species_mass/species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading weighted full orbit beam deposition from LOCUST")
@@ -215,7 +215,7 @@ def read_beam_depo_LOCUST_guiding_centre_weighted(filepath,**properties):
         input_data['phi']=np.asarray(input_data['phi'])
         input_data['Z']=np.asarray(input_data['Z'])
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
-        input_data['E']=np.asarray(input_data['E'])*.5*species_mass/species_charge
+        input_data['E']=np.asarray(input_data['E'])*.5*constants.species_mass/constants.species_charge
         input_data['weight']=np.asarray(input_data['weight'])
         input_data['number_particles']=np.asarray(len(input_data['R']))
      
@@ -331,7 +331,7 @@ def read_beam_depo_TRANSP_fbm(filepath,**properties):
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
-        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)
+        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*constants.species_mass)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from TRANSP FBM format")
@@ -382,7 +382,7 @@ def read_beam_depo_TRANSP_fbm_guiding_centre(filepath,**properties):
         input_data['Z']=0.01*np.asarray(input_data['Z'])
         input_data['V_pitch']=np.asarray(input_data['V_pitch'])
         input_data['E']=np.asarray(input_data['E'])
-        input_data['phi']=2.0*pi*np.asarray(input_data['phi'])/360.0 #convert to radians
+        input_data['phi']=2.0*constants.pi*np.asarray(input_data['phi'])/360.0 #convert to radians
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from TRANSP FBM guiding centre format")
@@ -410,7 +410,7 @@ def read_beam_depo_TRANSP_birth(filepath,**properties):
     input_data={}
 
     input_data['R']=file.variables['bs_r_D_MCBEAM'].data*.01 #convert to metres
-    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360 #convert to radians
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*constants.pi/360 #convert to radians
     input_data['Z']=file.variables['bs_z_D_MCBEAM'].data*.01 
     input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
@@ -445,7 +445,7 @@ def read_beam_depo_TRANSP_birth_guiding_centre(filepath,**properties):
     input_data={}
 
     input_data['R']=file.variables['bs_rgc_D_MCBEAM'].data*.01
-    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*pi/360 #convert to radians
+    input_data['phi']=file.variables['bs_zeta_D_MCBEAM'].data*2.*constants.pi/360 #convert to radians
     input_data['Z']=file.variables['bs_zgc_D_MCBEAM'].data*.01
     input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
     input_data['E']=file.variables['bs_einj_D_MCBEAM'].data
@@ -507,7 +507,7 @@ def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
 
-        input_data['phi']*=2.*pi/360.
+        input_data['phi']*=2.*constants.pi/360.
         input_data['X']=input_data['R']*np.cos(input_data['phi'])
         input_data['Y']=input_data['R']*np.sin(input_data['phi'])
         input_data['number_particles']=np.asarray(len(input_data['R']))
@@ -563,7 +563,7 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
     
-        input_data['phi']*=2.*pi/360.
+        input_data['phi']*=2.*constants.pi/360.
         input_data['X']=input_data['R']*np.cos(input_data['phi'])
         input_data['Y']=input_data['R']*np.sin(input_data['phi']) 
         input_data['number_particles']=np.asarray(len(input_data['R']))
@@ -596,7 +596,7 @@ def read_beam_depo_ASCOT_full_orbit_hdf5_ini(filepath,**properties):
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
             input_data[locust_io_name]=file['inistate/'+ascot_name].value
 
-        input_data['phi']*=2.*pi/360.
+        input_data['phi']*=2.*constants.pi/360.
 
     print("finished reading beam deposition from ASCOT full orbit hdf5 inistate")
 
@@ -626,7 +626,7 @@ def read_beam_depo_ASCOT_guiding_centre_hdf5_ini(filepath,**properties):
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
             input_data[locust_io_name]=file['inistate/'+ascot_name].value
 
-        input_data['phi']*=2.*pi/360.
+        input_data['phi']*=2.*constants.pi/360.
 
     print("finished reading beam deposition from ASCOT guiding centre hdf5 inistate")
     
@@ -680,7 +680,7 @@ def read_beam_depo_SPIRAL_FO(filepath,**properties):
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
         input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
-        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*species_mass)/species_charge
+        input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*constants.species_mass)/constants.species_charge
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from SPIRAL full orbit format")
@@ -764,7 +764,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
             else:
                 file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
 
-        V=np.sqrt(species_charge*output_data['E']*2./species_mass)
+        V=np.sqrt(constants.species_charge*output_data['E']*2./constants.species_mass)
         V_parallel=V*output_data['V_pitch']
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
@@ -893,13 +893,13 @@ def dump_beam_depo_ASCOT_full_orbit(output_data,filepath,**properties):
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(species_mass_amu,14,5)
+            line+=processing.utils.fortran_string(constants.species_mass_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             
             #line+=processing.utils.fortran_string(pitch,13,5,False)
             
-            line+=processing.utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=processing.utils.fortran_string(360.0*(phi/(2.*constants.pi)),18,9) #position
             line+=processing.utils.fortran_string(R,18,9)
             line+=processing.utils.fortran_string(Z,18,9)
 
@@ -970,7 +970,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*species_mass*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/species_charge
+            output_data['E']=0.5*constants.species_mass*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/constants.species_charge
 
         #interpolate B field to particle locations with supplied equilibrium
         if not np.all([component in equilibrium.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]):
@@ -999,14 +999,14 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
-            line+=processing.utils.fortran_string(species_mass_amu,14,5)
+            line+=processing.utils.fortran_string(constants.species_mass_amu,14,5)
             line+=processing.utils.fortran_string(1,6,0,False)
             line+=processing.utils.fortran_string(1.0,14,5)
             
             line+=processing.utils.fortran_string(E,18,9) #energy
             line+=processing.utils.fortran_string(V_pitch,13,5,False)
             
-            line+=processing.utils.fortran_string(360.0*(phi/(2.*pi)),18,9) #position
+            line+=processing.utils.fortran_string(360.0*(phi/(2.*constants.pi)),18,9) #position
             line+=processing.utils.fortran_string(R,18,9)
             line+=processing.utils.fortran_string(Z,18,9)
 
@@ -1288,7 +1288,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             else:
                 self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins)
             self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-            ax.plot(self_binned_centres,self_binned)
+            ax.plot(self_binned_centres,self_binned,color=colmap(np.random.uniform()))
             ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -1353,15 +1353,15 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)          
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)          
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)           
             
             if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh
@@ -1379,14 +1379,14 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 ax = fig.gca(projection='3d')
             
             if LCFS: #plot periodic poloidal cross-sections in 3D
-                for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
                     ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
 
             if limiters: #plot periodic poloidal cross-sections in 3D
-                for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=limiters['rlim']*np.cos(angle)
                     y_points=limiters['rlim']*np.sin(angle)
                     z_points=limiters['zlim']

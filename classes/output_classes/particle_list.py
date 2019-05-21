@@ -49,7 +49,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -186,7 +186,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['status_flags']['generic_fail_hard']=-99999.0
 
             #calculate some additional things
-            input_data['E']=.5*species_mass*species_charge*input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
+            input_data['E']=.5*constants.species_mass*constants.species_charge*input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2
             input_data['weight']=np.full(len(input_data['R']),1.)
 
         print("finished reading final particle list from LOCUST")
@@ -330,6 +330,9 @@ def read_final_particle_list_ASCOT(filepath,**properties):
         input_data['status_flags']['thermalisation']=4.
         input_data['status_flags']['particle_initial_reject']=-1.
         input_data['status_flags']['particle_abort']=-2.
+        input_data['status_flags']['outside_rho_max']=10.
+        input_data['status_flags']['outside_wall']=16.
+        input_data['status_flags']['cpu_tmax']=17.
 
     print("finished reading final particle list from ASCOT")
 
@@ -491,7 +494,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 else:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-                ax.plot(self_binned_centres,self_binned,color=colmap)
+                ax.plot(self_binned_centres,self_binned,color=colmap(np.random.uniform()))
                 ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -503,14 +506,14 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
                     if grid is not False: #bin according to pre-defined grid
                         if weight:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'])
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'])
                         else:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=[grid[axes[0]],grid[axes[1]]])
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=[grid[axes[0]],grid[axes[1]]])
                     else:
                         if weight:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins,weights=self['weight'])
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=number_bins,weights=self['weight'])
                         else:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]],self[axes[1]],bins=number_bins)
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=number_bins)
 
                     #self_binned_x and self_binned_x are first edges then converted to centres
                     self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
@@ -546,15 +549,15 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)           
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')
                 else:

@@ -44,7 +44,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -210,8 +210,8 @@ def read_moments_ASCOT(filepath,**properties):
     
         input_data={} #initialise data dictionary
 
-        input_data['flux_pol_norm']=file['distributions/rhoDist/abscissae/dim1'].value
-        input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
+        input_data['flux_pol_norm_sqrt']=file['distributions/rhoDist/abscissae/dim1'].value
+        input_data['flux_pol_norm_']=input_data['flux_pol_norm_sqrt']**2
 
         #convert flux coordinates to bin centres
         for flux_coordinate in ['flux_pol_norm','flux_pol_norm_sqrt']:
@@ -324,7 +324,7 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key,axis='flux_pol_norm',colmap='b',ax=False,fig=False):
+    def plot(self,key,axis='flux_pol_norm',colmap=cmap_default,ax=False,fig=False):
         """
         plots moments
 
@@ -357,7 +357,7 @@ class Moments(classes.base_output.LOCUST_output):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self[key],color=colmap)
+        ax.plot(self[axis],self[key],color=colmap(np.random.uniform()))
         ax.set_xlabel(axis)
         ax.set_ylabel(key)
 
