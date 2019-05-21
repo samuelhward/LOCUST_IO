@@ -37,7 +37,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -244,7 +244,7 @@ def RphiZ_to_XYZ(R,phi,RH=True):
     """
 
     if RH is not True:
-        phi=2.*pi-phi
+        phi=2.*constants.pi-phi
 
     X=R*np.cos(phi)
     Y=R*np.sin(phi)
@@ -441,8 +441,8 @@ def Zeff_calc(density,charge):
     density_electron=np.sum(density*charge)
 
     Zeff=0
-    for species_density,species_charge in zip(density,charge):
-        Zeff+=species_density*species_charge**2/density_electron
+    for species_density,constants.species_charge in zip(density,charge):
+        Zeff+=species_density*constants.species_charge**2/density_electron
 
     return Zeff
 

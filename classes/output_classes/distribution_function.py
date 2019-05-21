@@ -45,7 +45,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -283,12 +283,12 @@ def read_distribution_function_LOCUST(filepath,**properties):
         if properties['EBASE']:
             #E+dE/2 (nE long)
             input_data['E']=file.read_reals(dtype=np.float32) #energy space of dfn
-            input_data['E']/=species_charge #convert energy to [eV]
-            input_data['V']=np.array(np.sqrt(2.*input_data['E']*species_charge/species_mass)) #[m/s]
+            input_data['E']/=constants.species_charge #convert energy to [eV]
+            input_data['V']=np.array(np.sqrt(2.*input_data['E']*constants.species_charge/constants.species_mass)) #[m/s]
         else:
             #V+dV/2 (nV long)
             input_data['V']=file.read_reals(dtype=np.float32) #velocity space of dfn
-            input_data['E']=np.array((0.5*species_mass*input_data['V']**2)/species_charge) #calculate energy [eV]
+            input_data['E']=np.array((0.5*constants.species_mass*input_data['V']**2)/constants.species_charge) #calculate energy [eV]
         
         #PG+dPG/2 (nP long)
         input_data['P']=file.read_reals(dtype=np.float32) #special dimension - simulation specific (e.g. gyrophase)
@@ -339,7 +339,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
         if input_data['nP']>1:
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
-            input_data['dP']=np.array(2.*pi)
+            input_data['dP']=np.array(2.*constants.pi)
                 
         if properties['EBASE']:
             input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
@@ -391,8 +391,8 @@ def read_distribution_function_ASCOT(filepath,**properties):
         input_data['R']=.5*(file['distributions/rzPitchEdist/abscissae/dim1'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim1'].value[:-1]) #bin centres [m]
         input_data['Z']=.5*(file['distributions/rzPitchEdist/abscissae/dim2'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim2'].value[:-1]) #[m]
         input_data['V_pitch']=.5*(file['distributions/rzPitchEdist/abscissae/dim3'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim3'].value[:-1])
-        input_data['E']=.5*(file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/species_charge #[eV]
-        input_data['V']=np.sqrt(2.*input_data['E']/species_mass)
+        input_data['E']=.5*(file['distributions/rzPitchEdist/abscissae/dim4'].value[1:]+file['distributions/rzPitchEdist/abscissae/dim4'].value[:-1])/constants.species_charge #[eV]
+        input_data['V']=np.sqrt(2.*input_data['E']/constants.species_mass)
 
         input_data['dR']=np.abs(input_data['R'][1]-input_data['R'][0])
         input_data['dZ']=np.abs(input_data['Z'][1]-input_data['Z'][0])
@@ -410,7 +410,7 @@ def read_distribution_function_ASCOT(filepath,**properties):
         input_data['dfn']=np.sum(input_data['dfn'],axis=-1)
         input_data['dfn']=np.swapaxes(input_data['dfn'],-1,-2) 
         input_data['dfn']=input_data['dfn'][np.newaxis,:] #insert dummy P dimension
-        input_data['dfn']*=species_charge #[m^-3 eV^-1 dpitch^-1]
+        input_data['dfn']*=constants.species_charge #[m^-3 eV^-1 dpitch^-1]
         
         input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z'])
  
@@ -609,7 +609,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],colmap)
+            ax.plot(self[axes[0]],self[key],color=colmap(np.random.uniform()))
             ax.set_ylabel(key)
 
         #plot distribution function
@@ -632,7 +632,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
             elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                ax.plot(dfn_copy[axes[0]],dfn_copy[key],colmap)
+                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(np.random.uniform()))
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(key)
             elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
@@ -718,6 +718,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
             E - [eV]^-1 
             R - [m]^-3
+            Z - [m]^-3
             V_pitch - [dPitch]^-1  
             N - total # 
             list of indices and slices
@@ -737,7 +738,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             elif axes==['E','V_pitch']:
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
                 #then need to integrate over the unwanted coordinates
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
@@ -746,7 +747,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             elif axes==['E']:
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
                 dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
                 
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
@@ -760,10 +761,16 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     dfn['dfn']=np.sum(dfn['dfn'],axis=0)
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
+            elif axes==['Z']:
+                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                for counter in range(3): #sum over gyrophase, pitch and energy
+                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over R
+
             elif axes==['V_pitch']:
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dE']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dE']
                 #then need to integrate over the unwanted coordinates
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
                 dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
@@ -773,7 +780,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             elif axes==['N']:
                 #applying full Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
                 for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
                     dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
 
@@ -800,11 +807,11 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 #applying velocity space and gyrophase Jacobian
                 for v in range(len(dfn['V'])):
                     dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-                dfn['dfn']*=dfn['dP']*species_charge/(species_mass)
+                dfn['dfn']*=dfn['dP']*constants.species_charge/(constants.species_mass)
 
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
                 #then need to integrate over the unwanted coordinates
                 dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
@@ -815,11 +822,11 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 #applying velocity space and gyrophase Jacobian
                 for v in range(len(dfn['V'])):
                     dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-                dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*species_charge/(species_mass)
+                dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*constants.species_charge/(constants.species_mass)
 
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
                 #then need to integrate over the unwanted coordinates
                 dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
@@ -846,7 +853,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 #applying real space Jacobian and integrate over toroidal angle
                 for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
                 #sum over all axes
                 for all_axes in range(dfn['dfn'].ndim):
@@ -885,7 +892,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         for key,value in kwargs.items():
             if key not in dfn['dfn_index']:
-                print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
+                print("ERROR: dfn_crop supplied invalid axis name ({}) - see ['dfn_index'] for possible axes".format(key))    
             else:
                 dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
                 if len(value)==2: #user has supplied range - get new indices which satisfy range

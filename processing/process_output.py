@@ -37,7 +37,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -89,7 +89,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         elif axes==['E','V_pitch']:
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
             #then need to integrate over the unwanted coordinates
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
@@ -98,7 +98,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         elif axes==['E']:
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
             dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
             
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
@@ -115,7 +115,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         elif axes==['V_pitch']:
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dE']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dE']
             #then need to integrate over the unwanted coordinates
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
             dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
@@ -125,7 +125,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
         elif axes==['N']:
             #applying full Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
             for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
                 dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
 
@@ -152,11 +152,11 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             #applying velocity space and gyrophase Jacobian
             for v in range(len(dfn['V'])):
                 dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-            dfn['dfn']*=dfn['dP']*species_charge/(species_mass)
+            dfn['dfn']*=dfn['dP']*constants.species_charge/(constants.species_mass)
 
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
             #then need to integrate over the unwanted coordinates
             dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
@@ -167,11 +167,11 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             #applying velocity space and gyrophase Jacobian
             for v in range(len(dfn['V'])):
                 dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-            dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*species_charge/(species_mass)
+            dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*constants.species_charge/(constants.species_mass)
 
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
             #then need to integrate over the unwanted coordinates
             dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
@@ -198,7 +198,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
 
             #applying real space Jacobian and integrate over toroidal angle
             for r in range(len(dfn['R'])):
-                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*pi*dfn['dR']*dfn['dZ']
+                dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
             #sum over all axes
             for all_axes in range(dfn['dfn'].ndim):
@@ -233,7 +233,7 @@ def dfn_crop(some_dfn,**kwargs):
 
     for key,value in zip(keys,values):
         if key not in dfn['dfn_index']:
-            print("ERROR: dfn_crop supplied invalid axis name - see ['dfn_index'] for possible axes")    
+            print("ERROR: dfn_crop supplied invalid axis name ({}) - see ['dfn_index'] for possible axes".format(key))    
         else:
 
             dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over

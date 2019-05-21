@@ -50,7 +50,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -231,8 +231,8 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
     input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
     input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
-    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*pi)).reshape([]) #convert to Wb/rad
-    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*pi)).reshape([]) #convert to Wb/rad
+    input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*constants.pi)).reshape([]) #convert to Wb/rad
+    input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*constants.pi)).reshape([]) #convert to Wb/rad
     input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
  
     #1D data
@@ -245,15 +245,15 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['zlim']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)
     input_data['lcfs_r']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.r) 
     input_data['lcfs_z']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
-    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*pi)) #convert to Wb/rad
-    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*pi)) #convert to Wb/rad
+    input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*constants.pi)) #convert to Wb/rad
+    input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*constants.pi)) #convert to Wb/rad
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values,dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
     input_data['R_1D']=np.asarray(R_1D)
     input_data['Z_1D']=np.asarray(Z_1D)
 
     #2D data    
-    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*pi) #convert to Wb/rad
+    input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*constants.pi) #convert to Wb/rad
  
     #harder bits (values derived from grids and profiles)
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
@@ -654,7 +654,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
-    def plot(self,key='psirz',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
         """
         plots equilibrium
         
@@ -703,7 +703,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key])
+            ax.plot(self[key],color=colmap(np.random.uniform()))
             ax.set_ylabel(key)
 
         #2D data
@@ -751,7 +751,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_line(self,axes=['X','Y','Z'],LCFS=True,limiters=False,number_field_lines=1,angle=2.0*pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
         """
         plots random field lines for 'angle' radians around the tokamak
 
@@ -806,7 +806,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             #if this option, then dl chosen to cause slight numerical drift that such that field line strays outward onto
             #different flux surfaces - thus tracing the whole field topology
             dl=3.0*np.sqrt(dr**2+dz**2) 
-            angle=pi*200.0
+            angle=constants.pi*200.0
             number_field_lines=1
             ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
             ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D'])) 
@@ -829,7 +829,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             tor_points=np.array([])
 
             R_point=float(self['rmaxis']) #pick some starting points                                                       
-            tor_point=np.random.uniform(0.0,2.0*pi*R_point) 
+            tor_point=np.random.uniform(0.0,2.0*constants.pi*R_point) 
             if plot_full is True: 
                 Z_point=float(1.05*self['zmaxis'])
             else:
@@ -896,15 +896,15 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     if LCFS: #plot plasma boundary
                         plasma_max_R=np.max(self['lcfs_r'])
                         plasma_min_R=np.min(self['lcfs_r'])
-                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS)
-                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_LCFS) 
+                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
+                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS) 
                     if limiters: #add boundaries if desired
                         ax.set_xlim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         ax.set_ylim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         limiters_max_R=np.max(self['rlim'])
                         limiters_min_R=np.min(self['rlim'])
-                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)
-                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*pi,100)),plot_style_limiters)   
+                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)
+                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)   
                         
                     ax.set_xlabel('X [m]')
                     ax.set_ylabel('Y [m]')
@@ -915,13 +915,13 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     if start_mark: 
                         ax.scatter(X_points[0],Y_points[0],Z_points[0],color=colour_start_mark,s=10)
                     if LCFS: #plot periodic poloidal cross-sections in 3D
-                        for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                        for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                             x_points=self['lcfs_r']*np.cos(angle)
                             y_points=self['lcfs_r']*np.sin(angle)
                             z_points=self['lcfs_z']
                             ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
                     if limiters: #plot periodic poloidal cross-sections in 3D
-                        for angle in np.linspace(0.0,2.0*pi,4,endpoint=False):
+                        for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                             x_points=self['rlim']*np.cos(angle)
                             y_points=self['rlim']*np.sin(angle)
                             z_points=self['zlim']
@@ -936,15 +936,18 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_stream(self,colmap=cmap_default,ax=False,fig=False):
+    def plot_field_stream(self,LCFS=True,limiters=True,colmap=cmap_default,ax=False,fig=False):
         """
         stream plot of magnetic field in R,Z plane
 
-        notes:
-            take transpose due to streamplot index convention
+        args:
+            LCFS - toggles plasma boundary on/off in 2D plots
+            limiters - toggles limiters on/off in 2D plots
             colmap - set the colour map (use get_cmap names)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
+        notes:
+            take transpose due to streamplot index convention
         """
 
         import scipy
@@ -978,6 +981,11 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         B_mag=np.sqrt(self['B_field_R']**2+self['B_field_Z']**2) #calculate poloidal field magnitude
         strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
+
+        if LCFS:
+            ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+        if limiters: #add boundaries if desired
+            ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
 
         if fig_flag is False:    
             fig.colorbar(strm.lines,ax=ax,orientation='horizontal')

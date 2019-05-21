@@ -49,7 +49,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -158,7 +158,7 @@ def read_temperature_IDS(shot,run,**properties):
         return
      
     #read in axes
-    processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*pi)) #convert to Wb/rad
+    processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*constants.pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     processing.utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
     if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
@@ -560,7 +560,7 @@ class Temperature(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n".format(self.ID))
  
-    def plot(self,axis='flux_pol_norm',colmap='blue',ax=False,fig=False):
+    def plot(self,axis='flux_pol_norm',colmap=cmap_default,ax=False,fig=False):
         """
         plots temperature
 
@@ -592,7 +592,7 @@ class Temperature(classes.base_input.LOCUST_input):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self['T'],color=colmap)
+        ax.plot(self[axis],self['T'],color=colmap(np.random.uniform()))
         ax.set_xlabel(axis)
         ax.set_ylabel('temperature [eV]')
 

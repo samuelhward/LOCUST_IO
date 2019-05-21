@@ -44,7 +44,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -261,7 +261,7 @@ class rotation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/MARSF)\n".format(self.ID))
  
-    def plot(self,axis='flux_pol_norm',colmap='blue',ax=False,fig=False):
+    def plot(self,axis='flux_pol_norm',colmap=cmap_default,ax=False,fig=False):
         """
         plots rotation
 
@@ -293,7 +293,7 @@ class rotation(classes.base_input.LOCUST_input):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self['rotation'],color=colmap)
+        ax.plot(self[axis],self['rotation'],color=colmap(np.random.uniform()))
         ax.set_xlabel(axis)
         ax.set_ylabel('rotation')
 

@@ -52,7 +52,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -121,7 +121,7 @@ if __name__=='__main__':
     args=parser.parse_args()
 
     #convert 
-    ASCOT_2_LOCUST(run_ID=args.run_ID,shot_number=args.shot_number,path_LOCUST=args.path_LOCUST,path_ASCOT=args.path_ASCOT,beam_depo_GC=args.beam_depo_GC,GEQDSKFIX=args.GEQDSKFIX,beam_depo_weighted=args.beam_depo_weighted,tag=args.tag)
+    ASCOT_2_LOCUST(path_LOCUST=args.path_LOCUST,path_ASCOT=args.path_ASCOT,beam_depo_GC=args.GC,filename_ASCOT_equilibrium=args.ASCOT_eq,GEQDSKFIX=args.GEQDSKFIX,species_numbers=args.species_numbers,wall_type=args.wall_type,tag=args.tag)
 
 #################################
  

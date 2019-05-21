@@ -44,7 +44,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from constants import *
+    import constants
 except:
     raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -853,7 +853,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n".format(self.ID))
 
-    def plot(self,key='B_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key='B_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,ax=False,fig=False):
         """
         plots a perturbation
         
@@ -865,6 +865,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             limiters - object which contains limiter data rlim and zlim
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
+            vminmax - set mesh Vmin/Vmax values
             colmap - set the colour map (use get_cmap names)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -902,7 +903,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key])
+            ax.plot(self[key],color=colmap(np.random.uniform()))
             ax.set_ylabel(key)
 
         #2D data
@@ -912,14 +913,21 @@ class Perturbation(classes.base_input.LOCUST_input):
             Y=self['Z_1D'] 
             Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
-            
+ 
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(Z)
+                vmax=np.amax(Z)
+
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 if plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
@@ -939,9 +947,9 @@ class Perturbation(classes.base_input.LOCUST_input):
             ax.set_ylabel('Z [m]')
 
             if LCFS:
-                ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
             if limiters: #add boundaries if desired
-                ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
+                ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
 
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
@@ -949,7 +957,69 @@ class Perturbation(classes.base_input.LOCUST_input):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
-            
+
+    def plot_field_stream(self,LCFS=False,limiters=False,colmap=cmap_default,ax=False,fig=False):
+        """
+        stream plot of magnetic field in R,Z plane
+
+        args:
+            LCFS - toggles plasma boundary on/off in 2D plots
+            limiters - toggles limiters on/off in 2D plots
+            colmap - set the colour map (use get_cmap names)
+            ax - take input axes (can be used to stack plots)
+            fig - take input fig (can be used to add colourbars etc)
+        notes:
+            take transpose due to streamplot index convention
+        """
+
+        import scipy
+        import matplotlib
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d #import 3D plotting axes
+        from mpl_toolkits.mplot3d import Axes3D
+
+        if ax is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+        
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
+            ax.set_title(self.ID)
+        ax.set_aspect('equal')
+
+        if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
+            print("plot_field_stream - found no B_field in equilibrium - calculating!")
+            self.B_calc()
+
+        B_mag=np.sqrt(self['B_field_R']**2+self['B_field_Z']**2) #calculate poloidal field magnitude
+        strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
+
+        if LCFS:
+            ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+        if limiters: #add boundaries if desired
+            ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
+
+        if fig_flag is False:    
+            fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
+        ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+        ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+
+        ax.set_xlabel('R [m]')
+        ax.set_ylabel('Z [m]')
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
+
 #################################
  
 ##################################################################
