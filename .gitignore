@@ -39,5 +39,8 @@ changes
 .vscode/*
 tempCodeRunnerFile.python
 
+#files beginning and ending with #
+\#*# 
+
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME
