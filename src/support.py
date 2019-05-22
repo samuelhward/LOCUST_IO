@@ -24,14 +24,20 @@ import pathlib
 
 #software version number 
 LOCUST_IO_version=str('LOCUST_IO version 1.2.0')
-numpy_version=np.version.version.split('.')
+numpy_version=np.version.version.split('.') 
 python_version=sys.version_info
 
-#get the paths to folders within the package for importing modules, opening files etc
-pwd=pathlib.Path.cwd() #get the directory this script is in
-dir_locust_io=pwd.parent  #go one level up from that
-dir_input_files=dir_locust_io / 'input_files'  #add the / at the end so the user only needs to append filenames
-dir_output_files=dir_locust_io / 'output_files'
+#look for input_files and output_files directories
+thisdirectory=pathlib.Path.cwd()
+parts=list(thisdirectory.parts)
+parts.reverse()
+for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for licence, then if user deletes licence code will not work
+    if 'LOCUST_IO_LICENCE.md' in [str(list(path.parts)[-1]) for path in thisdirectory.parents[counter].glob('*')]:
+        dir_locust_io=thisdirectory.parents[counter]
+        break
+dir_input_files=dir_locust_io / 'data' / 'input_files'
+dir_output_files=dir_locust_io / 'data' / 'output_files'
+dir_cache_files=dir_locust_io / 'data' / 'cache_files'
 dir_classes=dir_locust_io / 'classes'
 
 #data which must exist to be able to run LOCUST

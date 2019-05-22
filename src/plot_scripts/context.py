@@ -1,4 +1,4 @@
-#context_updated.py
+#context.py
 
 '''
 Samuel Ward
@@ -27,8 +27,9 @@ parts=list(thisdirectory.parts)
 parts.reverse()
 for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for licence, then if user deletes licence code will not work
     if 'LOCUST_IO_LICENCE.md' in [str(list(path.parts)[-1]) for path in thisdirectory.parents[counter].glob('*')]:
-        LOCUST_IO_dir=thisdirectory.parents[counter]
-        sys.path.insert(1,str(LOCUST_IO_dir)) #append Python sys path
+        dir_locust_io=thisdirectory.parents[counter]
+        dir_locust_io_src=dir_locust_io / 'src'
+        sys.path.insert(1,str(dir_locust_io_src)) #append Python sys path
         break
 #################################
 
