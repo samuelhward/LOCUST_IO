@@ -4,11 +4,11 @@ This "package" is designed to process input and output for the LOCUST-GPU code, 
 
 The code aims to be...
 
-* __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines. Examples on how to use the API are included below, along with an example project. Transparency is also key as the code is heavily commented.
+* __simple__ - It is designed to abstract the user away from LOCUST - operations such as converting from one data format to another can be done in two lines. Examples on how to use the API are included below, along with an example project in *LOCUST_IO/docs/example_project* and multiple tutorials in the *LOCUST_IO/docs/HOWTO.md* guide. Transparency is also key and the code is heavily commented.
 
-* __extensible__ - Contributing to the project is simple: to add a new filetype, for example, simply copypaste the read/write functions and use the data dictionary to match up your variables. Many functions aren't made class methods to maximise flexibility (and those which take LOCUST_IO objects for arguements can instead take a generic dictionary due to the __ getitem __ method). Adding your own plotting and processing routines means just adding them to the respective files in *processing/*. 
+* __extensible__ - Contributing to the project is simple: to add a new input/cache/output type, for example, simply copypaste the read/write functions and use the data dictionary to match up your variables. Many functions aren't made class methods to maximise flexibility (and those which take LOCUST_IO objects tend to accept generic dictionaries via the __ getitem __ method). Adding your own high level plot scripts, analysis tools and workflows means just adding them to the respective files in *src/*. 
 
-* __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing scripts and can be ran 'out of the box' using the *example_project/* with the sample input/output files. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
+* __portable__ - LOCUST_IO has all the infrastructure needed to encapsulate your automated pre/post processing workflow and can be ran 'out of the box'. Integration with LOCUST simply means cloning the latest version into *LOCUST/* folder!
 
 
 Got any burning questions? Want to feedback? Please raise an issue here on github! or email me at samuel.ward@york.ac.uk - and for quick help check the docstrings!
@@ -42,11 +42,10 @@ Tested with:
 
 ## Getting Started
 
-* Set up a folder within LOCUST_IO e.g. *LOCUST_IO/my_project* (this is where you will create all of your analysis scripts)
-* Copy a context.py file from *LOCUST_IO/testing* or *LOCUST_IO/example_project* to *LOCUST_IO/my_project*
-* Copy LOCUSt input/output files to *LOCUST_IO/input_files* or *LOCUST_IO/output_files* respectively
-* In interactive python, type 'import context'
-* Off you go!
+* Set up a folder anywhere within LOCUST_IO e.g. *LOCUST_IO/my_project* (this is where you will create all of your analysis scripts)
+* Copy a context.py file from *LOCUST_IO/docs/example_project* to *LOCUST_IO/my_project*
+* Copy LOCUST input/cache/output files to *LOCUST_IO/data/input_files*, *LOCUST_IO/data/cache_files* or *LOCUST_IO/output_files* respectively
+* import context and off you go!
 
 
 
@@ -56,13 +55,13 @@ Tested with:
 ## Usage
 
 
-As well as the included *example_project/* some basic usage is outlined below:
+As well as the included *LOCUST_IO/docs/example_project/* some basic usage is outlined below:
 
 ```python
 import context #tell LOCUST_IO where we are
 from classes.input_classes.equilibrium import Equilibrium #import classes which encapsulate LOCUST inputs, e.g. an equilibrium
 
-#to read a GEQDSK from input_files/locust_run_1/, execute
+#to read a GEQDSK from LOCUST_IO/data/input_files/locust_run_1/:
 my_equilibrium=Equilibrium(ID='ID_tag_describing_this_equilibrium - mandatory!',data_format='GEQDSK',filename='locust_run_1/some.eqdsk') 
 #my_equilibrium now holds all the data in one object
 #take a quick look at the equilibrium and its data
