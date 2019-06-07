@@ -38,6 +38,11 @@ from classes.input_classes.wall import Wall as W
 
 def generate_test_IDS(shot,run,use_temperature=True,use_number_density=True,
     use_beam_deposition=True,use_equilibrium=True,use_perturbation=False,use_wall=False):
+    """
+    generate test IDS filled with dummy LOCUST input data
+
+    notes:
+    """
 
     if use_temperature:
         DUMMY_profile=np.linspace(1,100,100)
