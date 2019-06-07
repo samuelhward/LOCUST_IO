@@ -396,7 +396,8 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification
     output_IDS.core_profiles.code.name="LOCUST_IO"
     output_IDS.core_profiles.code.version=support.LOCUST_IO_version
-    output_IDS.core_profiles.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
+    output_IDS.core_profiles.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
+    output_IDS.core_profiles.time=np.array([0.0])
      
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
