@@ -242,7 +242,7 @@ def read_beam_depo_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
-    input_IDS.open()
+    input_IDS.open_env(username,imasdb,'3')
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
@@ -789,7 +789,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+    output_IDS.create_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
  
     #write out code properties
     output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
