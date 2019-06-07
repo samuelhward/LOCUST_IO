@@ -473,8 +473,9 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
     output_IDS.equilibrium.code.name="LOCUST_IO"
     output_IDS.equilibrium.code.version=support.LOCUST_IO_version
-    output_IDS.equilibrium.ids_properties.homoegeneous_time=0   #must set homogeneous_time variable
- 
+    output_IDS.equilibrium.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
+    output_IDS.equilibrium.time=np.array([0.0])
+
     #add a time_slice and set the time of this slice
     output_IDS.equilibrium.time_slice.resize(1) #just add one time_slice i.e. static equilibrium
     output_IDS.equilibrium.time_slice[0].time=0.0

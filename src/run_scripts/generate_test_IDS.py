@@ -57,9 +57,9 @@ if use_number_density:
     numd_i=ND(ID='',species='ions')
     numd_e=ND(ID='',species='electrons')
     numd_i.set(flux_pol=DUMMY_flux_pol)
-    numd_i.set(T=DUMMY_profile)
+    numd_i.set(n=DUMMY_profile)
     numd_e.set(flux_pol=DUMMY_flux_pol)
-    numd_e.set(T=DUMMY_profile)
+    numd_e.set(n=DUMMY_profile)
     numd_i.dump_data(data_format='IDS',shot=shot,run=run,species='ions')
     numd_e.dump_data(data_format='IDS',shot=shot,run=run,species='electrons')
 
