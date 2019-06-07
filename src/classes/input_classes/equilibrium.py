@@ -482,13 +482,13 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     output_IDS.equilibrium.time=np.array(0.0,ndmin=1) #set the global time (required by vacuum_toroidal_field.b0)
  
     #write out the easy stuff - global quantities, some 1D profiles and the boundaries
-    output_IDS.equilibrium.vacuum_toroidal_field.r0=output_data['rcentr'] 
+    output_IDS.equilibrium.vacuum_toroidal_field.r0=output_data['rcentr'].item(0) 
     output_IDS.equilibrium.vacuum_toroidal_field.b0=np.array(output_data['bcentr'],ndmin=1) #this needs to be 1D and match the dimensions of output_IDS.equilibrium.time (above)
-    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r=output_data['rmaxis']   
-    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z=output_data['zmaxis']    
-    output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=output_data['simag']  
-    output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=output_data['sibry']    
-    output_IDS.equilibrium.time_slice[0].global_quantities.ip=output_data['current']
+    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r=output_data['rmaxis'].item(0)   
+    output_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z=output_data['zmaxis'].item(0)    
+    output_IDS.equilibrium.time_slice[0].global_quantities.psi_axis=output_data['simag'].item(0)  
+    output_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary=output_data['sibry'].item(0)    
+    output_IDS.equilibrium.time_slice[0].global_quantities.ip=output_data['current'].item(0)
  
     output_IDS.equilibrium.time_slice[0].boundary.type=0 #boundary type (0 for limiter, 1 for diverted)
     output_IDS.equilibrium.time_slice[0].boundary.outline.r=output_data['lcfs_r'] 
