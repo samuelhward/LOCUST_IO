@@ -41,7 +41,7 @@ mass_neutron_amu=1.0013783
 mass_neutron=mass_neutron_amu*amu
 charge_neutron=0.
 
-mass_deuteron_amu=2.0141017781
+mass_deuteron_amu=2.013553212
 mass_deuteron=mass_deuteron_amu*amu
 charge_deuterium=charge_e
 

@@ -3,7 +3,7 @@
 #files which contain prototyping code/not ready to be published yet
 *.prototype*
 
-#LOCUST input files
+#LOCUST input/output files
 *.dat
 *.eqdsk
 *.mesh.*

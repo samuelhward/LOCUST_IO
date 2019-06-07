@@ -19,7 +19,6 @@ from matplotlib import cm
 
 ##################################################################
 
-
 #general
 numpy.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
@@ -62,6 +61,10 @@ matplotlib.rc('font', **font)
 colour_start_mark='red' #set plot starting markers default
 marker_start_mark='o' 
 markersize_start_mark=1
+
+#system environment
+username='wards2'
+imasdb='test'
 
 #################################
 

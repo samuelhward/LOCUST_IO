@@ -220,7 +220,7 @@ def read_equilibrium_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(shot,run) #initialise new blank IDS
-    input_IDS.open()
+    input_IDS.open_env(username,imasdb,'3')
     input_IDS.equilibrium.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -467,7 +467,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.create() #this will overwrite any existing IDS for this shot/run
+    output_IDS.create_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
  
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
@@ -1040,7 +1040,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         
         if 'fpolrz' not in self.data: 
             print("WARNING: B_calc - fpolrz missing in equilibrium object - calculating!")
-            self['fpolrz']=self.fpolrz_calc() #if fpolrz is missing calculate it
+            self.fpolrz_calc() #if fpolrz is missing calculate it
 
         print("B_calc - calculating 2D magnetic field")
 
