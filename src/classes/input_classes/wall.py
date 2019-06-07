@@ -59,12 +59,15 @@ except:
 
 def read_wall_LOCUST_3D(filepath,**properties):
     """
+    read mesh stored in ANSYS format
+
     notes:
     """
     pass
 
 def read_wall_LOCUST_2D(filepath,**properties):
     """
+    read wall stored in as R Z points equidistant in poloidal angle
 
     notes:
 
