@@ -380,18 +380,18 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.create_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
+    output_IDS.open_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
  
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification
     output_IDS.core_profiles.code.name="LOCUST_IO"
     output_IDS.core_profiles.code.version=support.LOCUST_IO_version
     output_IDS.core_profiles.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
+    output_IDS.core_profiles.time=np.array([0.0])
      
     #add a time_slice and set the time
     output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
-    output_IDS.core_profiles.time=np.array([0.0])
 
     #write out temperature depending on species
     if properties['species']=='electrons':
@@ -405,7 +405,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
         return
         
     #write out the axes
-    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
 
 
     #'put' all the output_data into the file and close

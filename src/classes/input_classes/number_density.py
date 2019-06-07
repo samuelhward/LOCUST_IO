@@ -390,7 +390,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.create_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
+    output_IDS.open_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
  
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification
@@ -414,8 +414,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         print("WARNING: cannot dump_number_density_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
 
     #write out the axes
-    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
-
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()

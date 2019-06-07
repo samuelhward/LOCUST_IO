@@ -789,7 +789,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.create_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
+    output_IDS.open_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
  
     #write out code properties
     output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
@@ -804,7 +804,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
  
     #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(1)
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(7)
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius coordinate [m]]" #description of coordinate
@@ -817,17 +817,21 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical coordinate [m]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_R"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=3
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="radial velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].name="V_R"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].index=3
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].description="radial velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_tor"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=4
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="toroidal velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].name="V_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].index=4
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].description="toroidal velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].name="V_Z"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=5
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].name="V_Z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].index=5
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].description="vertical velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].name="weight"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].index=6
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].description="marker weight [#/s]"
 
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['R'].size) #define the weights, i.e. number of particles per marker 
