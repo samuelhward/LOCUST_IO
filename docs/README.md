@@ -21,7 +21,6 @@ Table of Contents
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
 * [Usage](#usage)
-* [Licence](#licence)
 
 
 
@@ -107,24 +106,3 @@ my_equilibrium.run_check(verbose=True)
 #you can also calculate new pieces of data using methods or functions in the processing folder
 my_equilibrium.B_calc()         
 ```
-
-
-
-## Licence:
-
-
-    LOCUST_IO
-    Copyright (C) 2019  Samuel Ward
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public Licence as published by
-    the Free Software Foundation, either version 3 of the Licence, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public Licence for more details.
-
-    You should have received a copy of the GNU General Public Licence
-    along with this program. If not, see [http://www.gnu.org/licences/](http://www.gnu.org/licences/).

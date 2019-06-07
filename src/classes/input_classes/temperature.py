@@ -405,8 +405,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
         
     #write out the axes
     processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.psi,output_data['flux_pol'])
-    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].grid.rho_tor,output_data['flux_tor_coord'])
-    processing.utils.safe_set(output_IDS.core_profiles.profiles_1d[0].q,output_data['q'])
+
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
