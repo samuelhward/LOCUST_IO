@@ -32,7 +32,7 @@ from classes.input_classes.wall import Wall as W
 use_temperature=True
 use_number_density=True
 use_beam_deposition=True
-use_equilibrium=False
+use_equilibrium=True
 use_perturbation=False
 use_wall=False
 
@@ -42,8 +42,8 @@ run=2
 if use_temperature:
     DUMMY_profile=np.linspace(1,100,100)
     DUMMY_flux_pol=np.linspace(0,1,100)
-    temp_i=T(ID='',species='ions')
-    temp_e=T(ID='',species='electrons')
+    temp_i=T(ID='LOCUST_IO test ion temperature',species='ions')
+    temp_e=T(ID='LOCUST_IO test electron temperature',species='electrons')
     temp_i.set(flux_pol=DUMMY_flux_pol)
     temp_i.set(T=DUMMY_profile)
     temp_e.set(flux_pol=DUMMY_flux_pol)
@@ -54,8 +54,8 @@ if use_temperature:
 if use_number_density:
     DUMMY_profile=np.linspace(1,100,100)
     DUMMY_flux_pol=np.linspace(0,1,100)
-    numd_i=ND(ID='',species='ions')
-    numd_e=ND(ID='',species='electrons')
+    numd_i=ND(ID='LOCUST_IO test ion density',species='ions')
+    numd_e=ND(ID='LOCUST_IO test electron density',species='electrons')
     numd_i.set(flux_pol=DUMMY_flux_pol)
     numd_i.set(n=DUMMY_profile)
     numd_e.set(flux_pol=DUMMY_flux_pol)
@@ -64,7 +64,7 @@ if use_number_density:
     numd_e.dump_data(data_format='IDS',shot=shot,run=run,species='electrons')
 
 if use_beam_deposition:
-    beam=BD(ID='')
+    beam=BD(ID='LOCUST_IO test beam deposition')
     beam.set(R=np.random.uniform(size=10))
     beam.set(phi=np.random.uniform(size=10))
     beam.set(Z=np.random.uniform(size=10))
@@ -75,17 +75,17 @@ if use_beam_deposition:
     beam.dump_data(data_format='IDS',shot=shot,run=run)
 
 if use_equilibrium:
-    filename_equilibrium='g157418'
-    equil=EQ(ID='',filename=filename_equilibrium,data_format='GEQDSK')
+    filename_equilibrium='sample_GEQDSK.file'
+    equil=EQ(ID='LOCUST_IO test equilibrium',filename=filename_equilibrium,data_format='GEQDSK')
     equil.dump_data(data_format='IDS',shot=shot,run=run)
 
 if use_perturbation:
     filename_perturbation='BPLASMA_n3'
-    pert=P(ID='')
+    pert=P(ID='LOCUST_IO test perturbation')
 
 if use_wall:
     filename_wall=''
-    wall=W(ID='')
+    wall=W(ID='LOCUST_IO test wall')
 
 #################################
 
