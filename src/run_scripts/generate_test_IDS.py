@@ -27,7 +27,7 @@ if __name__=='__main__':
 import numpy as np
 import imas
 
-from classes.input_classes.distribution_sources import distribution_sources as BD
+from classes.input_classes.beam_deposition import Beam_Deposition as BD
 from classes.input_classes.equilibrium import Equilibrium as EQ
 from classes.input_classes.perturbation import Perturbation as P
 from classes.input_classes.wall import Wall as W
