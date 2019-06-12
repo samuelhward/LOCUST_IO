@@ -841,16 +841,12 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].index=8
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].description="toroidal velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].name="weight"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].index=9
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].description="marker weight [#/s]"
-
     #start storing particle data
     output_IDS.distribution_sources.source[0].markers[0].weights=output_data['weight'] 
     rho_tor=np.ones(output_data['R'].size)*-1.
     output_IDS.distribution_sources.source[0].markers[0].positions=np.array([output_data['R'],
         output_data['phi'],output_data['Z'],output_data['E'],output_data['V_pitch'],rho_tor,
-        output_data['V_R'],output_data['V_Z'],output_data['V_tor']],output_data['weight']).T
+        output_data['V_R'],output_data['V_Z'],output_data['V_tor'],output_data['weight']]).T
  
     #'put' all the output_data into the file and close
     output_IDS.distribution_sources.put()
