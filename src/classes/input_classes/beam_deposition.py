@@ -804,7 +804,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
  
     #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(7)
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(9)
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].description="major radius coordinate [m]]" #description of coordinate
@@ -817,26 +817,40 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].index=2 
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[2].description="vertical coordinate [m]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].name="V_R"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].index=3
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].description="radial velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].name="E"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].index=3 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[3].description="Energy [eV]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].name="V_tor"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].index=4
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].description="toroidal velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].name="pitch"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].index=4 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[4].description="V_par/V"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].name="V_Z"
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].index=5
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].description="vertical velocity [m/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].name="rhotor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].index=5 
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[5].description="toroidal rho"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].name="weight"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].name="V_R"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].index=6
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].description="marker weight [#/s]"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[6].description="radial velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[7].name="V_Z"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[7].index=7
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[7].description="vertical velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].name="V_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].index=8
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].description="toroidal velocity [m/s]"
+
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].name="weight"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].index=9
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[9].description="marker weight [#/s]"
 
     #start storing particle data
-    output_IDS.distribution_sources.source[0].markers[0].weights=np.ones(output_data['R'].size) #define the weights, i.e. number of particles per marker 
-    positions=np.array([output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']]) #create 2D array of positions
-    output_IDS.distribution_sources.source[0].markers[0].positions=np.transpose(positions) #swap the indices due to data dictionary convention
+    output_IDS.distribution_sources.source[0].markers[0].weights=output_data['weight'] 
+    rho_tor=np.ones(output_data['R'].size)*-1.
+    output_IDS.distribution_sources.source[0].markers[0].positions=np.array([output_data['R'],
+        output_data['phi'],output_data['Z'],output_data['E'],output_data['V_pitch'],rho_tor,
+        output_data['V_R'],output_data['V_Z'],output_data['V_tor']],output_data['weight']).T
  
     #'put' all the output_data into the file and close
     output_IDS.distribution_sources.put()
