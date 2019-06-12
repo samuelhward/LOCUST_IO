@@ -27,8 +27,6 @@ if __name__=='__main__':
 import numpy as np
 import imas
 
-from classes.input_classes.temperature import Temperature as T
-from classes.input_classes.core_profiles import core_profiles as ND
 from classes.input_classes.distribution_sources import distribution_sources as BD
 from classes.input_classes.equilibrium import Equilibrium as EQ
 from classes.input_classes.perturbation import Perturbation as P
