@@ -47,7 +47,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     test_IDS=imas.ids(shot,run)
     test_IDS.open_env('wards2','locust_imas','3')
 
-    if core_profiles:
+    if use_core_profiles:
 
         temperature_e=np.linspace(1000,1,100)
         temperature_i=np.linspace(5000,1,100)
