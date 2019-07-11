@@ -13,14 +13,14 @@ notes:
 
 ##################################################################
 #Preamble
-import numpy
+import numpy as np
 import matplotlib
 from matplotlib import cm
 
 ##################################################################
 
 #general
-numpy.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
+np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
 
 #plotting
 def cmap_custom(from_rgb,to_rgb):

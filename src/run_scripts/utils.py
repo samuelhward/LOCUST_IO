@@ -556,14 +556,14 @@ class TRANSP_output_FI(TRANSP_output):
         elif axes==['E']: #integrate over all volume and plot as a function of energy in #/eV
 
             dfn_copy=self.dfn_integrate(energy=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap)
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(np.random.uniform()))
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('density [#/eV]')
 
         elif axes==['V_pitch']:
 
             dfn_copy=self.dfn_integrate(pitch=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap)
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(np.random.uniform()))
             ax.set_xlabel('pitch [V||/V]')
             ax.set_ylabel('density [#/dPitch]')
 
