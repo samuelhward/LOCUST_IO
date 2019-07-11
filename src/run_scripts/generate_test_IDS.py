@@ -26,6 +26,7 @@ if __name__=='__main__':
 
 import numpy as np
 import imas
+import constants
 
 from classes.input_classes.beam_deposition import Beam_Deposition as BD
 from classes.input_classes.equilibrium import Equilibrium as EQ
@@ -75,13 +76,15 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     if use_distribution_sources:
 
         beam=BD(ID='LOCUST_IO test beam deposition')
-        beam.set(R=np.random.uniform(size=10))
+        beam.set(R=1.5+np.abs(np.random.uniform(size=10)))
         beam.set(phi=np.abs(np.random.uniform(size=10)))
         beam.set(Z=np.random.uniform(size=10))
         beam.set(V_R=1000.*np.random.uniform(size=10))
         beam.set(V_tor=1000.*np.random.uniform(size=10))
         beam.set(V_Z=1000.*np.random.uniform(size=10))
+        beam.set(V_pitch=np.random.uniform(size=10))
         beam.set(weight=np.abs(np.random.uniform(size=10)))
+        beam.set(E=0.5*constants.mass_deuteron*beam['V_R']**2+beam['V_Z']**2+beam['V_tor']**2)
         beam.dump_data(data_format='IDS',shot=shot,run=run)
 
     if use_equilibrium:
