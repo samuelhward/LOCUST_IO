@@ -75,15 +75,13 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     if use_distribution_sources:
 
         beam=BD(ID='LOCUST_IO test beam deposition')
-        beam.set(R=np.random.uniform(size=100))
-        beam.set(phi=np.random.uniform(size=100))
-        beam.set(Z=np.random.uniform(size=100))
-        beam.set(E=np.random.uniform(size=100))
-        beam.set(V_pitch=np.random.uniform(size=100))
-        beam.set(V_R=np.random.uniform(size=100))
-        beam.set(V_Z=np.random.uniform(size=100))
-        beam.set(V_tor=np.random.uniform(size=100))
-        beam.set(weight=np.random.uniform(size=100))
+        beam.set(R=np.random.uniform(size=10))
+        beam.set(phi=np.abs(np.random.uniform(size=10)))
+        beam.set(Z=np.random.uniform(size=10))
+        beam.set(V_R=1000.*np.random.uniform(size=10))
+        beam.set(V_tor=1000.*np.random.uniform(size=10))
+        beam.set(V_Z=1000.*np.random.uniform(size=10))
+        beam.set(weight=np.abs(np.random.uniform(size=10)))
         beam.dump_data(data_format='IDS',shot=shot,run=run)
 
     if use_equilibrium:
