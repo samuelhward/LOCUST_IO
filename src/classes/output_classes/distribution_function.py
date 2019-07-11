@@ -246,10 +246,11 @@ def read_distribution_function_LOCUST(filepath,**properties):
         nEQ=file.read_ints() 
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
         input_data['nZ_1D']=np.array(nEQ[1]) #2D field grid Z dimension
-        input_data['R_1D']=file.read_reals(dtype=np.float64) #Eqm. R grid. (nR_1D long) 
-        input_data['Z_1D']=file.read_reals(dtype=np.float64) #Eqm. Z grid. (nZ_1D long)
-        input_data['psirz']=file.read_reals(dtype=np.float64).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
-
+   
+        input_data['R_1D']=file.read_reals(dtype=np.float32) #Eqm. R grid. (nR_1D long) 
+        input_data['Z_1D']=file.read_reals(dtype=np.float32) #Eqm. Z grid. (nZ_1D long)
+        input_data['psirz']=file.read_reals(dtype=np.float32).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
+   
         if IDFTYP==4:
 
             #dVOL (nPSIF by nPOLF)
