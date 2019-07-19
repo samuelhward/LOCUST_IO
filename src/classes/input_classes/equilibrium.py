@@ -1098,6 +1098,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         usage:
             B_R,B_tor,B_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
         """
+        
         if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
             print("B_calc_point found no B_field in equilibrium - calculating!")
             self.B_calc()
