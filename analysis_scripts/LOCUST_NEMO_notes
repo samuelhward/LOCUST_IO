@@ -1,0 +1,17 @@
+the only shot to care about is 44
+
+then runs are organised as
+...XXC
+
+XX:
+22=off-off
+33=off-on
+55=on-on
+
+C:
+0=NEMO (deposition)
+1=RISK (orbit following)
+2=SPOT (orbit following)
+
+4=NEMO (performed by Mireille at the ITER code camp, after V_i NEMO conversion)
+5=NEMO (performed by me as a test to see V_i coordinates and input into LOCUST)
