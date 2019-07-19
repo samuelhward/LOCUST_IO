@@ -1,0 +1,4 @@
+todo:
+
+check why beam deposition Pdep in input.particles file is different to that in the hdf5 inistate file!
+they're a factor of 5 out?

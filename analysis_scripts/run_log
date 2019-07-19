@@ -1,0 +1,50 @@
+
+TRANSP runs:
+
+W01
+
+
+	-->>> 18 Dec 2018  10:57 sward <<<--
+	edited the namelist to increase fidelity, checked Ufiles to see that NUBEAM will run with constant kinetic profiles
+
+	-->>> 18 Dec 2018  17:10 sward <<<--
+	added XBMBND setting to the namelist
+
+
+	-->>> 09 Jan 2019  16:58 sward <<<--
+	added NZONE_FB=40, NZONE_FP=40 and NZONE_NB=200
+
+	-->>> 09 Jan 2019  17:26 sward <<<--
+	added NLBBCX=F, NLBEAMCX=F, NLBCOH=F, NLORBO=False, DXBSMOO=0 and fixed rotation to 0
+
+	-->>> 09 Jan 2019  17:56 sward <<<--
+	neutral beams were not working so set time range to 0.36-0.37, read in new NBI data and then reset time range to 0.36-0.561
+
+	-->>> 09 Jan 2019  18:07 sward <<<--
+	fixed AIMP and ZIMP
+
+	-->>> 11 Jan 2019  13:51 sward <<<--
+	reduced nptcls and simulation time to 0.1s
+
+
+W02
+
+	-->>> 17 Jan 2019  14:43 sward <<<--
+	added more outtims, reduced energy x-axis to 75keV
+
+
+
+W03
+
+	-->>> 21 Feb 2019  15:04 sward <<<--
+	started with run version W03
+
+	-->>> 21 Feb 2019  15:18 sward <<<--
+	fixed NBI injection to be defined via namelist, only one full-energy 62KeV fraction
+
+
+
+
+
+notes:
+	BBNBI depositions contain all three energy components - so comparing with TRANSP must involve removing the lower-energy parts
