@@ -46,7 +46,7 @@ required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','s
 required_beam_deposition=['R','phi','Z','V_R','V_tor','V_Z','weight','absorption_fraction','absorption_scaling']
 required_temperature=['flux_pol_norm','T']
 required_number_density=['flux_pol_norm','n']
-required_perturbation=['R_2D','Z_2D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
+required_perturbation=['R_2D','Z_2D','dB_field_R_real','dB_field_R_imag','dB_field_Z_real','dB_field_Z_imag','dB_field_tor_real','dB_field_tor_imag']
 required_rotation=['rotation']
 
 #################################

@@ -108,7 +108,7 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=c
         try:
             from scipy.special import erf as erf
         except:
-            raise ImportError("ERROR: LOCzST_IO/plot_scripts/plot_collision_operator.py could not import scipy.special.erf!\nreturning\n") 
+            raise ImportError("ERROR: LOCUST_IO/plot_scripts/plot_collision_operator.py could not import scipy.special.erf!\nreturning\n") 
             sys.exit(1)
 
         echg   = constants.charge_e        
@@ -184,7 +184,7 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     import argparse
     parser=argparse.ArgumentParser(description='plot drag coefficients and diffusionless steady-state distribution functions for given collision operator')
     parser.add_argument('--Ti',nargs='+',type=float,action='store',default=[9419.,4119.],dest='Ti',help="temperature of each background species [eV] e.g. --Ti  9419 4119",required=False)
-    parser.add_argument('--ni',nargs='+',type=float,action='store',default=[5.96e19,5.96e19],dest='ni',help="density of each background species [#/m^3] e.g. --ni  9419 4119",required=False)
+    parser.add_argument('--ni',nargs='+',type=float,action='store',default=[5.96e19,5.96e19],dest='ni',help="density of each background species [#/m^3] e.g. --ni  1.6e19 3.3e19",required=False)
     parser.add_argument('--Pdep',type=float,action='store',default=1.,dest='Pdep',help="power deposited to plasma [W]",required=False)
     parser.add_argument('--Einj',type=float,action='store',default=80000.,dest='Einj',help="test particle injection energy [eV]",required=False)
     parser.add_argument('--type',type=str,action='store',default='LOCUST',dest='type',help="collision operator type [NRL/LOCUST]",required=False)
@@ -194,7 +194,6 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     parser.add_argument('--At',type=float,action='store',default=constants.mass_deuteron_amu,dest='At',help="test particle mass [amu]",required=False)
     parser.add_argument('--Ai',nargs='+',type=float,action='store',default=[constants.mass_deuteron_amu,constants.mass_electron_amu],dest='Ai',help="background species masses [amu] e.g. --Ai 2.0141017781 0.00054858",required=False)
 
-    
     args=parser.parse_args()
 
     fig,ax=plt.subplots(1)
@@ -202,7 +201,7 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     ax.set_title('individual drag coefficients for test particle mass={} amu'.format(args.At))
     plt.show()
 
-    drag_total=drag[0]+drag[1] #sum electron and ion drags and plot
+    drag_total=np.sum(drag,axis=0) #sum electron and ion drags and plot
     fig,ax=plt.subplots(1)
     ax.plot(E/(1000.*constants.charge_e),(drag_total/1.0e-13),color=cmap_default(np.random.uniform()))
     ax.set_title('total drag for test particle mass={} amu'.format(args.At))

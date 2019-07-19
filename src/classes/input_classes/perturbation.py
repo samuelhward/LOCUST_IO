@@ -72,33 +72,33 @@ def read_perturbation_LOCUST(filepath,**properties):
         input_data={}
         input_data['R_2D']=[]
         input_data['Z_2D']=[]
-        input_data['B_field_R_real']=[]
-        input_data['B_field_R_imag']=[]
-        input_data['B_field_Z_real']=[]
-        input_data['B_field_Z_imag']=[]
-        input_data['B_field_tor_real']=[]
-        input_data['B_field_tor_imag']=[]
+        input_data['dB_field_R_real']=[]
+        input_data['dB_field_R_imag']=[]
+        input_data['dB_field_Z_real']=[]
+        input_data['dB_field_Z_imag']=[]
+        input_data['dB_field_tor_real']=[]
+        input_data['dB_field_tor_imag']=[]
 
         #read lazily
         for line in file:
             split_line=line.split()
             input_data['R_2D'].append(float(split_line[0]))
             input_data['Z_2D'].append(float(split_line[1]))
-            input_data['B_field_R_real'].append(float(split_line[2]))
-            input_data['B_field_R_imag'].append(float(split_line[3]))
-            input_data['B_field_Z_real'].append(float(split_line[4]))
-            input_data['B_field_Z_imag'].append(float(split_line[5]))
-            input_data['B_field_tor_real'].append(float(split_line[6]))
-            input_data['B_field_tor_imag'].append(float(split_line[7]))
+            input_data['dB_field_R_real'].append(float(split_line[2]))
+            input_data['dB_field_R_imag'].append(float(split_line[3]))
+            input_data['dB_field_Z_real'].append(float(split_line[4]))
+            input_data['dB_field_Z_imag'].append(float(split_line[5]))
+            input_data['dB_field_tor_real'].append(float(split_line[6]))
+            input_data['dB_field_tor_imag'].append(float(split_line[7]))
 
         input_data['R_2D']=np.asarray(input_data['R_2D'])
         input_data['Z_2D']=np.asarray(input_data['Z_2D'])
-        input_data['B_field_R_real']=np.asarray(input_data['B_field_R_real'])
-        input_data['B_field_R_imag']=np.asarray(input_data['B_field_R_imag'])
-        input_data['B_field_Z_real']=np.asarray(input_data['B_field_Z_real'])
-        input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
-        input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
-        input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
+        input_data['dB_field_R_real']=np.asarray(input_data['dB_field_R_real'])
+        input_data['dB_field_R_imag']=np.asarray(input_data['dB_field_R_imag'])
+        input_data['dB_field_Z_real']=np.asarray(input_data['dB_field_Z_real'])
+        input_data['dB_field_Z_imag']=np.asarray(input_data['dB_field_Z_imag'])
+        input_data['dB_field_tor_real']=np.asarray(input_data['dB_field_tor_real'])
+        input_data['dB_field_tor_imag']=np.asarray(input_data['dB_field_tor_imag'])
   
         #infer the grid dimensions and axes
         if input_data['Z_2D'][0]==input_data['Z_2D'][1]: #Z is slowly-varying
@@ -108,12 +108,12 @@ def read_perturbation_LOCUST(filepath,**properties):
             input_data['Z_2D']=input_data['Z_2D'].reshape(Z_dim,R_dim).T
             input_data['R_1D']=input_data['R_2D'][:,0]
             input_data['Z_1D']=input_data['Z_2D'][0,:]
-            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(Z_dim,R_dim).T
-            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(Z_dim,R_dim).T
-            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_R_real']=input_data['dB_field_R_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_Z_imag']=input_data['dB_field_Z_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_tor_real']=input_data['dB_field_tor_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_tor_imag']=input_data['dB_field_tor_imag'].reshape(Z_dim,R_dim).T
         else: #R is slowly-varying
             R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
             Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
@@ -121,17 +121,12 @@ def read_perturbation_LOCUST(filepath,**properties):
             input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
             input_data['R_1D']=input_data['R_2D'][:,0]
             input_data['Z_1D']=input_data['Z_2D'][0,:]
-            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
-            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
-            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
-
-    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
-    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
-    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
-    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+            input_data['dB_field_R_real']=input_data['dwB_field_R_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(R_dim,Z_dim)
+            input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_Z_imag']=input_data['dB_field_Z_imag'].reshape(R_dim,Z_dim)
+            input_data['dB_field_tor_real']=input_data['dB_field_tor_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_tor_imag']=input_data['dB_field_tor_imag'].reshape(R_dim,Z_dim)
 
     print("finished reading LOCUST perturbation")
     
@@ -152,18 +147,18 @@ def read_perturbation_LOCUST_field_data(filepath,**properties):
         lines=file.readlines()
         del(lines[0]) #delete headerline
 
-        for quantity in ['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']:
+        for quantity in ['R','phi','Z','time','B_field_R','B_field_tor','B_field_Z','dB_field_R','dB_field_tor','dB_field_Z','divB']:
             input_data[quantity]=[]
 
         for line in lines:
-            for counter,quantity in enumerate(['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']):
+            for counter,quantity in enumerate(['R','phi','Z','time','B_field_R','B_field_tor','B_field_Z','dB_field_R','dB_field_tor','dB_field_Z','divB']):
             
                 try:
                     input_data[quantity].append(float(line.split()[counter]))
                 except:
                     input_data[quantity].append(0.0)
 
-        for quantity in ['R','phi','Z','time','B_field_R_mag','B_field_tor_mag','B_field_Z_mag','dB_field_R','dB_field_tor','dB_field_Z','divB']:
+        for quantity in ['R','phi','Z','time','B_field_R','B_field_tor','B_field_Z','dB_field_R','dB_field_tor','dB_field_Z','divB']:
             input_data[quantity]=np.asarray(input_data[quantity])
 
     print("reading LOCUST test field data")
@@ -210,7 +205,7 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
         #rename variables to LOCUST_IO conventions
         ascot_names_1=['Rprt','phiprt' ,'zprt','BR','Bphi','Bz'] #possible ASCOT fields - full orbit
         ascot_names_2=['R','phi' ,'z','BR','Bphi','Bz'] #possible ASCOT fields - guiding centre
-        locust_names['R','phi','Z','B_field_R_mag','B_field_tor_mag','B_field_Z_mag'] #corresponding LOCUST_IO fields that we want to retain
+        locust_names['R','phi','Z','B_field_R','B_field_tor','B_field_Z'] #corresponding LOCUST_IO fields that we want to retain
         for ascot_name_1,ascot_name_2,locust_io_name in zip(ascot_names_1,ascot_names_2,locust_io_names):
             if ascot_name_1 in raw_data.keys():
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name_1])
@@ -270,12 +265,12 @@ def read_perturbation_MARSF(filepath,**properties):
         input_data={}
         input_data['R_2D']=[]
         input_data['Z_2D']=[]
-        input_data['B_field_R_real']=[]
-        input_data['B_field_R_imag']=[]
-        input_data['B_field_Z_real']=[]
-        input_data['B_field_Z_imag']=[]
-        input_data['B_field_tor_real']=[]
-        input_data['B_field_tor_imag']=[]
+        input_data['dB_field_R_real']=[]
+        input_data['dB_field_R_imag']=[]
+        input_data['dB_field_Z_real']=[]
+        input_data['dB_field_Z_imag']=[]
+        input_data['dB_field_tor_real']=[]
+        input_data['dB_field_tor_imag']=[]
 
         #read lazily 
         #skip header lines
@@ -290,21 +285,21 @@ def read_perturbation_MARSF(filepath,**properties):
             split_line=line.split()
             input_data['R_2D'].append(float(split_line[0]))
             input_data['Z_2D'].append(float(split_line[1]))
-            input_data['B_field_R_real'].append(float(split_line[2]))
-            input_data['B_field_R_imag'].append(float(split_line[3]))
-            input_data['B_field_Z_real'].append(float(split_line[4]))
-            input_data['B_field_Z_imag'].append(float(split_line[5]))
-            input_data['B_field_tor_real'].append(float(split_line[6]))
-            input_data['B_field_tor_imag'].append(float(split_line[7]))
+            input_data['dB_field_R_real'].append(float(split_line[2]))
+            input_data['dB_field_R_imag'].append(float(split_line[3]))
+            input_data['dB_field_Z_real'].append(float(split_line[4]))
+            input_data['dB_field_Z_imag'].append(float(split_line[5]))
+            input_data['dB_field_tor_real'].append(float(split_line[6]))
+            input_data['dB_field_tor_imag'].append(float(split_line[7]))
 
         input_data['R_2D']=np.asarray(input_data['R_2D'])
         input_data['Z_2D']=np.asarray(input_data['Z_2D'])
-        input_data['B_field_R_real']=np.asarray(input_data['B_field_R_real'])
-        input_data['B_field_R_imag']=np.asarray(input_data['B_field_R_imag'])
-        input_data['B_field_Z_real']=np.asarray(input_data['B_field_Z_real'])
-        input_data['B_field_Z_imag']=np.asarray(input_data['B_field_Z_imag'])
-        input_data['B_field_tor_real']=np.asarray(input_data['B_field_tor_real'])
-        input_data['B_field_tor_imag']=np.asarray(input_data['B_field_tor_imag'])
+        input_data['dB_field_R_real']=np.asarray(input_data['dB_field_R_real'])
+        input_data['dB_field_R_imag']=np.asarray(input_data['dB_field_R_imag'])
+        input_data['dB_field_Z_real']=np.asarray(input_data['dB_field_Z_real'])
+        input_data['dB_field_Z_imag']=np.asarray(input_data['dB_field_Z_imag'])
+        input_data['dB_field_tor_real']=np.asarray(input_data['dB_field_tor_real'])
+        input_data['dB_field_tor_imag']=np.asarray(input_data['dB_field_tor_imag'])
     
         #infer the grid dimensions and axes
         if input_data['Z_2D'][0]==input_data['Z_2D'][1]: #Z is slowly-varying
@@ -314,12 +309,12 @@ def read_perturbation_MARSF(filepath,**properties):
             input_data['Z_2D']=input_data['Z_2D'].reshape(Z_dim,R_dim).T
             input_data['R_1D']=input_data['R_2D'][:,0]
             input_data['Z_1D']=input_data['Z_2D'][0,:]
-            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(Z_dim,R_dim).T
-            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(Z_dim,R_dim).T
-            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(Z_dim,R_dim).T
-            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_R_real']=input_data['dB_field_R_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_Z_imag']=input_data['dB_field_Z_imag'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_tor_real']=input_data['dB_field_tor_real'].reshape(Z_dim,R_dim).T
+            input_data['dB_field_tor_imag']=input_data['dB_field_tor_imag'].reshape(Z_dim,R_dim).T
         else: #R is slowly-varying
             R_dim=int(np.where(input_data['Z_2D']==input_data['Z_2D'][0])[0].size)
             Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
@@ -327,17 +322,12 @@ def read_perturbation_MARSF(filepath,**properties):
             input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
             input_data['R_1D']=input_data['R_2D'][0,:].flatten()
             input_data['Z_1D']=input_data['Z_2D'][:,0].flatten()
-            input_data['B_field_R_real']=input_data['B_field_R_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_R_imag']=input_data['B_field_R_imag'].reshape(R_dim,Z_dim)
-            input_data['B_field_Z_real']=input_data['B_field_Z_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_Z_imag']=input_data['B_field_Z_imag'].reshape(R_dim,Z_dim)
-            input_data['B_field_tor_real']=input_data['B_field_tor_real'].reshape(R_dim,Z_dim)
-            input_data['B_field_tor_imag']=input_data['B_field_tor_imag'].reshape(R_dim,Z_dim)
-
-    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
-    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
-    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
-    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+            input_data['dB_field_R_real']=input_data['dB_field_R_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(R_dim,Z_dim)
+            input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_Z_imag']=input_data['dB_field_Z_imag'].reshape(R_dim,Z_dim)
+            input_data['dB_field_tor_real']=input_data['dB_field_tor_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_tor_imag']=input_data['dB_field_tor_imag'].reshape(R_dim,Z_dim)
 
     print("finished reading MARSF perturbation")
     
@@ -650,18 +640,14 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
     input_data={}
     input_data['R_2D']=np.array(R_grid,ndmin=2).swapaxes(0,1)
     input_data['Z_2D']=np.array(Z_grid,ndmin=2).swapaxes(0,1)
-    input_data['R_1D']=np.array(input_data['R_2D'][:,0],ndmin=2)
-    input_data['Z_1D']=np.array(input_data['Z_2D'][0,:],ndmin=2)
-    input_data['B_field_R_real']=np.array(BR_rect.real,ndmin=2).swapaxes(0,1)
-    input_data['B_field_R_imag']=np.array(BR_rect.imag,ndmin=2).swapaxes(0,1)
-    input_data['B_field_Z_real']=np.array(BZ_rect.real,ndmin=2).swapaxes(0,1)
-    input_data['B_field_Z_imag']=np.array(BZ_rect.imag,ndmin=2).swapaxes(0,1)
-    input_data['B_field_tor_real']=np.array(BP_rect.real,ndmin=2).swapaxes(0,1)
-    input_data['B_field_tor_imag']=np.array(BP_rect.imag,ndmin=2).swapaxes(0,1)
-    input_data['B_field_R']=np.sqrt(input_data['B_field_R_real']**2+input_data['B_field_R_imag']**2)
-    input_data['B_field_Z']=np.sqrt(input_data['B_field_Z_real']**2+input_data['B_field_Z_imag']**2)
-    input_data['B_field_tor']=np.sqrt(input_data['B_field_tor_real']**2+input_data['B_field_tor_imag']**2)
-    input_data['B_field_mag']=np.sqrt(input_data['B_field_tor']**2+input_data['B_field_R']**2+input_data['B_field_Z']**2)
+    input_data['R_1D']=np.squeeze(np.array(input_data['R_2D'][:,0],ndmin=2))
+    input_data['Z_1D']=np.squeeze(np.array(input_data['Z_2D'][0,:],ndmin=2))
+    input_data['dB_field_R_real']=np.array(BR_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['dB_field_R_imag']=np.array(BR_rect.imag,ndmin=2).swapaxes(0,1)
+    input_data['dB_field_Z_real']=np.array(BZ_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['dB_field_Z_imag']=np.array(BZ_rect.imag,ndmin=2).swapaxes(0,1)
+    input_data['dB_field_tor_real']=np.array(BP_rect.real,ndmin=2).swapaxes(0,1)
+    input_data['dB_field_tor_imag']=np.array(BP_rect.imag,ndmin=2).swapaxes(0,1)
 
     print("finished reading MARSF_bplas perturbation")
 
@@ -681,7 +667,7 @@ def dump_perturbation_LOCUST(output_data,filepath,**properties):
 
     with open(filepath,'w') as file: #open file
         
-        quantities=['R_2D','Z_2D','B_field_R_real','B_field_R_imag','B_field_Z_real','B_field_Z_imag','B_field_tor_real','B_field_tor_imag']
+        quantities=['R_2D','Z_2D','dB_field_R_real','dB_field_R_imag','dB_field_Z_real','dB_field_Z_imag','dB_field_tor_real','dB_field_tor_imag']
 
         for row in np.array([output_data[quantity].flatten() for quantity in quantities]).T:
             line=''
@@ -734,6 +720,36 @@ def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BC
 
     print("finished writing point_inp.dat test points")
 
+def dump_perturbation_POCA(output_data,filepath,**properties):
+    """
+    writes perturbation to POCA format
+
+    notes:
+        dumps data with quickly-varying Z like usual LOCUST input
+    """
+ 
+    print("writing POCA perturbation")
+
+    with open(filepath,'w') as file: #open file
+
+        file.write(' IPEC_BRZPHI: Total perturbed field\n')
+        file.write('\n')
+        file.write('   nr =   {nr}  nz =   {nz}\n'.format(nr=len(output_data['R_1D']),nz=len(output_data['Z_1D'])))
+        file.write('\n')
+        file.write('  l               r               z       real(b_r)       imag(b_r)       real(b_z)       imag(b_z)     real(b_phi)     imag(b_phi) \n')
+
+        quantities=['R_2D','Z_2D','dB_field_R_real','dB_field_R_imag','dB_field_Z_real','dB_field_Z_imag','dB_field_tor_real','dB_field_tor_imag']
+
+        for row in np.array([output_data[quantity].flatten() for quantity in quantities]).T:
+            line='  '
+            line+='0' #index indicating whether the grid is inside or outside of separatrix - set just to 1 here
+            for number in row:
+                line+=processing.utils.fortran_string(number_out=number,length=16,decimals=8,exponential=True)
+            line+=' \n' 
+            file.write(line)
+
+    print("finished writing POCA perturbation")
+
 ################################################################## perturbation class
  
 class Perturbation(classes.base_input.LOCUST_input):
@@ -757,6 +773,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         filepath                    full path to output file in input_files folder
  
     notes:
+        most methods adapted for fourier-expanded method, for a field expressed as a sum over poloidal harmonics for each toroidal harmonic
     """
  
     LOCUST_input_type='perturbation'
@@ -850,10 +867,15 @@ class Perturbation(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files / filename
                 dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
-        else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data)\n".format(self.ID))
+        elif data_format=='POCA':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to POCA - filename required\n".format(self.ID),filename):
+                filepath=support.dir_input_files / filename
+                dump_perturbation_POCA(self.data,filepath,**properties)
 
-    def plot(self,key='B_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,ax=False,fig=False):
+        else:
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/POCA)\n".format(self.ID))
+
+    def plot(self,key='dB_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,ax=False,fig=False):
         """
         plots a perturbation
         
@@ -958,67 +980,50 @@ class Perturbation(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_stream(self,LCFS=False,limiters=False,colmap=cmap_default,ax=False,fig=False):
+    def perturbation_calc_point(self,R,Z,n,phi=0):
         """
-        stream plot of magnetic field in R,Z plane
-
-        args:
-            LCFS - toggles plasma boundary on/off in 2D plots
-            limiters - toggles limiters on/off in 2D plots
-            colmap - set the colour map (use get_cmap names)
-            ax - take input axes (can be used to stack plots)
-            fig - take input fig (can be used to add colourbars etc)
-        notes:
-            take transpose due to streamplot index convention
-        """
-
-        import scipy
-        import matplotlib
-        from matplotlib import cm
-        import matplotlib.pyplot as plt
-        from mpl_toolkits import mplot3d #import 3D plotting axes
-        from mpl_toolkits.mplot3d import Axes3D
-
-        if ax is False:
-            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
-        else:
-            ax_flag=True
-
-        if fig is False:
-            fig_flag=False
-        else:
-            fig_flag=True
-
-        if fig_flag is False:
-            fig = plt.figure() #if user has not externally supplied figure, generate
+        returns the three components of perturbation field at a point in the plasma 
         
-        if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)
-            ax.set_title(self.ID)
-        ax.set_aspect('equal')
+        args:
+            R - list of R coordinates to calculate perturbation field components at 
+            Z - list of Z coordinates to calculate perturbation field components at
+            n - toroidal mode number of this harmonic
+            phi - toroidal angle
+        notes:
 
-        if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
-            print("plot_field_stream - found no B_field in equilibrium - calculating!")
-            self.B_calc()
+        usage:
+            dB_R,dB_tor,dB_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
+        """
 
-        B_mag=np.sqrt(self['B_field_R']**2+self['B_field_Z']**2) #calculate poloidal field magnitude
-        strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
+        print("perturbation_calc_point generating B_field interpolators")
+        dB_field_R_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_real']) #construct interpolators here
+        dB_field_R_iamg_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_imag']) 
+        dB_field_tor_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_real'])
+        dB_field_tor_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_imag'])
+        dB_field_Z_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_real'])
+        dB_field_Z_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_imag'])
+        print("perturbation_calc_point finished generating B_field interpolators")
 
-        if LCFS:
-            ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
-        if limiters: #add boundaries if desired
-            ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
+        dB_R=[]
+        dB_tor=[]
+        dB_Z=[]  
 
-        if fig_flag is False:    
-            fig.colorbar(strm.lines,ax=ax,orientation='horizontal')
-        ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
-        ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+        for R_point,Z_point in zip(R,Z):
+            dB_field_R_real=float(dB_field_R_real_interpolator(R_point,Z_point))
+            dB_field_R_imag=float(dB_field_R_imag_interpolator(R_point,Z_point))
+            dB_field_tor_real=float(dB_field_tor_real_interpolator(R_point,Z_point))
+            dB_field_tor_imag=float(dB_field_tor_imag_interpolator(R_point,Z_point))
+            dB_field_Z_real=float(dB_field_Z_real_interpolator(R_point,Z_point))
+            dB_field_Z_imag=float(dB_field_Z_imag_interpolator(R_point,Z_point))
 
-        ax.set_xlabel('R [m]')
-        ax.set_ylabel('Z [m]')
+            dB_R.append(dB_field_R_real*np.cos(n*phi) - dB_field_R_imag*np.sin(n*phi))
+            dB_tor.append(dB_field_tor_real*np.cos(n*phi) - dB_field_tor_imag*np.sin(n*phi))
+            dB_Z.append(dB_field_Z_real*np.cos(n*phi) - dB_field_Z_imag*np.sin(n*phi))
 
-        if ax_flag is False and fig_flag is False:
-            plt.show()
+        for component in [B_R,B_tor,B_Z]:
+            component=np.asarray(component)
+
+        return dB_R,dB_tor,dB_Z
 
 #################################
  

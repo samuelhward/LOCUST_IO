@@ -95,15 +95,18 @@ Since this package aims to bridge the gap between various file formats for diffe
     2D data
         R_2D                                                            #R coordinate of field grid [m]
         Z_2D                                                            #Z coordinate of field grid [m]
-        B_field_R_real                                                  #real R component of magnetic field [T] at point [r,z] to be expanded
-        B_field_R_imag                                                  #imaginary R component of magnetic field [T] at point [r,z] to be expanded
-        B_field_Z_real                                                  #real Z component of magnetic field [T] at point [r,z] to be expanded
-        B_field_Z_imag                                                  #imaginary Z component of magnetic field [T] at point [r,z] to be expanded
-        B_field_tor_real                                                #real toroidal component of magnetic field [T] at point [r,z] to be expanded
-        B_field_tor_imag                                                #imaginary toroidal component of magnetic field [T] at point [r,z] to be expanded
-        B_field_R                                                       #magnetic field Rcomponent at position [r,z] [T] calculate by B_calc
-        B_field_tor                                                     #magnetic field phi component at position [r,z] [T] calculate by B_calc
-        B_field_Z                                                       #magnetic field Z component at position [r,z] [T] calculate by B_calc
+        dB_field_R_real                                                 #real R component of magnetic field [T] at point [r,z]
+        dB_field_R_imag                                                 #imaginary R component of magnetic field [T] at point [r,z]
+        dB_field_R                                                      #magnitude of R component of magnetic field [T] at point [r,z]
+        dB_field_Z_real                                                 #real Z component of magnetic field [T] at point [r,z]
+        dB_field_Z_imag                                                 #imaginary Z component of magnetic field [T] at point [r,z]
+        dB_field_Z                                                      #magnitude of Z component of magnetic field [T] at point [r,z]
+        dB_field_tor_real                                               #real toroidal component of magnetic field [T] at point [r,z]
+        dB_field_tor_imag                                               #imaginary toroidal component of magnetic field [T] at point [r,z]
+        dB_field_tor                                                    #magnitude of toroidal component of magnetic field [T] at point [r,z]
+        B_field_R                                                       #magnetic field R component at position [r,z] [T] 
+        B_field_tor                                                     #magnetic field phi component at position [r,z] [T]
+        B_field_Z                                                       #magnetic field Z component at position [r,z] [T]
         B_field_mag                                                     #absolute magnitude of perturbation [T]
 
 #### Orbits:

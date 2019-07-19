@@ -490,7 +490,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             for status in status_flags:
                 p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
                 if weight:
-                    self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins,weights=self['weight'])                
+                    self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins,weights=self['weight'][p])                
                 else:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
@@ -506,12 +506,12 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
                     if grid is not False: #bin according to pre-defined grid
                         if weight:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'])
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=[grid[axes[0]],grid[axes[1]]],weights=self['weight'][p])
                         else:
                             self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=[grid[axes[0]],grid[axes[1]]])
                     else:
                         if weight:
-                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=number_bins,weights=self['weight'])
+                            self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=number_bins,weights=self['weight'][p])
                         else:
                             self_binned,self_binned_x,self_binned_y=np.histogram2d(self[axes[0]][p],self[axes[1]][p],bins=number_bins)
 
