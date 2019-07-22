@@ -1,0 +1,35 @@
+with the g157418.03000 GEQDSK, and running for 100us with flags:
+
+	make FLAGS='-DBRELAX -DUNBOR=100 -DOPENMESH -DTOKHEAD -DOPENTRACK -DPROV -DTOKAMAK=8 -DTIMAX=0.0001D0 -DSTDOUT -DLEIID=8 -DGEQDSKFIX1'
+
+now to get output particle list running with additional flags:
+
+	make FLAGS='-DBRELAX -DUNBOR=100 -DOPENMESH -DTOKHEAD -DOPENTRACK -DPROV -DTOKAMAK=8 -DTIMAX=0.0001D0 -DSTDOUT -DLEIID=8 -DGEQDSKFIX1 -DSPLIT -DSPALL -DNOINF'
+
+This will output a file named ptcl_cache.dat (note, this gets overwritten for each case as I have not labelled it like the other output files with the date/time etc.).
+
+Then, cd to your output directory, go into IDL and run this script from my ~rakers/idl directory:
+
+IDL> process_ptcles, it=1
+
+% Compiled module: PROCESS_PTCLES.
+
+Once it’s run, do this (it might take a few minutes to load all the data in):
+
+IDL> print, ph_c[0,*,0]
+
+You can see 17 of the parameters stored for marker 1 at the end of tracking.  The first six are [R,PHI,Z,VR,VPHI,VZ] and the 8th datum is the status flag for that marker.  If you look in ctrk_kernel, you can see the definitions for all the different flags.  This one has reached its tracking limit (-14).  If it had hit something, the value would be -5.
+
+So, for example, if you want to see all the markers that were still being tracked, you can do:
+IDL> !X.range=[0.,0.]                            
+IDL> !Y.range=[0.,0.]                            
+IDL> i=where(ph_c[*,7,0] eq -14.0)
+IDL> window, 0
+IDL> plot, ph_c[i,0,0], ph_c[i,2,0], psym=3, /iso, xtitle='R [m]', ytitle='Z [m]'
+
+
+Or, to see where all the markers hit PFCs:
+
+IDL> i=where(ph_c[*,7,0] eq -5.0)                                                                                                         
+IDL> plot, ph_c[i,0,0], ph_c[i,2,0], psym=3, /iso, xtitle='R [m]', ytitle='Z [m]', xrange=[1.0,2.5], yrange=[-1.5,1.5], xstyle=1, ystyle=1
+i.e. for counter-NBI (with not BT flip) you can see lots of markers hitting the upper PFCs and the LFS components.

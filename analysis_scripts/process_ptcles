@@ -1,0 +1,284 @@
+pro process_ptcles, it=it, PFCCOMP=PFCCOMP, PFCSEL=PFCSEL, file=file, $
+                    psitcut=psitcut
+
+;- Set up graphics:
+
+!P.multi=[0,5,3,0,0]
+
+;- Initialize variables:
+
+Mb      = 1.6725966e-27*1.9990024
+echg    = 1.60217646e-19
+n       = lonarr(6)
+f       = 0.0
+
+;- Load ptcl. cache data (from -DSPLIT run or 
+;- -DSLOAD -DSLOAD2 -DTETALL run)
+
+if(n_elements(file) eq 0)then file='ptcl_cache.dat'
+
+openr, 1, file
+
+readf, 1, n
+
+dum  = dblarr(n[0]*n[1],n[3],n[4])
+
+;- n[3] = 10L ;- THIS NEEDS TO GO
+
+ph_c = dblarr(n[0]*n[1]*n[2],n[3],n[4]) ;- Must be dble to catch 
+                                        ;- TET ID correctly....
+
+for i=0,n[2]-1 do begin
+    readf, 1, dum
+
+    ph_c[i*n[0]*n[1]:(i+1)*n[0]*n[1]-1,0:n[3]-1,0:n[4]-1] = dum
+endfor
+
+readf, 1, f
+
+close, 1
+
+WT = total( ph_c[0:n[0]*n[1]*n[2]-1,3]^2 + ph_c[0:n[0]*n[1]*n[2]-1,4]^2 + $
+            ph_c[0:n[0]*n[1]*n[2]-1,5]^2 )*1.6725966e-27*1.999*f
+
+print, ':cl : WT: ', WT 
+
+k       = where( ph_c[*,7,it] ne 0.0 )
+
+;- Identify component IDs for particles which hit a PFC:
+
+j       = lonarr(n[0]*n[1]*n[2])
+k_      = lonarr(n[0]*n[1]*n[2])
+l_      = lonarr(n[0]*n[1]*n[2])
+m       = where(ph_c[*,9,0] lt 0.0d0)
+j[m]    =-(fix( ph_c[m,9,0] + 0.5d0, TYPE=3 ) + 1L ) 
+ntri    = n[5]
+k_[m]   = ( j[m]/ntri ) + 1L
+l_[m]   = j[m] - (k_[m]-1)*ntri + 1L
+
+;- Set plot range:
+
+!X.range=[1.0d10,-1.0d10]
+ !Y.range=[1.0d10,-1.0d10]
+
+for i=0,n[4]-1 do begin
+j       = where( ph_c[*,0,i] ne 0.0 )
+!X.range=[min([!X.range[0],min(ph_c[j,0,i])]), $
+          max([!X.range[1],max(ph_c[j,0,i])])]
+!Y.range=[min([!Y.range[0],min(ph_c[j,2,i])]), $
+          max([!Y.range[1],max(ph_c[j,2,i])])]
+endfor
+
+if( n_elements(psitcut) eq 0 )then begin
+    tcut = 0.0d00
+    pcut = 1.0d10
+endif else begin
+
+;-  Particles with PSIn > pcut and t_hit < tcut will be rejected:
+
+    pcut = psitcut[0]
+    tcut = psitcut[1]
+
+    print, ':process_ptcles : PSI and t rejection cuts : ', pcut, tcut
+endelse
+
+;- Extract valid particles:
+
+i = where( ph_c[*,7,0 ] eq -5.0 and                                           $
+         ( ph_c[*,10,0] lt pcut or ph_c[*,6,0] gt tcut ) )
+
+if(n_elements(PFCCOMP) ne 0)then begin
+   i = where( k_ ge PFCCOMP[0] and k_ le PFCCOMP[1] and                       $
+         ( ph_c[*,10,0] lt pcut or ph_c[*,6,0] gt tcut ) )
+endif
+if(n_elements(PFCSEL) ne 0)then begin
+   i = where( k_ eq PFCSEL[0] and                                             $
+         ( ph_c[*,10,0] lt pcut or ph_c[*,6,0] gt tcut ) )
+
+   if(n_elements(PFCSEL) gt 1)then begin
+      for j=1,n_elements(PFCSEL)-1 do begin
+          i = [i,where( k_ eq PFCSEL[j] and                                   $
+         ( ph_c[*,10,0] lt pcut or ph_c[*,6,0] gt tcut ) )]
+      endfor
+   endif
+   j = where( i ne -1 )
+   if(j[0] ne -1)then begin
+      i=i[j]
+   endif else begin
+      print, ':cl : NO VALID PARTICLES!'
+      stop
+   endelse
+   j = sort(i)
+   i = i[j]
+endif
+
+print, ':cl : COUNT: ', n_elements(i)
+
+;- Plot each cache interval:
+
+for m = n[4]-1, 0, -1 do begin
+    plot, ph_c[i,0,m], ph_c[i,2,m], psym=3, /iso, $
+          title=strcompress(string(m),/re)
+endfor
+
+;- ph_c[*,7,it] (dt) isn't needed - compress data:
+
+ph_c[*,7,it] = ph_c[*, 8,it] ;- FG
+ph_c[*,8,it] = ph_c[*, 9,it] ;- ID ;- 6 remains time. 
+                             ;- In F90, 7=time, 8=FG, 9=ID
+
+;- Find index ranges for particles cached by each GPU:
+
+ii = indgen(n[0]*n[1]*n[2])
+
+for j=0,n[1]-1 do begin
+    ii[j*n[0]*n[2]:(j+1)*n[0]*n[2]-1] = j+1
+endfor
+
+ph_c[i, 9,it] = ph_c[i,8,it]
+
+;- For Boris this will be ph(19:21), for LEIID=1 ph(6,11,12),
+;  otherwise (1,2,3) (i.e. doubled up).
+
+ph_c[i, 8,it] = (ph_c[i,11,0]^2 + ph_c[i,12,0]^2 + ph_c[i,13,0]^2)
+
+ph_c[i,10,it] = k_[i]
+
+;- Write ptcl. list out to strip file:
+
+openW, 1, 'ptcl_strip.dat'
+
+   printF, 1, f, format='(E14.6)'
+
+   for j=1,n[1] do begin
+       k = where( ii[i] eq j )
+       printF, 1, min( k )+1L, max( k )+1L, format='(2I10)'
+   endfor
+
+   printF, 1, transpose(reform(ph_c[i,0:16,it])), format='(9E14.6,2I10,6E14.6)'
+
+close, 1
+
+;- Check:
+
+;- 1st print is the total power to the PFCs.
+;- 2nd is the total power in the enseble (less than above, as many
+;  markers won't correspond to PFC hits).
+;- 3rd number is the power to the PFCs for markers that were in
+;  - transit in the cache (i.e. not wound right back to their birth locations).
+
+Plos = f*total((ph_c[i,11, 0]^2 + ph_c[i,12, 0]^2 + ph_c[i,13, 0]^2)*ph_c[i,8,0])*0.5*Mb
+print, ':cl : Plos (i)                : ', Plos
+Plos = f*total((ph_c[*,11, 0]^2 + ph_c[*,12, 0]^2 + ph_c[*,13, 0]^2)*ph_c[*,8,0])*0.5*Mb
+print, ':cl : Plos (*)                : ', Plos
+Plos = f*total((ph_c[i,11,it]^2 + ph_c[i,12,it]^2 + ph_c[i,13,it]^2)*ph_c[i,8,0])*0.5*Mb
+print, ':cl : Plos (at least 1 buffer): ', Plos
+
+!P.multi=[0,4,8,0,0]
+
+com     = [1,3,4,8,10,11,12] ;- Knock off 7 (IPRP)
+
+com     = indgen(max(k_))+1
+
+;com = [1,4,5,7,9,10,12,14,16,23,24,25,26,28,29,30,39,41,43]
+
+;com = [1,3,4,5,7,8,9,10,11,12]
+
+;com = [1]
+
+!X.range    =[ 4.0, 6.0]
+!Y.range    =[-4.8,-3.3]
+!P.charsize =  2.0
+!P.charthick=  2
+
+window, 1, xsize=800, ysize=1500
+device, decompose=0
+eps_colmap, -1
+
+icnt = 0
+
+maxE = max(ph_c[*,11,0]^2+ph_c[*,12,0]^2+ph_c[*,13,0]^2)*0.5*Mb/(1.0e6*echg)
+
+for j=0,n_elements(com)-1 do begin
+    i2 = where(k_ eq com[j] and ( ph_c[*,10,0] lt pcut or ph_c[*,6,0] gt tcut ))
+
+print, j, n_elements(i2)
+
+    E_ = fltarr(n[1])
+
+if( i2[0] ne -1)then begin
+
+    icnt = icnt + 1
+
+    if(com[j] eq 1)then begin
+    plot, ph_c[i,0,0], ph_c[i,2,0], psym=3, /iso, xrange=[0.,0.], yrange=[0.,0.], xtitle='R [m]', ytitle='Z [m]', title=strcompress(string(com[j]),/re)
+    endif else begin
+    plot, ph_c[i,0,0], ph_c[i,2,0], psym=3, /iso, xrange=[0.,0.], yrange=[0.,0.], xtitle='R [m]', ytitle='Z [m]', title=strcompress(string(com[j]),/re)
+    endelse
+
+    if( i2[0] ne -1 )then begin
+        oplot, ph_c[i2,0,0], ph_c[i2,2,0], psym=3, color=7*16-1, thick=5
+
+        E = ( ph_c[i2,11,0]^2 + ph_c[i2,12,0]^2 + $
+              ph_c[i2,13,0]^2 )*ph_c[i2,8,0]*0.5*Mb/(1.0e6*echg)
+        Ep= ( ph_c[i2,11,0]^2 + ph_c[i2,12,0]^2 + $
+              ph_c[i2,13,0]^2 )*0.5*Mb/(1.0e6*echg)
+
+        for m=0,n_elements(i2)-1 do begin
+            E_[ii[i2[m]]-1]= E_[ii[i2[m]]-1] + E[m]
+        endfor
+        
+        E_  = E_*f*1.0e6*echg
+        E_m = total(E_)/float(n[1])
+        s_E = sqrt(total(E_^2)/float(n[1])-(total(E_)/float(n[1]))^2)
+        s_  = s_E/sqrt(float(n[1]))
+        print, ':cl : component : ',com[j], ' Power load : ', $
+                      E_m*float(n[1]),'+-',s_*float(n[1]),'MW'
+
+        h = histogram(Ep,min=0.0,max=maxE*1.05,nbins=100);*f*1.0e6
+    endif else begin
+        print, ':cl : component : ',com[j], ' Power load : ZERO'
+        h = fltarr(100)
+    endelse
+
+    plot, maxE*1.05*findgen(100)/99.0, h, psym=10, xrange=[0.,maxE*1.05], yrange=[0.,0.], xtitle='E [MeV]', ytitle='#'
+    print, ':cl : ', total(E)*f*1.0e6*echg
+
+    if(n_elements(hc) eq 0)then hc = h
+    if(j eq 1)then hc = hc+h
+
+ endif else begin
+print, ':cl : component : ',com[j], ' Power load : ZERO'
+endelse
+
+if(fix(icnt/16) eq float(icnt)/16.0 and icnt ne 0 )then stop
+
+endfor
+
+;E = (ph_c[i,3,0]^2 + ph_c[i,4,0]^2 + ph_c[i,5,0]^2)*0.5*Mb/(1.0e6*echg)
+
+window, 2
+
+i_ = where(k_ ne 0)
+;i_ = i
+
+!X.range=[0.,0.]
+!Y.range=[0.,0.]
+!P.multi=[0,2,2,0,0]
+plot, ph_c[i_,10,0], psym=3 ;- Plot all hits (use i for PFCOMP selected hits).
+plot, 4.0*findgen(4000)/3999.0, histogram(ph_c[i_,10,0],min=0.0,max=4.0,nbins=4000), psym=10, xtitle='PSI!D0!N'
+oplot,  4.0*findgen(4000)/3999.0, histogram(ph_c[*,10,0],min=0.0,max=4.0,nbins=4000), psym=10, color=7*16-1
+plot, ph_c[i_, 6,0], psym=3
+H= histogram(ph_c[i_, 6,0],min=0.0,max=max(ph_c[i_, 6,0])*1.1,nbins=1000)
+H0= histogram(ph_c[*, 6,0],min=0.0,max=1.0,nbins=1000)
+
+i = where(H0 gt 0.0) & i=max(i)
+!X.range=[0.0,1.0*float(i)/999.0]
+
+plot, max(ph_c[i_, 6,0])*1.1*findgen(1000)/999.0, H, psym=10, yrange=[0.,max(H)*1.1], xtitle='!4D!3t [s]'
+oplot, 1.0*findgen(1000)/999.0, H0, psym=10, color=7*16-1
+
+stop
+
+end
+
