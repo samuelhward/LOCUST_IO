@@ -1,0 +1,83 @@
+used the diiid_scrub.py file with LOCUST_IO script to prepare the beam_depositon LOCUST inputs
+
+note for the input files, the title of the file has the energy, pitch, r0, z0 and number of particles in the file.
+after passing the test particle lists through LOCUST:
+
+initially using flags:
+
+	make FLAGS='-DBRELAX -DUNBOR=100 -DOPENMESH -DTOKHEAD -DOPENTRACK -DPROV -DTOKAMAK=8 -DTIMAX=0.000001D0 -DPLOT=1 -DSTDOUT -DNOPFC -DLEIID=8'
+
+B_normal_I_normal
+
+	using g157418.03000
+
+	for 1us: 
+	ORBIT_05-04-2018_22-52-55.712.dat - e80.0000_p-0.400000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_05-04-2018_23-00-17.585.dat - e80.0000_p0.600000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_05-04-2018_23-02-22.484.dat - e80.0000_p-0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_05-04-2018_23-03-13.312.dat - e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+	for 10us with -DBPFLIP -DGEQDSKFIX1:
+	ORBIT_06-04-2018_20-14-19.910.dat - e80.0000_p-0.400000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_06-04-2018_20-18-51.734.dat - e80.0000_p0.600000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_06-04-2018_20-20-18.702.dat - e80.0000_p-0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_06-04-2018_20-21-23.441.dat - e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+	for 10us with just GEQDSKFIX1:
+	ORBIT_08-04-2018_06-34-09.140.dat - e80.0000_p-0.400000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_08-04-2018_06-35-52.322.dat - e80.0000_p0.600000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_08-04-2018_06-38-02.390.dat - e80.0000_p-0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_08-04-2018_06-39-11.531.dat - e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+	for 3us with just GEQDSKFIX1:
+	ORBIT_09-04-2018_06-18-54.661.dat - e80.0000_p-0.400000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_06-20-12.100.dat - e80.0000_p0.600000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_06-21-03.962.dat - e80.0000_p-0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_06-21-54.182.dat - e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+
+	from now on all runs are with GEQDSKFIX1 i.e:
+
+	make FLAGS='-DBRELAX -DUNBOR=100 -DOPENMESH -DTOKHEAD -DOPENTRACK -DPROV -DTOKAMAK=8 -DTIMAX=0.000015D0 -DPLOT=1 -DSTDOUT -DNOPFC -DLEIID=8 -DGEQDSKFIX1'
+
+	for 15us:
+
+	ORBIT_09-04-2018_19-25-26.792.dat - e80.0000_p-0.400000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_19-27-28.461.dat - e80.0000_p0.600000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_19-28-49.279.dat - e80.0000_p-0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_09-04-2018_19-32-56.811.dat - e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+
+
+
+
+B_normal_I_reverse	
+
+	for 15us:
+
+	using g173858.02700
+
+	ORBIT_11-04-2018_19-24-53.039.dat - 173858e80.0000_p-0.550000_r2.10000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_19-47-10.401.dat - 173858e80.0000_p0.550000_r2.15000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_19-51-33.927.dat - 173858e80.0000_p-0.800000_r2.10000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_19-57-47.718.dat - 173858e80.0000_p0.800000_r2.10000_z0.100000_n500_scrubbed.dat
+
+
+B_reverse_I_normal
+
+	for 15us:
+
+	using g153709.03381
+
+
+
+	ORBIT_11-04-2018_20-06-04.446.dat - 153709e80.0000_p-0.400000_r2.05000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_20-16-07.897.dat - 153709e80.0000_p0.460000_r2.20000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_20-25-05.648.dat - 153709e80.0000_p-0.800000_r2.05000_z0.100000_n500_scrubbed.dat
+	ORBIT_11-04-2018_20-28-26.497.dat - 153709e80.0000_p0.800000_r2.20000_z0.100000_n500_scrubbed.dat
+
+
+
+
+
+check_plot is another script which uses LOCUST_IO to examine and plot the first 4 orbits above
