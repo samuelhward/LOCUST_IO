@@ -1,4 +1,4 @@
-#GENERATE_DUMMY_IDS.py
+#generate_test_IDS.py
 
 '''
 Samuel Ward
@@ -38,7 +38,7 @@ from classes.input_classes.wall import Wall as W
 
 def generate_test_IDS(shot,run,use_core_profiles=True,
     use_distribution_sources=True,use_equilibrium=True,
-    use_mhd_linear=False,use_wall=False):
+    use_mhd_linear=True,use_wall=False):
     """
     generate test IDS filled with dummy LOCUST input data
 
@@ -46,7 +46,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     """
 
     test_IDS=imas.ids(shot,run)
-    test_IDS.open_env('wards2','locust_imas','3')
+    test_IDS.create_env('wards2','locust_imas','3')
 
     if use_core_profiles:
 
@@ -94,8 +94,9 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
         equil.dump_data(data_format='IDS',shot=shot,run=run)
 
     if use_mhd_linear:
-        filename_mhd_linear='BPLASMA_n3'
-        pert=P(ID='LOCUST_IO test mhd_linear')
+        filename_mhd_linear='sample_BPLASMA_n3'
+        pert=P(ID='LOCUST_IO test mhd_linear',filename=filename_mhd_linear)
+        pert.dump_data(data_format='IDS',shot=shot,run=run,mode_number=1)
 
     if use_wall:
         filename_wall=''
