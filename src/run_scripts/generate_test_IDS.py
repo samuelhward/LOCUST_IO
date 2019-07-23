@@ -76,14 +76,15 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     if use_distribution_sources:
 
         beam=BD(ID='LOCUST_IO test beam deposition')
-        beam.set(R=1.5+np.abs(np.random.uniform(size=10)))
+
+        beam.set(R=np.full(10,1.8))
         beam.set(phi=np.abs(np.random.uniform(size=10)))
         beam.set(Z=np.random.uniform(size=10))
-        beam.set(V_R=1000.*np.random.uniform(size=10))
-        beam.set(V_tor=1000.*np.random.uniform(size=10))
-        beam.set(V_Z=1000.*np.random.uniform(size=10))
+        beam.set(V_R=1.e6*np.random.uniform(size=10))
+        beam.set(V_tor=1.e6*np.random.uniform(size=10))
+        beam.set(V_Z=1.e6*np.random.uniform(size=10))
         beam.set(V_pitch=np.random.uniform(size=10))
-        beam.set(weight=np.abs(np.random.uniform(size=10)))
+        beam.set(weight=1.e15*np.abs(np.random.uniform(size=10)))
         beam.set(E=0.5*constants.mass_deuteron*beam['V_R']**2+beam['V_Z']**2+beam['V_tor']**2)
         beam.dump_data(data_format='IDS',shot=shot,run=run)
 
@@ -95,8 +96,8 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
 
     if use_mhd_linear:
         filename_mhd_linear='sample_BPLASMA_n3'
-        pert=P(ID='LOCUST_IO test mhd_linear',filename=filename_mhd_linear)
-        pert.dump_data(data_format='IDS',shot=shot,run=run,mode_number=1)
+        pert=P(ID='LOCUST_IO test mhd_linear',data_format='LOCUST',filename=filename_mhd_linear)
+        pert.dump_data(data_format='IDS',shot=shot,run=run,mode_number=-3)
 
     if use_wall:
         filename_wall=''
@@ -115,7 +116,7 @@ if __name__=='__main__':
     parser.add_argument('--core_profiles',type=str,action='store',default=True,dest='use_core_profiles',help="toggle whether to dump test core_profiles to IMAS",required=False)
     parser.add_argument('--distribution_sources',type=str,action='store',default=True,dest='use_distribution_sources',help="toggle whether to dump test distribution_sources to IMAS",required=False)
     parser.add_argument('--equilibrium',type=str,action='store',default=True,dest='use_equilibrium',help="toggle whether to dump test equilibrium to IMAS",required=False)
-    parser.add_argument('--mhd_linear',type=str,action='store',default=False,dest='use_mhd_linear',help="toggle whether to dump test mhd_linear to IMAS",required=False)
+    parser.add_argument('--mhd_linear',type=str,action='store',default=True,dest='use_mhd_linear',help="toggle whether to dump test mhd_linear to IMAS",required=False)
     parser.add_argument('--wall',type=str,action='store',default=False,dest='use_wall',help="toggle whether to dump test wall to IMAS",required=False)
     
     args=parser.parse_args()
