@@ -258,14 +258,14 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
 
     input_data = {} #initialise blank dictionary to hold the data
 
-    input_data['R_1D']=np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid.dim1(:))  
-    input_data['Z_1D']=np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid.dim2(:))  
-    input_data['dB_field_R_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.real(:,:))]
-    input_data['dB_field_R_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.imaginary(:,:))]
-    input_data['dB_field_Z_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.real(:,:))]
-    input_data['dB_field_Z_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.imaginary(:,:))]
-    input_data['dB_field_tor_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.real(:,:))]
-    input_data['dB_field_tor_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.imaginary(:,:))]
+    input_data['R_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.grid.dim1(:))  
+    input_data['Z_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.grid.dim2(:))  
+    input_data['dB_field_R_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.real(:,:))]
+    input_data['dB_field_R_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.imaginary(:,:))]
+    input_data['dB_field_Z_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.real(:,:))]
+    input_data['dB_field_Z_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.imaginary(:,:))]
+    input_data['dB_field_tor_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.real(:,:))]
+    input_data['dB_field_tor_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.imaginary(:,:))]
 
     input_IDS.close()
 
@@ -764,6 +764,58 @@ def dump_perturbation_point_data_LOCUST(output_data,filepath='point_data.inp',BC
 
     print("finished writing point_inp.dat test points")
 
+def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**properties):
+    """
+    dumps perturbation to an IMAS mhd_linear IDS
+
+    args:
+        shot - IDS shot number
+        run -  IDS run number
+        mode_number - toroidal mode number of perturbation to write
+
+    notes:
+        assumes coordinate 1 = R, coordinate 2 = phi, coordinate 3 = Z
+        assumes writing to time_slice 0
+
+    """ 
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_perturbation_IDS_mhd_linear could not import IMAS module!\nreturning\n")
+        return
+
+    print("dumping perturbation from IMAS mhd_linear IDS")
+
+    output_IDS=imas.ids(shot,run) #initialise new blank IDS
+    output_IDS.open_env(username,imasdb,'3')
+    output_IDS.mhd_linear.get() #open the file and get all the data from it
+
+    output_IDS.mhd_linear.ids_properties.comment=ID #write out identification
+    output_IDS.mhd_linear.code.name="LOCUST_IO"
+    output_IDS.mhd_linear.code.version=support.LOCUST_IO_version
+    output_IDS.mhd_linear.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
+    output_IDS.mhd_linear.time=np.array([0.0]) #define timebase
+    output_IDS.mhd_linear.time_slice.resize(1) #create first time slice
+
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode.resize(len(output_IDS.mhd_linear.time_slice(0).toroidal_mode)+1) #add a perturbation
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].n_tor=mode_number #set mode number 
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid_type=1 #define geometry
+   
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid.dim1=output_data['R_1D']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid.dim2=output_data['Z_1D']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate1.real=output_data['dB_field_R_real']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate1.imaginary=output_data['dB_field_R_imag']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate2.real=output_data['dB_field_Z_real']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate2.imaginary=output_data['dB_field_Z_imag']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate3.real=output_data['dB_field_tor_real']
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.b_field_perturbed.coordinate3.imaginary=output_data['dB_field_tor_imag']
+
+    output_IDS.mhd_linear.put()
+    output_IDS.close()
+
+    print("finished dumping perturbation from IMAS mhd_linear IDS")
+
 def dump_perturbation_POCA(output_data,filepath,**properties):
     """
     writes perturbation to POCA format
@@ -890,7 +942,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF/MARSF_bplas)\n".format(self.ID))            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,mode_number=None,BCHECK=1,**properties):
         """
         write perturbation to file
  
@@ -912,13 +964,18 @@ class Perturbation(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files / filename
                 dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
+        elif data_format=='IDS':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to IDS - shot, run and mode_number required\n".format(self.ID),shot,run,mode_number):
+                filepath=support.dir_input_files / filename
+                dump_perturbation_IDS_mhd_linear(self.ID,self.data,shot,run,mode_number,**properties)
+
         elif data_format=='POCA':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to POCA - filename required\n".format(self.ID),filename):
                 filepath=support.dir_input_files / filename
                 dump_perturbation_POCA(self.data,filepath,**properties)
 
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/POCA)\n".format(self.ID))
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
     def plot(self,key='dB_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,ax=False,fig=False):
         """
