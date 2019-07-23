@@ -217,7 +217,7 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
     return input_data
 
 
-def read_perturbation_IDS_mhd_linear(shot,run,mode_number=2,**properties):
+def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     """
     reads perturbation from an IMAS mhd_linear IDS
 
@@ -822,7 +822,7 @@ class Perturbation(classes.base_input.LOCUST_input):
  
     LOCUST_input_type='perturbation'
  
-    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,mode_number=None,**properties):
         """
         read perturbation from file 
  
@@ -860,13 +860,14 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
 
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from magnetics IDS - shot and run required\n".format(self.ID),shot,run):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from mhd_linear IDS - shot, run and mode_number required\n".format(self.ID),shot,run,mode_number):
  
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
+                self.mode_number=mode_number
                 self.properties={**properties}
-                self.data=read_perturbation_IDS(self.shot,self.run,**properties)
+                self.data=read_perturbation_IDS_mhd_linear(self.shot,self.run,self.mode_number,**properties)
 
         elif data_format=='MARSF': #here are the blocks for various file types, they all follow the same pattern
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from MARSF - filename required\n".format(self.ID),filename): #must check we have all info required for reading
