@@ -211,7 +211,7 @@ def read_moments_ASCOT(filepath,**properties):
         input_data={} #initialise data dictionary
 
         input_data['flux_pol_norm_sqrt']=file['distributions/rhoDist/abscissae/dim1'].value
-        input_data['flux_pol_norm_']=input_data['flux_pol_norm_sqrt']**2
+        input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
 
         #convert flux coordinates to bin centres
         for flux_coordinate in ['flux_pol_norm','flux_pol_norm_sqrt']:
