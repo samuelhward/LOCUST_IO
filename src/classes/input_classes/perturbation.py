@@ -216,19 +216,63 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
     
     return input_data
 
-'''
-def read_perturbation_IDS(shot,run,**properties):
+
+def read_perturbation_IDS_mhd_linear(shot,run,mode_number=2,**properties):
     """
+    reads perturbation from an IMAS mhd_linear IDS
+
+    args:
+        shot - IDS shot number
+        run -  IDS run number
+        mode_number - toroidal mode number of perturbation to read
+
     notes:
+        assumes coordinate 1 = R, coordinate 2 = phi, coordinate 3 = Z
+        assumes reading from time_slice 0
 
     """ 
 
     try:
         import imas 
     except:
-        raise ImportError("ERROR: read_perturbation_IDS could not import IMAS module!\nreturning\n")
+        raise ImportError("ERROR: read_perturbation_IDS_mhd_linear could not import IMAS module!\nreturning\n")
         return
-'''
+
+    print("reading perturbation from IMAS mhd_linear IDS")
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.mhd_linear.get() #open the file and get all the data from it
+
+    mode_index=None
+    for counter,mode in enumerate(input_IDS.mhd_linear.time_slice(0).toroidal_mode): #detremine where desired harmonic is stored in the IDS
+        if mode_number==mode.n_tor
+            mode_index=counter
+
+    if not mode_index:
+        print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot {shot} run {run} n {mode})!\nreturning\n!".format(shot=shot,run=run,mode=mode_number))
+        return
+
+    if input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid_type!=1:    
+        print("WARNING: read_perturbation_IDS_mhd_linear detected non-rectangular grid geometry (shot {shot} run {run} n {mode})!".format(shot=shot,run=run,mode=mode_number))
+
+    input_data = {} #initialise blank dictionary to hold the data
+
+    input_data['R_1D']=np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid.dim1(:))  
+    input_data['Z_1D']=np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid.dim2(:))  
+    input_data['dB_field_R_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.real(:,:))]
+    input_data['dB_field_R_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.imaginary(:,:))]
+    input_data['dB_field_Z_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.real(:,:))]
+    input_data['dB_field_Z_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.imaginary(:,:))]
+    input_data['dB_field_tor_real']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.real(:,:))]
+    input_data['dB_field_tor_imag']=[np.array(input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.imaginary(:,:))]
+
+    input_IDS.close()
+
+    print("finished reading perturbation from IMAS mhd_linear IDS")
+
+    return input_data
+
 '''
 def read_perturbation_JOREK(filepath,**properties):
     """
