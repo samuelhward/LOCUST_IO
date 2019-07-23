@@ -242,6 +242,68 @@ def read_moments_ASCOT(filepath,**properties):
 
     return input_data
 
+def read_moments_IDS(shot,run,**properties):
+    """
+    reads LOCUST moments distributions IDS
+ 
+    args: 
+        shot - IDS shot number 
+        run - IDS run number
+
+    notes:
+        assumes reading from first distribution
+    """
+
+    print("reading moments from IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_moments_IDS could not import IMAS module!\nreturning\n")
+        return
+    
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.distributions.get() #open the file and get all the data from it
+
+    input_data = {} #initialise blank dictionary to hold the data
+
+    input_data['flux_pol_norm_sqrt']=np.sqrt(np.array(input_IDS.distributions.profiles_1d[0].grid.psi)) 
+    input_data['flux_pol_norm']=np.array(input_IDS.distributions.profiles_1d[0].grid.psi)
+    input_data['dVOL']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].grid.volume)
+    input_data['beam_source']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].source[0].particles)
+    #input_data['beam_source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['error'])
+    input_data['density']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].density_fast)
+    #input_data['density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Density']['error'])
+    input_data['energy_para']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].pressure_fast_parallel)
+    #input_data['energy_para_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (para)']['error'])
+    input_data['energy_perp']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].pressure_fast)-input_data['energy_para']
+    #input_data['energy_perp_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['E (perp)']['error'])
+    input_data['energy']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].source[0].energy)
+    #input_data['energy_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['error'])
+    input_data['J(NBCD)-raw']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].current_fast_tor)
+    #input_data['J(NBCD)-raw_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['error'])
+    input_data['NBI-heating-power(TOT)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].thermalisation[0].energy)
+    #input_data['NBI-heating-power(TOT)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['error'])
+    input_data['NBI-heating-power(e-)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].collisions.electrons.power_fast)
+    #input_data['NBI-heating-power(e-)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['error'])
+    input_data['NBI-heating-power(i1)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].collisions.ion[0].power_fast)
+    #input_data['NBI-heating-power(i1)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (i1)']['error'])
+    input_data['residual-angular-momentum-density']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].source[0].momentum_tor)
+    #input_data['residual-angular-momentum-density_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Residual Angular Momentum Density']['error'])
+    input_data['torque-density(JxB-inst)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].torque_tor_j_radial)
+    #input_data['torque-density(JxB-inst)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB inst)']['error'])
+    #input_data['torque-density(JxB-sweep)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['data'])
+    #input_data['torque-density(JxB-sweep)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (JxB sweep)']['error'])
+    #input_data['torque-density(coll)']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['data'])
+    #input_data['torque-density(coll)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Torque Density (coll)']['error'])
+
+    input_IDS.close()
+
+    print("finished reading moments from IDS")
+ 
+    return input_data
+
 
 ################################################################## Orbits class
 
@@ -305,8 +367,17 @@ class Moments(classes.base_output.LOCUST_output):
                 self.properties={**properties}
                 self.data=read_moments_ASCOT(self.filepath,**properties)
 
+        elif data_format=='IDS':
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from distributions IDS - shot and run required\n".format(self.ID),shot,run):
+ 
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.properties={**properties}
+                self.data=read_moments_IDS(self.shot,self.run,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT)\n".format(self.ID))            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/TRANSP/ASCOT/IDS)\n".format(self.ID))            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
