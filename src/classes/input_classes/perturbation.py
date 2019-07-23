@@ -121,7 +121,7 @@ def read_perturbation_LOCUST(filepath,**properties):
             input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
             input_data['R_1D']=input_data['R_2D'][:,0]
             input_data['Z_1D']=input_data['Z_2D'][0,:]
-            input_data['dB_field_R_real']=input_data['dwB_field_R_real'].reshape(R_dim,Z_dim)
+            input_data['dB_field_R_real']=input_data['dB_field_R_real'].reshape(R_dim,Z_dim)
             input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(R_dim,Z_dim)
             input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(R_dim,Z_dim)
             input_data['dB_field_Z_imag']=input_data['dB_field_Z_imag'].reshape(R_dim,Z_dim)
@@ -245,27 +245,27 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
     mode_index=None
-    for counter,mode in enumerate(input_IDS.mhd_linear.time_slice(0).toroidal_mode): #detremine where desired harmonic is stored in the IDS
-        if mode_number==mode.n_tor
+    for counter,mode in enumerate(input_IDS.mhd_linear.time_slice[0].toroidal_mode): #detremine where desired harmonic is stored in the IDS
+        if mode_number==mode.n_tor:
             mode_index=counter
 
-    if not mode_index:
+    if mode_index is None:
         print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot {shot} run {run} n {mode})!\nreturning\n!".format(shot=shot,run=run,mode=mode_number))
         return
 
-    if input_IDS.mhd_linear.time_slice(0).toroidal_mode(mode_index).plasma.grid_type!=1:    
+    if input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.grid_type.index!=1:    
         print("WARNING: read_perturbation_IDS_mhd_linear detected non-rectangular grid geometry (shot {shot} run {run} n {mode})!".format(shot=shot,run=run,mode=mode_number))
 
     input_data = {} #initialise blank dictionary to hold the data
 
-    input_data['R_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.grid.dim1(:))  
-    input_data['Z_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.grid.dim2(:))  
-    input_data['dB_field_R_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.real(:,:))]
-    input_data['dB_field_R_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate1.imaginary(:,:))]
-    input_data['dB_field_Z_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.real(:,:))]
-    input_data['dB_field_Z_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate2.imaginary(:,:))]
-    input_data['dB_field_tor_real']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.real(:,:))]
-    input_data['dB_field_tor_imag']=[np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode(mode_index).plasma.b_field_perturbed.coordinate3.imaginary(:,:))]
+    input_data['R_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.grid.dim1)  
+    input_data['Z_1D']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.grid.dim2)  
+    input_data['dB_field_R_real']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate1.real)
+    input_data['dB_field_R_imag']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate1.imaginary)
+    input_data['dB_field_Z_real']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate2.real)
+    input_data['dB_field_Z_imag']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate2.imaginary)
+    input_data['dB_field_tor_real']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate3.real)
+    input_data['dB_field_tor_imag']=np.array(input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.b_field_perturbed.coordinate3.imaginary)
 
     input_IDS.close()
 
@@ -798,9 +798,10 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
     output_IDS.mhd_linear.time=np.array([0.0]) #define timebase
     output_IDS.mhd_linear.time_slice.resize(1) #create first time slice
 
-    output_IDS.mhd_linear.time_slice[0].toroidal_mode.resize(len(output_IDS.mhd_linear.time_slice(0).toroidal_mode)+1) #add a perturbation
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode.resize(len(output_IDS.mhd_linear.time_slice[0].toroidal_mode)+1) #add a perturbation
+
     output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].n_tor=mode_number #set mode number 
-    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid_type=1 #define geometry
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid_type.index=1 #define geometry
    
     output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid.dim1=output_data['R_1D']
     output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid.dim2=output_data['Z_1D']
@@ -966,7 +967,6 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         elif data_format=='IDS':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to IDS - shot, run and mode_number required\n".format(self.ID),shot,run,mode_number):
-                filepath=support.dir_input_files / filename
                 dump_perturbation_IDS_mhd_linear(self.ID,self.data,shot,run,mode_number,**properties)
 
         elif data_format=='POCA':
