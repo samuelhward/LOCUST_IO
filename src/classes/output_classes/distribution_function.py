@@ -557,8 +557,17 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 self.properties={**properties}
                 self.data=read_distribution_function_ASCOT(self.filepath,**properties)
 
+        elif data_format=='IDS':
+            if not processing.utils.none_check(self.ID,self.LOCUST_output_type,"ERROR: {} cannot read_data() from IDS - shot and run required\n".format(self.ID),shot,run):
+                
+                self.data_format=data_format
+                self.shot=shot
+                self.run=run
+                self.properties={**properties}
+                self.data=read_distribution_function_IDS(self.shot,self.run,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT)\n".format(self.ID))            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/ASCOT/IDS)\n".format(self.ID))            
 
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
