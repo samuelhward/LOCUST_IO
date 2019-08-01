@@ -3,7 +3,7 @@
 LOCUST_IO contains a few simple physics routines to process data (please refer to docstrings for instructions): 
 
 
-     process_input                               routines to manipulate inputs to LOCUST
+     process_input                               
 
         QTP_calc                                 calculates the missing quantity out of Q, toroidal or poloidal flux (given two)
         fpolrz_calc                              calculates the 1D flux function on the 2D computational grid
@@ -11,7 +11,7 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
         mag_axis_calc                            calculate location of the magnetic axis
         transform_marker_velocities              transforms marker phase space velocities to LOCUST r,phi,z format
 
-     process_output                              routines to manipulate outputs to LOCUST
+     process_output                              
 
         dfn_transform                            transform and integrate distribution function to coordinate system
         dfn_crop                                 crops dfn according to limits in any dimension
@@ -22,3 +22,8 @@ LOCUST_IO contains a few simple physics routines to process data (please refer t
         TRANSP_2_ASCOT                           convert full set of TRANSP inputs to ASCOT inputs
         TRANSP_2_LOCUST                          convert full set of TRANSP inputs to LOCUST inputs
         get_fbm_extract_fi                       extract fast ion distribution from TRANSP output using get_fbm
+
+    plot_scripts
+
+        plot_coulomb_logarithm                   plots the coulomb logarithm as LOCUST sees it
+        plot_collision_operator                  plots the collision operator drag/drift terms as LOCUST sees it

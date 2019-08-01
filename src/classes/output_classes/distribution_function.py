@@ -436,6 +436,39 @@ def read_distribution_function_particle_list(source,**properties):
 
     return input_data
 
+def read_distribution_function_IDS(shot,run,**properties):
+    """
+    read distribution function from IDS
+
+    notes:
+        distribution function is already integrated down to R Z dimensions (so use transform=False in .plot etc.)
+    """
+
+    print("reading distribution function from IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_distribution_function_IDS could not import IMAS module!\nreturning\n")
+        return
+
+    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.distributions.get() #open the file and get all the data from it
+ 
+    input_data = {} #initialise blank dictionary to hold the data
+
+    input_data['R_1D']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].grid.r)
+    input_data['Z_1D']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].grid.z)
+    input_data['dfn']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].density_fast)
+    
+    input_IDS.close()
+
+    print("finished reading distribution function from IDS")
+
+    return input_data
+
+
 ################################################################## Distribution_Function write functions
 
 def dump_distribution_function_LOCUST(output_data,filepath,**properties): 
