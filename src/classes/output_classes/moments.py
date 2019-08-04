@@ -268,8 +268,8 @@ def read_moments_IDS(shot,run,**properties):
 
     input_data = {} #initialise blank dictionary to hold the data
 
-    input_data['flux_pol_norm_sqrt']=np.sqrt(np.array(input_IDS.distributions.profiles_1d[0].grid.psi)) 
-    input_data['flux_pol_norm']=np.array(input_IDS.distributions.profiles_1d[0].grid.psi)
+    input_data['flux_pol_norm_sqrt']=np.sqrt(np.array(input_IDS.distributions.distribution[0].profiles_1d[0].grid.psi)) 
+    input_data['flux_pol_norm']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].grid.psi)
     input_data['dVOL']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].grid.volume)
     input_data['beam_source']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].source[0].particles)
     #input_data['beam_source_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Beam Source']['error'])
@@ -283,7 +283,7 @@ def read_moments_IDS(shot,run,**properties):
     #input_data['energy_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['Energy']['error'])
     input_data['J(NBCD)-raw']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].current_fast_tor)
     #input_data['J(NBCD)-raw_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['J (NBCD) (raw)']['error'])
-    input_data['NBI-heating-power(TOT)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].thermalisation[0].energy)
+    input_data['NBI-heating-power(TOT)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].thermalisation.energy)
     #input_data['NBI-heating-power(TOT)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (TOT)']['error'])
     input_data['NBI-heating-power(e-)']=np.array(input_IDS.distributions.distribution[0].profiles_1d[0].collisions.electrons.power_fast)
     #input_data['NBI-heating-power(e-)_err']=np.array(file['Output Data']['Fast Ions']['Profiles (1D)']['NBI Heating Power (e-)']['error'])
