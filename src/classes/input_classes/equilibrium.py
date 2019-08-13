@@ -634,7 +634,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         if not self.run_check():
-            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID={})".format(self.ID)) 
+            print("WARNING: run_check() returned false - insufficient data for LOCUST run (ID = {})".format(self.ID)) 
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"dump_data requires self.data and data_format\n",self.data,data_format):
             pass
          
