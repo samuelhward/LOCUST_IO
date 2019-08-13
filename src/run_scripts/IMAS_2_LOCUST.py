@@ -90,7 +90,7 @@ def IMAS_2_LOCUST(shot,run,path_LOCUST='',beam_depo_GC=True,GEQDSKFIX=0,tag=''):
         return 
 
     #try: #run dump_inputs_LOCUST without ion temperature - dump these separately due to possible multiple species
-    run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type=wall_type,input_path=path_LOCUST,tag=tag)
+    run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path=path_LOCUST,tag=tag)
         
     for counter,temperature in enumerate(temperature_array):
         temperature.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_Ti{}.dat'.format(counter))
