@@ -66,7 +66,7 @@ except:
 #Main
 
 #read in all relevant IMAS inputs and outputs
-def IMAS_2_LOCUST(shot,run,path_LOCUST='',beam_depo_GC=True,GEQDSKFIX=0,tag=''):
+def IMAS_2_LOCUST(shot,run,path_LOCUST=pathlib.Path(''),beam_depo_GC=True,GEQDSKFIX=0,tag=''):
     """
     read all LOCUST inputs from IMAS run data  
 
