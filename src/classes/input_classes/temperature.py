@@ -164,6 +164,9 @@ def read_temperature_IDS(shot,run,**properties):
     if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
         processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
+    if 'flux_pol' in input_data: #calculate normalised flux
+        input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol'])-np.min(input_data['flux_pol']))
+
     input_IDS.close()
 
     print("finished reading temperature from IDS")

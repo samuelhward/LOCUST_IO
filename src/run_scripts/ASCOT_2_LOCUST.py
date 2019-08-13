@@ -87,7 +87,7 @@ def ASCOT_2_LOCUST(path_LOCUST=pathlib.Path(''),path_ASCOT=pathlib.Path(''),beam
 
     try:
         temperature_array,density_array,temperature_e,density_e,beam_deposition,wall=run_scripts.utils.read_inputs_ASCOT(input_path=path_ASCOT,beam_depo_GC=beam_depo_GC,species_numbers=species_numbers,wall_type=wall_type)
-        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='made using ASCOT_2_LOCUST',data_format='GEQDSK',filename=pathlib.Path(path_ASCOT) / filename_ASCOT_equilibrium,GEQDSKFIX=GEQDSKFIX)
+        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='ASCOT_2_LOCUST() equilibrium',data_format='GEQDSK',filename=pathlib.Path(path_ASCOT) / filename_ASCOT_equilibrium,GEQDSKFIX=GEQDSKFIX)
     except:
         print("ERROR: ASCOT_2_LOCUST could not read_inputs_ASCOT from LOCUST_IO/input_files/{}\n".format(path_ASCOT))
         return 

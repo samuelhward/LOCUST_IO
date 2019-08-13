@@ -1193,23 +1193,23 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
     for species_number in species_numbers: #cycle through species and read corresponding kinetic profiles
 
         try:
-            temperature=classes.input_classes.temperature.Temperature(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_temperature_i,species_number=species_number,species='ions')
+            temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_ASCOT() ion temperature',data_format='ASCOT',filename=filepath_temperature_i,species_number=species_number,species='ions')
             temperature_array.append(temperature)
         except:
             print("WARNING: read_inputs_ASCOT() could not read ion temperature for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_temperature_i))
         try:
-            density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_density_i,species_number=species_number,species='ions')
+            density=classes.input_classes.number_density.Number_Density(ID='read_inputs_ASCOT() ion density',data_format='ASCOT',filename=filepath_density_i,species_number=species_number,species='ions')
             density_array.append(density)
         except:
             print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_density_i))
 
     try:
-        temperature_e=classes.input_classes.temperature.Temperature(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_temperature_e,species_number=species_number,species='electrons')
+        temperature_e=classes.input_classes.temperature.Temperature(ID='read_inputs_ASCOT() electron temperature',data_format='ASCOT',filename=filepath_temperature_e,species_number=species_number,species='electrons')
     except:
         print("WARNING: read_inputs_ASCOT() could not read electron temperature from LOCUST_IO/input_files/{}".format(filepath_temperature_e))
 
     try:
-        density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_ASCOT()',data_format='ASCOT',filename=filepath_density_e,species_number=species_number,species='electrons')
+        density_e=classes.input_classes.number_density.Number_Density(ID='read_inputs_ASCOT() electron density',data_format='ASCOT',filename=filepath_density_e,species_number=species_number,species='electrons')
     except:
         print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/input_files/{}".format(filepath_density_i))
 
@@ -1218,7 +1218,7 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
     else: 
         data_format_beam_depo='ASCOT_FO'
     try:
-        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='made using read_inputs_ASCOT()',data_format=data_format_beam_depo,filename=filepath_beam_deposition)
+        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='read_inputs_ASCOT() beam deposition',data_format=data_format_beam_depo,filename=filepath_beam_deposition)
     except:
         print("WARNING: read_inputs_ASCOT() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
         beam_deposition=None
@@ -1231,7 +1231,7 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
     data_format_wall='ASCOT_'+wall_type
 
     try:
-        wall=classes.input_classes.wall.Wall(ID='made using read_inputs_ASCOT()',data_format=data_format_wall,filename=filepath_wall)
+        wall=classes.input_classes.wall.Wall(ID='read_inputs_ASCOT() wall',data_format=data_format_wall,filename=filepath_wall)
     except:
         print("WARNING: read_inputs_ASCOT() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
         wall=None
@@ -1795,35 +1795,35 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
     density_array=[]
 
     try:
-        temperature=classes.input_classes.temperature.Temperature(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='ions')
+        temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() ion temperature',data_format='IDS',shot=shot,run=run,species='ions')
         temperature_array.append(temperature)
     except:
         print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
     try:
-        density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='ions')
+        density=classes.input_classes.number_density.Number_Density(ID='read_inputs_IMAS() ion density',data_format='IDS',shot=shot,run=run,species='ions')
         density_array.append(density)
     except:
         print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
 
     try:
-        temperature_e=classes.input_classes.temperature.Temperature(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='electrons')
+        temperature_e=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() electron temperature',data_format='IDS',shot=shot,run=run,species='electrons')
     except:
         print("WARNING: read_inputs_IMAS() could not read electron temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
 
     try:
-        density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='electrons')
+        density_e=classes.input_classes.number_density.Number_Density(ID='read_inputs_IMAS() electron density',data_format='IDS',shot=shot,run=run,species='electrons')
     except:
         print("WARNING: read_inputs_IMAS() could not read electron number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
 
     try:
-        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='read_inputs_IMAS() beam deposition',data_format='IDS',shot=shot,run=run)
     except:
         print("WARNING: read_inputs_IMAS() could not read beam deposition from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
         beam_deposition=None
 
     '''
     try:
-        wall=classes.input_classes.wall.Wall(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+        wall=classes.input_classes.wall.Wall(ID='read_inputs_IMAS() wall',data_format='IDS',shot=shot,run=run)
     except:
         print("WARNING: read_inputs_IMAS() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
     '''
@@ -1831,7 +1831,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
     wall=None
 
     try:
-        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='read_inputs_IMAS() equilibrium',data_format='IDS',shot=shot,run=run)
     except:
         print("WARNING: read_inputs_IMAS() could not read equilibrium from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
         equilibrium=None
