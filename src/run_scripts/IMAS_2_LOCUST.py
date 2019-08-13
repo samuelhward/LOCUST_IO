@@ -1,10 +1,10 @@
-#run_scripts.ASCOT_2_LOCUST.py
+#run_scripts.IMAS_2_LOCUST.py
  
 """
 Samuel Ward
-26/03/2019
+06/08/2019
 ----
-read ASCOT inputs and generate LOCUST inputs 
+read IMAS inputs from IMAS IDSs and generates corresponding LOCUST inputs 
 ---
 usage:
     see README.md for usage
@@ -65,63 +65,59 @@ except:
 ###################################################################################################
 #Main
 
-#read in all relevant ASCOT inputs and outputs
-def ASCOT_2_LOCUST(path_LOCUST='',path_ASCOT='',beam_depo_GC=True,filename_ASCOT_equilibrium='ASCOT_GEQDSK',GEQDSKFIX=0,species_numbers=[1],wall_type='2D',tag=''):
+#read in all relevant IMAS inputs and outputs
+def IMAS_2_LOCUST(shot,run,path_LOCUST='',beam_depo_GC=True,GEQDSKFIX=0,tag=''):
     """
-    read all LOCUST inputs from ASCOT run data  
+    read all LOCUST inputs from IMAS run data  
 
     notes:
         remember to make sure the directory structure already exists!
-        XXX assumes equilibrium stored as GEQDSK in path_ASCOT since no way of assimilating ASCOT equilibrium for now
-        takes wall from ASCOT input, not output
+        assumes first time slice
+        dumps kinetic profiles for all available species        
     args:
+        shot - IDS shot number 
+        run - IDS run number
         path_LOCUST - path to LOCUST files in input_files dir (input_files/path_LOCUST...)
-        path_ASCOT - path to ASCOT files in input_files dir (input_files/path_ASCOT...)
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
-        filename_ASCOT_equilibrium - filename of equilibrium stored AS GEQDSK in path_ASCOT
         GEQDSKFIX - LOCUST-equivalent flag to optionally flip fields in GEQDSK
-        species_numbers - list or array of integer species number labels from input particle list to read in
-        wall_type - set wall type to '2D' or '3D'
         tag - optional identifier tag for each set of run files produced
     """
 
     try:
-        temperature_array,density_array,temperature_e,density_e,beam_deposition,wall=run_scripts.utils.read_inputs_ASCOT(input_path=path_ASCOT,beam_depo_GC=beam_depo_GC,species_numbers=species_numbers,wall_type=wall_type)
-        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='made using ASCOT_2_LOCUST',data_format='GEQDSK',filename=pathlib.Path(path_ASCOT) / filename_ASCOT_equilibrium,GEQDSKFIX=GEQDSKFIX)
+        temperature_array,density_array,temperature_e,density_e,beam_deposition,wall,equilibrium=run_scripts.utils.read_inputs_IMAS(shot=shot,run=run,GEQDSKFIX=GEQDSKFIX)
     except:
-        print("ERROR: ASCOT_2_LOCUST could not read_inputs_ASCOT from LOCUST_IO/input_files/{}\n".format(path_ASCOT))
+        print("ERROR: IMAS_2_LOCUST could not read_inputs_IMAS from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
         return 
 
     #try: #run dump_inputs_LOCUST without ion temperature - dump these separately due to possible multiple species
     run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type=wall_type,input_path=path_LOCUST,tag=tag)
         
-    for temperature in temperature_array:
-        temperature.dump_data(data_format='LOCUST',filename=pathlib.Path(path_LOCUST) / 'profile_Ti{}.dat'.format(temperature.properties['species_number']))
+    for counter,temperature in enumerate(temperature_array):
+        temperature.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_Ti{}.dat'.format(counter))
     
-    for density in density_array:
-        density.dump_data(data_format='LOCUST',filename=pathlib.Path(path_LOCUST) / 'profile_ni{}.dat'.format(density.properties['species_number']))
+    for counter,density in enumerate(density_array):
+        density.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_ni{}.dat'.format(counter))
 
     #except:
-    #    print("ERROR: ASCOT_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
+    #    print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
     #    return         
 
 if __name__=='__main__':
 
     import argparse #take user command line input here
-    parser=argparse.ArgumentParser(description='convert ASCOT files to LOCUST input files')
-    parser.add_argument('--path_LOCUST',type=str,action='store',default='',dest='path_LOCUST',help="source path to ASCOT inputs within input_files",required=False)
-    parser.add_argument('--path_ASCOT',type=str,action='store',default='',dest='path_ASCOT',help="target path to LOCUST inputs within input_files",required=False)
+    parser=argparse.ArgumentParser(description='convert IMAS IDSs files to LOCUST input files')
+
+    parser.add_argument('--shot',type=int,action='store',dest='shot',help="IDS shot number",required=True)
+    parser.add_argument('--run',type=int,action='store',dest='run',help="IDS run number",required=True)
+    parser.add_argument('--path_LOCUST',type=str,action='store',default='',dest='path_LOCUST',help="source path to IMAS inputs within input_files",required=False)
     parser.add_argument('--GC',action='store_true',default=False,dest='beam_depo_GC',help="toggle guiding centre particle list (default False)",required=False)
-    parser.add_argument('--ASCOT_eq',type=str,action='store',default='ASCOT_GEQDSK',dest='filename_ASCOT_equilibrium',help="filename of equilibrium stored as GEQDSK in path_ASCOT",required=False)
     parser.add_argument('--GEQDSKFIX',action='store',default=0,dest='GEQDSKFIX',help="LOCUST-equivalent flag to optionally flip fields in GEQDSK",required=False)    
-    parser.add_argument('--species_numbers',nargs='+',type=int,action='store',default=1,dest='species_numbers',help="species number labels from input particle list to read in e.g. --species_numbers 1 3 5",required=False)
-    parser.add_argument('--wall_type',type=str,action='store',default='2D',dest='wall_type',help="set wall type to '2D' or '3D'",required=False)
     parser.add_argument('--tag',type=str,action='store',default='',dest='tag',help="optional identifier tag for each set of run files produced",required=False)    
     
     args=parser.parse_args()
 
     #convert 
-    ASCOT_2_LOCUST(path_LOCUST=args.path_LOCUST,path_ASCOT=args.path_ASCOT,beam_depo_GC=args.beam_depo_GC,filename_ASCOT_equilibrium=args.ASCOT_GEQDSK,GEQDSKFIX=args.GEQDSKFIX,species_numbers=args.species_numbers,wall_type=args.wall_type,tag=args.tag)
+    IMAS_2_LOCUST(shot=args.shot,run=args.run,path_LOCUST=args.path_LOCUST,beam_depo_GC=args.beam_depo_GC,GEQDSKFIX=args.GEQDSKFIX,tag=args.tag)
 
 #################################
  

@@ -265,6 +265,14 @@ def read_beam_depo_IDS(shot,run,**properties):
 
     for key in input_data: #convert to numpy arrays
         input_data[key]=np.asarray(input_data[key])
+
+    #check for common field names to convert to LOCUST_IO variable names
+
+    locust_io_names=['E','rho','V_tor','V_pitch'] #LOCUST_IO fields that we want to retain
+    nemo_names=['Energy','Rhotor','V_PHI','Pitch angle'] #first check possible matching NEMO field names
+    for nemo_name,locust_io_name in zip(nemo_names,locust_io_names):
+        if nemo_name in input_data.keys():
+            input_data[locust_io_name]=input_data.pop(nemo_name)
  
     input_IDS.close()
 

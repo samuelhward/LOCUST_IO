@@ -1778,6 +1778,69 @@ def calc_chandrasekhar_function(x,mi,mt):
 
     return G,f1,f2
 
+################################################################################################### IMAS classes and functions
+
+def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
+    """
+    reads full run input data from IDSs stored in IMAS database
+
+    notes:
+        assumes IMAS-related settings stored in settings.py
+    args:
+    """
+
+    print("read_inputs_IMAS()")
+
+    temperature_array=[] #arrays to hold kinetic profile data for each species
+    density_array=[]
+
+    try:
+        temperature=classes.input_classes.temperature.Temperature(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='ions')
+        temperature_array.append(temperature)
+    except:
+        print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+    try:
+        density=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='ions')
+        density_array.append(density)
+    except:
+        print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    try:
+        temperature_e=classes.input_classes.temperature.Temperature(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='electrons')
+    except:
+        print("WARNING: read_inputs_IMAS() could not read electron temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    try:
+        density_e=classes.input_classes.number_density.Number_Density(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run,species='electrons')
+    except:
+        print("WARNING: read_inputs_IMAS() could not read electron number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    try:
+        beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+    except:
+        print("WARNING: read_inputs_IMAS() could not read beam deposition from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+        beam_deposition=None
+
+    '''
+    try:
+        wall=classes.input_classes.wall.Wall(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+    except:
+        print("WARNING: read_inputs_IMAS() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
+    '''
+    
+    wall=None
+
+    try:
+        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='made using read_inputs_IMAS()',data_format='IDS',shot=shot,run=run)
+    except:
+        print("WARNING: read_inputs_IMAS() could not read equilibrium from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+        equilibrium=None
+
+    print("finished read_inputs_IMAS()")
+
+    return temperature_array,density_array,temperature_e,density_e,beam_deposition,wall,equilibrium
+
+
 ################################################################################################### misc functions
 
 
