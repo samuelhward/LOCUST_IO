@@ -854,7 +854,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     rho_tor=np.ones(output_data['R'].size)*-1.
     output_IDS.distribution_sources.source[0].markers[0].positions=np.array([output_data['R'],
         output_data['phi'],output_data['Z'],output_data['E'],output_data['V_pitch'],rho_tor,
-        output_data['V_R'],output_data['V_Z'],output_data['V_tor'],output_data['weight']]).T
+        output_data['V_R'],output_data['V_Z'],output_data['V_tor']]).T
  
     #'put' all the output_data into the file and close
     output_IDS.distribution_sources.put()
