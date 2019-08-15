@@ -86,7 +86,7 @@ def IMAS_2_LOCUST(shot,run,path_LOCUST=pathlib.Path(''),beam_depo_GC=True,GEQDSK
     path_LOCUST=pathlib.Path(path_LOCUST)
 
     try:
-        temperature_array,density_array,perturbation_array,temperature_e,density_e,beam_deposition,wall,equilibrium,perturbation_array=run_scripts.utils.read_inputs_IMAS(shot=shot,run=run,GEQDSKFIX=GEQDSKFIX)
+        temperature_array,density_array,perturbation_array,temperature_e,density_e,beam_deposition,wall,equilibrium=run_scripts.utils.read_inputs_IMAS(shot=shot,run=run,GEQDSKFIX=GEQDSKFIX)
     except:
         print("ERROR: IMAS_2_LOCUST could not read_inputs_IMAS from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
         return 

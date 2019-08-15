@@ -96,7 +96,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
 
     if use_mhd_linear:
         filename_mhd_linear='sample_BPLASMA_n3'
-        pert=P(ID='LOCUST_IO test mhd_linear',data_format='LOCUST',filename=filename_mhd_linear)
+        pert=P(ID='LOCUST_IO test mhd_linear',data_format='LOCUST',filename=filename_mhd_linear,mode_number=-3)
         pert.dump_data(data_format='IDS',shot=shot,run=run,mode_number=-3)
 
     if use_wall:

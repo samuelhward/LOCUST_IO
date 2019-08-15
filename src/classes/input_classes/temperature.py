@@ -411,16 +411,17 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
     if properties['species']=='electrons':
         output_IDS.core_profiles.profiles_1d[0].electrons.temperature=output_data['T']
     elif properties['species']=='ions':
-        output_IDS.core_profiles.profiles_1d[0].ion.resize(1) #add an ion species 
-        #TODO need to add additional species data here e.g. mass, charge
-        output_IDS.core_profiles.profiles_1d[0].ion[0].temperature=output_data['T']
+        output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species 
+        output_IDS.core_profiles.profiles_1d[0].ion[-1].temperature=output_data['T']
+        if 'Z' in properties:
+            output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=properties['Z']
+
     else:
         print("ERROR: cannot dump_temperature_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
         return
         
     #write out the axes
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
-
 
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
