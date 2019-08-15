@@ -83,24 +83,30 @@ def IMAS_2_LOCUST(shot,run,path_LOCUST=pathlib.Path(''),beam_depo_GC=True,GEQDSK
         tag - optional identifier tag for each set of run files produced
     """
 
+    path_LOCUST=pathlib.Path(path_LOCUST)
+
     try:
-        temperature_array,density_array,temperature_e,density_e,beam_deposition,wall,equilibrium=run_scripts.utils.read_inputs_IMAS(shot=shot,run=run,GEQDSKFIX=GEQDSKFIX)
+        temperature_array,density_array,perturbation_array,temperature_e,density_e,beam_deposition,wall,equilibrium,perturbation_array=run_scripts.utils.read_inputs_IMAS(shot=shot,run=run,GEQDSKFIX=GEQDSKFIX)
     except:
         print("ERROR: IMAS_2_LOCUST could not read_inputs_IMAS from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
         return 
 
-    #try: #run dump_inputs_LOCUST without ion temperature - dump these separately due to possible multiple species
-    run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path=path_LOCUST,tag=tag)
-        
-    for counter,temperature in enumerate(temperature_array):
-        temperature.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_Ti{}.dat'.format(counter))
-    
-    for counter,density in enumerate(density_array):
-        density.dump_data(data_format='LOCUST',filename=path_LOCUST+'profile_ni{}.dat'.format(counter))
+    try: #run dump_inputs_LOCUST without ion temperature - dump these separately due to possible multiple species
 
-    #except:
-    #    print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
-    #    return         
+        run_scripts.utils.dump_inputs_LOCUST(temperature_e=temperature_e,density_e=density_e,equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,beam_depo_weighted=True,BCHECK=False,wall_type='2D',input_path=path_LOCUST,tag=tag)
+            
+        for temperature in temperature_array:
+            temperature.dump_data(data_format='LOCUST',filename=path_LOCUST / 'profile_Ti_Z={}.dat'.format(temperature.properties['Z']))
+        
+        for density in density_array:
+            density.dump_data(data_format='LOCUST',filename=path_LOCUST / 'profile_ni_Z={}.dat'.format(density.properties['Z']))
+
+        for perturbation in perturbation_array:
+            perturbation.dump_data(data_format='LOCUST',filename=path_LOCUST / 'BPLASMA_n_Z={}.dat'.format(perturbation.mode_number))
+
+    except:
+        print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
+        return         
 
 if __name__=='__main__':
 

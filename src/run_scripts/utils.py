@@ -1786,24 +1786,52 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
 
     notes:
         assumes IMAS-related settings stored in settings.py
+        assumes time slice is 0
     args:
     """
 
     print("read_inputs_IMAS()")
 
-    temperature_array=[] #arrays to hold kinetic profile data for each species
+    temperature_array=[] #arrays for data with multiple species/harmonics etc.
     density_array=[]
+    perturbation_array=[]
 
-    try:
-        temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() ion temperature',data_format='IDS',shot=shot,run=run,species='ions')
-        temperature_array.append(temperature)
+    try: #want to read all the species and harmonics (by generating multiple LOCUST_IO objects) so open IDS here too
+        import imas 
     except:
-        print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
-    try:
-        density=classes.input_classes.number_density.Number_Density(ID='read_inputs_IMAS() ion density',data_format='IDS',shot=shot,run=run,species='ions')
-        density_array.append(density)
-    except:
-        print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+        raise ImportError("ERROR: read_inputs_IMAS could not import IMAS module!\nreturning\n")
+        return
+
+    input_IDS=imas.ids(shot,run) 
+    input_IDS.open_env(username,imasdb,'3') #open the IDS
+
+    input_IDS.core_profiles.get() #grab all the kinetic profile data to get species information
+
+    for species in input_IDS.core_profiles.profiles_1d[0].ion:
+        try:
+            temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() ion temperature',data_format='IDS',shot=shot,run=run,species='ions',Z=species.z_ion)
+            temperature_array.append(temperature)
+        except:
+            print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    for species in input_IDS.core_profiles.profiles_1d[0].ion:
+        try:
+            density=classes.input_classes.number_density.Number_Density(ID='read_inputs_IMAS() ion density',data_format='IDS',shot=shot,run=run,species='ions',Z=species.z_ion)
+            density_array.append(density)
+        except:
+            print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    input_IDS.mhd_linear.get() #grab all the perturbation data to get mode information
+
+    for mode in input_IDS.mhd_linear.time_slice[0].toroidal_mode:
+        try:
+            perturbation=classes.input_classes.perturbation.Perturbation(ID='read_inputs_IMAS() wall',data_format='IDS',shot=shot,run=run,mode_number=mode.n_tor)
+            perturbation_array.append(perturbation)
+        except:
+            print("WARNING: read_inputs_IMAS() could not read perturbation from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+
+    input_IDS.close()
+    del input_IDS
 
     try:
         temperature_e=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() electron temperature',data_format='IDS',shot=shot,run=run,species='electrons')
@@ -1825,7 +1853,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
     try:
         wall=classes.input_classes.wall.Wall(ID='read_inputs_IMAS() wall',data_format='IDS',shot=shot,run=run)
     except:
-        print("WARNING: read_inputs_IMAS() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
+        print("WARNING: read_inputs_IMAS() could not read wall from from IDS (shot - {shot}, run - {run})".format(filepath_wall))
     '''
     
     wall=None
@@ -1838,7 +1866,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
 
     print("finished read_inputs_IMAS()")
 
-    return temperature_array,density_array,temperature_e,density_e,beam_deposition,wall,equilibrium
+    return temperature_array,density_array,perturbation_array,temperature_e,density_e,beam_deposition,wall,equilibrium
 
 
 ################################################################################################### misc functions

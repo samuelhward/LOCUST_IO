@@ -162,10 +162,22 @@ def read_number_density_IDS(shot,run,**properties):
     if properties['species']=='electrons':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.density)
     elif properties['species']=='ions':
-        input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[0].density)
+        species_number=None
+        if 'Z' in properties:
+            for counter,species in enumerate(input_IDS.core_profiles.profiles_1d[0].ion):
+                if int(properties['Z'])==species.z_ion:
+                    species_number=counter
+            if species_number is None:
+                print("ERROR: read_number_density_IDS could not find requested species in IDS (shot - {shot}, run - {run}, Z - {Z})!\nreturning\n!".format(shot=shot,run=run,Z=int(properties['Z'])))
+                return
+        else:
+            species_number=0
+
+        input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[species_number].density)
     else:
         print("ERROR: cannot read_number_density_IDS - properties['species'] must be set to 'electrons' or 'ions'\n") 
         return
+
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*constants.pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
@@ -393,7 +405,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(shot,run) 
-    output_IDS.open_env(username,imasdb,'3') #this will overwrite any existing IDS for this shot/run
+    output_IDS.open_env(username,imasdb,'3') #open the IDS
  
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification

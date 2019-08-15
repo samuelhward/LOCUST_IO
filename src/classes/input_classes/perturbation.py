@@ -245,16 +245,16 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
     mode_index=None
-    for counter,mode in enumerate(input_IDS.mhd_linear.time_slice[0].toroidal_mode): #detremine where desired harmonic is stored in the IDS
+    for counter,mode in enumerate(input_IDS.mhd_linear.time_slice[0].toroidal_mode): #determine where desired harmonic is stored in the IDS
         if mode_number==mode.n_tor:
             mode_index=counter
 
     if mode_index is None:
-        print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot {shot} run {run} n {mode})!\nreturning\n!".format(shot=shot,run=run,mode=mode_number))
+        print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot - {shot}, run - {run}, n - {mode})!\nreturning\n!".format(shot=shot,run=run,mode=mode_number))
         return
 
     if input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.grid_type.index!=1:    
-        print("WARNING: read_perturbation_IDS_mhd_linear detected non-rectangular grid geometry (shot {shot} run {run} n {mode})!".format(shot=shot,run=run,mode=mode_number))
+        print("WARNING: read_perturbation_IDS_mhd_linear detected non-rectangular grid geometry (shot - {shot}, run - {run}, n - {mode})!".format(shot=shot,run=run,mode=mode_number))
 
     input_data = {} #initialise blank dictionary to hold the data
 
@@ -891,6 +891,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
+                self.mode_number=mode_number
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath,**properties)
 
@@ -900,6 +901,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
+                self.mode_number=mode_number
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
@@ -909,6 +911,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
+                self.mode_number=mode_number
                 self.properties={**properties}
                 self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
 
@@ -928,6 +931,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
+                self.mode_number=mode_number
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF(self.filepath,**properties)
 
@@ -937,6 +941,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
+                self.mode_number=mode_number
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
 
@@ -1082,15 +1087,17 @@ class Perturbation(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def perturbation_calc_point(self,R,Z,n,phi=0):
+    def evaluate(self,R,phi,Z,mode_number,i3dr=1,phase=0):
         """
         returns the three components of perturbation field at a point in the plasma 
         
         args:
             R - list of R coordinates to calculate perturbation field components at 
-            Z - list of Z coordinates to calculate perturbation field components at
-            n - toroidal mode number of this harmonic
             phi - toroidal angle
+            Z - list of Z coordinates to calculate perturbation field components at
+            mode_number - mode number of this toroidal harmonic
+            i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
+            phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
         notes:
 
         usage:
@@ -1099,7 +1106,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         print("perturbation_calc_point generating B_field interpolators")
         dB_field_R_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_real']) #construct interpolators here
-        dB_field_R_iamg_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_imag']) 
+        dB_field_R_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_imag']) 
         dB_field_tor_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_real'])
         dB_field_tor_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_imag'])
         dB_field_Z_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_real'])
@@ -1110,7 +1117,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         dB_tor=[]
         dB_Z=[]  
 
-        for R_point,Z_point in zip(R,Z):
+        for R_point,phi_point,Z_point in zip(R,phi,Z):
             dB_field_R_real=float(dB_field_R_real_interpolator(R_point,Z_point))
             dB_field_R_imag=float(dB_field_R_imag_interpolator(R_point,Z_point))
             dB_field_tor_real=float(dB_field_tor_real_interpolator(R_point,Z_point))
@@ -1118,14 +1125,93 @@ class Perturbation(classes.base_input.LOCUST_input):
             dB_field_Z_real=float(dB_field_Z_real_interpolator(R_point,Z_point))
             dB_field_Z_imag=float(dB_field_Z_imag_interpolator(R_point,Z_point))
 
-            dB_R.append(dB_field_R_real*np.cos(n*phi) - dB_field_R_imag*np.sin(n*phi))
-            dB_tor.append(dB_field_tor_real*np.cos(n*phi) - dB_field_tor_imag*np.sin(n*phi))
-            dB_Z.append(dB_field_Z_real*np.cos(n*phi) - dB_field_Z_imag*np.sin(n*phi))
+            cp = np.cos(mode_number*phi_point*i3dr-phase)
+            sp = np.sin(mode_number*phi_point*i3dr-phase)
 
-        for component in [B_R,B_tor,B_Z]:
-            component=np.asarray(component)
+            dB_R.extend([dB_field_R_real*cp - dB_field_R_imag*sp])
+            dB_tor.extend([(dB_field_tor_real*cp - dB_field_tor_imag*sp)*i3dr])
+            dB_Z.extend([dB_field_Z_real*cp - dB_field_Z_imag*sp])
+
+        dB_R=np.asarray(dB_R)
+        dB_tor=np.asarray(dB_tor)
+        dB_Z=np.asarray(dB_Z)
 
         return dB_R,dB_tor,dB_Z
+
+    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default):
+        """
+        generates plot of perturbation components for field checking
+
+        args:
+            R - R coordinate at which 3D field is expanded toroidally
+            Z - R coordinate at which 3D field is expanded toroidally
+            phi - toroidal point at which to display components 
+            phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
+            i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
+            LCFS - toggles plasma boundary on/off in 2D plots
+            limiters - toggles limiters on/off in 2D plots
+            number_bins - set number of bins or levels
+            vminmax - set mesh Vmin/Vmax values 
+            absolute - plot absolute value of perturbation
+            colmap - set the colour map (use get_cmap names)
+        notes:
+        """
+
+        import matplotlib
+        import matplotlib.pyplot as plt
+        from matplotlib import cm
+        colmap=matplotlib.cm.get_cmap('plasma') #set default colourmap
+
+        fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2)
+
+        number_points_toroidal=10000
+        R_toroidal=np.full(number_points_toroidal,R) #these are the points to evaluate the field at when we take a single point and expand toroidally
+        Z_toroidal=np.full(number_points_toroidal,Z)
+        phi_toroidal=np.linspace(0.,2.*constants.pi,number_points_toroidal)
+
+        R_poloidal_dim=len(self['R_1D'])
+        Z_poloidal_dim=len(self['Z_1D'])
+        R_poloidal=np.linspace(np.min(self['R_1D']),np.max(self['R_1D']),R_poloidal_dim) #these are the points to evaluate the field at when we look at a single plane
+        Z_poloidal=np.linspace(np.min(self['Z_1D']),np.max(self['Z_1D']),Z_poloidal_dim)
+        R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
+        R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
+        phi_poloidal=np.full(len(R_poloidal),phi)
+
+        dB_toroidal=self.evaluate(R=R_toroidal,phi=phi_toroidal,Z=Z_toroidal,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate toroidally
+        dB_poloidal=self.evaluate(R=R_poloidal,phi=phi_poloidal,Z=Z_poloidal,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate poloidally
+
+        if absolute:
+            dB_toroidal=np.abs(dB_toroidal)
+            dB_poloidal=np.abs(dB_poloidal)
+
+        for ax,component_toroidal,component_poloidal,component_name,colour in zip([ax1,ax2,ax3],dB_toroidal,dB_poloidal,['dB_field_R','dB_field_tor','dB_field_Z'],['k','b','r']):
+    
+            component_poloidal=component_poloidal.reshape(Z_poloidal_dim,R_poloidal_dim) #plot the poloidal variation
+            Z_poloidal,R_poloidal=Z_poloidal.reshape(Z_poloidal_dim,R_poloidal_dim),R_poloidal.reshape(Z_poloidal_dim,R_poloidal_dim)
+            if not vminmax:
+                vminmax=[np.amin(component_poloidal),np.amax(component_poloidal)]
+            mesh=ax.pcolormesh(R_poloidal,Z_poloidal,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax))
+            fig.colorbar(mesh,ax=ax,orientation='vertical')
+            
+            if absolute: #if plotting absolute value, add tag to axis labels
+                component_name='abs( ' + component_name + ' )'
+
+            ax.set_title(component_name)
+            ax.set_aspect('equal')
+
+            ax4.plot(phi_toroidal,component_toroidal,colour) #plot the toroidal variation
+
+            if LCFS:
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) #add a LCFS
+
+            if limiters:
+                ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],plot_style_limiters) #add a LCFS
+
+        legend=['dB_field_R','dB_field_tor','dB_field_Z']
+        if absolute:
+            legend=['abs( ' + leg + ' )' for leg in legend]
+        ax4.legend(legend)
+        plt.show()
 
 #################################
  
