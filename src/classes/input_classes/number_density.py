@@ -425,7 +425,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species 
         output_IDS.core_profiles.profiles_1d[0].ion[-1].density=output_data['n']
         if 'Z' in properties:
-            output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=properties['Z']
+            output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=float(properties['Z'])
 
     else:
         print("ERROR: cannot dump_number_density_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")

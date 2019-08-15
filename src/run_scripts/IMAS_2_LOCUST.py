@@ -41,12 +41,6 @@ except:
     sys.exit(1)  
 
 try:
-    import classes.input_classes.equilibrium
-except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/equilibrium.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
@@ -102,7 +96,7 @@ def IMAS_2_LOCUST(shot,run,path_LOCUST=pathlib.Path(''),beam_depo_GC=True,GEQDSK
             density.dump_data(data_format='LOCUST',filename=path_LOCUST / 'profile_ni_Z={}.dat'.format(density.properties['Z']))
 
         for perturbation in perturbation_array:
-            perturbation.dump_data(data_format='LOCUST',filename=path_LOCUST / 'BPLASMA_n_Z={}.dat'.format(perturbation.mode_number))
+            perturbation.dump_data(data_format='LOCUST',filename=path_LOCUST / 'BPLASMA_n{}.dat'.format(perturbation.mode_number))
 
     except:
         print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))

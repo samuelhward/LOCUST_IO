@@ -216,7 +216,6 @@ def read_perturbation_ASCOT_field_data(filepath,**properties):
     
     return input_data
 
-
 def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     """
     reads perturbation from an IMAS mhd_linear IDS
@@ -708,6 +707,8 @@ def dump_perturbation_LOCUST(output_data,filepath,**properties):
     """
  
     print("writing LOCUST perturbation")
+
+    output_data['Z_2D'],output_data['R_2D']=np.meshgrid(output_data['Z_1D'],output_data['R_1D'])
 
     with open(filepath,'w') as file: #open file
         

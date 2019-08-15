@@ -67,6 +67,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
         test_IDS.core_profiles.profiles_1d[0].ion.resize(1)
         test_IDS.core_profiles.profiles_1d[0].ion[0].temperature=temperature_i
         test_IDS.core_profiles.profiles_1d[0].ion[0].density=density
+        test_IDS.core_profiles.profiles_1d[0].ion[0].z_ion=1.
         test_IDS.core_profiles.profiles_1d[0].grid.psi=flux_pol
         test_IDS.core_profiles.profiles_1d[0].electrons.temperature=temperature_e
         test_IDS.core_profiles.profiles_1d[0].electrons.density=density

@@ -63,6 +63,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/classes/input_classes/wall.py could not be imported!\nreturning\n")
     sys.exit(1)
+try:
+    import classes.input_classes.perturbation
+except:
+    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/perturbation.py could not be imported!\nreturning\n")
+    sys.exit(1)
 
 try:
     import support
@@ -1812,14 +1817,14 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
             temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_IMAS() ion temperature',data_format='IDS',shot=shot,run=run,species='ions',Z=species.z_ion)
             temperature_array.append(temperature)
         except:
-            print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+            print("WARNING: read_inputs_IMAS() could not read ion temperature from IDS (shot - {shot}, run - {run}, Z - {Z})".format(shot=shot,run=run,Z=species.z_ion))
 
     for species in input_IDS.core_profiles.profiles_1d[0].ion:
         try:
             density=classes.input_classes.number_density.Number_Density(ID='read_inputs_IMAS() ion density',data_format='IDS',shot=shot,run=run,species='ions',Z=species.z_ion)
             density_array.append(density)
         except:
-            print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+            print("WARNING: read_inputs_IMAS() could not read ion number density from IDS (shot - {shot}, run - {run}, Z - {Z})".format(shot=shot,run=run,Z=species.z_ion))
 
     input_IDS.mhd_linear.get() #grab all the perturbation data to get mode information
 
@@ -1828,7 +1833,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
             perturbation=classes.input_classes.perturbation.Perturbation(ID='read_inputs_IMAS() wall',data_format='IDS',shot=shot,run=run,mode_number=mode.n_tor)
             perturbation_array.append(perturbation)
         except:
-            print("WARNING: read_inputs_IMAS() could not read perturbation from IDS (shot - {shot}, run - {run})".format(shot=shot,run=run))
+            print("WARNING: read_inputs_IMAS() could not read perturbation from IDS (shot - {shot}, run - {run}, n - {n})".format(shot=shot,run=run,n=mode.n_tor))
 
     input_IDS.close()
     del input_IDS
