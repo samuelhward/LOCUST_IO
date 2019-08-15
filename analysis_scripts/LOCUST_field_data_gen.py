@@ -39,7 +39,7 @@ if n6:
 for filepath,harmonic in zip(filepaths,harmonics): #cycle through harmonics
 	for phase in phases: #for each harmonic vary the phase between the upper and lower coils
 
-		perturb=pert(ID='harmonic - {harmonic}, phase - {phase}'.format(harmonic=harmonic,phase=phase),data_format='MARSF_bplas',filename=filepath,response=True,ideal=False,phase_shift=phase)
+		perturb=pert(ID='harmonic - {harmonic}, phase - {phase}'.format(harmonic=harmonic,phase=phase),data_format='MARSF_bplas',filename=filepath,response=True,ideal=False,phase_shift=phase,bcentr=1.75660107,rmaxis=1.70210874)
 		perturb.dump_data(data_format='LOCUST',filename='LOCUST/coil_scans/BPLASMA_{harmonic}_{phase}_resist_resp.dat'.format(harmonic=harmonic,phase=phase))
 		perturb.plot()
 

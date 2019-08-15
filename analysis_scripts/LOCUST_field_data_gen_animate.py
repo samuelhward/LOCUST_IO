@@ -61,7 +61,7 @@ for filepath,harmonic in zip(filepaths,harmonics): #cycle through harmonics
 
     perturbations=[] #pre-read and dump all perturbations before animating
     for phase in phases: 
-        perturbation=pert(ID='harmonic - {harmonic}, phase - {phase}'.format(harmonic=harmonic,phase=phase),data_format=data_format_input,filename=filepath,response=response,ideal=ideal,phase_shift=phase)
+        perturbation=pert(ID='harmonic - {harmonic}, phase - {phase}'.format(harmonic=harmonic,phase=phase),data_format=data_format_input,filename=filepath,response=response,ideal=ideal,phase_shift=phase,bcentr=1.75660107,rmaxis=1.70210874)
         perturbations.append(perturbation)
         perturbation.dump_data(data_format=data_format_output,filename=pathlib.Path('POCA') / '3D_field_scan' / 'BPLASMA_{harmonic}_{phase}_{ideal}_{response}.dat'.format(harmonic=harmonic,phase=phase,ideal=ideal_tag,response=response_tag))
 
