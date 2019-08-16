@@ -15,8 +15,20 @@ import context
 from classes.input_classes.perturbation import Perturbation
 import pathlib
 import support
+import numpy as np
 
-mode_number=2
-perturbation_filename=support.dir_input_files / 'LOCUST' / '3D_field_scan' / 'BPLASMA_n{}_160.0_resist_resp.dat'.format(str(mode_number))
-perturbation=Perturbation(ID='',data_format='LOCUST',n=mode_number)
-perturbation.plot_components(R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False)
+mode_numbers=[2,6]
+phases=[0.0,40.0]
+response=False #do files include plasma response?
+response_tag = 'resp' if response else 'vacuum'  
+ideal=True #are files ideal or resistive?
+ideal_tag = 'ideal' if ideal else 'resist'  
+
+
+for phase in phases:
+
+    for mode_number in mode_numbers:
+
+        perturbation_filename=support.dir_input_files / 'LOCUST' / '3D_field_scan' / 'BPLASMA_n{mode_number}_{phase}_{ideal}_{response}.dat'.format(mode_number=str(np.abs(mode_number)),phase=str(phase),ideal=ideal_tag,response=response_tag)
+        perturbation=Perturbation(ID='phase = {phase}, {response_tag}'.format(phase=phase,response_tag=response_tag),data_format='LOCUST',filename=perturbation_filename,mode_number=mode_number)
+        perturbation.plot_components(R=1.5962,Z=-0.0808,phi=0.0,phase=0,i3dr=-1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False)
