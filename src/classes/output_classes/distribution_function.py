@@ -461,7 +461,8 @@ def read_distribution_function_IDS(shot,run,**properties):
     input_data['R_1D']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].grid.r)
     input_data['Z_1D']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].grid.z)
     input_data['dfn']=np.array(input_IDS.distributions.distribution[0].profiles_2d[0].density_fast)
-    
+    input_data['dfn_index']=np.array(['R','Z'])
+
     input_IDS.close()
 
     print("finished reading distribution function from IDS")
