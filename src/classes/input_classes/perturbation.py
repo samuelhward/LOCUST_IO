@@ -1212,6 +1212,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         if absolute:
             legend=['abs( ' + leg + ' )' for leg in legend]
         ax4.legend(legend)
+        ax4.set_title(self.ID)
         plt.show()
 
 #################################
