@@ -1139,7 +1139,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         return dB_R,dB_tor,dB_Z
 
-    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default):
+    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default,ax_array=False,fig=False):
         """
         generates plot of perturbation components for field checking
 
@@ -1155,7 +1155,10 @@ class Perturbation(classes.base_input.LOCUST_input):
             vminmax - set mesh Vmin/Vmax values 
             absolute - plot absolute value of perturbation
             colmap - set the colour map (use get_cmap names)
+            ax_array - take input array of 4 axes objects (can be used to stack plots/animate)
+            fig - take input fig (can be used to add colourbars etc)
         notes:
+            user must either supply both fig and ax_array or none
         """
 
         import matplotlib
@@ -1163,7 +1166,21 @@ class Perturbation(classes.base_input.LOCUST_input):
         from matplotlib import cm
         colmap=matplotlib.cm.get_cmap('plasma') #set default colourmap
 
-        fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2)
+        if ax_array is False:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
+
+        if fig is False:
+            fig_flag=False
+        else:
+            fig_flag=True
+
+        if fig_flag is False and ax_flag is False:
+            fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2)
+        else:
+            ax1,ax2,ax3,ax4=ax_array
+            ax4.cla()
 
         number_points_toroidal=10000
         R_toroidal=np.full(number_points_toroidal,R) #these are the points to evaluate the field at when we take a single point and expand toroidally
@@ -1192,7 +1209,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             if not vminmax:
                 vminmax=[np.amin(component_poloidal),np.amax(component_poloidal)]
             mesh=ax.pcolormesh(R_poloidal,Z_poloidal,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax))
-            fig.colorbar(mesh,ax=ax,orientation='vertical')
+            #fig.colorbar(mesh,ax=ax,orientation='vertical')
             
             if absolute: #if plotting absolute value, add tag to axis labels
                 component_name='abs( ' + component_name + ' )'
@@ -1213,7 +1230,10 @@ class Perturbation(classes.base_input.LOCUST_input):
             legend=['abs( ' + leg + ' )' for leg in legend]
         ax4.legend(legend)
         ax4.set_title(self.ID)
-        plt.show()
+        ax4.set_xlabel('phi [rad]')
+
+        if ax_flag is False and fig_flag is False:
+            plt.show()
 
 #################################
  
