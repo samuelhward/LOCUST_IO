@@ -254,7 +254,7 @@ def dfn_crop(some_dfn,**kwargs):
 
     return dfn
 
-def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status_flag'],dump=False):
+def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status_flag','PFC_intercept'],dump=False):
     """
     opens huge particle lists in memory-efficient way
 
@@ -278,11 +278,11 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     indices_coordinate['6']='time'
     indices_coordinate['7']='status_flag'
     indices_coordinate['8']='additional_flag1'
-    indices_coordinate['9']='additional_flag2'
-    indices_coordinate['10']='additional_flag3'
-    indices_coordinate['11']='additional_flag4'
-    indices_coordinate['12']='additional_flag5'
-    indices_coordinate['13']='additional_flag6'
+    indices_coordinate['9']='PFC_intercept'
+    indices_coordinate['10']='psi'
+    indices_coordinate['11']='V_R_final'
+    indices_coordinate['12']='V_tor_final'
+    indices_coordinate['13']='V_Z_final'
     indices_coordinate['14']='additional_flag7'
     indices_coordinate['15']='additional_flag8'
     indices_coordinate['16']='additional_flag9'
@@ -298,8 +298,9 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     input_data['status_flags']['unresolved_hit']=-3.0
     input_data['status_flags']['left_mesh']=-3000.0
     input_data['status_flags']['track_problem']=-4000.0
+    input_data['status_flags']['PFC_intercept_2D']=-4.0
     input_data['status_flags']['ptcl_disconnect']=-5000.0
-    input_data['status_flags']['PFC_intercept']=-5.0
+    input_data['status_flags']['PFC_intercept_3D']=-5.0
     input_data['status_flags']['left_field_grid']=-6.0
     input_data['status_flags']['goose_fail']=-7000.0
     input_data['status_flags']['left_plasma']=-8.0
@@ -314,7 +315,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     input_data['status_flags']['cross_open_face']=-15.0
     input_data['status_flags']['bin_fail_hard_2']=-16000.0
     input_data['status_flags']['generic_fail_hard']=-99999.0
-
+            
     for coordinate in coordinates: #set up arrays to hold the data
         input_data[coordinate]=np.array([])
         

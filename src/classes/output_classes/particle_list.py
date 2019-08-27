@@ -113,11 +113,11 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['time']=np.array([])
             input_data['status_flag']=np.array([])
             input_data['additional_flag1']=np.array([])
-            input_data['additional_flag2']=np.array([])
-            input_data['additional_flag3']=np.array([])
-            input_data['additional_flag4']=np.array([])
-            input_data['additional_flag5']=np.array([])
-            input_data['additional_flag6']=np.array([])
+            input_data['PFC_intercept']=np.array([])
+            input_data['psi']=np.array([])
+            input_data['V_R_final']=np.array([])
+            input_data['V_tor_final']=np.array([])
+            input_data['V_Z_final']=np.array([])
             input_data['additional_flag7']=np.array([])
             input_data['additional_flag8']=np.array([])
             input_data['additional_flag9']=np.array([])
@@ -150,11 +150,11 @@ def read_final_particle_list_LOCUST(filepath,**properties):
                 input_data['time']=np.append(input_data['time'],file_buffer[:,6,0])
                 input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[:,7,0])
                 input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[:,8,0])
-                input_data['additional_flag2']=np.append(input_data['additional_flag2'],file_buffer[:,9,0])
-                input_data['additional_flag3']=np.append(input_data['additional_flag3'],file_buffer[:,10,0])
-                input_data['additional_flag4']=np.append(input_data['additional_flag4'],file_buffer[:,11,0])
-                input_data['additional_flag5']=np.append(input_data['additional_flag5'],file_buffer[:,12,0])
-                input_data['additional_flag6']=np.append(input_data['additional_flag6'],file_buffer[:,13,0])
+                input_data['PFC_intercept']=np.append(input_data['PFC_intercept'],file_buffer[:,9,0])
+                input_data['psi']=np.append(input_data['psi'],file_buffer[:,10,0])
+                input_data['V_R_final']=np.append(input_data['V_R_final'],file_buffer[:,11,0])
+                input_data['V_tor_final']=np.append(input_data['V_tor_final'],file_buffer[:,12,0])
+                input_data['V_Z_final']=np.append(input_data['V_Z_final'],file_buffer[:,13,0])
                 input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[:,14,0])
                 input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[:,15,0])
                 input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[:,16,0])   
@@ -168,8 +168,9 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['status_flags']['unresolved_hit']=-3.0
             input_data['status_flags']['left_mesh']=-3000.0
             input_data['status_flags']['track_problem']=-4000.0
+            input_data['status_flags']['PFC_intercept_2D']=-4.0
             input_data['status_flags']['ptcl_disconnect']=-5000.0
-            input_data['status_flags']['PFC_intercept']=-5.0
+            input_data['status_flags']['PFC_intercept_3D']=-5.0
             input_data['status_flags']['left_field_grid']=-6.0
             input_data['status_flags']['goose_fail']=-7000.0
             input_data['status_flags']['left_plasma']=-8.0
@@ -439,7 +440,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept'],weight=False,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
