@@ -37,16 +37,15 @@ def get_filepaths_single(shot='29034',run='W03',dimension='2D',extra_info='NUBEA
     
     if code == 'TRANSP':
         dirs=support.dir_output_files / code / (shot+run)
-        files=list(dir_transp.glob('*_fi_*')) #for TRANSP, all time slice files are contained in one directory
+        files=list(dirs.glob('*_fi_*')) #for TRANSP, all time slice files are contained in one directory
         files.sort() #sort alphanumerically i.e. numerically since only changing parameter is index of the time slice
-        files.append(files_transp[0]) #10 is sorted to beginning
+        files.append(files[0]) #10 is sorted to beginning
         del(files[0])
         files=[str(file).split('output_files')[1][1:] for file in files]
     else:
         dirs=list((support.dir_output_files / code / (shot+run) / extra_info).glob('{}*'.format(dimension)))
 
         for dir_ in dirs: #cycling through time slices                
-            print(dir_.parts[-1][len(dimension)+1:])
             time_slice=int(dir_.parts[-1][len(dimension)+1:]) #get time from name of directory holding simulation e.g. 2D_10
             time_slices=np.append(time_slices,time_slice)
 

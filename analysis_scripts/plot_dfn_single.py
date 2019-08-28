@@ -35,16 +35,17 @@ cmap_TRANSP=settings.cmap_r
 shot='29034'
 run='W03'
 
-dimensions=['2D','2D','2D']
-codes=['ASCOT','ASCOT','LOCUST']
-extra_infos=['BBNBI_birth_FO','BBNBI_birth_GC','BBNBI_birth_GC_noDCTDC2']
-data_formats=['ASCOT','ASCOT','LOCUST']
-cmaps=[cmap_ASCOT,cmap_TRANSP,cmap_LOCUST]
+dimensions=['2D','2D','2D','2D']
+codes=['ASCOT','ASCOT','LOCUST','TRANSP']
+extra_infos=['BBNBI_birth_FO','BBNBI_birth_GC','BBNBI_birth_GC_noDCTDC2','NUBEAM_birth_GC']
+data_formats=['ASCOT','ASCOT','LOCUST',None]
+cmaps=[cmap_ASCOT,cmap_ASCOT,cmap_LOCUST,cmap_TRANSP]
 
 ASCOT_beam_depo_data_formats=['ASCOT_FO','ASCOT_FO',None]#,]'ASCOT_FO'] #empty spaces indicate other code is currently being plotted
 ASCOT_beam_depo_filenames=[
                             pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced',
                             pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced',
+                            None,
                             None] #path in input_files
 
 time_slices=np.linspace(0.37,0.46,10)
@@ -69,10 +70,10 @@ for counter_time_slice,time_slice in enumerate([time_slices[-1]]): #XXX hack to 
 
         #read DFNs
         if code=='TRANSP':
-            DFN=dfn_t('TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_transp)
+            DFN=dfn_t('TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_this_time_slice)
             N=DFN.dfn_integrate()['dfn']
             #scale DFNs to match 1W beam deposited power
-            file_transp_output=pathlib.Path(file_transp).parents[0] / (shot+run+'.CDF')
+            file_transp_output=pathlib.Path(file_this_time_slice).parents[0] / (shot+run+'.CDF')
             output_TRANSP=output_T('',filename=file_transp_output)
             BPCAP_index=np.abs(output_TRANSP['TIME']-time_slice).argmin()
             BPCAP=output_TRANSP['BPCAP'][BPCAP_index]
