@@ -1209,7 +1209,9 @@ class Perturbation(classes.base_input.LOCUST_input):
             if not vminmax:
                 vminmax=[np.amin(component_poloidal),np.amax(component_poloidal)]
             mesh=ax.pcolormesh(R_poloidal,Z_poloidal,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax))
-            #fig.colorbar(mesh,ax=ax,orientation='vertical')
+            
+            if fig_flag is False and ax_flag is False: #add colourbar if no external ax or fig supplied
+                fig.colorbar(mesh,ax=ax,orientation='vertical')
             
             if absolute: #if plotting absolute value, add tag to axis labels
                 component_name='abs( ' + component_name + ' )'
