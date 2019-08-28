@@ -404,7 +404,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def dfn_plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
+    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -1496,7 +1496,7 @@ class FINT_LOCUST:
 
         print("finished reading LOCUST FINT distribution")
 
-    def dfn_plot(self,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
+    def plot(self,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
         """
         plot dfn vs time
         
