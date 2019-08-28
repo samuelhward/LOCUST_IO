@@ -31,17 +31,17 @@ shot='29034'
 run='W03'
 dimension_LOCUST='2D'
 dimension_ASCOT='2D'
-extra_info_LOCUST='NUBEAM_birth_GC'
-extra_info_ASCOT='NUBEAM_birth_GC'
-ASCOT_beam_depo_data_format='ASCOT_GC'
-ASCOT_beam_depo_filename=pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced'
-ASCOT_beam_depo_filename=pathlib.Path('ASCOT') / (shot+run) / 'input.particles_NUBEAM_birth_GC'
+extra_info_LOCUST='BBNBI_birth_FO'
+extra_info_ASCOT='BBNBI_birth_GC'
+ASCOT_beam_depo_data_format='ASCOT_FO'
+ASCOT_beam_depo_filename=pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced' #path in input_files
 time_slices=np.linspace(0.37,0.46,10)
 tinit=0.36 #start time
 cmap_LOCUST=settings.cmap_g
 cmap_ASCOT=settings.cmap_b
 cmap_TRANSP=settings.cmap_r
 number_bins=5
+fill=False
 
 from get_filepaths import get_filepaths #grab all the filenames 
 files_locust,files_ascot,files_transp=get_filepaths(shot=shot,run=run,dimension_LOCUST=dimension_LOCUST,dimension_ASCOT=dimension_ASCOT,extra_info_LOCUST=extra_info_LOCUST,extra_info_ASCOT=extra_info_ASCOT)
@@ -62,9 +62,9 @@ Pdep_ASCOT=np.sum(beam_depo['E']*constants.species_charge*beam_depo['weight'])
 for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_ascot,files_transp,time_slices):
 
     #read DFNs
-    dfn_LOCUST=dfn('LOCUST time = {}'.format(time_slice-tinit),data_format='LOCUST',filename=file_locust)
-    dfn_TRANSP=dfn_t('TRANSP time = {}'.format(time_slice-tinit),filename=file_transp)
-    dfn_ASCOT=dfn('ASCOT time = {}'.format(time_slice-tinit),data_format='ASCOT',filename=file_ascot)
+    dfn_LOCUST=dfn('LOCUST time = {}ms'.format(int(1000*(time_slice-tinit))),data_format='LOCUST',filename=file_locust)
+    dfn_TRANSP=dfn_t('TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_transp)
+    dfn_ASCOT=dfn('ASCOT time = {}ms'.format(int(1000*(time_slice-tinit))),data_format='ASCOT',filename=file_ascot)
 
     #scale DFNs to match 1W beam deposited power
     N_LOCUST=dfn_LOCUST.transform(axes=['N'])['dfn']
@@ -82,23 +82,34 @@ for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_asco
     #dfn_LOCUST['dfn']/=N_LOCUST
     #dfn_ASCOT['dfn']/=dfn_ASCOT
 
+    dfn_LOCUST['E']/=1000.
+    dfn_TRANSP['E']/=1000.
+    dfn_ASCOT['E']/=1000.
+    dfn_LOCUST['dE']*=1000.
+    dfn_TRANSP['dE']*=1000.
+    dfn_ASCOT['dE']*=1000.
+
     import matplotlib.pyplot as plt
 
     fig,((ax1,ax2,ax3),(ax4,ax5,ax6))=plt.subplots(2,3)
 
     axes=['E','V_pitch']
-    for ax in [ax1,ax2,ax3]:
-        ax.set_xlim(0,80000)
+    for ax in [ax1,ax3]:
+        ax.set_xlim(0,100)
         ax.set_ylim(-1.1,1.1)
     real_scale=False
     limiters=False
     LCFS=False
-    vminmax=[1.2e6,1.2e8]
-    LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_LOCUST,number_bins=number_bins)
-    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_TRANSP,number_bins=number_bins)
-    ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_ASCOT,number_bins=number_bins)
+    vminmax=[1.2e8,1.2e10]
+    LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_LOCUST,number_bins=number_bins)
+    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
+    ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_ASCOT,number_bins=number_bins)
 
-    if True:
+    axes=['R']
+    LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax2,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_LOCUST,number_bins=number_bins)
+    ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax2,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_ASCOT,number_bins=number_bins)
+
+    if False:
         for ax,mesh in zip([ax1,ax2,ax3],[LOCUST_mesh,TRANSP_mesh,ASCOT_mesh]):
             cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
 
@@ -107,10 +118,10 @@ for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_asco
     real_scale=True
     limiters=wall_MAST
     LCFS=eq
-    vminmax=[3e10,3e12]
-    LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_LOCUST,number_bins=number_bins)
-    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_TRANSP,number_bins=number_bins)
-    ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=False,colmap=cmap_ASCOT,number_bins=number_bins)
+    vminmax=[3e11,3e15]
+    LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_LOCUST,number_bins=number_bins)
+    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
+    ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_ASCOT,number_bins=number_bins)
     #'''
 
     #'''
