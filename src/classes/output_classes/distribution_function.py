@@ -23,6 +23,7 @@ try:
     import numpy as np
     import pathlib
     import copy
+    import datetime
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -247,9 +248,20 @@ def read_distribution_function_LOCUST(filepath,**properties):
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
         input_data['nZ_1D']=np.array(nEQ[1]) #2D field grid Z dimension
    
-        input_data['R_1D']=file.read_reals(dtype=np.float32) #Eqm. R grid. (nR_1D long) 
-        input_data['Z_1D']=file.read_reals(dtype=np.float32) #Eqm. Z grid. (nZ_1D long)
-        input_data['psirz']=file.read_reals(dtype=np.float32).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
+        #LOCUST distribution function writing diverged in style after certain date - check for this
+        day=int(filename[2:4])
+        month=int(filename[5:7])
+        year=int(filename[8:12])
+        filedate=datetime.date(day=day,month=month,year=year)
+        change_date=datetime.date(day=11,month=7,year=2019)
+        if filedate>change_date:
+            input_data['R_1D']=file.read_reals(dtype=np.float32) #Eqm. R grid. (nR_1D long) 
+            input_data['Z_1D']=file.read_reals(dtype=np.float32) #Eqm. Z grid. (nZ_1D long)
+            input_data['psirz']=file.read_reals(dtype=np.float32).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
+        else:
+            input_data['R_1D']=file.read_reals(dtype=np.float64) #Eqm. R grid. (nR_1D long) 
+            input_data['Z_1D']=file.read_reals(dtype=np.float64) #Eqm. Z grid. (nZ_1D long)
+            input_data['psirz']=file.read_reals(dtype=np.float64).reshape(input_data['nR_1D'],input_data['nZ_1D'],order='F') #PSIrz
    
         if IDFTYP==4:
 
