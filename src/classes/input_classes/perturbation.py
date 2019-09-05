@@ -384,7 +384,7 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
        filepath - path to files in input_files/
        response - toggle whether vacuum field or with plasma response i.e. bplas_vac_upper/lower or bplas_ideal/resist_resp_upper/lower
        ideal - toggle whether resistive or ideal bplasma i.e. bplas_ideal_resp_upper/lower or bplas_resist_resp_upper/lower
-       phase - phase shift between upper and lower rows (applied to upper coils) [degrees]
+       phase - phase shift between upper and lower rows (applied to upper coils) [radians]
        bcentr - vacuum toroidal magnetic field at rcentr
        rmaxis - R at magnetic axis (O-point)
     notes:
@@ -641,18 +641,16 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
   
     numR=400
     numZ=600
-    
-    phase_shift_rad=phase*(scipy.pi/180.0)
   
     rz_geom=rzcoords(rmzm_geom_path, nchi)
     jc_geom=jacobian(rz_geom)
     bplas_u_geom=bplasma(bplas_u_path, rz_geom,jc_geom)
     bplas_l_geom=bplasma(bplas_l_path, rz_geom,jc_geom)
   
-    BN=(bplas_u_geom.bn*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.bn)*bcentr
-    BR=(bplas_u_geom.Br*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Br)*bcentr
-    BZ=(bplas_u_geom.Bz*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Bz)*bcentr
-    BP=(bplas_u_geom.Bphi*scipy.exp(1j*phase_shift_rad)+bplas_l_geom.Bphi)*bcentr
+    BN=(bplas_u_geom.bn*scipy.exp(1j*phase)+bplas_l_geom.bn)*bcentr
+    BR=(bplas_u_geom.Br*scipy.exp(1j*phase)+bplas_l_geom.Br)*bcentr
+    BZ=(bplas_u_geom.Bz*scipy.exp(1j*phase)+bplas_l_geom.Bz)*bcentr
+    BP=(bplas_u_geom.Bphi*scipy.exp(1j*phase)+bplas_l_geom.Bphi)*bcentr
   
     B=scipy.sqrt(scipy.square(scipy.absolute(BR))+scipy.square(scipy.absolute(BZ))+scipy.square(scipy.absolute(BP)))
   
@@ -1155,7 +1153,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             vminmax - set mesh Vmin/Vmax values 
             absolute - plot absolute value of perturbation
             colmap - set the colour map (use get_cmap names)
-            ax_array - take input array of 4 axes objects (can be used to stack plots/animate)
+            ax_array - take input array of axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:
             user must either supply both fig and ax_array or none
@@ -1209,9 +1207,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             if not vminmax:
                 vminmax=[np.amin(component_poloidal),np.amax(component_poloidal)]
             mesh=ax.pcolormesh(R_poloidal,Z_poloidal,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax))
-            
-            if fig_flag is False and ax_flag is False: #add colourbar if no external ax or fig supplied
-                fig.colorbar(mesh,ax=ax,orientation='vertical')
+            #fig.colorbar(mesh,ax=ax,orientation='vertical')
             
             if absolute: #if plotting absolute value, add tag to axis labels
                 component_name='abs( ' + component_name + ' )'
@@ -1232,7 +1228,6 @@ class Perturbation(classes.base_input.LOCUST_input):
             legend=['abs( ' + leg + ' )' for leg in legend]
         ax4.legend(legend)
         ax4.set_title(self.ID)
-        ax4.set_xlabel('phi [rad]')
 
         if ax_flag is False and fig_flag is False:
             plt.show()
