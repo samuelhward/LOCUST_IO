@@ -376,7 +376,7 @@ def read_perturbation_MARSF(filepath,**properties):
     
     return input_data
 
-def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=False,phase_shift=0,bcentr=1.75660107,rmaxis=1.70210874):
+def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=False,phase=0,bcentr=1.75660107,rmaxis=1.70210874):
     """
     read perturbation bplas files produced by MARSF for individual harmonics and coil sets 
     
@@ -384,7 +384,7 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
        filepath - path to files in input_files/
        response - toggle whether vacuum field or with plasma response i.e. bplas_vac_upper/lower or bplas_ideal/resist_resp_upper/lower
        ideal - toggle whether resistive or ideal bplasma i.e. bplas_ideal_resp_upper/lower or bplas_resist_resp_upper/lower
-       phase_shift - phase shift between upper and lower rows (applied to upper coils) [degrees]
+       phase - phase shift between upper and lower rows (applied to upper coils) [degrees]
        bcentr - vacuum toroidal magnetic field at rcentr
        rmaxis - R at magnetic axis (O-point)
     notes:
@@ -642,7 +642,7 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
     numR=400
     numZ=600
     
-    phase_shift_rad=phase_shift*(scipy.pi/180.0)
+    phase_shift_rad=phase*(scipy.pi/180.0)
   
     rz_geom=rzcoords(rmzm_geom_path, nchi)
     jc_geom=jacobian(rz_geom)
