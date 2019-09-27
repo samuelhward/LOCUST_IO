@@ -518,27 +518,13 @@ program mars_read
 
   #if (TOKAMAK==1)
 
-    #if   (MATCH==1)
-      character( len=39 )         :: mtch = '/home/rakers/&
-                                            &15MA_ELM_upper.txt_cleaned'
-    #elif (MATCH==2)
-      character( len=40 )         :: mtch = '/home/rakers/&
-                                            &15MA_ELM_middle.txt_cleaned'
-    #elif (MATCH==3)
-      character( len=39 )         :: mtch = '/home/rakers/&
-                                            &15MA_ELM_lower.txt_cleaned'
-    #else
-      stop ! This will throw a compiler error.
+      character( len=39 )         :: mtch = '/home/rakers/15MA_ELM_upper.txt_cleaned'
     #endif
 
   #else
 
-    #if   (MATCH==1)
       character( len=1  )         :: mtch = '?'
-    #elif (MATCH==2)
-      character( len=1  )         :: mtch = '?'
-    #else
-      stop ! This will throw a compiler error.
+
     #endif
 
   #endif
@@ -547,8 +533,7 @@ program mars_read
 
 #if defined (UMP3D)
   #if (TOKAMAK==1)
-      character( len=39 )         :: mtch = '/home/rakers/&
-                                            &15MA_ELM_coils.txt_cleaned'
+      character( len=39 )         :: mtch = '/home/rakers/15MA_ELM_coils.txt_cleaned'
   #else
       character( len=1  )         :: mtch = '?'
   #endif
@@ -560,14 +545,11 @@ program mars_read
 
     #ifndef ORI
       #if (NC==3)
-      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/&
-                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
+      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
       #elif (NC==6)
-      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/&
-                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
+      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
       #elif (NC==12)
-      character( len=66 )         :: file = '/home/rakers/ITER_15MA_10470/&
-                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
+      character( len=66 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
       #elif (NC==15)
       character( len=66 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n15'
