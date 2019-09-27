@@ -507,10 +507,10 @@ program mars_read
       implicit none
 
 #if (TOKAMAK==1)
-      character( len=6  ),                                                    &
+      character( len=1000  ),                                                    &
                     dimension(3)  :: TAIL = ['_U_VAC','_M_VAC','_L_VAC']
 #else
-      character( len=11 ),                                                    &
+      character( len=1000 ),                                                    &
                     dimension(2)  :: TAIL = ['_upper','_lower']
 #endif
 
@@ -518,12 +518,12 @@ program mars_read
 
   #if (TOKAMAK==1)
 
-      character( len=39 )         :: mtch = '/home/rakers/15MA_ELM_upper.txt_cleaned'
+      character( len=1000 )         :: mtch = '/home/rakers/15MA_ELM_upper.txt_cleaned'
     #endif
 
   #else
 
-      character( len=1  )         :: mtch = '?'
+      character( len=1000  )         :: mtch = '?'
 
     #endif
 
@@ -533,9 +533,9 @@ program mars_read
 
 #if defined (UMP3D)
   #if (TOKAMAK==1)
-      character( len=39 )         :: mtch = '/home/rakers/15MA_ELM_coils.txt_cleaned'
+      character( len=1000 )         :: mtch = '/home/rakers/15MA_ELM_coils.txt_cleaned'
   #else
-      character( len=1  )         :: mtch = '?'
+      character( len=1000  )         :: mtch = '?'
   #endif
 #endif
 
@@ -545,33 +545,33 @@ program mars_read
 
     #ifndef ORI
       #if (NC==3)
-      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
       #elif (NC==6)
-      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
       #elif (NC==12)
-      character( len=66 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
       #elif (NC==15)
-      character( len=66 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n15'
       #else
-      character( len=65 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
       #endif
     #else
       #if (NC==3)
-      character( len=61 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n3'
       #elif (NC==6)
-      character( len=61 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n6'
       #elif (NC==12)
-      character( len=62 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n12'
       #elif (NC==15)
-      character( len=62 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n15'
       #else
-      character( len=61 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n3'
       #endif
     #endif
@@ -579,7 +579,7 @@ program mars_read
   #else
 
     #if (NC==2)
-      character( len=48 )         :: file = '/home/rakers/33143_2730/&
+      character( len=1000 )         :: file = '/home/rakers/33143_2730/&
                                      &BPLASMA_newformat_vac'
     #else
        stop
@@ -590,7 +590,7 @@ program mars_read
 #else
 
   #if (TOKAMAK==1)
-      character( len=48 )         :: file = '/home/rakers/&
+      character( len=1000 )         :: file = '/home/rakers/&
                                      &BPLASMA_MARSF_VAC_n3_3COILS_OLD.txt'
   #else
       character( len=?  )         :: file = '?'
