@@ -13,6 +13,7 @@ data/*/*
 *.dfn
 *.vtk
 *.o
+*.mod
 
 #Old plotting files
 *.pro
