@@ -20,7 +20,6 @@ import pathlib
 
 
 ##################################################################
-#Project directory paths
 
 #software version number 
 LOCUST_IO_version=str('LOCUST_IO version 1.2.0')
