@@ -10,6 +10,7 @@ usage:
     see README.md for usage
  
 notes:         
+    edits prec_mod.f90 within LOCUST folder by default
 ---
 """
 
@@ -41,9 +42,6 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
         python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filename_in prec_mod.f90
 
     """
-
-    filename_in=support.dir_locust / filename_in #default to LOCUST directory so user can just supply filenames
-    filename_out=support.dir_locust / filename_out
 
     with open(filename_in,'r') as file_input:
         lines=file_input.readlines()
@@ -85,7 +83,10 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
             while ('::' not in lines[spilled_line] #delete lines until one of these characters is found - denoting a comment line, pragma line etc.
                 and '#'!=lines[spilled_line][0] 
                 and '!'!=lines[spilled_line][0]
-                and 'end module prec_mod' not in lines[spilled_line]): 
+                and 'end module' not in lines[spilled_line]
+                and 'end program' not in lines[spilled_line]
+                and 'end subroutine' not in lines[spilled_line]
+                ): 
                 del(lines[spilled_line])
 
         with open(filename_out,'w') as file_output: #dump results
@@ -94,13 +95,17 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
 
 if __name__=='__main__':
 
-    import argparse
+    try:
+        import argparse
+    except:
+        raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
+        sys.exit(1)
 
-    parser=argparse.ArgumentParser(description='function to edit prec_mod.f90 file in LOCUST source code')
-    parser.add_argument('--filename_in',type=str,action='store',default='prec_mod.f90',dest='filename_in',help="location of source file",required=False)
-    parser.add_argument('--filename_out',type=str,action='store',default='prec_mod_edited.f90',dest='filename_out',help="location of output file",required=False)
-    parser.add_argument('--vars',nargs='+',type=str,action='store',dest='variables',help="variables to replace in prec_mod.f90 e.g. --vars threadsPerBlock file_tet",required=True)
-    parser.add_argument('--vals',nargs='+',type=str,action='store',dest='values',help='values to replace in prec_mod.f90 e.g. --vals 64 \\\'"some string value"\\\'',required=True)
+    parser=argparse.ArgumentParser(description='function to edit variables in LOCUST source files')
+    parser.add_argument('--filename_in',type=str,action='store',default=support.dir_locust / 'prec_mod.f90',dest='filename_in',help="location of source file",required=False)
+    parser.add_argument('--filename_out',type=str,action='store',default=support.dir_locust / 'prec_mod_edited.f90',dest='filename_out',help="location of output file",required=False)
+    parser.add_argument('--vars',nargs='+',type=str,action='store',dest='variables',help="variables to replace in file e.g. --vars threadsPerBlock file_tet",required=True)
+    parser.add_argument('--vals',nargs='+',type=str,action='store',dest='values',help='values to replace in file e.g. --vals 64 \\\'"some string value"\\\'',required=True)
     args=parser.parse_args()
     variables=dict(zip(args.variables,args.values))
 
