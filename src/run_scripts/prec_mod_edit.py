@@ -38,7 +38,7 @@ def prec_mod_edit(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90',
         filename_out - location of output prec_mod.f90 file within LOCUST folder
         variables - set of kwargs denoting variable names and values to set them to
     usage:
-        python replace_test.py --vars c file_tet --vals 5 \'"some string formatted like this"\'
+        python prec_mod_edit.py --vars c file_tet --vals 5 \'"some string formatted like this"\'
 
     """
 
