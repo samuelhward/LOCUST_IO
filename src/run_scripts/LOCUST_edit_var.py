@@ -1,10 +1,10 @@
-#prec_mod_edit.py
+#LOCUST_edit_var.py
  
 """
 Samuel Ward
 27/09/2019
 ----
-edit values stored in LOCUST prec_mod.f90 
+edit values of initialised variables in LOCUST source code e.g. prec_mod.f90 
 ---
 usage:
     see README.md for usage
@@ -26,19 +26,19 @@ except:
 ##################################################################
 #Main
 
-def prec_mod_edit(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90',**variables):
+def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90',**variables):
     """
-    function to edit prec_mod.f90 file in LOCUST source code
+    function to change initialised values within LOCUST source files
 
     notes:
         only retains comments if made on first line that variable is declared (in case of spillage over multiple lines)
         formatting of edited lines will differ slightly due to blank space not being reinserted
     args:
-        filename_in - location of source prec_mod.f90 file within LOCUST folder 
-        filename_out - location of output prec_mod.f90 file within LOCUST folder
+        filename_in - location of source file 
+        filename_out - location of output file
         variables - set of kwargs denoting variable names and values to set them to
     usage:
-        python prec_mod_edit.py --vars c file_tet --vals 5 \'"some string formatted like this"\'
+        python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filename_in prec_mod.f90
 
     """
 
@@ -53,7 +53,7 @@ def prec_mod_edit(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90',
         for counter,line in enumerate(lines):
 
             if line[0] is not '#' and line[0] is not '!': #ignore preprocessor/comment lines
-                if '=' in line:
+                if '=' in line and '::' in line:
                     line_split_equals=line.split('=')
                     number_equals_signs=len(line_split_equals)-1 #number of equals signs on this line - matters because strings sometimes have length specified with =
                     variable_name_prec_mod=line_split_equals[number_equals_signs-1].split()[-1] #holds current name of variable stored on this line in prec_mod.f90
@@ -97,14 +97,14 @@ if __name__=='__main__':
     import argparse
 
     parser=argparse.ArgumentParser(description='function to edit prec_mod.f90 file in LOCUST source code')
-    parser.add_argument('--filename_in',type=str,action='store',default='prec_mod.f90',dest='filename_in',help="location of source prec_mod.f90 file within LOCUST folder",required=False)
-    parser.add_argument('--filename_out',type=str,action='store',default='prec_mod_edited.f90',dest='filename_out',help="location of output prec_mod.f90 file within LOCUST folder",required=False)
+    parser.add_argument('--filename_in',type=str,action='store',default='prec_mod.f90',dest='filename_in',help="location of source file",required=False)
+    parser.add_argument('--filename_out',type=str,action='store',default='prec_mod_edited.f90',dest='filename_out',help="location of output file",required=False)
     parser.add_argument('--vars',nargs='+',type=str,action='store',dest='variables',help="variables to replace in prec_mod.f90 e.g. --vars threadsPerBlock file_tet",required=True)
     parser.add_argument('--vals',nargs='+',type=str,action='store',dest='values',help='values to replace in prec_mod.f90 e.g. --vals 64 \\\'"some string value"\\\'',required=True)
     args=parser.parse_args()
     variables=dict(zip(args.variables,args.values))
 
-    prec_mod_edit(filename_in=args.filename_in,filename_out=args.filename_out,**variables)
+    LOCUST_edit_var(filename_in=args.filename_in,filename_out=args.filename_out,**variables)
 
 #################################
 
