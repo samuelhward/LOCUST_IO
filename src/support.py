@@ -35,10 +35,14 @@ for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for 
     if 'LOCUST_IO_LICENCE.md' in [str(list(path.parts)[-1]) for path in thisdirectory.parents[counter].glob('*')]:
         dir_locust_io=thisdirectory.parents[counter]
         break
+        
 dir_input_files=dir_locust_io / 'data' / 'input_files'
 dir_output_files=dir_locust_io / 'data' / 'output_files'
 dir_cache_files=dir_locust_io / 'data' / 'cache_files'
-dir_classes=dir_locust_io / 'classes'
+dir_plot_scripts=dir_locust_io / 'src' / 'plot_scripts'
+dir_run_scripts=dir_locust_io / 'src' / 'run_scripts'
+dir_processing=dir_locust_io / 'src' / 'processing'
+dir_classes=dir_locust_io / 'src' / 'classes'
 dir_locust=dir_locust_io / 'LOCUST'
 
 #data which must exist to be able to run LOCUST
