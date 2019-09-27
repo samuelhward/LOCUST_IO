@@ -39,6 +39,7 @@ dir_input_files=dir_locust_io / 'data' / 'input_files'
 dir_output_files=dir_locust_io / 'data' / 'output_files'
 dir_cache_files=dir_locust_io / 'data' / 'cache_files'
 dir_classes=dir_locust_io / 'classes'
+dir_locust=dir_locust_io / 'LOCUST'
 
 #data which must exist to be able to run LOCUST
 required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','simag','sibry','bcentr',
