@@ -6,13 +6,13 @@ data/*/*
 #files which contain prototyping code/not ready to be published yet
 *.prototype*
 
-#LOCUST input/output files
+#LOCUST input/output/compiled files
 *.dat
 *.eqdsk
 *.mesh.*
 *.dfn
 *.vtk
-*.f90
+*.o
 
 #Old plotting files
 *.pro
@@ -44,6 +44,9 @@ tempCodeRunnerFile.python
 
 #files beginning and ending with #
 \#*# 
+
+#gifs
+*.gif
 
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME
