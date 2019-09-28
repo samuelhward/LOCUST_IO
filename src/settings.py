@@ -65,6 +65,12 @@ markersize_start_mark=1
 #system environment
 username='wards2'
 imasdb='test'
+environment_default='TITAN'
+
+#source code
+LOCUST_repo_URL='ssh://git@git.iter.org/traj/locust.git'
+LOCUST_IO_repo_URL='https://github.com/armoured-moose/LOCUST_IO.git'
+default_branch_name='develop'
 
 #################################
 
