@@ -34,23 +34,23 @@ except:
 try:
     import run_scripts.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/run_scripts/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
     
 try:
     import support
 except:
-    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     import constants
 except:
-    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from settings import *
 except:
-    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 

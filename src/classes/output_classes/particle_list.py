@@ -29,34 +29,34 @@ except:
 try:
     import processing.utils
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     import processing.process_output
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/process_output.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/processing/process_output.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 try:
     import classes.base_output 
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/base_output.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/base_output.py could not be imported!\nreturning\n")
     sys.exit(1) 
 
 try:
     import support
 except:
-    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     import constants
 except:
-    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from settings import *
 except:
-    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 ################################################################## Final_Particle_List read functions

@@ -21,7 +21,7 @@ notes:
 try:
     import support
 except:
-    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 ##################################################################

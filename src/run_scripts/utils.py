@@ -34,55 +34,55 @@ except:
 try:
     import processing.utils 
 except:
-    raise ImportError("ERROR: LOCUST_IO/processing/utils.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 
 try:
     import classes.input_classes.equilibrium
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/equilibrium.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/equilibrium.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     import classes.input_classes.temperature
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/temperature.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/temperature.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     import classes.input_classes.number_density
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/number_density.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/number_density.py could not be imported!\nreturning\n")
     sys.exit(1)  
 try:
     import classes.input_classes.beam_deposition
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/beam_deposition.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/beam_deposition.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     import classes.input_classes.wall
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/wall.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/wall.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     import classes.input_classes.perturbation
 except:
-    raise ImportError("ERROR: LOCUST_IO/classes/input_classes/perturbation.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/perturbation.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
     import support
 except:
-    raise ImportError("ERROR: LOCUST_IO/support.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     import constants
 except:
-    raise ImportError("ERROR: LOCUST_IO/constants.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from settings import *
 except:
-    raise ImportError("ERROR: LOCUST_IO/settings.py could not be imported!\nreturning\n") 
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 ###################################################################################################
