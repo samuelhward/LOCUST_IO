@@ -65,12 +65,28 @@ markersize_start_mark=1
 #system environment
 username='wards2'
 imasdb='test'
-environment_default='TITAN'
+system_default='TITAN'
 
 #source code
-LOCUST_repo_URL='ssh://git@git.iter.org/traj/locust.git'
-LOCUST_IO_repo_URL='https://github.com/armoured-moose/LOCUST_IO.git'
-default_branch_name='develop'
+repo_URL_LOCUST='ssh://git@git.iter.org/traj/locust.git'
+repo_URL_LOCUST_IO='https://github.com/armoured-moose/LOCUST_IO.git'
+branch_default_LOCUST='hot_fix/ITER_Mersenne_Twister'
+branch_default_LOCUST_IO='develop'
+
+try: #get default commit hash
+    git_ls_remote=subprocess.run(['git', 'ls-remote','-q',repo_URL_LOCUST],stdout=subprocess.PIPE).stdout.decode('utf-8').split()
+    for counter,entry in enumerate(git_ls_remote):
+        if branch_default_LOCUST in entry: #look for this branch in command output
+            commit_hash_default_LOCUST=git_ls_remote[counter-1] #output of this command is in two columns (hash and branch)
+except:
+    commit_hash_default_LOCUST=None
+try:
+    git_ls_remote=subprocess.run(['git', 'ls-remote','-q',repo_URL_LOCUST_IO],stdout=subprocess.PIPE).stdout.decode('utf-8').split()
+    for counter,entry in enumerate(git_ls_remote):
+        if branch_default_LOCUST_IO in entry: #look for this branch in command output
+            commit_hash_default_LOCUST_IO=git_ls_remote[counter-1] #output of this command is in two columns (hash and branch)
+except:
+    commit_hash_default_LOCUST_IO=None
 
 #################################
 
