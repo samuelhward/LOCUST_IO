@@ -167,6 +167,7 @@ class LOCUST_environment:
             print("ERROR: LOCUST_environment initialised with incorrect system_name - options are {}".format(LOCUST_environment.system_names))
             self.environment=None
 
+        self.system_name=system_name
         self.command_types=[command_type for command_type in self.environment]
         self.required_modules=[module_name for module_name in self.environment['module load']]
 
