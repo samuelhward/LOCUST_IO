@@ -107,8 +107,8 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
 
     ID=str(shot_number)+str(run_ID)
 
-    project_dir=os.getcwd()
-    target_dir=os.path.join(support.dir_output_files,path_TRANSP)
+    project_dir=str(pathlib.Path.cwd())
+    target_dir=str(support.dir_output_files / path_TRANSP)
     os.chdir(target_dir) #change working directory to output files briefly due to bug in CCFE get_fbm installation
 
     for file_ID in range(number_files):
@@ -177,8 +177,8 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,path_TRAN
 
     ID=str(shot_number)+str(run_ID)
 
-    project_dir=os.getcwd()
-    target_dir=os.path.join(support.dir_output_files,path_TRANSP)
+    project_dir=str(pathlib.Path.cwd())
+    target_dir=str(support.dir_output_files / path_TRANSP)
     os.chdir(target_dir) #change working directory to output files briefly due to bug in CCFE get_fbm installation
     
     for file_ID in range(number_files):
