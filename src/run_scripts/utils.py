@@ -636,7 +636,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
     if beam_depo_number:
         filepaths_beam_deposition=list(pathlib.Path(input_path) / (shot_number+run_ID+'_birth.cdf{}').format(str(beam_depo_number))) #list is just one file long
     else:
-        filepaths_beam_deposition=list(pathlib.Path(support.dir_input_files / input_path).glob('*_birth.cdf*')) #find all birth CDF files in supplied input_path directory  
+        filepaths_beam_deposition=list(pathlib.Path(input_path).glob('*_birth.cdf*')) #find all birth CDF files in supplied input_path directory  
     filepath_wall=pathlib.Path(input_path) / ('OMF'+shot_number+'.LIM')
 
     if beam_depo_GC:
