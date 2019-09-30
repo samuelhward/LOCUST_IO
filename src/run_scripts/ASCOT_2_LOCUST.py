@@ -89,7 +89,7 @@ def ASCOT_2_LOCUST(path_LOCUST=pathlib.Path(''),path_ASCOT=pathlib.Path(''),beam
         temperature_array,density_array,temperature_e,density_e,beam_deposition,wall=run_scripts.utils.read_inputs_ASCOT(input_path=path_ASCOT,beam_depo_GC=beam_depo_GC,species_numbers=species_numbers,wall_type=wall_type)
         equilibrium=classes.input_classes.equilibrium.Equilibrium(ID='ASCOT_2_LOCUST() equilibrium',data_format='GEQDSK',filename=pathlib.Path(path_ASCOT) / filename_ASCOT_equilibrium,GEQDSKFIX=GEQDSKFIX)
     except:
-        print("ERROR: ASCOT_2_LOCUST could not read_inputs_ASCOT from LOCUST_IO/input_files/{}\n".format(path_ASCOT))
+        print("ERROR: ASCOT_2_LOCUST could not read_inputs_ASCOT from LOCUST_IO/data/input_files/{}\n".format(path_ASCOT))
         return 
 
     #try: #run dump_inputs_LOCUST without ion temperature - dump these separately due to possible multiple species
@@ -102,7 +102,7 @@ def ASCOT_2_LOCUST(path_LOCUST=pathlib.Path(''),path_ASCOT=pathlib.Path(''),beam
         density.dump_data(data_format='LOCUST',filename=pathlib.Path(path_LOCUST) / 'profile_ni{}.dat'.format(density.properties['species_number']))
 
     #except:
-    #    print("ERROR: ASCOT_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
+    #    print("ERROR: ASCOT_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/data/input_files/{}\n".format(path_LOCUST))
     #    return         
 
 if __name__=='__main__':

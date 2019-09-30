@@ -650,7 +650,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             temperature_i=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='ions',filename=filepath_temperature_i_2)            
         except:
-            print("WARNING: read_inputs_TRANSP() could not read ion temperature from LOCUST_IO/input_files/{} - returning None".format(str(filepath_temperature_i_1)+" or "+str(filepath_temperature_i_2)))
+            print("WARNING: read_inputs_TRANSP() could not read ion temperature from LOCUST_IO/data/input_files/{} - returning None".format(str(filepath_temperature_i_1)+" or "+str(filepath_temperature_i_2)))
             temperature_i=None
     try:
         temperature_e=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_temperature_e_1)
@@ -658,7 +658,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             temperature_e=classes.input_classes.temperature.Temperature(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_temperature_e_2)
         except:
-            print("WARNING: read_inputs_TRANSP() could not read electron temperature from LOCUST_IO/input_files/{} - returning None".format(str(filepath_temperature_e_1)+" or "+str(filepath_temperature_e_2)))
+            print("WARNING: read_inputs_TRANSP() could not read electron temperature from LOCUST_IO/data/input_files/{} - returning None".format(str(filepath_temperature_e_1)+" or "+str(filepath_temperature_e_2)))
             temperature_e=None
     try:
         density_e=classes.input_classes.number_density.Number_Density(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_number_density_e_1)
@@ -666,12 +666,12 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             density_e=classes.input_classes.number_density.Number_Density(ID=shot_number+run_ID,data_format='UFILE',species='electrons',filename=filepath_number_density_e_2)            
         except:
-            print("WARNING: read_inputs_TRANSP() could not read electron density from LOCUST_IO/input_files/{} - returning None".format(str(filepath_number_density_e_1)+" or "+str(filepath_number_density_e_2)))
+            print("WARNING: read_inputs_TRANSP() could not read electron density from LOCUST_IO/data/input_files/{} - returning None".format(str(filepath_number_density_e_1)+" or "+str(filepath_number_density_e_2)))
             density_e=None
     try:
         equilibrium=classes.input_classes.equilibrium.Equilibrium(ID=shot_number+run_ID,data_format='GEQDSK',filename=filepath_equilibrium,GEQDSKFIX=GEQDSKFIX)
     except:
-        print("WARNING: read_inputs_TRANSP() could not read equilibrium from LOCUST_IO/input_files/{} - returning None".format(filepath_equilibrium))
+        print("WARNING: read_inputs_TRANSP() could not read equilibrium from LOCUST_IO/data/input_files/{} - returning None".format(filepath_equilibrium))
         equilibrium=None
 
     beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID=shot_number+run_ID) #generate blank beam deposition which we will append to using .combine
@@ -679,12 +679,12 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         try:
             beam_deposition.combine(classes.input_classes.beam_deposition.Beam_Deposition(ID=shot_number+run_ID,data_format=data_format_beam_depo,filename=filepath_beam_deposition))
         except:
-            print("WARNING: read_inputs_TRANSP() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
+            print("WARNING: read_inputs_TRANSP() could not read beam deposition from LOCUST_IO/data/input_files/{} - returning None".format(filepath_beam_deposition))
 
     try:
         wall=classes.input_classes.wall.Wall(ID=shot_number+run_ID,data_format='UFILE',filename=filepath_wall)
     except:
-        print("WARNING: read_inputs_TRANSP() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
+        print("WARNING: read_inputs_TRANSP() could not read wall from LOCUST_IO/data/input_files/{} - returning None".format(filepath_wall))
         wall=None
 
     print("finished read_inputs_TRANSP()")
@@ -1201,22 +1201,22 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
             temperature=classes.input_classes.temperature.Temperature(ID='read_inputs_ASCOT() ion temperature',data_format='ASCOT',filename=filepath_temperature_i,species_number=species_number,species='ions')
             temperature_array.append(temperature)
         except:
-            print("WARNING: read_inputs_ASCOT() could not read ion temperature for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_temperature_i))
+            print("WARNING: read_inputs_ASCOT() could not read ion temperature for species {species_number} from LOCUST_IO/data/input_files/{input_path}".format(species_number=species_number,input_path=filepath_temperature_i))
         try:
             density=classes.input_classes.number_density.Number_Density(ID='read_inputs_ASCOT() ion density',data_format='ASCOT',filename=filepath_density_i,species_number=species_number,species='ions')
             density_array.append(density)
         except:
-            print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/input_files/{input_path}".format(species_number=species_number,input_path=filepath_density_i))
+            print("WARNING: read_inputs_ASCOT() could not read ion number density for species {species_number} from LOCUST_IO/data/input_files/{input_path}".format(species_number=species_number,input_path=filepath_density_i))
 
     try:
         temperature_e=classes.input_classes.temperature.Temperature(ID='read_inputs_ASCOT() electron temperature',data_format='ASCOT',filename=filepath_temperature_e,species_number=species_number,species='electrons')
     except:
-        print("WARNING: read_inputs_ASCOT() could not read electron temperature from LOCUST_IO/input_files/{}".format(filepath_temperature_e))
+        print("WARNING: read_inputs_ASCOT() could not read electron temperature from LOCUST_IO/data/input_files/{}".format(filepath_temperature_e))
 
     try:
         density_e=classes.input_classes.number_density.Number_Density(ID='read_inputs_ASCOT() electron density',data_format='ASCOT',filename=filepath_density_e,species_number=species_number,species='electrons')
     except:
-        print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/input_files/{}".format(filepath_density_i))
+        print("WARNING: read_inputs_ASCOT() could not read electron number density from LOCUST_IO/data/input_files/{}".format(filepath_density_i))
 
     if beam_depo_GC:
         data_format_beam_depo='ASCOT_GC'
@@ -1225,7 +1225,7 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
     try:
         beam_deposition=classes.input_classes.beam_deposition.Beam_Deposition(ID='read_inputs_ASCOT() beam deposition',data_format=data_format_beam_depo,filename=filepath_beam_deposition)
     except:
-        print("WARNING: read_inputs_ASCOT() could not read beam deposition from LOCUST_IO/input_files/{} - returning None".format(filepath_beam_deposition))
+        print("WARNING: read_inputs_ASCOT() could not read beam deposition from LOCUST_IO/data/input_files/{} - returning None".format(filepath_beam_deposition))
         beam_deposition=None
 
     if wall_type=='2D' or wall_type=='3D':
@@ -1238,7 +1238,7 @@ def read_inputs_ASCOT(input_path=pathlib.Path(''),beam_depo_GC=True,species_numb
     try:
         wall=classes.input_classes.wall.Wall(ID='read_inputs_ASCOT() wall',data_format=data_format_wall,filename=filepath_wall)
     except:
-        print("WARNING: read_inputs_ASCOT() could not read wall from LOCUST_IO/input_files/{} - returning None".format(filepath_wall))
+        print("WARNING: read_inputs_ASCOT() could not read wall from LOCUST_IO/data/input_files/{} - returning None".format(filepath_wall))
         wall=None
 
     print("finished read_inputs_ASCOT()")
@@ -1281,22 +1281,22 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
     try:
         dump_run_file_ASCOT(input_path=input_path,tag=tag) #generate run file
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump_run_file_ASCOT to LOCUST_IO/input_files/{}".format(input_path))
+        print("WARNING: dump_inputs_ASCOT() could not dump_run_file_ASCOT to LOCUST_IO/data/input_files/{}".format(input_path))
 
     try:
         dump_profiles_ASCOT(filename=pathlib.Path(input_path) / str('input.plasma_1d'+tag),temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_i,density_e=density_e,rotation_toroidal=rotation_toroidal)
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump_profiles_ASCOT to LOCUST_IO/input_files/{}".format(pathlib.Path(input_path) / str('input.plasma_1d'+tag)))
+        print("WARNING: dump_inputs_ASCOT() could not dump_profiles_ASCOT to LOCUST_IO/data/input_files/{}".format(pathlib.Path(input_path) / str('input.plasma_1d'+tag)))
 
     try:
         dump_input_options_ASCOT(filename=pathlib.Path(input_path) / str('input.options'+tag))
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump_input_options_ASCOT to LOCUST_IO/input_files/{}".format(pathlib.Path(input_path) / str('input.options'+tag)))
+        print("WARNING: dump_inputs_ASCOT() could not dump_input_options_ASCOT to LOCUST_IO/data/input_files/{}".format(pathlib.Path(input_path) / str('input.options'+tag)))
 
     try:
         wall.dump_data(data_format='ASCOT_2D_input',filename=pathlib.Path(input_path) / str('input.wall_2d'+tag))
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump ion temperature to LOCUST_IO/input_files/{}".format(pathlib.Path(input_path) / str('input.wall_2d'+tag)))
+        print("WARNING: dump_inputs_ASCOT() could not dump ion temperature to LOCUST_IO/data/input_files/{}".format(pathlib.Path(input_path) / str('input.wall_2d'+tag)))
 
     try:
         if beam_depo_GC:
@@ -1304,7 +1304,7 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
         else:
             beam_deposition.dump_data(data_format='ASCOT_FO',filename=pathlib.Path(input_path) / str('input.particles'+tag),equilibrium=equilibrium)
     except:
-        print("WARNING: dump_inputs_ASCOT() could not dump beam_deposition to LOCUST_IO/input_files/{}".format(pathlib.Path(input_path) / str('input.particles'+tag)))
+        print("WARNING: dump_inputs_ASCOT() could not dump beam_deposition to LOCUST_IO/data/input_files/{}".format(pathlib.Path(input_path) / str('input.particles'+tag)))
 
     print("dump_inputs_ASCOT finished creating ASCOT inputs")
 
@@ -1635,25 +1635,25 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
         try:
             temperature_i.dump_data(data_format='LOCUST',filename=filepath_temperature_i)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump ion temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_i))
+            print("WARNING: dump_inputs_LOCUST() could not dump ion temperature to LOCUST_IO/data/input_files/{}".format(filepath_temperature_i))
 
     if temperature_e:
         try:
             temperature_e.dump_data(data_format='LOCUST',filename=filepath_temperature_e)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump electron temperature to LOCUST_IO/input_files/{}".format(filepath_temperature_e))
+            print("WARNING: dump_inputs_LOCUST() could not dump electron temperature to LOCUST_IO/data/input_files/{}".format(filepath_temperature_e))
 
     if density_e:
         try:
             density_e.dump_data(data_format='LOCUST',filename=filepath_number_density_e)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump number density to LOCUST_IO/input_files/{}".format(filepath_number_density_e))
+            print("WARNING: dump_inputs_LOCUST() could not dump number density to LOCUST_IO/data/input_files/{}".format(filepath_number_density_e))
 
     if equilibrium:
         try:
             equilibrium.dump_data(data_format='GEQDSK',filename=filepath_equilibrium)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump equilibrium to LOCUST_IO/input_files/{}".format(filepath_equilibrium))
+            print("WARNING: dump_inputs_LOCUST() could not dump equilibrium to LOCUST_IO/data/input_files/{}".format(filepath_equilibrium))
 
     if beam_deposition:
         try:
@@ -1668,14 +1668,14 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
                 else:
                     beam_deposition.dump_data(data_format='LOCUST_FO',filename=filepath_beam_deposition)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump beam deposition to LOCUST_IO/input_files/{}".format(filepath_beam_deposition))
+            print("WARNING: dump_inputs_LOCUST() could not dump beam deposition to LOCUST_IO/data/input_files/{}".format(filepath_beam_deposition))
 
     if wall:
         try:
             data_format_wall='LOCUST_'+wall_type
             wall.dump_data(data_format=data_format_wall,filename=filepath_wall)
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump wall to LOCUST_IO/input_files/{}".format(filepath_wall))
+            print("WARNING: dump_inputs_LOCUST() could not dump wall to LOCUST_IO/data/input_files/{}".format(filepath_wall))
 
     if perturbation:
         try:
@@ -1684,9 +1684,9 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
                 try:
                     perturbation.dump_data(data_format='point_data',filename=filepath_point_data)
                 except:
-                    print("WARNING: dump_inputs_LOCUST() could not dump point_data.inp to LOCUST_IO/input_files/{}".format(filepath_point_data))                    
+                    print("WARNING: dump_inputs_LOCUST() could not dump point_data.inp to LOCUST_IO/data/input_files/{}".format(filepath_point_data))                    
         except:
-            print("WARNING: dump_inputs_LOCUST() could not dump perturbation to LOCUST_IO/input_files/{}".format(filepath_perturbation))
+            print("WARNING: dump_inputs_LOCUST() could not dump perturbation to LOCUST_IO/data/input_files/{}".format(filepath_perturbation))
 
     print("dump_inputs_LOCUST finished")
 

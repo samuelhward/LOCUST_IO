@@ -43,7 +43,7 @@ Tested with:
 
 * Set up a folder anywhere within LOCUST_IO e.g. *LOCUST_IO/my_project* (this is where you will create all of your analysis scripts)
 * Copy a context.py file from *LOCUST_IO/docs/example_project* to *LOCUST_IO/my_project*
-* Copy LOCUST input/cache/output files to *LOCUST_IO/data/input_files*, *LOCUST_IO/data/cache_files* or *LOCUST_IO/output_files* respectively
+* Copy LOCUST input/cache/output files to *LOCUST_IO/data/input_files*, *LOCUST_IO/data/cache_files* or *LOCUST_IO/data/output_files* respectively
 * import context and off you go!
 
 
