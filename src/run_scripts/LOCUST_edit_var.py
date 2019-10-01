@@ -19,6 +19,21 @@ notes:
 #Preamble
 
 try:
+    import sys
+    import pathlib
+except:
+    raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
+    sys.exit(1)
+
+if __name__=='__main__':
+
+    try:
+        import context
+    except:
+        raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
+        sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -80,14 +95,19 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
                             break
 
         for spilled_line in sorted(spilled_lines,reverse=True): #go back and delete spilled lines where we replaced variables
-            while ('::' not in lines[spilled_line] #delete lines until one of these characters is found - denoting a comment line, pragma line etc.
-                and '#'!=lines[spilled_line][0] 
-                and '!'!=lines[spilled_line][0]
-                and 'end module' not in lines[spilled_line]
-                and 'end program' not in lines[spilled_line]
-                and 'end subroutine' not in lines[spilled_line]
-                ): 
-                del(lines[spilled_line])
+            while (True):
+                if not lines[spilled_line].split(): #if line is blank then ignore
+                    pass
+                elif ('::' in lines[spilled_line] #delete lines until one of these characters is found - denoting a comment line, pragma line etc.
+                or '#'==lines[spilled_line].split()[0][0] 
+                or '!'==lines[spilled_line].split()[0][0]
+                or 'stop' in lines[spilled_line]
+                or 'end module' in lines[spilled_line]
+                or 'end program' in lines[spilled_line]
+                or 'end subroutine' in lines[spilled_line]): 
+                    break
+                else:
+                    del(lines[spilled_line])
 
         with open(filename_out,'w') as file_output: #dump results
             for line in lines:
