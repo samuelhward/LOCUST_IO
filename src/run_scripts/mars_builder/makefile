@@ -17,7 +17,7 @@
 # Compilers:
 FC      = pgfortran
 CC      = nvcc
-CUDALIB = 7.5
+CUDALIB = cuda10.1
 
 # Compile flags.  
 
