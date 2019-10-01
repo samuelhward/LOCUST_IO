@@ -519,14 +519,10 @@ program mars_read
   #if (TOKAMAK==1)
 
       character( len=1000 )         :: mtch = '/home/rakers/15MA_ELM_upper.txt_cleaned'
-    #endif
-
   #else
 
       character( len=1000  )         :: mtch = '?'
-
-    #endif
-
+      
   #endif
 
 #endif
@@ -849,6 +845,7 @@ program mars_read
       PH1(1) = real(UPHASE,gpu)
   #else
       PH1(1) = 86.0_gpu
+      PH1(1) = 0.0_gpu
       write(io(1),*) ':mars_read : U Phase DEFAULT : ', PH1(1)
   #endif
   #if defined (MPHASE)
@@ -863,12 +860,14 @@ program mars_read
       PH1(3) = real(LPHASE,gpu)
   #else
       PH1(3) = 34.0_gpu
+      PH1(3) = 0.0_gpu
       write(io(1),*) ':mars_read : L Phase DEFAULT : ', PH1(3)
   #endif
 
 #else
       PH1(1) = 0.0_gpu
       PH1(2) = 0.0_gpu
+      PH1(3) = 0.0_gpu
 #endif
 
 #if defined (MATCH)
@@ -1128,7 +1127,7 @@ ddat(2) = 1.0d0
       allocate  ( ddat(6) )
 
 !     Phase offset. See notes in header. The Min_n3 phase offsets applied to
-!     the data in the ITER coordinate sustem for a +|n| mode require a
+!     the data in the ITER coordinate system for a +|n| mode require a
 !     [+86,0,+34]*|n| phase rotation. -nmde = +ve.
 
 #if (TOKAMAK==1)
