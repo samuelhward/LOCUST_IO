@@ -4,7 +4,7 @@
 Samuel Ward
 27/09/2019
 ----
-LOCUST environments and related tools for various machines running LOCUST
+LOCUST environments and related tools for various machines running LOCUST and related tools
 ---
 notes: 
 ---
@@ -165,7 +165,7 @@ class LOCUST_environment:
         elif system_name=='CUMULUS':
             self.environment=LOCUST_environment.LOCUST_environment_CUMULUS
         else:
-            print("ERROR: LOCUST_environment initialised with incorrect system_name - options are {}".format(LOCUST_environment.system_names))
+            print("WARNING: LOCUST_environment initialised with incorrect system_name - options are {}".format(LOCUST_environment.system_names))
             self.environment=None
 
         self.system_name=system_name

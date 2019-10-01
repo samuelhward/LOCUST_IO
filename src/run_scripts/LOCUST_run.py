@@ -23,11 +23,13 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 
-try:
-    import context
-except:
-    raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
-    sys.exit(1)
+if __name__=='__main__':
+
+    try:
+        import context
+    except:
+        raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
+        sys.exit(1)
 
 try:
     import run_scripts.LOCUST_environment
@@ -39,12 +41,6 @@ try:
     import run_scripts.LOCUST_build
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_build.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
-    import run_scripts.LOCUST_edit_var
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_edit_var.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
@@ -105,7 +101,7 @@ class LOCUST_run:
         self.dir_cache=dir_cache
         self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name=system_name) #create an environment for running
         self.build=run_scripts.LOCUST_build.LOCUST_build(system_name=system_name,repo_URL=repo_URL,commit_hash=commit_hash)
-        self.build.add_flags(**flags) 
+        self.build.flags_add(**flags) 
         self.build.settings_prec_mod_add(**settings_prec_mod) 
 
     def run(self):
@@ -123,15 +119,11 @@ class LOCUST_run:
         except:
             print("WARNING: LOCUST_run unable to mkdir dir_output - already exists?")
 
-        #retrieve code
-        self.build.clone(directory=self.dir_LOCUST)
-        dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
-
-        #source code edits
-        run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=dir_LOCUST / 'prec_mod.f90',filename_out=dir_LOCUST / 'prec_mod.f90',**self.build.settings_prec_mod)
-
-        #compile
-        self.build.make(directory=dir_LOCUST,clean=False)
+        #find where LOCUST will store its files - InputFiles, OutputFiles and CacheFiles
+        if 'TOKHEAD' in self.build.flags: #user specified tokhead, which changes directory structure and must be accounted for
+            tokhead='locust.'+self.build.tokamak
+        else:
+            tokhead='locust'
 
         #find root 
         if 'root' in self.build.settings_prec_mod: #variable is set in LOCUST source - prec_mod.f90
@@ -139,20 +131,27 @@ class LOCUST_run:
         else:
             root=pathlib.Path(settings.LOCUST_dir_root_default) #default root set within LOCUST prec_mod.f90
 
+        #retrieve code
+        self.build.clone(directory=self.dir_LOCUST)
+        dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
+
+        #compile (source files are edited within this step)
+        self.build.make(directory=dir_LOCUST,clean=False)
+
         #create root and child directories if do not exist
         for directory in [root,(root / settings.username),
-                         (root / settings.username / ('locust.'+self.build.tokhead)),
-                         (root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_inputfiles_default),
-                         (root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_cachefiles_default),
-                         (root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_outputfiles_default)]:
+                         (root / settings.username / tokhead),
+                         (root / settings.username / tokhead / settings.LOCUST_dir_inputfiles_default),
+                         (root / settings.username / tokhead / settings.LOCUST_dir_cachefiles_default),
+                         (root / settings.username / tokhead / settings.LOCUST_dir_outputfiles_default)]:
             if not directory.exists():
                 directory.mkdir()
 
         #copy input and cache files to correct location
         for file in self.dir_input.glob('*'): #move all input files to correct location
-            subprocess.run(shlex.split('cp {file} {root}'.format(file=str(file),root=str(root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_inputfiles_default))),shell=False)
+            subprocess.run(shlex.split('cp {file} {root}'.format(file=str(file),root=str(root / settings.username / tokhead / settings.LOCUST_dir_inputfiles_default))),shell=False)
         for file in self.dir_cache.glob('*'): #move all cache files to correct location
-            subprocess.run(shlex.split('cp {file} {root}'.format(file=str(file),root=str(root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_cachefiles_default))),shell=False)
+            subprocess.run(shlex.split('cp {file} {root}'.format(file=str(file),root=str(root / settings.username / tokhead / settings.LOCUST_dir_cachefiles_default))),shell=False)
 
         #run LOCUST
         command=' '.join([self.environment.create_command(),'; ./locust'])
@@ -166,7 +165,7 @@ class LOCUST_run:
 
         #retrieve output
         subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(dir_LOCUST/'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
-        for file in (root / settings.username / ('locust.'+self.build.tokhead) / settings.LOCUST_dir_outputfiles_default).glob('*'):
+        for file in (root / settings.username / tokhead / settings.LOCUST_dir_outputfiles_default).glob('*'):
             subprocess.run(shlex.split('mv {file} {dir_output}'.format(file=str(file),dir_output=str(self.dir_output))),shell=False)
 
         #remove source code, input file and cache file folders

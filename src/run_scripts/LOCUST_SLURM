@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=LOCUST
-#SBATCH --gres=gpu:kepler:1
-#SBATCH --partition=gpus
+#SBATCH --gres=gpu:8 
+#SBATCH --partition=gpu_p100_titan
 #SBATCH --cpus-per-task=1
-#SBATCH --mail-user samuel.ward@york.ac.uk 
+#SBATCH --mail-user samuel.ward@iter.org 
 #SBATCH --mail-type=END,FAIL,TIME_LIMIT
 #SBATCH -o LOCUST_SLURM.out
 #SBATCH -e LOCUST_SLURM.err
@@ -14,27 +14,14 @@ date_time=$(date +'%d-%m--%Y:%H:%M:%S')
 
 #compile environment
 #source LOCUST_env
-module purge
-module load pgf/18.3 #load compilers + HDF for output
-module load hdf5/1.8.19-mpich3.2-pgf18.3
-module load cuda/9.0
-module unload gcc7/default
-export FFLAGS="-I$HDF5_DIR/include" #set up some variables to point makefile to PGfortran/CUDA compiler HDF5-linker libraries
-export LDFLAGS="-L$HDF5_DIR/lib"
+. ~/.bashrc
+. ~/installed_programs/LOCUST/LOCUST.env
 
-#compile
-#FLAGS_USER='-DTOKAMAK=8 -DBRELAX -DUNBOR=100 -DOPENMESH -DOPENTRACK -DPFCMOD -DTOKHEAD -DTIMAX=0.0001D0 -DSTDOUT -DGEQDSKFIX1'
-#make clean
-#make FLAGS="{$FLAGS_USER}"
-
-#run-time environment
-export OMP_NUM_THREADS=1
-export OMP_STACKSIZE=102400
-export NO_AT_BRIDGE=1
-ulimit -s 2000000
+echo $SLURM_JOB_USER
+echo $userid
 
 #run
-./locust
+./locust 
 
 
 #USAGE:

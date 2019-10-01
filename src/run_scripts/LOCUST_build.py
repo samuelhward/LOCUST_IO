@@ -7,6 +7,8 @@ Samuel Ward
 tools to retrieve and build the LOCUST code
 ---
 notes: 
+    have separated LOCUST_build, MARS_builder_build etc. just because we need to be somewhat specific in some areas
+        ideally we would have a generic code 'build' which can take arbitrary permutations of compile flags
 ---
 '''
 
@@ -24,15 +26,15 @@ except:
     sys.exit(1)
 
 try:
-    import context
-except:
-    raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
     import run_scripts.LOCUST_environment
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_environment.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
+    import run_scripts.LOCUST_edit_var
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_edit_var.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
@@ -60,7 +62,8 @@ class LOCUST_build:
         my_build.environment.display() #environment is instance of LOCUST_environment class 
         print(my_build.repo_URL) #if not specified at instantiation, default repo_URL and commit_hash are set - check LOCUST_IO/src/settings.py 
         print(my_build.commit_hash) #commit_hash is assumed to be latest hash of settings.branch_default_LOCUST branch
-        my_build.add_flags(STDOUT=None,TOKAMAK=8,BRELAX=None,UNBOR=100,LEIID=8) #adds flags to this LOCUST_build
+        my_build.flags_add(STDOUT=None,TOKAMAK=8,BRELAX=None,UNBOR=100,LEIID=8) #adds flags to this LOCUST_build
+        my_build.settings_prec_mod_add(root="'/home/my_directory'")
         my_build.make(clean=True) #execute 'make clean'
         my_build.make() #make with flags stored in LOCUST_build.flags
     """ 
@@ -78,19 +81,19 @@ class LOCUST_build:
         self.repo_URL=repo_URL
         if not commit_hash: 
             self.commit_hash=settings.commit_hash_default_LOCUST
-            if not self.commit_hash: print("WARNING: commit_hash not set for LOCUST_build")    
-        if system_name: self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name)
+            if not self.commit_hash: print("WARNING: commit_hash not set for LOCUST_build")
+        self.settings_prec_mod={}  
 
-    def add_flags(self,**flags):
+    def flags_add(self,**flags):
         """
         append LOCUST compile flags to flags currently stored in this LOCUST_build
 
         notes:    
-            '-D' added by LOCUST_IO, so do not worry about this - just use the flag name e.g. STDOUT, TOKAMAK=1
+            '-D' added by LOCUST_IO automatically, so do not worry about this - just use the flag name e.g. STDOUT, TOKAMAK=1
         args:
             flags - set of kwargs denoting compile flags
         usage:
-            LOCUST_build.add_flags('TOKAMAK'=1,'STDOUT'=None) #if flag does not need numerical value, set to None
+            LOCUST_build.flags_add('TOKAMAK'=1,'STDOUT'=None) #if flag does not need numerical value, set to None
         """
         if not hasattr(self,'flags'):
             self.flags={}
@@ -98,29 +101,29 @@ class LOCUST_build:
             flag=''.join(['-D',flag])
             self.flags[flag]=value
 
-        if 'TOKHEAD' in flags:
+        if 'TOKAMAK' in flags:
             if int(flags['TOKAMAK'])==1:
-                self.tokhead='ITER'
+                self.tokamak='ITER'
             if int(flags['TOKAMAK'])==2:
-                self.tokhead='AUG'
+                self.tokamak='AUG'
             if int(flags['TOKAMAK'])==3:
-                self.tokhead='MAST-U'
+                self.tokamak='MAST-U'
             if int(flags['TOKAMAK'])==4:
-                self.tokhead='MAST'
+                self.tokamak='MAST'
             if int(flags['TOKAMAK'])==5:
-                self.tokhead='JET'
+                self.tokamak='JET'
             if int(flags['TOKAMAK'])==6:
-                self.tokhead='W7-X'
+                self.tokamak='W7-X'
             if int(flags['TOKAMAK'])==7:
-                self.tokhead='CTF-YORK'
+                self.tokamak='CTF-YORK'
             if int(flags['TOKAMAK'])==8:
-                self.tokhead='DIII-D'
+                self.tokamak='DIII-D'
             if int(flags['TOKAMAK'])==9:
-                self.tokhead='ZOW_ANALYTIC'
+                self.tokamak='ZOW_ANALYTIC'
             if int(flags['TOKAMAK'])==10:
-                self.tokhead='STEP'
+                self.tokamak='STEP'
 
-    def clear_flags(self):
+    def flags_clear(self):
         """
         remove flags from this build 
         notes:
@@ -134,7 +137,7 @@ class LOCUST_build:
 
         notes:    
         args:
-            settings_prec_mod - set of kwargs denoting compile flags
+            settings_prec_mod - set of kwargs denoting changes to make to prec_mod.f90
         usage:
         """
         if not hasattr(self,'settings_prec_mod'):
@@ -193,14 +196,16 @@ class LOCUST_build:
             directory - path to directory holding code to make
             clean - toggle whether to execute make clean
         notes:
-            set compile flags using LOCUST_build.add_flags
+            set compile flags using LOCUST_build.flags_add
         """
 
         if clean:
             subprocess.run(shlex.split('make clean'),shell=False,cwd=str(directory))    
 
         else: #not making clean, so parse flags - two ways depending whether they hold numerical value e.g. -DSTDOUT vs -DTOKAMAK=1
-            
+
+            run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=dir_LOCUST / 'prec_mod.f90',filename_out=dir_LOCUST / 'prec_mod.f90',**self.settings_prec_mod) #perform source code edits
+
             if not hasattr(self,'environment'):
                 print("WARNING: LOCUST_build.make does not contain environment - using settings.environment_default!")                
                 self.environment=run_scripts.LOCUST_environment.LOCUST_environment(settings.system_default)
