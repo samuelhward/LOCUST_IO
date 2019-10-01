@@ -46,8 +46,6 @@ except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-
-
 ##################################################################
 #Main
 
@@ -81,7 +79,6 @@ class LOCUST_build:
         if not commit_hash: 
             self.commit_hash=settings.commit_hash_default_LOCUST
             if not self.commit_hash: print("WARNING: commit_hash not set for LOCUST_build")    
-
         if system_name: self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name)
 
     def add_flags(self,**flags):
@@ -101,6 +98,28 @@ class LOCUST_build:
             flag=''.join(['-D',flag])
             self.flags[flag]=value
 
+        if 'TOKHEAD' in flags:
+            if int(flags['TOKAMAK'])==1:
+                self.tokhead='ITER'
+            if int(flags['TOKAMAK'])==2:
+                self.tokhead='AUG'
+            if int(flags['TOKAMAK'])==3:
+                self.tokhead='MAST-U'
+            if int(flags['TOKAMAK'])==4:
+                self.tokhead='MAST'
+            if int(flags['TOKAMAK'])==5:
+                self.tokhead='JET'
+            if int(flags['TOKAMAK'])==6:
+                self.tokhead='W7-X'
+            if int(flags['TOKAMAK'])==7:
+                self.tokhead='CTF-YORK'
+            if int(flags['TOKAMAK'])==8:
+                self.tokhead='DIII-D'
+            if int(flags['TOKAMAK'])==9:
+                self.tokhead='ZOW_ANALYTIC'
+            if int(flags['TOKAMAK'])==10:
+                self.tokhead='STEP'
+
     def clear_flags(self):
         """
         remove flags from this build 
@@ -108,6 +127,28 @@ class LOCUST_build:
         """
 
         del(self.flags)
+
+    def settings_prec_mod_add(self,**settings_prec_mod):
+        """
+        append LOCUST prec_mod.f90 settings to those currently stored in this LOCUST_build
+
+        notes:    
+        args:
+            settings_prec_mod - set of kwargs denoting compile flags
+        usage:
+        """
+        if not hasattr(self,'settings_prec_mod'):
+            self.settings_prec_mod={}
+        for setting_prec_mod,value in settings_prec_mod.items():
+            self.settings_prec_mod[setting_prec_mod]=value
+
+    def settings_prec_mod_clear(self):
+        """
+        remove settings_prec_mod from this build 
+        notes:
+        """
+
+        del(self.settings_prec_mod)
 
     def clone(self,directory=support.dir_locust):
         """

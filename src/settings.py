@@ -67,7 +67,7 @@ username='wards2'
 imasdb='test'
 system_default='TITAN'
 
-#source code
+#LOCUST git
 repo_URL_LOCUST='ssh://git@git.iter.org/traj/locust.git'
 repo_URL_LOCUST_IO='https://github.com/armoured-moose/LOCUST_IO.git'
 branch_default_LOCUST='hot_fix/ITER_Mersenne_Twister'
@@ -87,6 +87,12 @@ try:
             commit_hash_default_LOCUST_IO=git_ls_remote[counter-1] #output of this command is in two columns (hash and branch)
 except:
     commit_hash_default_LOCUST_IO=None
+
+#LOCUST source
+LOCUST_dir_inputfiles_default='InputFiles' #default folder names according to LOCUST source code
+LOCUST_dir_outputfiles_default='OutputFiles'
+LOCUST_dir_cachefiles_default='CacheFiles'
+LOCUST_dir_root_default='/tmp'
 
 #################################
 

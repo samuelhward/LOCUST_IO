@@ -65,6 +65,7 @@ class LOCUST_environment:
     LOCUST_environment_TITAN['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
     LOCUST_environment_TITAN['export']['NO_AT_BRIDGE']=1
     LOCUST_environment_TITAN['export']['OMP_NUM_THREADS']=8
+    LOCUST_environment_TITAN['export']['OMP_STACKSIZE']=102400
     LOCUST_environment_TITAN['export']['CUDA_CACHE_DISABLE']=1
     LOCUST_environment_TITAN['module load']=[
                                 'IMAS/3.23.3-4.1.3',
