@@ -55,7 +55,7 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
         variables - set of kwargs denoting variable names and values to set them to
     usage:
         python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filename_in prec_mod.f90
-
+        LOCUST_edit_var(some_string="'I <3 LOCUST'") #within python - remember strings are interpreted literally so to inserting the text 'text' requires a string "'text'"
     """
 
     with open(filename_in,'r') as file_input:

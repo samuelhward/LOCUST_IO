@@ -63,36 +63,32 @@ class LOCUST_run:
 
     notes:
         contains a LOCUST_build and a LOCUST_environment which store relevant settings for this run
+        both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
         some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
         some_run.run() #this will do all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    def __init__(self,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,settings_prec_mod={},flags={}):
+    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={}):
         """
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
         args:
-            system_name - string identifier to choose from selection of environments stored as class attributes 
-            build - associated LOCUST_build
-            repo_URL - SSH address of remote target git repo 
-            commit_hash - commit hash identifying this build - defaults to latest commit on settings.branch_default_LOCUST branch
             dir_LOCUST - directory to temporarily store source code
             dir_input - directory to read input data from 
             dir_output - directory to write results to 
             dir_cache - directory to read cache data from 
-            settings_prec_mod - dict denoting variable names and values to set them to within prec_mod, defaults to setting LOCUST root to LOCUST_IO/data/input_files/
+            system_name - string identifier to choose from selection of environments stored as class attributes 
+            repo_URL - SSH address of remote target git repo 
+            commit_hash - commit hash identifying this build - defaults to latest commit on settings.branch_default_LOCUST branch
+            settings_prec_mod - dict denoting variable names and values to set them to within prec_mod.f90
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
         """
         
         files_in_dir_LOCUST=dir_LOCUST.glob('*') #check for files in dir_LOCUST
         if [file_in_dir_LOCUST for file_in_dir_LOCUST in files_in_dir_LOCUST]:
             print("ERROR: new LOCUST_run found files in target dir_LOCUST - please specify empty dir!\nreturning\n")
-            return
-        files_in_dir_output=dir_output.glob('*') #check for files in dir_output
-        if [file_in_dir_output for file_in_dir_output in files_in_dir_output]:
-            print("ERROR: new LOCUST_run found files in target dir_output - please specify empty dir!\nreturning\n")
             return
 
         self.dir_LOCUST=dir_LOCUST
@@ -110,14 +106,9 @@ class LOCUST_run:
         args:
         """
 
-        try:
-            self.dir_LOCUST.mkdir() 
-        except:
-            print("WARNING: LOCUST_run unable to mkdir dir_LOCUST - already exists?")
-        try:
-            self.dir_output.mkdir()
-        except:
-            print("WARNING: LOCUST_run unable to mkdir dir_output - already exists?")
+        #create output directory and directory to hold LOCUST if do not already exist
+        if not self.dir_LOCUST.exists(): self.dir_LOCUST.mkdir()
+        if not self.dir_output.exists(): self.dir_output.mkdir()
 
         #find where LOCUST will store its files - InputFiles, OutputFiles and CacheFiles
         if 'TOKHEAD' in self.build.flags: #user specified tokhead, which changes directory structure and must be accounted for
@@ -132,11 +123,12 @@ class LOCUST_run:
             root=pathlib.Path(settings.LOCUST_dir_root_default) #default root set within LOCUST prec_mod.f90
 
         #retrieve code
-        self.build.clone(directory=self.dir_LOCUST)
+        self.build.clone(dir_LOCUST=self.dir_LOCUST)
         dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
 
         #compile (source files are edited within this step)
-        self.build.make(directory=dir_LOCUST,clean=False)
+        self.build.make(dir_LOCUST=dir_LOCUST,clean=True)
+        self.build.make(dir_LOCUST=dir_LOCUST,clean=False)
 
         #create root and child directories if do not exist
         for directory in [root,(root / settings.username),
@@ -156,7 +148,7 @@ class LOCUST_run:
         #run LOCUST
         command=' '.join([self.environment.create_command(),'; ./locust'])
         try:
-            pass #TRY THIS NEXT, JUST SKIP RUNNING LOCUST TO SEE HOW TIDY UP GOES
+            pass
             with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                 pass
         except subprocess.CalledProcessError as err:
@@ -177,14 +169,14 @@ if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser(description='run LOCUST from command line in Python!')
 
+    parser.add_argument('--dir_LOCUST',type=str,action='store',default=support.dir_locust,dest='dir_LOCUST',help="directory to temporarily store source code",required=False)
+    parser.add_argument('--dir_in',type=str,action='store',default=support.dir_input_files,dest='dir_input',help="directory to read input data from",required=False)
+    parser.add_argument('--dir_out',type=str,action='store',default=support.dir_output_files,dest='dir_output',help="directory to write results to",required=False)
+    parser.add_argument('--dir_cache',type=str,action='store',default=support.dir_cache_files,dest='dir_cache',help="directory to read cache data from",required=False)
     parser.add_argument('--sys_name',type=str,action='store',default='TITAN',dest='system_name',help="computer system currently running on e.g. \'TITAN\'",required=False)
     parser.add_argument('--repo_URL',type=str,action='store',default=settings.repo_URL_LOCUST,dest='repo_URL',help="URL of LOCUST git repository",required=False)
     parser.add_argument('--commit',type=str,action='store',default=None,dest='commit_hash',help="optional commit hash of specific build",required=False)
-    parser.add_argument('--dir_LOCUST',type=str,action='store',default=support.dir_locust,dest='dir_LOCUST',help="directory to temporarily store source code",required=False)
-    parser.add_argument('--dir_in',type=str,action='store',default=support.dir_input_files,dest='dir_input',help="directory to read input data from",required=False)
-    parser.add_argument('--dir_out',type=str,action='store',default=support.dir_output_files,dest='dir_output',help="directory to write results to (must not already exist)",required=False)
-    parser.add_argument('--dir_cache',type=str,action='store',default=support.dir_cache_files,dest='dir_cache',help="directory to read cache data from",required=False)
-    parser.add_argument('--settings_prec_mod',nargs='+',type=str,action='store',default={},dest='settings_prec_mod',help="variable names and values to set them to within prec_mod",required=False)
+    parser.add_argument('--settings_prec_mod',nargs='+',type=str,action='store',default={},dest='settings_prec_mod',help="variable names and values to set them to within prec_mod.f90",required=False)
     parser.add_argument('--flags',nargs='+',type=str,action='store',default={},dest='flags',help="compile flags",required=False)
     
     args=parser.parse_args()

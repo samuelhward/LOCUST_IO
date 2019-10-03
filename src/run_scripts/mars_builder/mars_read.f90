@@ -489,6 +489,7 @@ program mars_read
 ! *** Author:
 !
 !     Rob Akers, D3/1.36, Culham Centre for Fusion Energy, x6323
+!     Samuel Ward, 81/147, ITER organization, samuel.ward@iter.org, +33 4 42 17 81 59 : LOCUST_IO workflow additions
 !
 ! *** Error flags:               
 !
@@ -505,6 +506,8 @@ program mars_read
       use disp_mod
 
       implicit none
+
+      character( len=1000 )       :: root = '/home/ITER/wards2/' !append this to all file writes
 
 #if (TOKAMAK==1)
       character( len=1000  ),                                                    &
@@ -1591,7 +1594,8 @@ endif
 
       write( STR_N, '(I2)' ) NC
 
-      open( unit=lun, file='mars_read_'//TRIM(ADJUSTL(STR_R))//'_'//          &
+      open( unit=lun, file=TRIM(ADJUSTL(root))//'mars_read_'//                &
+                                         TRIM(ADJUSTL(STR_R))//'_'//          &
                                          TRIM(ADJUSTL(STR_Z))//'_'//          &
                                          TRIM(ADJUSTL(STR_N))//'.CACHE',      &
                       status='old', form='unformatted', iostat=ios )
@@ -1599,7 +1603,9 @@ endif
       if( ios==0 )then
 
           write(io(1),*) ':mars_read : CACHE file identified : '//            &
-                          'mars_read_'//TRIM(ADJUSTL(STR_R))//'_'//           &
+                          TRIM(ADJUSTL(root))//                               &
+                          'mars_read_'//                                      &
+                                        TRIM(ADJUSTL(STR_R))//'_'//           &
                                         TRIM(ADJUSTL(STR_Z))//'.CACHE'
 
           read( lun ) nR_f_, nZ_f_
@@ -2127,7 +2133,8 @@ endif
 
       write(io(1),*) ':mars_read : Write out mapping CACHE file....'
 
-      open ( unit=lun,  file='mars_read_'//TRIM(ADJUSTL(STR_R))//'_'//        &
+      open ( unit=lun,  file=TRIM(ADJUSTL(root))//'mars_read_'//              &
+                                           TRIM(ADJUSTL(STR_R))//'_'//        &
                                            TRIM(ADJUSTL(STR_Z))//'_'//        &
                                            TRIM(ADJUSTL(STR_N))//'.CACHE',    &
              form='unformatted', status='replace' )
@@ -2292,7 +2299,7 @@ endif
 
 ! -> dB_map.dat runs 0 to 2pi in PHI:
 
-      open( unit=lun,file='dB_map.dat_MARSEXP', form='unformatted' )
+      open( unit=lun,file=TRIM(ADJUSTL(root))//'dB_map.dat_MARSEXP', form='unformatted' )
 
       STR = '3D Expansion of MARS-F data....'
 
@@ -2349,7 +2356,7 @@ endif
       write(io(1),*) ':mars_read : Write out file : '//'BPLASMA_n'//          &
                                                         TRIM(ADJUSTL(STR_N))
 
-      open( unit=lun, file='BPLASMA_n'//TRIM(ADJUSTL(STR_N)),                 &
+      open( unit=lun, file=TRIM(ADJUSTL(root))//'BPLASMA_n'//TRIM(ADJUSTL(STR_N)),                 &
             form='formatted', status='replace' )
 
             write( lun, '(A39,A2)' )                                          &
@@ -2402,7 +2409,7 @@ endif
 
 #if defined (SCHIDUMP)
 
-      open ( unit=lun, file='BPLASMA_s_chi.dat', form='unformatted' )
+      open ( unit=lun, file=TRIM(ADJUSTL(root))//'BPLASMA_s_chi.dat', form='unformatted' )
       write( lun ) NT*2, 361, nR_f, nZ_f  ! Grid dimensions
       write( lun ) SH                     ! S
       write( lun ) R0F_, R1F_, Z0F_, Z1F_ ! Grid size
@@ -2536,7 +2543,7 @@ endif
          enddo
       enddo
       
-      open ( unit=lun, file='BSCHI.dat', form='unformatted' )
+      open ( unit=lun, file=TRIM(ADJUSTL(root))//'BSCHI.dat', form='unformatted' )
       write( lun ) NT*2, 361
       write( lun ) SH
       write( lun ) S

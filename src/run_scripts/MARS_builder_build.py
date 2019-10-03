@@ -149,21 +149,21 @@ class MARS_builder_build:
 
         del(self.settings_mars_read)
 
-    def make(self,directory=support.dir_run_scripts / 'mars_builder',clean=False):
+    def make(self,dir_MARS_builder=support.dir_run_scripts / 'mars_builder',clean=False):
         """
         args:
-            directory - path to directory holding code to make
+            dir_MARS_builder - path to directory holding code to make
             clean - toggle whether to execute make clean
         notes:
             set compile flags using MARS_builder_build.flags_add
         """
 
         if clean:
-            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(directory))    
+            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(dir_MARS_builder))    
 
         else: #not making clean, so parse flags - two ways depending whether they hold numerical value e.g. -DSTDOUT vs -DTOKAMAK=1
             
-            run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=directory / 'mars_read.f90',filename_out=directory / 'mars_read.f90',**self.settings_mars_read) #perform source code edits
+            run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=dir_MARS_builder / 'mars_read.f90',filename_out=dir_MARS_builder / 'mars_read.f90',**self.settings_mars_read) #user-specified source code edits
 
             if not hasattr(self,'environment'):
                 print("WARNING: MARS_builder_build.make does not contain environment - using settings.environment_default!")                
@@ -173,7 +173,7 @@ class MARS_builder_build:
             command=' '.join([self.environment.create_command(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:
-                with subprocess.Popen(command,shell=True,cwd=str(directory)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+                with subprocess.Popen(command,shell=True,cwd=str(dir_MARS_builder)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                     pass
             except subprocess.CalledProcessError as err:
                 raise(err)

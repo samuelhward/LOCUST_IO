@@ -153,16 +153,16 @@ class LOCUST_build:
 
         del(self.settings_prec_mod)
 
-    def clone(self,directory=support.dir_locust):
+    def clone(self,dir_LOCUST=support.dir_locust):
         """
         notes:
             default behaviour is shallow clone from settings.repo_URL_LOCUST of settings.branch_default_LOCUST branch
             shallow clone is enabled if commit_hash has not been set or matches the latest commit hash of settings.branch_default_LOCUST branch
         args:
-            directory - pathlib directory for where to clone LOCUST (make sure dir is empty), default to support.dir_locust
+            dir_LOCUST - pathlib directory for where to clone LOCUST (make sure dir is empty), default to support.dir_locust
         """
 
-        files_in_target_dir=pathlib.Path(directory).glob('*') #check for files in target directory
+        files_in_target_dir=pathlib.Path(dir_LOCUST).glob('*') #check for files in target directory
         files_in_target_dir=[file_in_target_dir for file_in_target_dir in files_in_target_dir] 
         if files_in_target_dir:
             print("ERROR: LOCUST_build.clone found files in target directory - please clone to empty dir!\nreturning\n")
@@ -180,27 +180,27 @@ class LOCUST_build:
             command.append('--depth')
             command.append('1')
 
-        subprocess.run(command,cwd=str(directory)) #code is now cloned
-        directory=directory/'locust' #cloning adds additional folder
+        subprocess.run(command,cwd=str(dir_LOCUST)) #code is now cloned
+        dir_LOCUST=dir_LOCUST/'locust' #cloning adds additional folder
         
         if self.commit_hash and not shallow:
             command=['git','checkout','{commit_hash}'.format(commit_hash=self.commit_hash)]
             try:
-                subprocess.run(command,shell=False,cwd=str(directory))
+                subprocess.run(command,shell=False,cwd=str(dir_LOCUST))
             except subprocess.CalledProcessError as err:
                 raise(err)
 
-    def make(self,directory=support.dir_locust,clean=False):
+    def make(self,dir_LOCUST=support.dir_locust,clean=False):
         """
         args:
-            directory - path to directory holding code to make
+            dir_LOCUST - path to directory holding code to make
             clean - toggle whether to execute make clean
         notes:
             set compile flags using LOCUST_build.flags_add
         """
 
         if clean:
-            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(directory))    
+            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(dir_LOCUST))    
 
         else: #not making clean, so parse flags - two ways depending whether they hold numerical value e.g. -DSTDOUT vs -DTOKAMAK=1
 
@@ -214,7 +214,7 @@ class LOCUST_build:
             command=' '.join([self.environment.create_command(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:
-                with subprocess.Popen(command,shell=True,cwd=str(directory)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+                with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                     pass
             except subprocess.CalledProcessError as err:
                 raise(err)
