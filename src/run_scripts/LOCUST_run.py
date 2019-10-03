@@ -64,6 +64,8 @@ class LOCUST_run:
     notes:
         contains a LOCUST_build and a LOCUST_environment which store relevant settings for this run
         both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
+        when editing prec_mod.f90 source code using settings_mars_read, strings should be passed literally (see below)     
+        python LOCUST_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_prec_mod a_string \'"should be formatted like this"\' a_variable 'like_this'
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
         some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
@@ -86,6 +88,12 @@ class LOCUST_run:
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
         """
         
+        #convert strings to paths just in case supplied at command line
+        dir_LOCUST=pathlib.Path(dir_LOCUST)
+        dir_input=pathlib.Path(dir_input)
+        dir_output=pathlib.Path(dir_output)
+        dir_cache=pathlib.Path(dir_cache)
+
         files_in_dir_LOCUST=dir_LOCUST.glob('*') #check for files in dir_LOCUST
         if [file_in_dir_LOCUST for file_in_dir_LOCUST in files_in_dir_LOCUST]:
             print("ERROR: new LOCUST_run found files in target dir_LOCUST - please specify empty dir!\nreturning\n")
