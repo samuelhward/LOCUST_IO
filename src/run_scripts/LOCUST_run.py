@@ -65,7 +65,7 @@ class LOCUST_run:
         contains a LOCUST_build and a LOCUST_environment which store relevant settings for this run
         both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
         when editing prec_mod.f90 source code using settings_mars_read, strings should be passed literally (see below)     
-        python LOCUST_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_prec_mod a_string \'"should be formatted like this"\' a_variable 'like_this'
+        python LOCUST_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_prec_mod a_string="'should be formatted like this'" a_number="like_this"
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
         some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
@@ -114,9 +114,9 @@ class LOCUST_run:
         args:
         """
 
-        #create output directory and directory to hold LOCUST if do not already exist
-        if not self.dir_LOCUST.exists(): self.dir_LOCUST.mkdir()
+        #create output directory if does not already exist
         if not self.dir_output.exists(): self.dir_output.mkdir()
+        if self.dir_LOCUST.exists(): dir_LOCUST_exist_previously=True #
 
         #find where LOCUST will store its files - InputFiles, OutputFiles and CacheFiles
         if 'TOKHEAD' in self.build.flags: #user specified tokhead, which changes directory structure and must be accounted for
@@ -131,8 +131,12 @@ class LOCUST_run:
             root=pathlib.Path(settings.LOCUST_dir_root_default) #default root set within LOCUST prec_mod.f90
 
         #retrieve code
-        self.build.clone(dir_LOCUST=self.dir_LOCUST)
-        dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
+        try:
+            self.build.clone(dir_LOCUST=self.dir_LOCUST)
+            dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
+        except:
+            print("ERROR: LOCUST_run.run could not clone clone to {}!\nreturning\n".format(self.dir_LOCUST))
+            return
 
         #compile (source files are edited within this step)
         self.build.make(dir_LOCUST=dir_LOCUST,clean=True)
@@ -154,7 +158,7 @@ class LOCUST_run:
             subprocess.run(shlex.split('cp {file} {root}'.format(file=str(file),root=str(root / settings.username / tokhead / settings.LOCUST_dir_cachefiles_default))),shell=False)
 
         #run LOCUST
-        command=' '.join([self.environment.create_command(),'; ./locust'])
+        command=' '.join([self.environment.create_command(),'; ./locust &'])
         try:
             pass
             with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
@@ -164,13 +168,18 @@ class LOCUST_run:
             #raise(err)
 
         #retrieve output
-        subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(dir_LOCUST/'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
+        subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(dir_LOCUST / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
         for file in (root / settings.username / tokhead / settings.LOCUST_dir_outputfiles_default).glob('*'):
             subprocess.run(shlex.split('mv {file} {dir_output}'.format(file=str(file),dir_output=str(self.dir_output))),shell=False)
 
         #remove source code, input file and cache file folders
-        subprocess.run(shlex.split('rm -r {}'.format(str(root / settings.username))),shell=False) #delete folder up since added new child folder when cloning
-        subprocess.run(shlex.split('rm -rf {}'.format(str(dir_LOCUST.parents))),shell=False) #delete folder holding LOCUST
+        subprocess.run(shlex.split('rm -r {}'.format(str(root / settings.username))),shell=False) #delete directory storing temporary InputFiles/OutputFiles/CacheFiles
+        try:
+            subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo
+        except:
+            print("WARNING: .git repo not found in {} during LOCUST_run cleanup!".format(str(self.dir_LOCUST / 'locust')))
+        folder_to_delete=self.dir_LOCUST / 'locust' if dir_LOCUST_exist_previously else self.dir_LOCUST
+        subprocess.run(shlex.split('rm -r {}'.format(str(folder_to_delete))),shell=False) #delete folder holding rest of LOCUST  
 
 if __name__=='__main__':
 

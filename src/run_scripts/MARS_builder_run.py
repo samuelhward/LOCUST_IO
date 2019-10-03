@@ -67,7 +67,7 @@ class MARS_builder_run:
         both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
         when editing mars_read.f90 source code using settings_mars_read, strings should be passed literally (see below) 
     usage:
-        python MARS_builder_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_mars_read a_string \'"should be formatted like this"\' a_variable 'like_this'
+        python MARS_builder_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_mars_read a_string="'should be formatted like this'" a_number="like_this"
         some_run=MARS_builder_run(filepath_input='here',system_name='TITAN',flags=flags) #by default this will run compile and run MARS_builder on filepath_input and dump to LOCUST_IO/data/input_files (since output of this function is still a LOCUST input)
         some_run.run() #this will do all stages of a mars_build run
     """ 

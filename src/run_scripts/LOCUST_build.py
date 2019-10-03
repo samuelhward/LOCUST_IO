@@ -98,7 +98,6 @@ class LOCUST_build:
         if not hasattr(self,'flags'):
             self.flags={}
         for flag,value in flags.items():
-            flag=''.join(['-D',flag])
             self.flags[flag]=value
 
         if 'TOKAMAK' in flags:
@@ -159,14 +158,18 @@ class LOCUST_build:
             default behaviour is shallow clone from settings.repo_URL_LOCUST of settings.branch_default_LOCUST branch
             shallow clone is enabled if commit_hash has not been set or matches the latest commit hash of settings.branch_default_LOCUST branch
         args:
-            dir_LOCUST - pathlib directory for where to clone LOCUST (make sure dir is empty), default to support.dir_locust
+            dir_LOCUST - pathlib directory for where to clone LOCUST (new or empty dir), default to support.dir_locust
         """
 
-        files_in_target_dir=pathlib.Path(dir_LOCUST).glob('*') #check for files in target directory
-        files_in_target_dir=[file_in_target_dir for file_in_target_dir in files_in_target_dir] 
-        if files_in_target_dir:
-            print("ERROR: LOCUST_build.clone found files in target directory - please clone to empty dir!\nreturning\n")
-            return
+        dir_LOCUST=pathlib.path(dir_LOCUST) 
+        if dir_LOCUST.exists():
+            files_in_target_dir=dir_LOCUST.glob('*') #check for files in target directory
+            files_in_target_dir=[file_in_target_dir for file_in_target_dir in files_in_target_dir] 
+            if files_in_target_dir:
+                print("ERROR: LOCUST_build.clone found files in target directory - please clone to empty dir!\nreturning\n")
+                return
+        else:
+            dir_LOCUST.mkdir()
 
         if self.commit_hash==settings.commit_hash_default_LOCUST: shallow = True #shallow toggles whether or not to only clone latest commit
 
@@ -210,7 +213,7 @@ class LOCUST_build:
                 print("WARNING: LOCUST_build.make does not contain environment - using settings.environment_default!")                
                 self.environment=run_scripts.LOCUST_environment.LOCUST_environment(settings.system_default)
 
-            flags_=' '.join(['{}={}'.format(flag,value) if value else '{}'.format(flag) for flag,value in self.flags.items()])
+            flags_=' '.join(['-D{}={}'.format(flag,value) if value else '-D{}'.format(flag) for flag,value in self.flags.items()])
             command=' '.join([self.environment.create_command(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:
