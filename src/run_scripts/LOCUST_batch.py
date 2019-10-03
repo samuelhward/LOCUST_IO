@@ -14,8 +14,6 @@ notes:
 ##################################################################
 #Preamble
 
-import context #XXX FOR TESTING
-
 try:
     import sys
     import subprocess
@@ -189,16 +187,6 @@ python3 {LOCUST_run} {LOCUST_run_flags}
             else:
                 print("ERROR: LOCUST_batch.launch given incorrect system_batch_name - options are {}\nreturning\n".format(self.system_batch_names_avail))
                 return
-
-        #LOCUST_run.__init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={}):
-        #some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
-        #some_run.run() #this will do all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
-
-settings_prec_mod={}
-settings_prec_mod['sada']='1.0_gpu'
-settings_prec_mod['root']="'some_dir'"
-my_batch=LOCUST_batch(settings_prec_mod=[settings_prec_mod,settings_prec_mod])
-my_batch.launch()   
 
 #################################
 
