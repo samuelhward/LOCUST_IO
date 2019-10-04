@@ -70,7 +70,7 @@ system_default='TITAN'
 #LOCUST git
 repo_URL_LOCUST='ssh://git@git.iter.org/traj/locust.git'
 repo_URL_LOCUST_IO='https://github.com/armoured-moose/LOCUST_IO.git'
-branch_default_LOCUST='hot_fix/ITER_Mersenne_Twister'
+branch_default_LOCUST='hot_fix/ITER'
 branch_default_LOCUST_IO='develop'
 
 try: #get default commit hash

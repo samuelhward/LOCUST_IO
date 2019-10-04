@@ -57,7 +57,6 @@ class LOCUST_environment:
     LOCUST_environment_GA['module switch']=[]
     LOCUST_environment_GA['misc']={}
     LOCUST_environment_GA['misc']['ulimit']="-s 2000000"
-
     ################################# TITAN
     LOCUST_environment_TITAN={}
     LOCUST_environment_TITAN['export']={}
@@ -76,8 +75,6 @@ class LOCUST_environment:
                                 'HDF5/1.10.5-PGI-19.4-GCC-6.4.0-2.28'  ]
     LOCUST_environment_TITAN['misc']={}
     LOCUST_environment_TITAN['misc']['ulimit']="-s 2000000"
-
-
     ################################# NEMO TITAN
     NEMO_environment_TITAN={}
     NEMO_environment_TITAN['module load']=['IMAS/3.21.0-3.8.11',
@@ -109,7 +106,6 @@ class LOCUST_environment:
     NEMO_environment_TITAN['export']['DIAG_INFO']='-DNO_DIAG_INFO'
     NEMO_environment_TITAN['misc']={}
     NEMO_environment_TITAN['misc']['ulimit']='-s unlimited'
-
     ################################# MARFE
     LOCUST_environment_MARFE={}
     LOCUST_environment_MARFE['export']={}
@@ -128,7 +124,6 @@ class LOCUST_environment:
     LOCUST_environment_MARFE['module switch']=[]
     LOCUST_environment_MARFE['misc']={}
     LOCUST_environment_MARFE['misc']['ulimit']="-s 2000000"
-
     ################################# GPU
     LOCUST_environment_GPU={}
     ################################# CUMULUS

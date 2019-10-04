@@ -77,7 +77,7 @@ class LOCUST_run:
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
         args:
-            dir_LOCUST - directory to temporarily store source code
+            dir_LOCUST - directory to temporarily store source code (must not already xist)
             dir_input - directory to read input data from 
             dir_output - directory to write results to 
             dir_cache - directory to read cache data from 
@@ -89,20 +89,19 @@ class LOCUST_run:
         """
         
         #convert strings to paths just in case supplied at command line
-        dir_LOCUST=pathlib.Path(dir_LOCUST)
+        dir_LOCUST=pathlib.Path(dir_LOCUST) 
         dir_input=pathlib.Path(dir_input)
         dir_output=pathlib.Path(dir_output)
         dir_cache=pathlib.Path(dir_cache)
 
-        files_in_dir_LOCUST=dir_LOCUST.glob('*') #check for files in dir_LOCUST
-        if [file_in_dir_LOCUST for file_in_dir_LOCUST in files_in_dir_LOCUST]:
-            print("ERROR: new LOCUST_run found files in target dir_LOCUST - please specify empty dir!\nreturning\n")
-            return
+        if dir_LOCUST.is_dir(): #check if dir_LOCUST already exists - cannot!
+            print("ERROR: dir_LOCUST already exists for this LOCUST_run - please specify new dir!\nreturning\n")
+            sys.exit(1)
 
-        self.dir_LOCUST=dir_LOCUST
-        self.dir_input=dir_input
-        self.dir_output=dir_output
-        self.dir_cache=dir_cache
+        self.dir_LOCUST=dir_LOCUST if dir_LOCUST.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_LOCUST path!")
+        self.dir_input=dir_input if dir_input is_absolute() else print("ERROR: LOCUST_run requires absolute dir_input path!")
+        self.dir_output=dir_output if dir_output is_absolute() else print("ERROR: LOCUST_run requires absolute dir_output path!")
+        self.dir_cache=dir_cache if dir_cache is_absolute() else print("ERROR: LOCUST_run requires absolute dir_cache path!")
         self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name=system_name) #create an environment for running
         self.build=run_scripts.LOCUST_build.LOCUST_build(system_name=system_name,repo_URL=repo_URL,commit_hash=commit_hash)
         self.build.flags_add(**flags) 
@@ -115,8 +114,14 @@ class LOCUST_run:
         """
 
         #create output directory if does not already exist
-        if not self.dir_output.exists(): self.dir_output.mkdir()
-        if self.dir_LOCUST.exists(): dir_LOCUST_exist_previously=True #
+        if not self.dir_output.is_dir(): self.dir_output.mkdir()
+        #create LOCUST directory - must not already exis
+        if self.dir_LOCUST.is_dir(): 
+            print("ERROR: LOCUST_run.run() found previous dir_LOCUST -  must not already exist!\nreturning\n")
+            return
+        else:
+            dir_LOCUST=self.dir_LOCUST.with_suffix('_lio_tmp_') #mark folder for future deletion
+            self.dir_LOCUST.mkdir()
 
         #find where LOCUST will store its files - InputFiles, OutputFiles and CacheFiles
         if 'TOKHEAD' in self.build.flags: #user specified tokhead, which changes directory structure and must be accounted for
@@ -133,14 +138,14 @@ class LOCUST_run:
         #retrieve code
         try:
             self.build.clone(dir_LOCUST=self.dir_LOCUST)
-            dir_LOCUST=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone
+            dir_LOCUST_locust=self.dir_LOCUST / 'locust' #from now on all code is within second folder due to clone - so keep track of that
         except:
             print("ERROR: LOCUST_run.run could not clone clone to {}!\nreturning\n".format(self.dir_LOCUST))
             return
 
         #compile (source files are edited within this step)
-        self.build.make(dir_LOCUST=dir_LOCUST,clean=True)
-        self.build.make(dir_LOCUST=dir_LOCUST,clean=False)
+        self.build.make(dir_LOCUST=self.dir_LOCUST,clean=True)
+        self.build.make(dir_LOCUST=self.dir_LOCUST,clean=False)
 
         #create root and child directories if do not exist
         for directory in [root,(root / settings.username),
@@ -161,25 +166,33 @@ class LOCUST_run:
         command=' '.join([self.environment.create_command(),'; ./locust &'])
         try:
             pass
-            with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+            with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST_locust)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                 pass
         except subprocess.CalledProcessError as err:
             print("ERROR: LOCUST_run failed to run LOCUST!\nreturning\n")
             #raise(err)
 
         #retrieve output
-        subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(dir_LOCUST / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
+        subprocess.run(shlex.split('mv {prec_mod} {dir_output}/'.format(prec_mod=str(dir_LOCUST_locust / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
         for file in (root / settings.username / tokhead / settings.LOCUST_dir_outputfiles_default).glob('*'):
             subprocess.run(shlex.split('mv {file} {dir_output}'.format(file=str(file),dir_output=str(self.dir_output))),shell=False)
 
-        #remove source code, input file and cache file folders
-        subprocess.run(shlex.split('rm -r {}'.format(str(root / settings.username))),shell=False) #delete directory storing temporary InputFiles/OutputFiles/CacheFiles
-        try:
-            subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo
+        #remove source code and temporary input/cache file folders
+        #currently works by deleting specific known target folders then deleting parent directories IFF now empty
+        for directory in [ 
+                         (root / settings.username / tokhead / settings.LOCUST_dir_inputfiles_default),
+                         (root / settings.username / tokhead / settings.LOCUST_dir_cachefiles_default),
+                         (root / settings.username / tokhead / settings.LOCUST_dir_outputfiles_default)]:
+            subprocess.run(shlex.split('rm -r {}'.format(str(directory))),shell=False) #delete directories storing temporary InputFiles/OutputFiles/CacheFiles
+        (root / settings.username / tokhead).rmdir() #delete parent folder IFF empty
+        try: #now remove folder containing LOCUST repo
+            if str(self.dir_LOCUST)[-9:]=='_lio_tmp_': #perform additional check
+                subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo
         except:
-            print("WARNING: .git repo not found in {} during LOCUST_run cleanup!".format(str(self.dir_LOCUST / 'locust')))
-        folder_to_delete=self.dir_LOCUST / 'locust' if dir_LOCUST_exist_previously else self.dir_LOCUST
-        subprocess.run(shlex.split('rm -r {}'.format(str(folder_to_delete))),shell=False) #delete folder holding rest of LOCUST  
+            print("WARNING: .git repo not found in {} during LOCUST_run cleanup!".format(str(self.dir_LOCUST / 'locust'))) 
+
+        subprocess.run(shlex.split('rm -r {}'.format(str(self.dir_LOCUST / 'locust'))),shell=False) #delete specific folder holding rest of LOCUST source   
+        self.dir_LOCUST.rmdir() #delete original containing folder IFF empty
 
 if __name__=='__main__':
 

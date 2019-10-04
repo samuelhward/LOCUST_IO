@@ -161,7 +161,7 @@ class LOCUST_build:
             dir_LOCUST - pathlib directory for where to clone LOCUST (new or empty dir), default to support.dir_locust
         """
 
-        dir_LOCUST=pathlib.path(dir_LOCUST) 
+        dir_LOCUST=pathlib.Path(dir_LOCUST) 
         if dir_LOCUST.exists():
             files_in_target_dir=dir_LOCUST.glob('*') #check for files in target directory
             files_in_target_dir=[file_in_target_dir for file_in_target_dir in files_in_target_dir] 
@@ -184,12 +184,12 @@ class LOCUST_build:
             command.append('1')
 
         subprocess.run(command,cwd=str(dir_LOCUST)) #code is now cloned
-        dir_LOCUST=dir_LOCUST/'locust' #cloning adds additional folder
+        dir_LOCUST_locust=dir_LOCUST / 'locust' #cloning adds additional folder
         
         if self.commit_hash and not shallow:
             command=['git','checkout','{commit_hash}'.format(commit_hash=self.commit_hash)]
             try:
-                subprocess.run(command,shell=False,cwd=str(dir_LOCUST))
+                subprocess.run(command,shell=False,cwd=str(dir_LOCUST_locust))
             except subprocess.CalledProcessError as err:
                 raise(err)
 
@@ -202,12 +202,14 @@ class LOCUST_build:
             set compile flags using LOCUST_build.flags_add
         """
 
+        dir_LOCUST_locust = dir_LOCUST / 'locust' #cloning introduces extra level
+
         if clean:
-            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(dir_LOCUST))    
+            subprocess.run(shlex.split('make clean'),shell=False,cwd=str(dir_LOCUST_locust))    
 
         else: #not making clean, so parse flags - two ways depending whether they hold numerical value e.g. -DSTDOUT vs -DTOKAMAK=1
 
-            run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=dir_LOCUST / 'prec_mod.f90',filename_out=dir_LOCUST / 'prec_mod.f90',**self.settings_prec_mod) #perform source code edits
+            run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=dir_LOCUST_locust / 'prec_mod.f90',filename_out=dir_LOCUST_locust / 'prec_mod.f90',**self.settings_prec_mod) #perform source code edits
 
             if not hasattr(self,'environment'):
                 print("WARNING: LOCUST_build.make does not contain environment - using settings.environment_default!")                
@@ -217,7 +219,7 @@ class LOCUST_build:
             command=' '.join([self.environment.create_command(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:
-                with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+                with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST_locust)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                     pass
             except subprocess.CalledProcessError as err:
                 raise(err)
