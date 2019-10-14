@@ -39,6 +39,12 @@ except:
     sys.exit(1)
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -59,10 +65,35 @@ except:
  
 def read_rotation_LOCUST(filepath,**properties):
     """
-    reads rotation profile stored in LOCUST format
+    reads rotation profile stored in LOCUST format - normalised_poloidal_flux rotation_ang [rad/s]
     """
+    
+    print("reading rotation from LOCUST")
 
-    pass #XXX not yet implemented
+    with open(filepath,'r') as file:
+         
+        lines=file.readlines() #return lines as list
+        if not lines: #check to see if the file opened
+            raise IOError("ERROR: read_rotation_LOCUST() cannot read from "+str(filepath))
+     
+        del(lines[0]) #first line contains the number of points
+     
+        input_data = {} #initialise the dictionary to hold the data
+        input_data['flux_pol_norm']=[] #initialise the arrays 
+        input_data['rotation_ang']=[]
+     
+        for line in lines:
+     
+            split_line=line.split()
+            input_data['flux_pol_norm'].append(float(split_line[0]))
+            input_data['rotation_ang'].append(float(split_line[1]))
+     
+        input_data['flux_pol_norm']=np.asarray(input_data['flux_pol_norm']) #convert to arrays
+        input_data['rotation_ang']=np.asarray(input_data['rotation_ang'])
+        
+        print("finished reading rotation from LOCUST")
+
+    return input_data
 
 def read_rotation_UFILE(filepath,**properties):
     """
@@ -70,7 +101,7 @@ def read_rotation_UFILE(filepath,**properties):
 
     notes:
         XXX untested
-        XXX waiting to see which units LOCUST works in
+        currently no way of converting to rotation_ang
         if more than one time point then rotation field is multidimensional-[time_point,flux_pol_norm]        
     """
 
@@ -106,8 +137,8 @@ def read_rotation_UFILE(filepath,**properties):
         del(data[:length_rotation])
         input_data['time']=np.array(data[:length_time])
         del(data[:length_time])
-        input_data['rotation']=np.array(data).reshape(length_time,length_rotation)
-        input_data['rotation']=np.squeeze(input_data['rotation']) #get rid of redundant axis if time is only 1 element long
+        input_data['rotation_vel']=np.array(data).reshape(length_time,length_rotation)
+        input_data['rotation_vel']=np.squeeze(input_data['rotation_vel']) #get rid of redundant axis if time is only 1 element long
 
     print("finished reading rotation from UFILE")
 
@@ -117,7 +148,6 @@ def read_rotation_ASCOT(filepath,**properties):
     """
     notes:
         XXX untested
-        XXX waiting to see which units LOCUST works in
     """
 
     with open(filepath,'r') as file:
@@ -138,17 +168,47 @@ def read_rotation_ASCOT(filepath,**properties):
                 desired_column_flux_pol_norm_sqrt=counter
 
         input_data={}
-        input_data['rotation']=[]
+        input_data['rotation_ang']=[]
         input_data['flux_pol_norm_sqrt']=[]
 
         for line in file:
             split_line=line.split()
-            input_data['rotation'].extend([float(line.split()[desired_column_rotation])])
+            input_data['rotation_ang'].extend([float(line.split()[desired_column_rotation])])
             input_data['flux_pol_norm_sqrt'].extend([float(line.split()[desired_column_flux_pol_norm_sqrt])])
 
-        input_data['rotation']=np.asarray(input_data['rotation'])
+        input_data['rotation_ang']=np.asarray(input_data['rotation_ang'])
         input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
         input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
+
+    return input_data
+
+def read_rotation_excel_1(filepath,**properties):
+    """
+    reads rotation from excel spreadsheets supplied by Yueqiang Liu for ITER RMP study
+
+    notes:  
+        must include spreadsheet name within file in properties['sheet_name']
+        must include name of rotation variable e.g. Vt(tF/tE=2) in properties['rotation_name']
+        R_axis value is hardcoded here, please update accordingly
+    """
+
+    if 'sheet_name' not in properties: #must supply some sort of sheet_name
+        print("ERROR: cannot read_rotation_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
+        return
+
+    if 'rotation_name' not in properties: #must supply rotation_name
+        print("ERROR: cannot read_rotation_excel_1 - properties['rotation_name'] must be set!\nreturning\n")
+        return
+
+    input_data={}
+    input_data['flux_pol_norm'],radius_minor=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y='a',sheet_name=properties['sheet_name'])
+    input_data['rotation_vel']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,y=properties['rotation_name'],sheet_name=properties['sheet_name'])
+    input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
+    input_data['rotation_vel']*=1000. #convert from km/s
+
+    R_axis=6.2 #XXX warning this is hardcoded
+    input_data['rmaj']=radius_minor+R_axis 
+    input_data['rotation_ang']=input_data['rotation_vel']/input_data['rmaj']
 
     return input_data
 
@@ -156,10 +216,25 @@ def read_rotation_ASCOT(filepath,**properties):
 
 def dump_rotation_LOCUST(output_data,filepath,**properties):
     """
-    writes rotation profile stored in LOCUST format
+    writes rotation profile to LOCUST format - normalised_poloidal_flux rotation_ang [rad/s]    
+     
+    notes:
+        writes out a headerline for length of file
     """
 
-    pass #XXX not yet implemented
+    print("writing rotation to LOCUST")
+ 
+    with open(filepath,'w') as file: #open file
+
+        normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
+        normalised_flux,output_rot=processing.utils.sort_arrays(normalised_flux,output_data['rotation_ang']) #check order
+ 
+        file.write("{}\n".format(processing.utils.fortran_string(output_rot.size,8))) #re-insert line containing length
+        
+        for point in range(output_rot.size): #iterate through all points i.e. length of our dictionary's arrays
+            file.write("{flux_pol_norm}{rot}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),rot=processing.utils.fortran_string(output_rot[point],16,8)))
+ 
+    print("finished writing rotation to LOCUST")
 
 def dump_rotation_MARSF(output_data,filepath,**properties):
     """
@@ -231,9 +306,17 @@ class rotation(classes.base_input.LOCUST_input):
                 self.filepath=support.dir_input_files / filename
                 self.properties={**properties}
                 self.data=read_rotation_LOCUST(self.filepath,**properties)
-    
+
+        elif data_format=='EXCEL1': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from EXCEL1 - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files / filename
+                self.properties={**properties}
+                self.data=read_rotation_excel_1(self.filepath,**properties)    
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/EXCEL1)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
@@ -293,9 +376,9 @@ class rotation(classes.base_input.LOCUST_input):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self['rotation'],color=colmap(np.random.uniform()))
+        ax.plot(self[axis],self['rotation_ang'],color=colmap(np.random.uniform()))
         ax.set_xlabel(axis)
-        ax.set_ylabel('rotation')
+        ax.set_ylabel('rotation_ang')
 
         if ax_flag is False and fig_flag is False:
             plt.show()

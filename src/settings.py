@@ -89,7 +89,7 @@ except:
     commit_hash_default_LOCUST_IO=None
 
 #LOCUST source
-LOCUST_dir_inputfiles_default='InputFiles' #default folder names according to LOCUST source code
+LOCUST_dir_inputfiles_default='InputFiles' #default folder names according to LOCUST source code - src.run_scripts.LOCUST_run will create these directories during a run
 LOCUST_dir_outputfiles_default='OutputFiles'
 LOCUST_dir_cachefiles_default='CacheFiles'
 LOCUST_dir_root_default='/tmp'

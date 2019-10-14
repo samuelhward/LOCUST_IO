@@ -219,8 +219,7 @@ class LOCUST_build:
             command=' '.join([self.environment.create_command(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:
-                with subprocess.Popen(command,shell=True,cwd=str(dir_LOCUST_locust)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
-                    pass
+                subprocess.call(command,shell=True,cwd=str(dir_LOCUST_locust)) #as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
             except subprocess.CalledProcessError as err:
                 raise(err)
 

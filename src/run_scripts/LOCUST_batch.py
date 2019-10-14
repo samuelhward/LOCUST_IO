@@ -121,6 +121,7 @@ class LOCUST_batch:
                     system_batch_flags['gres']='gpu:8'
                     system_batch_flags['partition']='gpu_p100_titan'
                     system_batch_flags['cpus-per-task']=1
+                    system_batch_flags['exclusive']=''
                     system_batch_flags['mail-user']='samuel.ward@iter.org'
                     system_batch_flags['mail-type']='END,FAIL,TIME_LIMIT'
                     system_batch_flags['o']='LOCUST_SLURM_{}.out'.format(counter)
@@ -129,7 +130,7 @@ class LOCUST_batch:
                 SLURM_flags='' #turn batch system flags into strings
                 for batch_flag,value in system_batch_flags.items(): #add '-' or '--' to batch system flags e.g. num_processors --> --num_processorss                    
                     batch_flag=''.join(['-',batch_flag]) if len(batch_flag)==1 else ''.join(['--',batch_flag]) 
-                    batch_flag='{}={}'.format(batch_flag,str(value)) if value else '{}'.format(batch_flag) #create strings for batch system flags                
+                    batch_flag='{} {}'.format(batch_flag,str(value)) if value else '{}'.format(batch_flag) #create strings for batch system flags                
                     SLURM_flags=''.join([SLURM_flags,'#SBATCH ',batch_flag,'\n'])
 
 
@@ -160,7 +161,7 @@ class LOCUST_batch:
                     commit='--commit' if commit_hash else '', #do not print if empty/not supplied
                     commit_hash=commit_hash if commit_hash else '',
                     settings_prec_mod='--settings_prec_mod ' if set_of_prec_mod_settings else '', #do not print if empty/not supplied
-                    set_of_prec_mod_settings=' '.join(['{} {}'.format(setting,value) for setting,value in set_of_prec_mod_settings.items()]),
+                    set_of_prec_mod_settings=' '.join(['{}={}'.format(setting,value) for setting,value in set_of_prec_mod_settings.items()]),
                     flags='--flags ' if set_of_flags else '', #do not print if empty/not supplied
                     set_of_flags=' '.join(['{}={}'.format(flag,value) if value else '{}'.format(flag) for flag,value in set_of_flags.items()])
                     ).replace('\n','')
@@ -202,6 +203,7 @@ python3 {LOCUST_run} {LOCUST_run_flags}
                     system_batch_flags['cpus-per-task']=1
                     system_batch_flags['o']='LOCUST_PBS_{}.out'.format(counter)
                     system_batch_flags['e']='LOCUST_PBS_{}.err'.format(counter)
+                    system_batch_flags['l']='place=excl'
  
                 PBS_flags='' #turn batch system flags into strings
                 for batch_flag,value in system_batch_flags.items(): #add '-' or '--' to batch system flags e.g. num_processors --> --num_processorss                    
@@ -237,7 +239,7 @@ python3 {LOCUST_run} {LOCUST_run_flags}
                     commit='--commit' if commit_hash else '', #do not print if empty/not supplied
                     commit_hash=commit_hash if commit_hash else '',
                     settings_prec_mod='--settings_prec_mod ' if set_of_prec_mod_settings else '', #do not print if empty/not supplied
-                    set_of_prec_mod_settings=' '.join(['{} {}'.format(setting,value) for setting,value in set_of_prec_mod_settings.items()]),
+                    set_of_prec_mod_settings=' '.join(['{}={}'.format(setting,value) for setting,value in set_of_prec_mod_settings.items()]),
                     flags='--flags ' if set_of_flags else '', #do not print if empty/not supplied
                     set_of_flags=' '.join(['{}={}'.format(flag,value) if value else '{}'.format(flag) for flag,value in set_of_flags.items()])
                     ).replace('\n','')

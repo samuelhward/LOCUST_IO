@@ -52,6 +52,12 @@ except:
     sys.exit(1) 
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -321,6 +327,8 @@ def read_number_density_UFILE(filepath,**properties):
 
 def read_number_density_ASCOT(filepath,**properties):
     """
+    read number density from typical ascot input.plasma_1d file
+
     notes:
         must include 'species' in properties - either 'electrons' or 'ions'
         include integer species_number in properties to select species (1 by default)
@@ -365,6 +373,36 @@ def read_number_density_ASCOT(filepath,**properties):
         input_data['n']=np.asarray(input_data['n'])
         input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
         input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
+
+    return input_data
+
+def read_number_density_excel_1(filepath,**properties):
+    """
+    reads number_density from excel spreadsheets supplied by Yueqiang Liu for ITER RMP study
+
+    notes:    
+        must include 'species' in properties - either 'electrons','tritium','deuterium','helium','hydrogen','tungsten','helium3'
+        must include spreadsheet name within file in properties['sheet_name']
+    """
+
+    if 'sheet_name' not in properties: #must supply some sort of sheet_name
+        print("ERROR: cannot read_number_density_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
+        return
+
+    available_species_names=['ne','nT','nD','nAlp','nH','nW','nHe3'] #list of available species in these files
+    available_species_names_long=['electrons','tritium','deuterium','helium','hydrogen','tungsten','helium3']
+
+    desired_field=None
+    for available_species_name,available_species_name_long in zip(available_species_names,available_species_names_long):
+        if properties['species']==available_species_name_long
+            desired_field=available_species_name 
+    if desired_field is None:
+        print("ERROR: cannot read_number_density_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
+
+    input_data={}
+    input_data['flux_pol_norm'],input_data['n']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
+    input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
+    input_data['n']*=10.e19. #convert units
 
     return input_data
 
@@ -497,9 +535,6 @@ class Number_Density(classes.base_input.LOCUST_input):
         notes:
         """
 
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Number_Density.properties['species'] not specified - set to 'electrons' or 'ions' for IDS functionality\n",properties['species']):
-            pass
- 
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
  
@@ -554,8 +589,16 @@ class Number_Density(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_number_density_ASCOT(self.filepath,**properties)
 
+        elif data_format=='EXCEL1': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from EXCEL1 - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files / filename
+                self.properties={**properties}
+                self.data=read_number_density_excel_1(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT)\n".format(self.ID))            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT/EXCEL1)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

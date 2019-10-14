@@ -782,386 +782,386 @@ def dump_input_options_ASCOT(filename='input.options'):
 
     filepath=support.dir_input_files / filename
     with open(filepath,'w') as file:
-        file_contents="""
-         !  -*-f90-*-  (for emacs)    vim:set filetype=fortran:  (for vim)
+        file_contents="""\
+ !  -*-f90-*-  (for emacs)    vim:set filetype=fortran:  (for vim)
 
-         !!! This is an input.options file for ASCOT4.     !!!
-         !!! You may freely alter the values listed here.  !!!
-         
-         !!! Options related to orbit trajectory integration:
-         !   real(kind=params_wp) :: ORB%RUNGEKUTTATOL:
-         !    - a relative tolerance for adaptive runge-kutta
-         !      integration methods.
-         !   real(kind=params_wp) :: ORB%WRITINGINTERVAL:
-         !    - a frequency for writing the particle info into the hard drive.
-         !    - Negative value means that only the starting values and endstate
-         !      are written into the file.
-         !    - zero, means that every value, the orbit integrator produces
-         !      is written into the file, and logically positive value
-         !      means the frequency for writing. The default value is -1.0.
-         !   real(kind=params_wp) :: ORB%MAXDELTAPHIPER2PI:
-         !    - an estimate for the maximum allowed change in the phi/2pi,
-         !      i.e, the fraction of the toroidal propagation.
-         !    - restricts the length of the time step. The default value is 1.0
-         !   real(kind=params_wp) :: ORB%MAXDELTARHO:
-         !    - an estimate for the maximum allowed change in rho,
-         !      i.e, radial propagation.
-         !    - restricts the length of the time step. The default value is 1.0
-         !   integer :: ORB%LEAPFROGSTEPDIVIDOR:
-         !    - the leap-frog (and runge-kutta) time step is defined as
-         !      dt = m /( B * q * leapFrogStepDividor )
-         !      when fixedTimeStep is negative
-         !   integer :: ORB%ORBITMETHOD:
-         !    - 1 == pure guiding-center runge-kutta integration
-         !    - 2 == full-orbit leap-frog integration (conserves energy)
-         !    - 3 == full-orbit runge-kutta integration (accurate on place)
-         !    - 4 == guiding-center runge-kutta with full-orbit
-         !           runge-kutta wall collision checks
-         !   integer :: ORB%ERAD:
-         !    - 0 == no Erad profile from file/cpo
-         !    - 1 == read Erad profile from file/cpo
-         !   real(kind=params_wp) :: ORB%ALD_FORCE:
-         !    - radiation reaction force. Relevant only for (runaway) electrons.
-         !    - defines the strength of the force: <0 = off (default), 1 = physical.
-         !    - the force is proportional to B^2 so adjusting this parameter shows
-         !      what happens if the field strength is altered.
-         !   real(kind=params_wp) :: ORB%FIXEDTIMESTEP:
-         !    - Fixed orbit integration time step in seconds.
-         !    - Negative value for adaptive time step
-         !      and to use leapFrogStepDividor.
-         !   real(kind=params_wp) :: ORB%GLOBALTIMESTEP:
-         !    - Time step for ensemble time stepping mode (all particles stepwise)
-         !    - Zero value disables ensemble time stepping mode.
-        &ORBIT_TRACKING_OPTIONS
-         ORB%RUNGEKUTTATOL=  2.0000000000000000E-006,
-         ORB%WRITINGINTERVAL=  -1.0000000000000000,
-         ORB%MAXDELTAPHIPER2PI=  2.0000000000000000E-001,
-         ORB%MAXDELTARHO=  5.0000000000000000E-002,
-         ORB%LEAPFROGSTEPDIVIDOR=         10,
-         ORB%ORBITMETHOD=          1,
-         ORB%ERAD=          0,
-         ORB%ALD_FORCE= -1.0000000000000000     ,
-         ORB%FIXEDTIMESTEP= -1,
-         ORB%GLOBALTIMESTEP= 0.0,
-         /
-         
-         !!! Options related to interactions with background:
-         !   integer :: INTERACT%coulombCollMode:
-         !    - tells what coulomb collision model is in use
-         !    - 0 == no coulomb collisions
-         !    - 1 == weakly relativistic coulomb collision kernel
-         !   integer :: INTERACT%mhd:
-         !    - tells whether mhd modes are being used
-         !    - 0 == no mhd modes
-         !    - 1 == mhd modes according to april 2012, input.mhd
-         !   integer :: INTERACT%atomic:
-         !    - tells whether effective ionization and recombination are in use
-         !    - 0 == not in use
-         !    - 1 == in use
-         !   integer :: INTERACT%flow:
-         !    - tells whether plasma flow/rotation is in use
-         !    - 0 == not in use
-         !    - 1 == toroidal rotation in [rad/s]
-         !    - 2 == parallel flow in [m/s]
-         !   integer :: INTERACT%ACC:
-         !    - Interaction timescale acceleration toggle, off by default
-         !    - 0 == no acceleration
-         !    - 1 == adaptive acceleration, NOTE: set ENERGYCOLLSTEPLIM to a
-         !           reasonable value, each time step will try to reach it.
-         !           Reasonable = probably much lower than the default value.
-         !    ->1 == max acceleration factor is user defined (this parameter)
-         !   integer :: INTERACT%ICRH:
-         !    - ICRH heating (In development stages)
-         !    - 0 == no icrh heating (default)
-         !    - 1 == Self-consistent ICRH heating with RFOF according to
-         !           parameters in rfof_codeparam.xml and rfof_codeparam.xsd
-         !   real(kind=params_wp) :: INTERACT%ICRHT0:
-         !    - ICRH switch-on time (s)
-         !   real(kind=params_wp) :: INTERACT%PROF_EXTRAP:
-         !    - sets the characteristic width of extrapolated plasma 1D-profiles
-         !      in units of rho when this data is not available all the way to 
-         !      the wall and the outermost data points are non-zero
-         !    - Zero means that 1D-profile extrapolation is disabled
-         !    - Negative values means that 1D-profiles are extrapolated by an 
-         !      exponential fit matching the derivative at the last data point
-         !   real(kind=params_wp) :: INTERACT%PITCHCOLLTIMESTEPLIM:
-         !    - sets limit for collision timestep in terms of pitch collisions.
-         !    - timestep is proportional to this parameter.
-         !    - squareroot of this parameter is the maximum stochastic
-         !    - variation of the pitch. The default value is 0.003.
-         !   real(kind=params_wp) :: INTERACT%FIXEDTIMESTEP:
-         !    - Fixed collision time step in seconds.
-         !    - Negative value for adaptive time step.
-        &INTERACTION_OPTIONS
-         INTERACT%COULOMBCOLLMODE=          1,
-         INTERACT%MHD=          0,
-         INTERACT%ATOMIC=          0,
-         INTERACT%ACC=          20,
-         INTERACT%FLOW=          0,
-         INTERACT%ICRH=          0,
-         INTERACT%ICRHT0=        0.0E0,
-         INTERACT%PROF_EXTRAP=   0.0,
-         INTERACT%PITCHCOLLTIMESTEPLIM=  1.0000000000000000E-003,
-         INTERACT%FIXEDTIMESTEP= -1,
-         /
-         
-         !!! Options defining the end conditions for the particle:
-         !   real(kind=params_wp) :: ENDCOND%TMAX:
-         !    - Maximum time for the single particle simulation.
-         !    - If this variable is smaller than the possible field
-         !      tmax in "input.particles", then this variable dominates.
-         !    - the particle%tmax is defined to be:
-         !      min(particle%tmax,ENDCOND%TMAX)
-         !   real(kind=params_wp) :: ENDCOND%MINKINETICENERGY:
-         !    - If the particles kinetic energy gets below this value,
-         !      then the simulation ends.
-         !   real(kind=params_wp) :: ENDCOND%:TIMESLOCALTHERMALENERGY
-         !    - If the particle energy gets below the local thermal
-         !      energy times this variable, then the simulation ends.
-         !   real(kind=params_wp) :: ENDCOND%:CPUTMAX
-         !    - Maximum CPU time per particle.
-         !   real(kind=params_wp) :: ENDCOND%:RHOMAX
-         !    - Maximum value of rho (1.0 for separatrix).
-        &END_CONDITIONS
-         ENDCOND%TMAX=  0.100000000000000     ,
-         ENDCOND%MINKINETICENERGY=  50.000000000000     ,
-         ENDCOND%TIMESLOCALTHERMALENERGY=  1.5000000000000000     ,
-         ENDCOND%CPUTMAX=  10000000.0000000000000     ,
-         ENDCOND%RHOMAX=  10000000.0000000     ,
-         /
-         
-         !!! Options to decide what particle features to write into output:
-         !   integer :: anum:
-         !    - the mass number.
-         !   integer :: mass:
-         !    - the particle mass [amu].
-         !   integer :: znum:
-         !    - the particle nucleus charge [e]
-         !   integer :: charge:
-         !    - the particle charge [e]
-         !   integer :: energy:
-         !    - particle energy [eV].
-         !   integer :: pitch:
-         !    - particle pitch angle cosine (vpar/v) [].
-         !   integer :: R:
-         !    - cylindrical coordinate R [m] for the particle.
-         !   integer :: phi:
-         !    - cylindrical coordinate phi [rad] for the particle.
-         !   integer :: Z:
-         !    - cylindrical coordinate z [m] for the particle.
-         !   integer :: Id:
-         !    - particle identification number.
-         !   integer :: rho:
-         !    - sqrt of normalized poloidal flux []
-         !   integer :: Time:
-         !    - the time how long the particle has been followed [s].
-         !   integer :: Bfield:
-         !    - magnetic field components [T].
-         !   integer :: cputime:
-         !    - the elapsed cputime [s].
-         !   integer :: dtLimiters:
-         !    - which time step limiters (for orbit following and collisions) were strictest.
-        &PARTICLE_DATA_FIELDS
-         FIELDS%ANUM=          0,
-         FIELDS%MASS=          0,
-         FIELDS%ZNUM=          0,
-         FIELDS%CHARGE=          0,
-         FIELDS%ENERGY=          1,
-         FIELDS%PITCH=          1,
-         FIELDS%PHI=          1,
-         FIELDS%R=          1,
-         FIELDS%Z=          1,
-         FIELDS%ID=          1,
-         FIELDS%RHO=          1,
-         FIELDS%TIME=          1,
-         FIELDS%ENDCOND=          0,
-         FIELDS%FBOUNCE=          0,
-         FIELDS%FORBIT=          0,
-         FIELDS%FTORPREC=          0,
-         FIELDS%ORBITTYPE=          0,
-         FIELDS%PPHI=          0,
-         FIELDS%BFIELD=          0,
-         FIELDS%CPUTIME=          0,
-         FIELDS%DTLIMITERS=          0,
-         /
-         
-         !!! Options for distributions
-         !   integer: simpleDists
-         !    - add whole time step (0) or only the end point (1) to distributions
-         !   integer: rhodists
-         !    - [rho,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzdists
-         !    - [r,z,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzvdist
-         !    - [r,z,vpar,vperp,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzpdists
-         !    - [r,z,ppar,pperp,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzpitchedist
-         !    - [r,z,pitch,energy,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzmuedist
-         !    - [r,z,magnetic moment,energy,time,test particle species] -distributions off(0) or on(1) or with variance(2)
-         !   integer: rhophipitchEdist
-         !    - [rho,phi,pitch,energy,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: rzvvdist
-         !    - [r,z,vtor/vtot,vz/vtot,time,test particle species] - distributions off (0) or on (1) or with variance (2)
-         !   integer: nrho
-         !    - number of rho slots in rhodists and rho-phi-E-pithc dists
-         !   integer: nphi
-         !    - number of phi slots in rho and rho-phi-E-pithc dists
-         !   integer: ntime
-         !    - number of time slots in all distributions
-         !   real: rho1
-         !    - lower bound of rho in rho and rho-phi-E-pithc dists
-         !   real: rho2
-         !    - upper bound of rho in rho and rho-phi-E-pithc dists
-         !   real: phi1
-         !    - lower bound of phi in rho-phi-E-pithc dist (deg)
-         !   real: phi2
-         !    - upper bound of phi in rho-phi-E-pithc dist (deg)
-         !   real: time1
-         !    - lower bound of time in all distributions
-         !   real: time2
-         !    - upper bound of time in all distributions, endcond%tmax is used if not given
-         !   integer: nr
-         !    - number of r slots in all rz - distributions
-         !   integer: R_auto
-         !    - automatically set R bounds from wall input
-         !   integer: nz
-         !    - number of z slots in all rz - distributions
-         !   integer: z_auto
-         !    - automatically set z bounds from wall input
-         !   integer: nvpa
-         !    - number of parallel velocity slots in rzvdists
-         !   integer: vpa_auto
-         !    - automatically set vpa bounds from particle input
-         !   integer: nvpe
-         !    - number of perpendicular velocity slots in rzvdists
-         !   integer: vpe_auto
-         !    - automatically set vpe bounds from particle input
-         !   integer: nppa
-         !    - number of parallel momentum slots in rzpdists
-         !   integer: nppe
-         !    - number of perpendicular momentum slots in rzpdists
-         !   real: r1
-         !    - lower bound of r in all rz - distributions
-         !   real: r2
-         !    - upper bound of r in all rz - distributions
-         !   real: z1
-         !    - lower bound of z in all rz - distributions
-         !   real: z2
-         !    - upper bound of z in all rz - distributions
-         !   real: vpa1
-         !    - lower bound of parallel velocity in rzvdists
-         !   real: vpa2
-         !    - upper bound of parallel velocity in rzvdists
-         !   real: vpe1
-         !    - lower bound of perpendicular velocity in rzvdists
-         !   real: vpe2
-         !    - upper bound of perpendicular velocity in rzvdists
-         !   real: ppa1
-         !    - lower bound of parallel momentum in rzpdists
-         !   real: ppa2
-         !    - upper bound of parallel momentum in rzpdists
-         !   real: ppe1
-         !    - lower bound of perpendicular momentum in rzpdists
-         !   real: ppe2
-         !    - upper bound of perpendicular momentum in rzpdists
-         !   integer: npitch
-         !    - number of pitch slots in rzpitchedist (pitch bounds will always be [-1,1])
-         !   integer: nenergy
-         !    - number of energy slots in rzpitchedist
-         !   integer: energy_auto
-         !    - automatically set energy bounds from particle input
-         !   real: energy1
-         !    - lower bound of energy in rzpitchedist [eV]
-         !   real: energy2
-         !    - upper bound of energy in rzpitchedist [eV]
-         !   integer: nmu
-         !    - number of mu slots in rzmuedist
-         !   real: mu1
-         !    - lower bound of mu in rzmuedist [eV/T]
-         !   real: mu2
-         !    - upper bound of mu in rzmuedist [eV/T]
-         !   integer: timedepmode
-         !    - Time dependence mode: (0) Steady-state, (1) time-dependent using CPOs
-        &DIST_OPTIONS
-         DIST%SIMPLEDISTS=        0,
-         DIST%RHODISTS=           2,
-         DIST%RZDISTS=            0,
-         DIST%RZVDIST=            1,
-         DIST%RZPDIST=            0,
-         DIST%RZPITCHEDIST=       1,
-         DIST%RZVVDIST=           0,
-         DIST%RZMUEDIST=          0,
-         DIST%RHOPHIPITCHEDIST=   0,
-         DIST%NTIME=              1,
-         DIST%TIME1=  0.0000000000000000     ,
-         DIST%TIME2=  10000000.00000000000000     ,
-         DIST%NRHO=             200,
-         DIST%RHO1=  0.0000000000000000     ,
-         DIST%RHO2=  1.0000000000000000     ,
-         DIST%NR=                100,
-         DIST%R_AUTO=             0,
-         DIST%R1=  1.000     ,
-         DIST%R2=  2.500     ,
-         DIST%NPHI=               1,
-         DIST%PHI1=  0.0000000000000000     ,
-         DIST%PHI2=  360.00000000000000     ,
-         DIST%NZ=                100,
-         DIST%Z_AUTO=             0,
-         DIST%Z1= -1.45     ,
-         DIST%Z2=  1.45     ,
-         DIST%NVPA=              30,
-         DIST%VPA_AUTO=           0,
-         DIST%VPA1= -1.5e6     ,
-         DIST%VPA2=  1.5e6     ,
-         DIST%NVPE=              30,
-         DIST%VPE_AUTO=           0,
-         DIST%VPE1=  0.0     ,
-         DIST%VPE2=  1.5e6     ,
-         DIST%NPPA=              10,
-         DIST%PPA1= -5.9999999999999998E-021,
-         DIST%PPA2=  5.9999999999999998E-021,
-         DIST%NPPE=              10,
-         DIST%PPE1=  1.0000000000000000E-022,
-         DIST%PPE2=  5.9999999999999998E-021,
-         DIST%NENERGY=           100,
-         DIST%ENERGY_AUTO=        0,
-         DIST%ENERGY1=  0.000000000000     ,
-         DIST%ENERGY2=  100000.0000000000     ,
-         DIST%NMU=               30,
-         DIST%MU1=  10000.000000000000     ,
-         DIST%MU2=  120000.0000000000     ,
-         DIST%NVTOR=             40,
-         DIST%NVZ=               20,
-         DIST%NPITCH=            100,
-         DIST%TIMEDEPMODE=          1,
-         /
+ !!! This is an input.options file for ASCOT4.     !!!
+ !!! You may freely alter the values listed here.  !!!
+ 
+ !!! Options related to orbit trajectory integration:
+ !   real(kind=params_wp) :: ORB%RUNGEKUTTATOL:
+ !    - a relative tolerance for adaptive runge-kutta
+ !      integration methods.
+ !   real(kind=params_wp) :: ORB%WRITINGINTERVAL:
+ !    - a frequency for writing the particle info into the hard drive.
+ !    - Negative value means that only the starting values and endstate
+ !      are written into the file.
+ !    - zero, means that every value, the orbit integrator produces
+ !      is written into the file, and logically positive value
+ !      means the frequency for writing. The default value is -1.0.
+ !   real(kind=params_wp) :: ORB%MAXDELTAPHIPER2PI:
+ !    - an estimate for the maximum allowed change in the phi/2pi,
+ !      i.e, the fraction of the toroidal propagation.
+ !    - restricts the length of the time step. The default value is 1.0
+ !   real(kind=params_wp) :: ORB%MAXDELTARHO:
+ !    - an estimate for the maximum allowed change in rho,
+ !      i.e, radial propagation.
+ !    - restricts the length of the time step. The default value is 1.0
+ !   integer :: ORB%LEAPFROGSTEPDIVIDOR:
+ !    - the leap-frog (and runge-kutta) time step is defined as
+ !      dt = m /( B * q * leapFrogStepDividor )
+ !      when fixedTimeStep is negative
+ !   integer :: ORB%ORBITMETHOD:
+ !    - 1 == pure guiding-center runge-kutta integration
+ !    - 2 == full-orbit leap-frog integration (conserves energy)
+ !    - 3 == full-orbit runge-kutta integration (accurate on place)
+ !    - 4 == guiding-center runge-kutta with full-orbit
+ !           runge-kutta wall collision checks
+ !   integer :: ORB%ERAD:
+ !    - 0 == no Erad profile from file/cpo
+ !    - 1 == read Erad profile from file/cpo
+ !   real(kind=params_wp) :: ORB%ALD_FORCE:
+ !    - radiation reaction force. Relevant only for (runaway) electrons.
+ !    - defines the strength of the force: <0 = off (default), 1 = physical.
+ !    - the force is proportional to B^2 so adjusting this parameter shows
+ !      what happens if the field strength is altered.
+ !   real(kind=params_wp) :: ORB%FIXEDTIMESTEP:
+ !    - Fixed orbit integration time step in seconds.
+ !    - Negative value for adaptive time step
+ !      and to use leapFrogStepDividor.
+ !   real(kind=params_wp) :: ORB%GLOBALTIMESTEP:
+ !    - Time step for ensemble time stepping mode (all particles stepwise)
+ !    - Zero value disables ensemble time stepping mode.
+&ORBIT_TRACKING_OPTIONS
+ ORB%RUNGEKUTTATOL=  2.0000000000000000E-006,
+ ORB%WRITINGINTERVAL=  -1.0000000000000000,
+ ORB%MAXDELTAPHIPER2PI=  2.0000000000000000E-001,
+ ORB%MAXDELTARHO=  5.0000000000000000E-002,
+ ORB%LEAPFROGSTEPDIVIDOR=         10,
+ ORB%ORBITMETHOD=          1,
+ ORB%ERAD=          0,
+ ORB%ALD_FORCE= -1.0000000000000000     ,
+ ORB%FIXEDTIMESTEP= -1,
+ ORB%GLOBALTIMESTEP= 0.0,
+ /
+ 
+ !!! Options related to interactions with background:
+ !   integer :: INTERACT%coulombCollMode:
+ !    - tells what coulomb collision model is in use
+ !    - 0 == no coulomb collisions
+ !    - 1 == weakly relativistic coulomb collision kernel
+ !   integer :: INTERACT%mhd:
+ !    - tells whether mhd modes are being used
+ !    - 0 == no mhd modes
+ !    - 1 == mhd modes according to april 2012, input.mhd
+ !   integer :: INTERACT%atomic:
+ !    - tells whether effective ionization and recombination are in use
+ !    - 0 == not in use
+ !    - 1 == in use
+ !   integer :: INTERACT%flow:
+ !    - tells whether plasma flow/rotation is in use
+ !    - 0 == not in use
+ !    - 1 == toroidal rotation in [rad/s]
+ !    - 2 == parallel flow in [m/s]
+ !   integer :: INTERACT%ACC:
+ !    - Interaction timescale acceleration toggle, off by default
+ !    - 0 == no acceleration
+ !    - 1 == adaptive acceleration, NOTE: set ENERGYCOLLSTEPLIM to a
+ !           reasonable value, each time step will try to reach it.
+ !           Reasonable = probably much lower than the default value.
+ !    ->1 == max acceleration factor is user defined (this parameter)
+ !   integer :: INTERACT%ICRH:
+ !    - ICRH heating (In development stages)
+ !    - 0 == no icrh heating (default)
+ !    - 1 == Self-consistent ICRH heating with RFOF according to
+ !           parameters in rfof_codeparam.xml and rfof_codeparam.xsd
+ !   real(kind=params_wp) :: INTERACT%ICRHT0:
+ !    - ICRH switch-on time (s)
+ !   real(kind=params_wp) :: INTERACT%PROF_EXTRAP:
+ !    - sets the characteristic width of extrapolated plasma 1D-profiles
+ !      in units of rho when this data is not available all the way to 
+ !      the wall and the outermost data points are non-zero
+ !    - Zero means that 1D-profile extrapolation is disabled
+ !    - Negative values means that 1D-profiles are extrapolated by an 
+ !      exponential fit matching the derivative at the last data point
+ !   real(kind=params_wp) :: INTERACT%PITCHCOLLTIMESTEPLIM:
+ !    - sets limit for collision timestep in terms of pitch collisions.
+ !    - timestep is proportional to this parameter.
+ !    - squareroot of this parameter is the maximum stochastic
+ !    - variation of the pitch. The default value is 0.003.
+ !   real(kind=params_wp) :: INTERACT%FIXEDTIMESTEP:
+ !    - Fixed collision time step in seconds.
+ !    - Negative value for adaptive time step.
+&INTERACTION_OPTIONS
+ INTERACT%COULOMBCOLLMODE=          1,
+ INTERACT%MHD=          0,
+ INTERACT%ATOMIC=          0,
+ INTERACT%ACC=          20,
+ INTERACT%FLOW=          0,
+ INTERACT%ICRH=          0,
+ INTERACT%ICRHT0=        0.0E0,
+ INTERACT%PROF_EXTRAP=   0.0,
+ INTERACT%PITCHCOLLTIMESTEPLIM=  1.0000000000000000E-003,
+ INTERACT%FIXEDTIMESTEP= -1,
+ /
+ 
+ !!! Options defining the end conditions for the particle:
+ !   real(kind=params_wp) :: ENDCOND%TMAX:
+ !    - Maximum time for the single particle simulation.
+ !    - If this variable is smaller than the possible field
+ !      tmax in "input.particles", then this variable dominates.
+ !    - the particle%tmax is defined to be:
+ !      min(particle%tmax,ENDCOND%TMAX)
+ !   real(kind=params_wp) :: ENDCOND%MINKINETICENERGY:
+ !    - If the particles kinetic energy gets below this value,
+ !      then the simulation ends.
+ !   real(kind=params_wp) :: ENDCOND%:TIMESLOCALTHERMALENERGY
+ !    - If the particle energy gets below the local thermal
+ !      energy times this variable, then the simulation ends.
+ !   real(kind=params_wp) :: ENDCOND%:CPUTMAX
+ !    - Maximum CPU time per particle.
+ !   real(kind=params_wp) :: ENDCOND%:RHOMAX
+ !    - Maximum value of rho (1.0 for separatrix).
+&END_CONDITIONS
+ ENDCOND%TMAX=  0.100000000000000     ,
+ ENDCOND%MINKINETICENERGY=  50.000000000000     ,
+ ENDCOND%TIMESLOCALTHERMALENERGY=  1.5000000000000000     ,
+ ENDCOND%CPUTMAX=  10000000.0000000000000     ,
+ ENDCOND%RHOMAX=  10000000.0000000     ,
+ /
+ 
+ !!! Options to decide what particle features to write into output:
+ !   integer :: anum:
+ !    - the mass number.
+ !   integer :: mass:
+ !    - the particle mass [amu].
+ !   integer :: znum:
+ !    - the particle nucleus charge [e]
+ !   integer :: charge:
+ !    - the particle charge [e]
+ !   integer :: energy:
+ !    - particle energy [eV].
+ !   integer :: pitch:
+ !    - particle pitch angle cosine (vpar/v) [].
+ !   integer :: R:
+ !    - cylindrical coordinate R [m] for the particle.
+ !   integer :: phi:
+ !    - cylindrical coordinate phi [rad] for the particle.
+ !   integer :: Z:
+ !    - cylindrical coordinate z [m] for the particle.
+ !   integer :: Id:
+ !    - particle identification number.
+ !   integer :: rho:
+ !    - sqrt of normalized poloidal flux []
+ !   integer :: Time:
+ !    - the time how long the particle has been followed [s].
+ !   integer :: Bfield:
+ !    - magnetic field components [T].
+ !   integer :: cputime:
+ !    - the elapsed cputime [s].
+ !   integer :: dtLimiters:
+ !    - which time step limiters (for orbit following and collisions) were strictest.
+&PARTICLE_DATA_FIELDS
+ FIELDS%ANUM=          0,
+ FIELDS%MASS=          0,
+ FIELDS%ZNUM=          0,
+ FIELDS%CHARGE=          0,
+ FIELDS%ENERGY=          1,
+ FIELDS%PITCH=          1,
+ FIELDS%PHI=          1,
+ FIELDS%R=          1,
+ FIELDS%Z=          1,
+ FIELDS%ID=          1,
+ FIELDS%RHO=          1,
+ FIELDS%TIME=          1,
+ FIELDS%ENDCOND=          0,
+ FIELDS%FBOUNCE=          0,
+ FIELDS%FORBIT=          0,
+ FIELDS%FTORPREC=          0,
+ FIELDS%ORBITTYPE=          0,
+ FIELDS%PPHI=          0,
+ FIELDS%BFIELD=          0,
+ FIELDS%CPUTIME=          0,
+ FIELDS%DTLIMITERS=          0,
+ /
+ 
+ !!! Options for distributions
+ !   integer: simpleDists
+ !    - add whole time step (0) or only the end point (1) to distributions
+ !   integer: rhodists
+ !    - [rho,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzdists
+ !    - [r,z,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzvdist
+ !    - [r,z,vpar,vperp,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzpdists
+ !    - [r,z,ppar,pperp,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzpitchedist
+ !    - [r,z,pitch,energy,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzmuedist
+ !    - [r,z,magnetic moment,energy,time,test particle species] -distributions off(0) or on(1) or with variance(2)
+ !   integer: rhophipitchEdist
+ !    - [rho,phi,pitch,energy,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: rzvvdist
+ !    - [r,z,vtor/vtot,vz/vtot,time,test particle species] - distributions off (0) or on (1) or with variance (2)
+ !   integer: nrho
+ !    - number of rho slots in rhodists and rho-phi-E-pithc dists
+ !   integer: nphi
+ !    - number of phi slots in rho and rho-phi-E-pithc dists
+ !   integer: ntime
+ !    - number of time slots in all distributions
+ !   real: rho1
+ !    - lower bound of rho in rho and rho-phi-E-pithc dists
+ !   real: rho2
+ !    - upper bound of rho in rho and rho-phi-E-pithc dists
+ !   real: phi1
+ !    - lower bound of phi in rho-phi-E-pithc dist (deg)
+ !   real: phi2
+ !    - upper bound of phi in rho-phi-E-pithc dist (deg)
+ !   real: time1
+ !    - lower bound of time in all distributions
+ !   real: time2
+ !    - upper bound of time in all distributions, endcond%tmax is used if not given
+ !   integer: nr
+ !    - number of r slots in all rz - distributions
+ !   integer: R_auto
+ !    - automatically set R bounds from wall input
+ !   integer: nz
+ !    - number of z slots in all rz - distributions
+ !   integer: z_auto
+ !    - automatically set z bounds from wall input
+ !   integer: nvpa
+ !    - number of parallel velocity slots in rzvdists
+ !   integer: vpa_auto
+ !    - automatically set vpa bounds from particle input
+ !   integer: nvpe
+ !    - number of perpendicular velocity slots in rzvdists
+ !   integer: vpe_auto
+ !    - automatically set vpe bounds from particle input
+ !   integer: nppa
+ !    - number of parallel momentum slots in rzpdists
+ !   integer: nppe
+ !    - number of perpendicular momentum slots in rzpdists
+ !   real: r1
+ !    - lower bound of r in all rz - distributions
+ !   real: r2
+ !    - upper bound of r in all rz - distributions
+ !   real: z1
+ !    - lower bound of z in all rz - distributions
+ !   real: z2
+ !    - upper bound of z in all rz - distributions
+ !   real: vpa1
+ !    - lower bound of parallel velocity in rzvdists
+ !   real: vpa2
+ !    - upper bound of parallel velocity in rzvdists
+ !   real: vpe1
+ !    - lower bound of perpendicular velocity in rzvdists
+ !   real: vpe2
+ !    - upper bound of perpendicular velocity in rzvdists
+ !   real: ppa1
+ !    - lower bound of parallel momentum in rzpdists
+ !   real: ppa2
+ !    - upper bound of parallel momentum in rzpdists
+ !   real: ppe1
+ !    - lower bound of perpendicular momentum in rzpdists
+ !   real: ppe2
+ !    - upper bound of perpendicular momentum in rzpdists
+ !   integer: npitch
+ !    - number of pitch slots in rzpitchedist (pitch bounds will always be [-1,1])
+ !   integer: nenergy
+ !    - number of energy slots in rzpitchedist
+ !   integer: energy_auto
+ !    - automatically set energy bounds from particle input
+ !   real: energy1
+ !    - lower bound of energy in rzpitchedist [eV]
+ !   real: energy2
+ !    - upper bound of energy in rzpitchedist [eV]
+ !   integer: nmu
+ !    - number of mu slots in rzmuedist
+ !   real: mu1
+ !    - lower bound of mu in rzmuedist [eV/T]
+ !   real: mu2
+ !    - upper bound of mu in rzmuedist [eV/T]
+ !   integer: timedepmode
+ !    - Time dependence mode: (0) Steady-state, (1) time-dependent using CPOs
+&DIST_OPTIONS
+ DIST%SIMPLEDISTS=        0,
+ DIST%RHODISTS=           2,
+ DIST%RZDISTS=            0,
+ DIST%RZVDIST=            1,
+ DIST%RZPDIST=            0,
+ DIST%RZPITCHEDIST=       1,
+ DIST%RZVVDIST=           0,
+ DIST%RZMUEDIST=          0,
+ DIST%RHOPHIPITCHEDIST=   0,
+ DIST%NTIME=              1,
+ DIST%TIME1=  0.0000000000000000     ,
+ DIST%TIME2=  10000000.00000000000000     ,
+ DIST%NRHO=             200,
+ DIST%RHO1=  0.0000000000000000     ,
+ DIST%RHO2=  1.0000000000000000     ,
+ DIST%NR=                100,
+ DIST%R_AUTO=             0,
+ DIST%R1=  1.000     ,
+ DIST%R2=  2.500     ,
+ DIST%NPHI=               1,
+ DIST%PHI1=  0.0000000000000000     ,
+ DIST%PHI2=  360.00000000000000     ,
+ DIST%NZ=                100,
+ DIST%Z_AUTO=             0,
+ DIST%Z1= -1.45     ,
+ DIST%Z2=  1.45     ,
+ DIST%NVPA=              30,
+ DIST%VPA_AUTO=           0,
+ DIST%VPA1= -1.5e6     ,
+ DIST%VPA2=  1.5e6     ,
+ DIST%NVPE=              30,
+ DIST%VPE_AUTO=           0,
+ DIST%VPE1=  0.0     ,
+ DIST%VPE2=  1.5e6     ,
+ DIST%NPPA=              10,
+ DIST%PPA1= -5.9999999999999998E-021,
+ DIST%PPA2=  5.9999999999999998E-021,
+ DIST%NPPE=              10,
+ DIST%PPE1=  1.0000000000000000E-022,
+ DIST%PPE2=  5.9999999999999998E-021,
+ DIST%NENERGY=           100,
+ DIST%ENERGY_AUTO=        0,
+ DIST%ENERGY1=  0.000000000000     ,
+ DIST%ENERGY2=  100000.0000000000     ,
+ DIST%NMU=               30,
+ DIST%MU1=  10000.000000000000     ,
+ DIST%MU2=  120000.0000000000     ,
+ DIST%NVTOR=             40,
+ DIST%NVZ=               20,
+ DIST%NPITCH=            100,
+ DIST%TIMEDEPMODE=          1,
+ /
 
-         !!! Options related to particle source:
-         !   integer :: PARTICLESOURCE%READ:
-         !    - read test particles from somewhere yes/no (1/0)
-         !   integer :: PARTICLESOURCE%DISTRIBUTION:
-         !    - sample test particles from given 4D distrib. yes/1st step/no (1/2/0)
-         !   integer :: PARTICLESOURCE%DYNAMNBI:
-         !    - dynamic NBI particle generation on/off (1/0)
-         !   integer :: PARTICLESOURCE%REWEIGHTING:
-         !    - particle reweighting on/off (1/0)
-         !   integer :: PARTICLESOURCE%REMLOWWGT:
-         !    - reweighting: remove particles with low weight yes/no (1/0)
-         !   integer :: PARTICLESOURCE%NRHOBINS:
-         !    - number of rho bins for reweighting
-         !   integer :: PARTICLESOURCE%NMAX:
-         !    - number of test particles to aim at when using dynamic source
-        &PARTICLESOURCE_OPTIONS
-         PARTICLESOURCE%READ = 1,
-         PARTICLESOURCE%DISTRIBUTION = 0,
-         PARTICLESOURCE%DYNAMNBI = 1,
-         PARTICLESOURCE%REWEIGHTING = 1,
-         PARTICLESOURCE%REMLOWWGT = 1,
-         PARTICLESOURCE%NRHOBINS = 10,
-         PARTICLESOURCE%NMAX = 1000,
-         /"""
+ !!! Options related to particle source:
+ !   integer :: PARTICLESOURCE%READ:
+ !    - read test particles from somewhere yes/no (1/0)
+ !   integer :: PARTICLESOURCE%DISTRIBUTION:
+ !    - sample test particles from given 4D distrib. yes/1st step/no (1/2/0)
+ !   integer :: PARTICLESOURCE%DYNAMNBI:
+ !    - dynamic NBI particle generation on/off (1/0)
+ !   integer :: PARTICLESOURCE%REWEIGHTING:
+ !    - particle reweighting on/off (1/0)
+ !   integer :: PARTICLESOURCE%REMLOWWGT:
+ !    - reweighting: remove particles with low weight yes/no (1/0)
+ !   integer :: PARTICLESOURCE%NRHOBINS:
+ !    - number of rho bins for reweighting
+ !   integer :: PARTICLESOURCE%NMAX:
+ !    - number of test particles to aim at when using dynamic source
+&PARTICLESOURCE_OPTIONS
+ PARTICLESOURCE%READ = 1,
+ PARTICLESOURCE%DISTRIBUTION = 0,
+ PARTICLESOURCE%DYNAMNBI = 1,
+ PARTICLESOURCE%REWEIGHTING = 1,
+ PARTICLESOURCE%REMLOWWGT = 1,
+ PARTICLESOURCE%NRHOBINS = 10,
+ PARTICLESOURCE%NMAX = 1000,
+ /"""
 
         file.write(file_contents)
 
@@ -1876,7 +1876,72 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
 
 ################################################################################################### misc functions
 
+def read_kinetic_profile_data_excel_1(filepath,y,x='Fp',sheet_name=None):
+    """
+    helper function which reads kinetic profile data from excel spreadsheets supplied by Yueqiang Liu for ITER RMP study 
+    
+    notes:
+        requires xlrd module
+        functions slightly differently if user requesting rotation, since stored in different sheet
+    args:
+        filepath - full path of file
+        y - dependent quantity to read
+        x - independent quantity to read (defaults to normalised poloidal flux)
+        sheet_name - name of excel sheet to read from, if not supplied then valid sheets which contain requested x,y will be printed
+    usage:
+        y=read_kinetic_profile_data_excel_1(...)   #if y corresponds to a 0D value or rotation
+        x,y=read_kinetic_profile_data_excel_1(...) #if y corresponds to a 1D value 
+    """
 
+    try:
+        import xlrd
+    except:
+        raise ImportError("ERROR: read_kinetic_profile_data_excel_1 could not import xlrd module!\nreturning\n")
+        return
+
+    with xlrd.open_workbook(filepath) as data:        
+        sheet_names_avail=[]
+        sheet_numbers_avail=[]
+        sheets=[sheet for sheet in data.sheets()]
+        
+        field_searching_for='ITER' if 'Vt' not in y else y #if user is looking for rotation, then need to search in different sheets
+
+        for nsheet in range(data.nsheets):            
+            if field_searching_for in data.sheet_by_index(nsheet).row_values(0):
+                sheet_names_avail.append(data.sheet_names()[nsheet])
+                sheet_numbers_avail.append(nsheet)
+
+        if sheet_name is None:
+            print("ERROR: read_kinetic_profile_data_excel_1 requires sheet_name - available options are {sheet_names_avail} (for x={x},y={y} in filepath={filepath})!\nreturning\n".format(x=x,y=y,filepath=filepath,sheet_names_avail=[sheet_name for sheet_name in sheet_names_avail]))
+        elif len(sheet_names_avail)>1:
+            print("ERROR: read_kinetic_profile_data_excel_1 found multiple available sheets - please specify one from {sheet_names_avail}!\nreturning\n".format(sheet_names_avail=[sheet_name for sheet_name in sheet_names_avail]))
+        else:
+            sheet=data.sheet_by_name(sheet_name)
+
+            for row_number,row in enumerate(sheet.get_rows()):
+                for col_number,col in enumerate(row):
+                    if col.value == y: #found the entry we are looking for
+                        cell_two_below=sheet.col_values(colx=col_number,start_rowx=row_number+2)[0]
+                        if type(cell_two_below)==type('') and 'D+' not in cell_two_below and 'D-' not in cell_two_below : #check if cell beneath target cell stores string or a number, or a string of a number - can infer whether user wants to return array or single value
+                            return float(sheet.row_values(rowx=row_number+1)[col_number]) #return single value
+                        else: #assume at this point we are looking at array  
+
+                            y_out=[] #need to do checks if data is in 1D+1 or 1E+1 formats...ugh
+                            for value in sheet.col_values(colx=col_number,start_rowx=row_number+1):
+                                if type(value)==type('') and 'D' in value:
+                                    value=float(value.replace("D", "E"))
+                                y_out.append(value)
+                            y_out=np.array(y_out)
+
+                            if 'Vt' in y: #if user wanting rotation just stop and return the rotation profile, since we do not know what other sheets correspond to this rotation profile...
+                                return y_out
+
+                            #if user wants to read a different 1D profile then also read and return corresponding x profile
+                            for row_number,row in enumerate(sheet.get_rows()):
+                                for col_number,col in enumerate(row):
+                                    if col.value==x:
+                                        x_out=np.array(sheet.col_values(colx=col_number,start_rowx=row_number+1))
+                                        return x_out,y_out
 
 #################################
  

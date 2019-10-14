@@ -440,7 +440,11 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         write_1d(file,output_data['pprime'],cnt)
         write_2d(file,output_data['psirz'],cnt)    
         write_1d(file,output_data['qpsi'],cnt) 
-        file.write('\n'+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
+        if processing.utils.get_next(counter) == 0: #check if \n was written last
+            file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
+        else:
+            file.write('\n'+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_bndry(file,output_data['lcfs_r'],output_data['lcfs_z'],cnt)
         write_bndry(file,output_data['rlim'],output_data['zlim'],cnt)
         file.write("\n") #file has a newline here

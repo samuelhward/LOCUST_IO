@@ -44,6 +44,12 @@ except:
     sys.exit(1) 
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -356,6 +362,36 @@ def read_temperature_ASCOT(filepath,**properties):
 
     return input_data
 
+def read_temperature_excel_1(filepath,**properties):
+    """
+    reads temperature from excel spreadsheets supplied by Yueqiang Liu for ITER RMP study
+
+    notes:    
+        must include 'species' in properties - either 'electrons','ions'
+        must include spreadsheet name within file in properties['sheet_name']
+    """
+
+    if 'sheet_name' not in properties: #must supply some sort of sheet_name
+        print("ERROR: cannot read_temperature_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
+        return
+
+    available_species_names=['Te','Ti'] #list of available species in these files
+    available_species_names_long=['electrons','ions']
+
+    desired_field=None
+    for available_species_name,available_species_name_long in zip(available_species_names,available_species_names_long):
+        if properties['species']==available_species_name_long
+            desired_field=available_species_name 
+    if desired_field is None:
+        print("ERROR: cannot read_temperature_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
+
+    input_data={}
+    input_data['flux_pol_norm'],input_data['T']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
+    input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
+    input_data['T']*=1000. #convert from KeV
+
+    return input_data
+
 ################################################################## Temperature write functions
 
 def dump_temperature_LOCUST(output_data,filepath,**properties):
@@ -485,9 +521,6 @@ class Temperature(classes.base_input.LOCUST_input):
  
         notes:
         """
-
-        if processing.utils.none_check(self.ID,self.LOCUST_input_type,"Temperature.properties['species'] not specified - set to 'electrons' or 'ions' for IDS/LOCUST_h5 functionality\n",properties['species']):
-            pass
  
         if processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() - data_format required\n".format(self.ID),data_format): #must always have data_format if reading in data
             pass
@@ -543,8 +576,16 @@ class Temperature(classes.base_input.LOCUST_input):
                 self.properties={**properties}
                 self.data=read_temperature_ASCOT(self.filepath,**properties)              
 
+        elif data_format=='EXCEL1': #here are the blocks for various file types, they all follow the same pattern
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot read_data() from EXCEL1 - filename required\n".format(self.ID),filename): 
+                self.data_format=data_format #add to the member data
+                self.filename=filename
+                self.filepath=support.dir_input_files / filename
+                self.properties={**properties}
+                self.data=read_temperature_excel_1(self.filepath,**properties)
+
         else:
-            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT)\n".format(self.ID))            
+            print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_h5/IDS/UDA/UFILE/ASCOT,EXCEL1)\n".format(self.ID))            
  
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """

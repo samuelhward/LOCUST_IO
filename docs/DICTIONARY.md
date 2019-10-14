@@ -65,6 +65,7 @@ Since this package aims to bridge the gap between various file formats for diffe
     1D data
         flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
+        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         T                                                               #ion temperature [eV]
         T                                                               #electron temperature [eV]
         flux_tor_coord                                                  #toroidal flux coordinate
@@ -76,10 +77,21 @@ Since this package aims to bridge the gap between various file formats for diffe
     1D data
         flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
+        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         n                                                               #ion or electron number density [#/m^3]
         flux_tor_coord                                                  #toroidal flux coordinate
         flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
+
+#### Rotation
+
+    1D data
+        flux_pol                                                        #poloidal flux [Weber / rad]
+        flux_pol_norm                                                   #normalised poloidal flux
+        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
+        rotation_ang                                                    #rotation profile [rad/s]
+        rmaj                                                            #major radius where corresponding rotation_vel is measured [m]
+        rotation_vel                                                    #rotation profile [m/s]
 
 ##### Perturbation
 
@@ -226,8 +238,8 @@ LOCUST dumps distribution functions in unformatted binary format. Different run-
 There are many moments of the distribution function which are provided by various codes, included below are those used by LOCUST_IO from LOCUST, however reading outputs from other codes may yield additional moments not yet shown here. Eventually all moments should be mapped and calculated to common variable names. 
 
     1D data
-        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         flux_pol_norm                                                   #normalised poloidal flux
+        flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         dVOL                                                            #
         beam_source                                                     #
         density                                                         #
