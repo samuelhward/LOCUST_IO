@@ -1,4 +1,4 @@
-#LOCUST_environment.py
+#environment.py
 
 '''
 Samuel Ward
@@ -24,60 +24,62 @@ except:
 ##################################################################
 #Main
 
-class LOCUST_environment:
+class Environment:
     """
     class to hold a LOCUST runtime environment
 
     notes:
     usage:
-        my_env=LOCUST_environment('TITAN')
+        my_env=Environment('TITAN')
         my_env.display(command_types=['export']) #display all necessary export commands
         print(my_env.command_types) #show the different commands used
         print(my_env.required_modules) #show the required modules
     """ 
 
     ##################################################################
-    #common environments to be made available globally
+    #common environments to be made globally available by default 
     
+    environments={}
+
     ################################# GA
-    LOCUST_environment_GA={}
-    LOCUST_environment_GA['export']={}
-    LOCUST_environment_GA['export']['NO_AT_BRIDGE']=1
-    LOCUST_environment_GA['export']['OMP_NUM_THREADS']=1
-    LOCUST_environment_GA['export']['OMP_STACKSIZE']=102400
-    LOCUST_environment_GA['export']['FFLAGS']="-I$HDF5_DIR/include"
-    LOCUST_environment_GA['export']['LDFLAGS']="-L$HDF5_DIR/lib"
-    LOCUST_environment_GA['module load']=[
+    environments['GA']={}
+    environments['GA']['export']={}
+    environments['GA']['export']['NO_AT_BRIDGE']=1
+    environments['GA']['export']['OMP_NUM_THREADS']=1
+    environments['GA']['export']['OMP_STACKSIZE']=102400
+    environments['GA']['export']['FFLAGS']="-I$HDF5_DIR/include"
+    environments['GA']['export']['LDFLAGS']="-L$HDF5_DIR/lib"
+    environments['GA']['module load']=[
                                 'pgf/18.3',
                                 'hdf5/1.8.19-mpich3.2-pgf18.3',
                                 'cuda/9.0',
                                 'gcc7/default'  ]
-    LOCUST_environment_GA['module unload']=[
+    environments['GA']['module unload']=[
                                 'gcc7/default'  ]
-    LOCUST_environment_GA['module switch']=[]
-    LOCUST_environment_GA['misc']={}
-    LOCUST_environment_GA['misc']['ulimit']="-s 2000000"
+    environments['GA']['module switch']=[]
+    environments['GA']['misc']={}
+    environments['GA']['misc']['ulimit']="-s 2000000"
     ################################# TITAN
-    LOCUST_environment_TITAN={}
-    LOCUST_environment_TITAN['export']={}
-    LOCUST_environment_TITAN['export']['FFLAGS']='"-I$HDF5_DIR/include"'
-    LOCUST_environment_TITAN['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
-    LOCUST_environment_TITAN['export']['NO_AT_BRIDGE']=1
-    LOCUST_environment_TITAN['export']['OMP_NUM_THREADS']=8
-    LOCUST_environment_TITAN['export']['OMP_STACKSIZE']=102400
-    LOCUST_environment_TITAN['export']['CUDA_CACHE_DISABLE']=1
-    LOCUST_environment_TITAN['module load']=[
+    environments['TITAN']={}
+    environments['TITAN']['export']={}
+    environments['TITAN']['export']['FFLAGS']='"-I$HDF5_DIR/include"'
+    environments['TITAN']['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
+    environments['TITAN']['export']['NO_AT_BRIDGE']=1
+    environments['TITAN']['export']['OMP_NUM_THREADS']=8
+    environments['TITAN']['export']['OMP_STACKSIZE']=102400
+    environments['TITAN']['export']['CUDA_CACHE_DISABLE']=1
+    environments['TITAN']['module load']=[
                                 'IMAS/3.23.3-4.1.3',
                                 'CUDA/10.1.105'  ]
-    LOCUST_environment_TITAN['module unload']=[]
-    LOCUST_environment_TITAN['module switch']=[
+    environments['TITAN']['module unload']=[]
+    environments['TITAN']['module switch']=[
                                 'PGI/19.4-GCC-6.4.0-2.28',
                                 'HDF5/1.10.5-PGI-19.4-GCC-6.4.0-2.28'  ]
-    LOCUST_environment_TITAN['misc']={}
-    LOCUST_environment_TITAN['misc']['ulimit']="-s 2000000"
+    environments['TITAN']['misc']={}
+    environments['TITAN']['misc']['ulimit']="-s 2000000"
     ################################# NEMO TITAN
-    NEMO_environment_TITAN={}
-    NEMO_environment_TITAN['module load']=['IMAS/3.21.0-3.8.11',
+    environments['TITAN_NEMO']={}
+    environments['TITAN_NEMO']['module load']=['IMAS/3.21.0-3.8.11',
                                            'Kepler/2.5p4-2.1.5',
                                            'FC2K/4.4.0',
                                            'PyUAL/1.0.0-foss-2018a-Python-3.6.4',
@@ -88,8 +90,8 @@ class LOCUST_environment:
                                            'interpos/8.2.1-ifort',
                                            'XMLlib/3.1.0-intel-2018a',
                                            'PSPLINE/20181008-intel-2018a']
-    NEMO_environment_TITAN['module unload']=['Anaconda3']
-    NEMO_environment_TITAN['module switch']=['Python/3.6.4-foss-2018a',
+    environments['TITAN_NEMO']['module unload']=['Anaconda3']
+    environments['TITAN_NEMO']['module switch']=['Python/3.6.4-foss-2018a',
                                              'matplotlib/2.1.2-foss-2018a-Python-3.6.4',
                                              'PyYAML/3.12-foss-2018a-Python-3.6.4',
                                              'UDA/2.2.5-foss-2018a',
@@ -101,35 +103,75 @@ class LOCUST_environment:
                                              'MDSplus-Python/7.46.1-foss-2018a-Python-3.6.4',
                                              'Boost/1.66.0-foss-2018a # ?',
                                              'Tkinter/3.6.4-foss-2018a-Python-3.6.4']
-    NEMO_environment_TITAN['export']={}
-    NEMO_environment_TITAN['export']['MD_ACCESS']='no'
-    NEMO_environment_TITAN['export']['DIAG_INFO']='-DNO_DIAG_INFO'
-    NEMO_environment_TITAN['misc']={}
-    NEMO_environment_TITAN['misc']['ulimit']='-s unlimited'
+    environments['TITAN_NEMO']['export']={}
+    environments['TITAN_NEMO']['export']['MD_ACCESS']='no'
+    environments['TITAN_NEMO']['export']['DIAG_INFO']='-DNO_DIAG_INFO'
+    environments['TITAN_NEMO']['misc']={}
+    environments['TITAN_NEMO']['misc']['ulimit']='-s unlimited'
     ################################# MARFE
-    LOCUST_environment_MARFE={}
-    LOCUST_environment_MARFE['export']={}
-    LOCUST_environment_MARFE['export']['PATH']='$PATH:/usr/local/cuda-9.1/bin'
-    LOCUST_environment_MARFE['export']['PATH']='$PATH:/usr/local/hdf5/bin'
-    LOCUST_environment_MARFE['export']['HDF5_DIR']='/usr/local/hdf5'
-    LOCUST_environment_MARFE['export']['LD_LIBRARY_PATH']='/usr/local/hdf5/lib'
-    LOCUST_environment_MARFE['export']['FFLAGS']="-I$\"{HDF5_DIR}\"/include"
-    LOCUST_environment_MARFE['export']['LDFLAGS']="-L$\"{HDF5_DIR}\"/lib"
-    LOCUST_environment_MARFE['export']['OMP_NUM_THREADS']=1
-    LOCUST_environment_MARFE['export']['OMP_STACKSIZE']=102400
-    LOCUST_environment_MARFE['export']['NO_AT_BRIDGE']=1
-    LOCUST_environment_MARFE['module load']=[
+    environments['MARFE']={}
+    environments['MARFE']['export']={}
+    environments['MARFE']['export']['PATH']='$PATH:/usr/local/cuda-9.1/bin'
+    environments['MARFE']['export']['PATH']='$PATH:/usr/local/hdf5/bin'
+    environments['MARFE']['export']['HDF5_DIR']='/usr/local/hdf5'
+    environments['MARFE']['export']['LD_LIBRARY_PATH']='/usr/local/hdf5/lib'
+    environments['MARFE']['export']['FFLAGS']="-I$\"{HDF5_DIR}\"/include"
+    environments['MARFE']['export']['LDFLAGS']="-L$\"{HDF5_DIR}\"/lib"
+    environments['MARFE']['export']['OMP_NUM_THREADS']=1
+    environments['MARFE']['export']['OMP_STACKSIZE']=102400
+    environments['MARFE']['export']['NO_AT_BRIDGE']=1
+    environments['MARFE']['module load']=[
                                 '/usr/local/pgi/modulefiles/pgi/18.4']
-    LOCUST_environment_MARFE['module unload']=[]
-    LOCUST_environment_MARFE['module switch']=[]
-    LOCUST_environment_MARFE['misc']={}
-    LOCUST_environment_MARFE['misc']['ulimit']="-s 2000000"
+    environments['MARFE']['module unload']=[]
+    environments['MARFE']['module switch']=[]
+    environments['MARFE']['misc']={}
+    environments['MARFE']['misc']['ulimit']="-s 2000000"
     ################################# GPU
-    LOCUST_environment_GPU={}
+    environments['GPU']={}
+    environments['GPU']['export']={}
+    environments['GPU']['export']['OMP_NUM_THREADS']=1
+    environments['GPU']['export']['OMP_STACKSIZE']=102400
+    environments['GPU']['export']['NO_AT_BRIDGE']=1
+    environments['GPU']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU']['module load']=[
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU']['misc']={}
+    environments['GPU']['misc']['ulimit']="-s 2000000"
     ################################# CUMULUS
-    LOCUST_environment_CUMULUS={}
+    environments['CUMULUS']={}
+    environments['CUMULUS']['export']={}
+    environments['CUMULUS']['export']['OMP_NUM_THREADS']=8
+    environments['CUMULUS']['export']['OMP_STACKSIZE']=102400
+    environments['CUMULUS']['export']['NO_AT_BRIDGE']=1
+    environments['CUMULUS']['module load']=[
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20'
+                            ]
+    environments['CUMULUS']['module unload']=[]
+    environments['CUMULUS']['misc']={}
+    environments['CUMULUS']['misc']['ulimit']="-s 2000000"
+    ################################# VIKING
+    environments['VIKING']={}
+    environments['VIKING']['export']={}
+    environments['VIKING']['export']['OMP_NUM_THREADS']=4
+    environments['VIKING']['export']['OMP_STACKSIZE']=102400
+    environments['VIKING']['export']['NO_AT_BRIDGE']=1
+    environments['VIKING']['export']['FFLAGS']='"-I$HDF5_DIR/include"'
+    environments['VIKING']['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
+    environments['VIKING']['module load']=[
+                            'compiler/PGI/18.10-GCC-7.3.0-2.30',
+                            'system/CUDA/9.2.88-GCC-7.3.0-2.30']
+    environments['VIKING']['module unload']=[
+                            'compiler/GCCcore/7.3.0']
+    environments['VIKING']['misc']={}
+    environments['VIKING']['misc']['ulimit']="-s 2000000"
 
-    system_names=['GA','TITAN','TITAN_NEMO','MARFE','GPU','CUMULUS']
+    environments_avail=environments.keys()
 
     def __init__(self,system_name=None):
         """
@@ -138,36 +180,20 @@ class LOCUST_environment:
         args:
             system_name - string identifier to choose from selection of environments stored as class attributes 
         notes:
-            options:
-                GA 
-                TITAN
-                TITAN_NEMO
-                MARFE
-                GPU
-                CUMULUS
+            available options are held in environment.environments_avail
         """ 
 
-        if system_name=='GA':
-            self.environment=LOCUST_environment.LOCUST_environment_GA
-        elif system_name=='TITAN':
-            self.environment=LOCUST_environment.LOCUST_environment_TITAN
-        elif system_name=='TITAN_NEMO':
-            self.environment=LOCUST_environment.NEMO_environment_TITAN
-        elif system_name=='MARFE':
-            self.environment=LOCUST_environment.LOCUST_environment_MARFE
-        elif system_name=='GPU':
-            self.environment=LOCUST_environment.LOCUST_environment_GPU
-        elif system_name=='CUMULUS':
-            self.environment=LOCUST_environment.LOCUST_environment_CUMULUS
-        else:
-            print("WARNING: LOCUST_environment initialised with incorrect system_name - options are {}".format(LOCUST_environment.system_names))
+        try:
+            self.environment=Environment.environments[system_name]
+        except:
+            print("WARNING: environment failed to initialise - system_name options are {}".format(Environment.environments_avail))
             self.environment=None
 
         self.system_name=system_name
         self.command_types=[command_type for command_type in self.environment]
         self.required_modules=[module_name for module_name in self.environment['module load']]
 
-    def create_command(self):
+    def create_command_string(self):
         """
         create single command string to load/source a chosen environment
 
@@ -202,13 +228,13 @@ class LOCUST_environment:
         notes:
         args:
             string - print in single-line string form
-            command_types - choose which commands to print
+            command_types - choose which commands to print, default to printing all commands
         """ 
 
         commands=[]
         if not command_types: command_types=self.command_types
 
-        for command in command_types: #user can control order of execution of commands here
+        for command in command_types: #control order of execution of commands here
             things_to_command=self.environment[command]
 
             if command=='export':

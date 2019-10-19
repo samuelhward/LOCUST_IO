@@ -42,23 +42,23 @@ except:
 ##################################################################
 #Main
 
-def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90',**variables):
+def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90',**variables):
     """
-    function to change initialised values within LOCUST source files
+    function to change hardcoded parameters initialised within a FORTRAN source file
 
     notes:
         only retains comments if made on first line that variable is declared (in case of spillage over multiple lines)
         formatting of edited lines will differ slightly due to blank space not being reinserted
     args:
-        filename_in - location of source file 
-        filename_out - location of output file
+        filepath_in - location of source file 
+        filepath_out - location of output file
         variables - set of kwargs denoting variable names and values to set them to
     usage:
-        python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filename_in prec_mod.f90
+        python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filepath_in prec_mod.f90
         LOCUST_edit_var(some_string="'I <3 LOCUST'") #within python - remember strings are interpreted literally so to inserting the text 'text' requires a string "'text'"
     """
 
-    with open(filename_in,'r') as file_input:
+    with open(filepath_in,'r') as file_input:
         lines=file_input.readlines()
 
         #interate through each line and check variable names
@@ -109,7 +109,7 @@ def LOCUST_edit_var(filename_in='prec_mod.f90',filename_out='prec_mod_edited.f90
                 else:
                     del(lines[spilled_line])
 
-        with open(filename_out,'w') as file_output: #dump results
+        with open(filepath_out,'w') as file_output: #dump results
             for line in lines:
                 file_output.write(line)
 
@@ -122,14 +122,14 @@ if __name__=='__main__':
         sys.exit(1)
 
     parser=argparse.ArgumentParser(description='function to edit variables in LOCUST source files')
-    parser.add_argument('--filename_in',type=str,action='store',default=support.dir_locust / 'prec_mod.f90',dest='filename_in',help="location of source file",required=False)
-    parser.add_argument('--filename_out',type=str,action='store',default=support.dir_locust / 'prec_mod_edited.f90',dest='filename_out',help="location of output file",required=False)
+    parser.add_argument('--filepath_in',type=str,action='store',default=support.dir_locust / 'prec_mod.f90',dest='filepath_in',help="location of source file",required=False)
+    parser.add_argument('--filepath_out',type=str,action='store',default=support.dir_locust / 'prec_mod_edited.f90',dest='filepath_out',help="location of output file",required=False)
     parser.add_argument('--vars',nargs='+',type=str,action='store',dest='variables',help="variables to replace in file e.g. --vars threadsPerBlock file_tet",required=True)
     parser.add_argument('--vals',nargs='+',type=str,action='store',dest='values',help='values to replace in file e.g. --vals 64 \\\'"some string value"\\\'',required=True)
     args=parser.parse_args()
     variables=dict(zip(args.variables,args.values))
 
-    LOCUST_edit_var(filename_in=args.filename_in,filename_out=args.filename_out,**variables)
+    LOCUST_edit_var(filepath_in=args.filepath_in,filepath_out=args.filepath_out,**variables)
 
 #################################
 

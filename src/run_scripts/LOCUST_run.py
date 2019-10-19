@@ -7,6 +7,9 @@ Samuel Ward
 tools to run the LOCUST code
 ---
 notes: 
+    contains the tools to perform a single simple run of LOCUST
+    use run_scripts.LOCUST_batch to send multiple run_scripts.LOCUST_runs
+    custom steps can be added via add_command
 ---
 '''
 
@@ -32,20 +35,20 @@ if __name__=='__main__':
         sys.exit(1)
 
 try:
-    import run_scripts.LOCUST_environment
+    import run_scripts.workflow
 except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_environment.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/workflow.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
+    import run_scripts.environment
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/environment.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
     import run_scripts.LOCUST_build
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_build.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
-    import run_scripts.MARS_builder_run
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/MARS_builder_run.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
@@ -62,22 +65,19 @@ except:
 ##################################################################
 #Main
 
-class LOCUST_run:
+class LOCUST_run(run_scripts.workflow.Workflow):
     """
-    class to run LOCUST
+    defines a workflow which performs a simple LOCUST simulation
 
     notes:
-        contains a LOCUST_build and a LOCUST_environment which store relevant settings for this run
-        both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
-        when editing prec_mod.f90 source code using settings_mars_read, strings should be passed literally (see below)     
-        python LOCUST_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_prec_mod a_string="'should be formatted like this'" a_number="like_this"
+        adds workflow components to workflow class for execution of a single standard LOCUST run
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
         some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
         some_run.run() #this will do all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={}):
+    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
         """
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
@@ -92,36 +92,29 @@ class LOCUST_run:
             settings_prec_mod - dict denoting variable names and values to set them to within prec_mod.f90
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
         """
-        
-        #convert strings to paths just in case supplied at command line
-        dir_LOCUST=pathlib.Path(dir_LOCUST) 
+
+        #execute base class constructor to inherit required structures
+        super().__init__()
+
+        ################################# first generate class data that will be needed in workflow
+
+        dir_LOCUST=pathlib.Path(dir_LOCUST) #convert strings to paths just in case supplied at command line
         dir_input=pathlib.Path(dir_input)
         dir_output=pathlib.Path(dir_output)
         dir_cache=pathlib.Path(dir_cache)
-
-        if dir_LOCUST.is_dir(): #check if dir_LOCUST already exists - cannot!
-            print("ERROR: dir_LOCUST already exists for this LOCUST_run - please specify new dir!\nreturning\n")
+        if dir_LOCUST.is_dir(): #check if dir_LOCUST already exists
+            print("ERROR: dir_LOCUST already exists for this run - please specify new dir!\nreturning\n")
             sys.exit(1)
-
         self.dir_LOCUST=dir_LOCUST if dir_LOCUST.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_LOCUST path!")
         self.dir_input=dir_input if dir_input.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_input path!")
         self.dir_output=dir_output if dir_output.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_output path!")
         self.dir_cache=dir_cache if dir_cache.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_cache path!")
-        self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name=system_name) #create an environment for running
-        self.build=run_scripts.LOCUST_build.LOCUST_build(system_name=system_name,repo_URL=repo_URL,commit_hash=commit_hash)
+        
+        self.environment=run_scripts.environment.Environment(system_name=system_name) #create a runtime environment for this workflow
+        
+        self.build=run_scripts.LOCUST_build.LOCUST_build(system_name=system_name,repo_URL=repo_URL,commit_hash=commit_hash) #define a build for this workflow
         self.build.flags_add(**flags) 
-        self.build.settings_prec_mod_add(**settings_prec_mod) 
-        self.run_commands=settings.LOCUST_run_default_run_commands #holds list of functions to execute in order during LOCUST_run.run()
-
-        self.run_stages_dispatch={ #available run commands and 
-            'mkdir':self.setup_dirs, 
-            'get_code':self.get_code, 
-            'make':self.make_code, 
-            'get_input':self.get_inputs, 
-            'run_code':self.run_code, 
-            'get_output':self.get_outputs, 
-            'cleanup':self.cleanup
-        }
+        self.build.source_code_mods_add(source_code_filename='prec_mod.f90',**settings_prec_mod)
 
         #find where LOCUST will store its files - InputFiles, OutputFiles and CacheFiles
         if 'TOKHEAD' in self.build.flags: #user specified tokhead, which changes directory structure and must be accounted for
@@ -129,40 +122,25 @@ class LOCUST_run:
         else:
             self.tokhead='locust'
         #find root 
-        if 'root' in self.build.settings_prec_mod: #variable is set in LOCUST source - prec_mod.f90
-            self.root=pathlib.Path(self.build.settings_prec_mod['root'].strip('\'')) #user should have added extra quotes to properly edit prec_mod.f90 file
+        if 'root' in self.build.source_code_mods['prec_mod.f90']: #variable to set in LOCUST source file prec_mod.f90
+            self.root=pathlib.Path(self.build.source_code_mods['prec_mod.f90']['root'].strip('\'')) #user should have added extra quotes to properly edit prec_mod.f90 file
         else:
             self.root=pathlib.Path(settings.LOCUST_dir_root_default) #the default root set within LOCUST prec_mod.f90
 
-    def run_stage(self,run_command,*args,**kwargs):
+        ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
+        
+        self.add_command(command_name='mkdir',command_function=self.setup_LOCUST_dirs,position=1) #add new workflow stages
+        self.add_command(command_name='get_code',command_function=self.get_code,position=2)
+        self.add_command(command_name='make',command_function=self.make_code,position=3)
+        self.add_command(command_name='get_input',command_function=self.get_inputs,position=4)
+        self.add_command(command_name='run_code',command_function=self.run_code,position=5)
+        self.add_command(command_name='get_output',command_function=self.get_outputs,position=6)
+        self.add_command(command_name='cleanup',command_function=self.cleanup,position=7)
+
+    def setup_LOCUST_dirs(self,*args,**kwargs):
         """
-        execute individual command/stage of running LOCUST
+        LOCUST_run stage for initialising simulation directory structure
 
-        notes:
-            run_command - string denoting command to run (options stored in self.run_stages_dispatch)
-        """
-
-        if run_command not in self.run_stages_dispatch.keys():
-            print("ERROR: LOCUST_run.run_stage() could not find {run_command}, available commands - '{commands_avail}'".format(run_command=run_command,commands_avail=[command_avail for command_avail in self.run_stages_dispatch.keys()]))
-        else:
-            try:
-                self.run_stages_dispatch[run_command](*args,**kwargs)
-            except:
-                print("ERROR: LOCUST_run.run_stage() could not execute '{run_command}'".format(run_command=run_command))
-
-    def run(self,*args,**kwargs):
-        """
-        execute all commands/stages of running LOCUST
-
-        notes:
-            args,kwargs - passed to all run stages
-        """
-
-        for run_command in self.run_commands:
-            self.run_stage(run_command,*args,**kwargs)
-
-    def setup_dirs(self,*args,**kwargs):
-        """
         notes:
         """
 
@@ -170,7 +148,7 @@ class LOCUST_run:
         if not self.dir_output.is_dir(): self.dir_output.mkdir()
         #create LOCUST directory - must not already exis
         if self.dir_LOCUST.is_dir(): 
-            print("ERROR: LOCUST_run.setup_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n")
+            print("ERROR: LOCUST_run.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n")
             return
         else:
             self.dir_LOCUST.mkdir()
@@ -186,18 +164,22 @@ class LOCUST_run:
 
     def get_code(self,*args,**kwargs):
         """
+        LOCUST_run stage for retrieving code
+
         notes:
         """
 
         #retrieve code
         try:
-            self.build.clone(dir_LOCUST=self.dir_LOCUST)
+            self.build.clone(directory=self.dir_LOCUST)
         except:
-            print("ERROR: LOCUST_run.get_code() could not clone clone to {}!\nreturning\n".format(self.dir_LOCUST))
-            return
+            print("ERROR: LOCUST_run.get_code() could not clone to {}!\nreturning\n".format(self.dir_LOCUST))
+            return 
 
     def get_inputs(self,*args,**kwargs):
         """
+        LOCUST_run stage for copying inputs to correct location
+
         notes:
         """
 
@@ -209,19 +191,23 @@ class LOCUST_run:
 
     def make_code(self,*args,**kwargs):
         """
+        LOCUST_run stage for executing code build
+
         notes:
         """
 
-        self.build.make(dir_LOCUST=self.dir_LOCUST,clean=True) #compile (source files are edited within this step)
-        self.build.make(dir_LOCUST=self.dir_LOCUST,clean=False)
+        self.build.make(directory=self.dir_LOCUST / 'locust',clean=True) #compile (source files are edited within this step)
+        self.build.make(directory=self.dir_LOCUST / 'locust',clean=False) #append /locust as this introduced in cloning stage
 
     def run_code(self,*args,**kwargs):
         """
+        LOCUST_run stage for executing LOCUST
+
         notes:
         """
 
         #run LOCUST
-        command=' '.join([self.environment.create_command(),'; ./locust'])
+        command=' '.join([self.environment.create_command_string(),'; ./locust'])
         try:
             pass
             subprocess.call(command,shell=True,cwd=str(self.dir_LOCUST / 'locust'))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
@@ -232,16 +218,20 @@ class LOCUST_run:
 
     def get_outputs(self,*args,**kwargs):
         """
+        LOCUST_run stage for retrieving run outputs
+
         notes:
         """
 
         #retrieve output
-        subprocess.run(shlex.split('mv {prec_mod} {dir_output}/'.format(prec_mod=str(self.dir_LOCUST / 'locust' / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
+        subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(self.dir_LOCUST / 'locust' / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
         for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_outputfiles_default).glob('*'):
             subprocess.run(shlex.split('mv {file} {dir_output}'.format(file=str(file),dir_output=str(self.dir_output))),shell=False)
 
     def cleanup(self,*args,**kwargs):
         """
+        LOCUST_run stage for cleaning up temporary directory structure and code
+
         notes:
         """
 
@@ -262,6 +252,8 @@ class LOCUST_run:
 
         subprocess.run(shlex.split('rm -r {}'.format(str(self.dir_LOCUST / 'locust'))),shell=False) #delete specific folder holding rest of LOCUST source   
         self.dir_LOCUST.rmdir() #delete original containing folder IFF empty
+
+##################################################################
 
 if __name__=='__main__':
 
@@ -296,7 +288,6 @@ if __name__=='__main__':
             settings_prec_mod[setting[0]]=setting[1]
         else:
             settings_prec_mod[setting[0]]=None
-
 
     this_run=LOCUST_run(system_name=args.system_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=settings_prec_mod,flags=flags)
     this_run.run()

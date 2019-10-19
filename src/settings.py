@@ -94,9 +94,6 @@ LOCUST_dir_outputfiles_default='OutputFiles'
 LOCUST_dir_cachefiles_default='CacheFiles'
 LOCUST_dir_root_default='/tmp'
 
-#run_scripts settings
-LOCUST_run_default_run_commands=['mkdir','get_code','make','get_input','run_code','get_output','cleanup'] #in order
-
 #################################
 
 ##################################################################

@@ -33,15 +33,21 @@ if __name__=='__main__':
         sys.exit(1)
 
 try:
-    import run_scripts.LOCUST_environment
+    import run_scripts.workflow
 except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_environment.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/workflow.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
-    import run_scripts.MARS_builder_build
+    import run_scripts.environment
 except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/MARS_builder_build.py could not be imported!\nreturning\n")
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/environment.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
+    import run_scripts.build
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/build.py could not be imported!\nreturning\n")
     sys.exit(1)
 
 try:
@@ -58,12 +64,12 @@ except:
 ##################################################################
 #Main
 
-class MARS_builder_run:
+class MARS_builder_run(run_scripts.workflow.Workflow):
     """
-    class to run MARS_builder
+    defines a workflow which performs a simple LOCUST simulation
 
     notes:
-        contains a MARS_builder_build and a LOCUST_environment which store relevant settings for this run
+        contains a Build and an Environment which store relevant settings for this run
         both this object and it's stored objects each have separate environments - in case one wants to run with a different environment that they built with
         when editing mars_read.f90 source code using settings_mars_read, strings should be passed literally (see below) 
     usage:
@@ -72,7 +78,7 @@ class MARS_builder_run:
         some_run.run() #this will do all stages of a mars_build run
     """ 
 
-    def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder',system_name='TITAN',settings_mars_read={},flags={}):
+    def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',system_name='TITAN',settings_mars_read={},flags={}):
         """
         notes:
             most information stored in MARS_builder_run.environment and MARS_builder_run.build, most init args are to init these instances
@@ -85,45 +91,89 @@ class MARS_builder_run:
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
         """
         
-        #convert strings to paths just in case supplied at command line
-        filepath_input=pathlib.Path(filepath_input)
-        dir_output=pathlib.Path(dir_output)
+        #execute base class constructor to inherit required structures
+        super().__init__()
 
-        self.dir_MARS_builder=dir_MARS_builder
-        self.filepath_input=filepath_input
-        self.dir_output=dir_output
-        self.environment=run_scripts.LOCUST_environment.LOCUST_environment(system_name=system_name) #create an environment for running
-        self.build=run_scripts.MARS_builder_build.MARS_builder_build(system_name=system_name)
-        self.build.flags_add(**flags) 
-        self.build.settings_mars_read_add(**settings_mars_read) 
+        ################################# first generate class data that will be needed in workflow
 
-    def run(self):
+        self.dir_MARS_builder=pathlib.Path(dir_MARS_builder)
+        self.filepath_input=pathlib.Path(filepath_input)
+        self.dir_output=pathlib.Path(dir_output)
+
+        self.environment=run_scripts.environment.Environment(system_name=system_name) #create an environment for running
+        
+        if not settings_mars_read: settings_mars_read={} #turn __init__ args such as filepath_input into the corresponding source code edits
+        settings_mars_read['file']="'{}'".format(str(self.filepath_input))
+        dir_output=str(self.dir_output) if (str(self.dir_output)[-1]==str(os.sep) or str(self.dir_output)[-2:]==str(os.sep)) else ''.join([str(self.dir_output),str(os.sep)]) #add final separator character if stripped by pathlib
+        settings_mars_read['root']="'{}'".format(str(dir_output))
+
+        if not flags: #set default compile flags 
+            flags={}
+            flags['TOKAMAK']=1
+
+        self.build=run_scripts.build.Build(system_name=system_name)
+        self.build.flags_add(**flags)         
+        self.build.source_code_mods_add(source_code_filename='mars_read.f90',**settings_mars_read)
+
+        ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
+
+        self.add_command(command_name='mkdir',command_function=self.setup_MARS_builder_dirs,position=1) #add new workflow stages
+        self.add_command(command_name='get_code',command_function=self.get_code,position=2)
+        self.add_command(command_name='make',command_function=self.build_code,position=3)
+        self.add_command(command_name='run_code',command_function=self.run_code,position=4)
+        self.add_command(command_name='cleanup',command_function=self.clean_up_code,position=5)
+
+    def setup_MARS_builder_dirs(self,*args,**kwargs):
+        """
+        notes:
+        """
+
+        #create output and MARS_builder directories if do not exist
+        if not self.dir_output.is_dir(): self.dir_output.mkdir()
+        if not self.dir_MARS_builder.is_dir(): self.dir_MARS_builder.mkdir()
+
+    def get_code(self,*args,**kwargs):
+        """
+        notes:
+        """
+
+        #copy over source code
+        for file in (support.dir_run_scripts / 'mars_builder').glob('*'):
+            subprocess.run(shlex.split('cp {file} {dir_MARS_builder}'.format(file=str(file),dir_MARS_builder=self.dir_MARS_builder)),shell=False)
+
+
+    def build_code(self,*args,**kwargs):
+        """
+        notes:
+        """
+
+        #execute make
+        self.build.make(directory=self.dir_MARS_builder,clean=True)
+        self.build.make(directory=self.dir_MARS_builder,clean=False)
+
+    def run_code(self,*args,**kwargs):
         """
         notes:
         args:
         """
 
-        #create output directory if does not exist
-        if not self.dir_output.is_dir(): self.dir_output.mkdir()
-
-        #perform default source code edits - set output directory
-        dir_output=str(self.dir_output) if (str(self.dir_output)[-1]==str(os.sep) or str(self.dir_output)[-2:]==str(os.sep)) else ''.join([str(self.dir_output),str(os.sep)]) #add final separator character if stripped by pathlib
-        default_edits={'file':"'{}'".format(self.filepath_input),'root':"'{}'".format(dir_output)}
-        run_scripts.LOCUST_edit_var.LOCUST_edit_var(filename_in=self.dir_MARS_builder / 'mars_read.f90',filename_out=self.dir_MARS_builder / 'mars_read.f90',**default_edits)
-
-        #compile (source files are edited within this step)
-        self.build.make(dir_MARS_builder=self.dir_MARS_builder,clean=True)
-        self.build.make(dir_MARS_builder=self.dir_MARS_builder,clean=False)
-
         #run MARS_builder
-        command=' '.join([self.environment.create_command(),'; ./mars_build'])
+        command=' '.join([self.environment.create_command_string(),'; ./mars_build'])
         try:
-            pass 
             with subprocess.Popen(command,shell=True,cwd=str(self.dir_MARS_builder)) as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
                 pass
         except subprocess.CalledProcessError as err:
             print("ERROR: MARS_builder_run failed to run MARS_builder!\nreturning\n")
-            #raise(err)
+
+    def clean_up_code(self,*args,**kwargs):
+        """
+        notes:
+        """
+
+        for directory in [ 
+                         (self.dir_MARS_builder)]:
+            subprocess.run(shlex.split('rm -r {}'.format(str(directory))),shell=False) #delete temporary directories
+
 
 if __name__=='__main__':
 
