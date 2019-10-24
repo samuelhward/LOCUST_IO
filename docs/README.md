@@ -29,12 +29,15 @@ Table of Contents
 
 Tested with:
 
-* IMAS v3.16.0
 * Python ≥v3.6
     * numpy ≥v1.14.2
-    * matplotlib ≥v2.0.0
-    * scipy ≥v0.17.0
-    * h5py ≥v2.6.0
+    Optional modules:
+        * IMAS ≥v3.24.0
+        * matplotlib ≥v2.0.0
+        * scipy ≥v0.17.0
+        * h5py ≥v2.6.0
+        * xlrd
+        * hdf5
 
 
 
@@ -91,7 +94,7 @@ my_equilibrium.copy(some_other_equilibrium,'B_field_R','some_key','some_other_ke
 
 #to get a quick glimpse of what you're working with, LOCUST_IO can also plot input/output data: 
 my_equilibrium.plot()                                         
-#(you can also stack plots onto the same axis object with the ax arguement - see example_project)
+#(you can also stack plots onto the same axis object with the ax argument - see example_project)
 my_equilibrium.plot(ax=some_ax,fig=some_fig)                                         
 
 

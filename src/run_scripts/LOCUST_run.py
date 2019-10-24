@@ -272,22 +272,15 @@ if __name__=='__main__':
     
     args=parser.parse_args()
 
-    #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguements
-    parsed_flags=[flag.split('=') for flag in args.flags]    
-    flags={}
-    for flag in parsed_flags:
-        if len(flag)>1:
-            flags[flag[0]]=flag[1]
-        else:
-            flags[flag[0]]=None
-
-    parsed_settings_prec_mod=[setting_prec_mod.split('=') for setting_prec_mod in args.settings_prec_mod]    
-    settings_prec_mod={}
-    for setting in parsed_settings_prec_mod:
-        if len(setting)>1:
-            settings_prec_mod[setting[0]]=setting[1]
-        else:
-            settings_prec_mod[setting[0]]=None
+    #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
+    for arg in [args.flags,args.settings_prec_mod]:
+        parsed_subargs=[subarg.split('=') for subarg in arg]    
+        subargs={}
+        for subarg in parsed_subargs:
+            if len(subarg)>1:
+                subargs[subarg[0]]=subarg[1]
+            else:
+                subargs[subarg[0]]=True
 
     this_run=LOCUST_run(system_name=args.system_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=settings_prec_mod,flags=flags)
     this_run.run()

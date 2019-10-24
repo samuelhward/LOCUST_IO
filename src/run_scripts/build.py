@@ -58,7 +58,7 @@ class Build:
     usage:
         my_build=Build('TITAN') #initialise a build using the TITAN environment
         my_build.environment.display() #environment is instance of Environment class 
-        my_build.flags_add(STDOUT=None,TOKAMAK=8,BRELAX=None,UNBOR=100,LEIID=8) #adds flags to this Build
+        my_build.flags_add(STDOUT=True,TOKAMAK=8,BRELAX=True,UNBOR=100,LEIID=8) #adds flags to this Build
         my_build.source_code_mods_add(source_code_filename='prec_mod.f90',ThreadsPerBlock=56,some_string="'format like this'") #in prec_mod.f90 set ThreadsPerBlock to be declared=56 and string some_string to be initialised to 'format like this'
         my_build.make(directory=some_dir,clean=True) #execute 'make clean'
         my_build.make(directory=some_dir) #make with flags stored in Build.flags
@@ -83,7 +83,7 @@ class Build:
         args:
             flags - set of kwargs denoting compile flags
         usage:
-            Build.flags_add('TOKAMAK'=1,'STDOUT'=None) #if flag does not need numerical value, set to None
+            Build.flags_add('TOKAMAK'=1,'STDOUT'=True) #if flag does not need numerical value, set to True
         """
 
         if not hasattr(self,'flags'):
@@ -171,7 +171,7 @@ class Build:
                 print("WARNING: Build.make does not contain environment - using settings.environment_default!")                
                 self.environment=run_scripts.environment.Environment(settings.system_default)
 
-            flags_=' '.join(['-D{}={}'.format(flag,value) if value else '-D{}'.format(flag) for flag,value in self.flags.items()])
+            flags_=' '.join(['-D{}={}'.format(flag,value) if value is not True else '-D{}'.format(flag) for flag,value in self.flags.items()])
             command=' '.join([self.environment.create_command_string(),'; make','FLAGS={}'.format(shlex.quote(flags_))])
 
             try:

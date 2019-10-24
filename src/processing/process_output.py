@@ -134,7 +134,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             dfn['dfn']=dfn['dfn'][tuple(axes)]
             #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
         else:
-            print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+            print("ERROR: dfn_transform given invalid axes argument: "+str(axes))
 
     else: #if LOCUST dfn is against velocity
 
@@ -209,7 +209,7 @@ def dfn_transform(some_dfn,axes=['R','Z']):
             dfn['dfn']=dfn['dfn'][tuple(axes)]
             #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
         else:
-            print("ERROR: dfn_transform given invalid axes arguement: "+str(axes))
+            print("ERROR: dfn_transform given invalid axes argument: "+str(axes))
 
 
     return dfn

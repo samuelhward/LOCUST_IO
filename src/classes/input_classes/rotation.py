@@ -263,7 +263,7 @@ def dump_rotation_MARSF(output_data,filepath,**properties):
         
 ################################################################## rotation class
  
-class rotation(classes.base_input.LOCUST_input):
+class Rotation(classes.base_input.LOCUST_input):
     """
     class describing rotation profile input for LOCUST
  

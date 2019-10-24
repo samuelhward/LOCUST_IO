@@ -67,7 +67,7 @@ class LOCUST_build(run_scripts.build.Build):
         my_build.environment.display() #environment is instance of Environment class 
         print(my_build.repo_URL) #if not specified at instantiation, default repo_URL and commit_hash are set - check LOCUST_IO/src/settings.py 
         print(my_build.commit_hash) #commit_hash is assumed to be latest hash of settings.branch_default_LOCUST branch
-        my_build.flags_add(STDOUT=None,TOKAMAK=8,BRELAX=None,UNBOR=100,LEIID=8) #adds flags to this LOCUST_build
+        my_build.flags_add(STDOUT=True,TOKAMAK=8,BRELAX=True,UNBOR=100,LEIID=8) #adds flags to this LOCUST_build
         my_build.source_code_mods_add(source_code_filename='prec_mod.f90',ThreadsPerBlock=56,some_string="'format like this'") #in prec_mod.f90 set ThreadsPerBlock to be declared=56 and string some_string to be initialised to 'format like this'
         my_build.clone(some_dir)
         my_build.make(directory=some_dir,clean=True) #execute 'make clean'

@@ -452,7 +452,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             axes - define plot axes
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
             limiters - object which contains limiter data rlim and zlim
-            real_scale - plot to Tokamak scale (requires equilibrium arguement)
+            real_scale - plot to Tokamak scale (requires equilibrium argument)
             status_flags - plot particles with these statuses
             weight - toggle whether to include marker weights in histograms
             colmap - set the colour map (use get_cmap names)

@@ -845,7 +845,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 dfn['dfn']=dfn['dfn'][tuple(axes)]
                 #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
             else:
-                print("ERROR: dfn_transform given invalid axes arguement: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
+                print("ERROR: dfn_transform given invalid axes argument: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
 
         else: #if LOCUST dfn is against velocity
 
@@ -920,7 +920,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 dfn['dfn']=dfn['dfn'][tuple(axes)]
                 #XXX need to then reset dfn['nV'],dfn['R'],dfn['dfn_index'] etc data here?
             else:
-                print("ERROR: dfn_transform given invalid axes arguement: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
+                print("ERROR: dfn_transform given invalid axes argument: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
 
         if len(axes)!=dfn['dfn'].ndim: #if user has not supplied all axes
             dfn['dfn_index']=np.array(axes)

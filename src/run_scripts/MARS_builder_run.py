@@ -189,7 +189,7 @@ if __name__=='__main__':
     
     args=parser.parse_args()
 
-    #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguements
+    #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
     parsed_flags=[flag.split('=') for flag in args.flags]    
     flags={}
     for flag in parsed_flags:

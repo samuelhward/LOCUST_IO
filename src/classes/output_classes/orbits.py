@@ -280,7 +280,7 @@ class Orbits(classes.base_output.LOCUST_output):
             axes - define plot axes
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
             limiters - object which contains limiter data rlim and zlim
-            real_scale - plot to Tokamak scale (requires equilibrium arguement)
+            real_scale - plot to Tokamak scale (requires equilibrium argument)
             start_mark - include marker to show birth point
             colmap - set the colour map (use get_cmap names)
             ax - take input axes (can be used to stack plots)

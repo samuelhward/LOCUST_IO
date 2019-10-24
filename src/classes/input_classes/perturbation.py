@@ -989,7 +989,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             
         args:
             key - selects which data in perturbation to plot
-            LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium arguement)
+            LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium argument)
             limiters - object which contains limiter data rlim and zlim
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
