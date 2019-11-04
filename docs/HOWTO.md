@@ -78,7 +78,7 @@ class better_workflow(wf):
         
         #first we can define the build version of some_code that this workflow wants to execute
         self.build=bu(system_name='CUMULUS') #system_name will define the build environment i.e. which system you are on and which modules to load etc, you can also define your own
-        self.build.flags_add(TOKAMAK=1,STDOUT=None) #add some compile flags
+        self.build.flags_add(TOKAMAK=1,STDOUT=True) #add some compile flags
         self.build.source_code_mods_add(source_code_filename='some_code.f90',some_variable_in_some_code=5,some_string_in_some_code="'a_string'") #if some_code is in the fortran language, we can modify the default declaration of variables
         
         #now define the runtime environment for this workflow

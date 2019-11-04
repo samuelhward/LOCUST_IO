@@ -488,7 +488,7 @@ program mars_read
 !
 ! *** Author:
 !
-!     Rob Akers, D3/1.36, Culham Centre for Fusion Energy, x6323
+!     Rob Akers, D3/1.36, Culham Centre for Fusion Energy, x6323 : original
 !     Samuel Ward, 81/147, ITER organization, samuel.ward@iter.org, +33 4 42 17 81 59 : LOCUST_IO workflow additions
 !
 ! *** Error flags:               
@@ -510,10 +510,23 @@ program mars_read
       character( len=1000 )       :: root = '/home/ITER/wards2/' !append this to all file writes
 
 #if (TOKAMAK==1)
-      character( len=1000  ),                                                    &
+#if defined (MATCH)
+      character( len=1006  ),                                                    &
                     dimension(3)  :: TAIL = ['_U_VAC','_M_VAC','_L_VAC']
 #else
-      character( len=1000 ),                                                    &
+#if defined (VAC)
+      character( len=1006  ),                                                    &
+                    dimension(3)  :: TAIL = ['_U_VAC','_M_VAC','_L_VAC']
+#elif defined (PLS)
+      character( len=1006  ),                                                    &
+                    dimension(3)  :: TAIL = ['_U_PLS','_M_PLS','_L_PLS']
+#else
+      character( len=1006  ),                                                    &
+                    dimension(3)  :: TAIL = ['_U_VAC','_M_VAC','_L_VAC']
+#endif
+#endif
+#else
+      character( len=10011 ),                                                    &
                     dimension(2)  :: TAIL = ['_upper','_lower']
 #endif
 
@@ -521,20 +534,39 @@ program mars_read
 
   #if (TOKAMAK==1)
 
-      character( len=1000 )         :: mtch = '/home/rakers/15MA_ELM_upper.txt_cleaned'
+    #if   (MATCH==1)
+      character( len=10031 )         :: mtch = 'data/&
+                                            &15MA_ELM_upper.txt_cleaned'
+    #elif (MATCH==2)
+      character( len=10032 )         :: mtch = 'data/&
+                                            &15MA_ELM_middle.txt_cleaned'
+    #elif (MATCH==3)
+      character( len=10031 )         :: mtch = 'data/&
+                                            &15MA_ELM_lower.txt_cleaned'
+    #else
+      stop ! This will throw a compiler error.
+    #endif
+
   #else
 
-      character( len=1000  )         :: mtch = '?'
-      
+    #if   (MATCH==1)
+      character( len=1001  )         :: mtch = '?'
+    #elif (MATCH==2)
+      character( len=1001  )         :: mtch = '?'
+    #else
+      stop ! This will throw a compiler error.
+    #endif
+
   #endif
 
 #endif
 
 #if defined (UMP3D)
   #if (TOKAMAK==1)
-      character( len=1000 )         :: mtch = '/home/rakers/15MA_ELM_coils.txt_cleaned'
+      character( len=10031 )         :: mtch = 'data/&
+                                            &15MA_ELM_coils.txt_cleaned'
   #else
-      character( len=1000  )         :: mtch = '?'
+      character( len=1001  )         :: mtch = '?'
   #endif
 #endif
 
@@ -544,33 +576,36 @@ program mars_read
 
     #ifndef ORI
       #if (NC==3)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
+      character( len=10057 )         :: file = 'data/ITER_15MA_10470/&
+                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
       #elif (NC==6)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
+      character( len=10057 )         :: file = 'data/ITER_15MA_10470/&
+                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n6'
       #elif (NC==12)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
+      character( len=10058 )         :: file = 'data/ITER_15MA_10470/&
+                                     &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n12'
       #elif (NC==15)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10058 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n15'
       #else
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10057 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_MOD_EQ/BPLASMA_MARSF_MOD_n3'
       #endif
     #else
       #if (NC==3)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10053 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n3'
       #elif (NC==6)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10053 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n6'
       #elif (NC==12)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10054 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n12'
       #elif (NC==15)
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10054 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n15'
       #else
-      character( len=1000 )         :: file = '/home/rakers/ITER_15MA_10470/&
+      character( len=10053 )         :: file = 'data/ITER_15MA_10470/&
                                      &ELM_COIL_ORI_EQ/BPLASMA_MARSF_n3'
       #endif
     #endif
@@ -578,7 +613,7 @@ program mars_read
   #else
 
     #if (NC==2)
-      character( len=1000 )         :: file = '/home/rakers/33143_2730/&
+      character( len=10040 )         :: file = 'data/33143_2730/&
                                      &BPLASMA_newformat_vac'
     #else
        stop
@@ -589,7 +624,7 @@ program mars_read
 #else
 
   #if (TOKAMAK==1)
-      character( len=1000 )         :: file = '/home/rakers/&
+      character( len=10040 )         :: file = 'data/&
                                      &BPLASMA_MARSF_VAC_n3_3COILS_OLD.txt'
   #else
       character( len=?  )         :: file = '?'
@@ -597,9 +632,12 @@ program mars_read
 
 #endif
 
-      character( len=100 )        :: STR
-      character( len=2 )          :: STR_N
-      character( len=4 )          :: STR_R, STR_Z
+      character( len=100100 )        :: STR
+      character( len=1001 )          :: STR_C
+      character( len=1002 )          :: STR_N
+      character( len=1004 )          :: STR_R, STR_Z
+      character( len=1001 ),                                                     &
+                     dimension(3) :: TAG_I = ['U','M','L']
       integer,        parameter   :: lun   = 5
       integer                     :: ios
       integer                     :: idat(7)
@@ -664,48 +702,27 @@ program mars_read
 
       real( gpu ),               dimension(3) :: PH1   = 0.0_gpu
     #if (NC==3)
-      real( gpu ),    parameter, dimension(3) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu,                     &
-                                                 0.0_gpu]
-      real( gpu ),    parameter, dimension(3) :: IMUL  =                      &
-                                               [  0.96214464E+00_gpu,         &
-                                                  0.96881866E+00_gpu,         &
-                                                  0.95058410E+00_gpu]
+      real( gpu ),               dimension(3) :: IMUL  =                      &
+                                               [ 1.0_gpu,                     &
+                                                 1.0,                         &
+                                                 1.0_gpu ]
     #elif (NC==6)
-      real( gpu ),    parameter, dimension(3) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu,                     &
-                                                 0.0_gpu]
-      real( gpu ),    parameter, dimension(3) :: IMUL  =                      &
-                                               [ 0.96133795E+00_gpu,          &
-                                                 0.99023730E+00_gpu,          &
-                                                 0.97544223E+00_gpu]
+      real( gpu ),               dimension(3) :: IMUL  =                      &
+                                               [ 1.0_gpu,                     &
+                                                 1.0,                         &
+                                                 1.0_gpu ]
     #elif (NC==12)
-      real( gpu ),    parameter, dimension(3) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu,                     &
-                                                 0.0_gpu]
-      real( gpu ),    parameter, dimension(3) :: IMUL  =                      &
+      real( gpu ),               dimension(3) :: IMUL  =                      &
                                                [ 1.0_gpu,                     &
                                                  1.0,                         &
                                                  1.0_gpu ]
     #elif (NC==15)
-      real( gpu ),    parameter, dimension(3) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu,                     &
-                                                 0.0_gpu ]
-      real( gpu ),    parameter, dimension(3) :: IMUL  =                      &
-                                               [ 0.81972909E+00_gpu,          &
-                                                 0.13355541E+01_gpu,          &
-                                                 0.84313061E+00_gpu ]
-
+      real( gpu ),               dimension(3) :: IMUL  =                      &
+                                               [ 1.0_gpu,                     &
+                                                 1.0,                         &
+                                                 1.0_gpu ]
     #else
-      real( gpu ),    parameter, dimension(3) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu,                     &
-                                                 0.0_gpu ]
-      real( gpu ),    parameter, dimension(3) :: IMUL  =                      &
+      real( gpu ),               dimension(3) :: IMUL  =                      &
                                                [ 1.0_gpu,                     &
                                                  1.0_gpu,                     &
                                                  1.0_gpu ]
@@ -715,12 +732,9 @@ program mars_read
 
       real( gpu ),               dimension(3) :: PH1   = 0.0_gpu
     #if (NC==2)
-      real( gpu ),    parameter, dimension(2) :: PH2   =                      &
-                                               [ 0.0_gpu,                     &
-                                                 0.0_gpu ]
-      real( gpu ),    parameter, dimension(2) :: IMUL  =                      &
-                                               [  1.00000000E+00_gpu,         &
-                                                  1.00000000E+00_gpu ]
+      real( gpu ),               dimension(2) :: IMUL  =                      &
+                                               [ 1.0_gpu,                     &
+                                                 1.0_gpu ]
     #endif
 
   #endif
@@ -733,8 +747,7 @@ program mars_read
   #endif
       real( gpu ),    parameter, dimension(1) :: PH0   = [ 0.0_gpu]
       real( gpu ),    parameter, dimension(1) :: PH1   = [ 0.0_gpu]
-      real( gpu ),    parameter, dimension(1) :: PH2   = [ 0.0_gpu]
-      real( gpu ),    parameter, dimension(1) :: IMUL  = [ 1.0_gpu]
+      real( gpu ),               dimension(1) :: IMUL  = [ 1.0_gpu]
 #endif
 
 #ifndef RESSCAN
@@ -848,7 +861,6 @@ program mars_read
       PH1(1) = real(UPHASE,gpu)
   #else
       PH1(1) = 86.0_gpu
-      PH1(1) = 0.0_gpu
       write(io(1),*) ':mars_read : U Phase DEFAULT : ', PH1(1)
   #endif
   #if defined (MPHASE)
@@ -863,14 +875,34 @@ program mars_read
       PH1(3) = real(LPHASE,gpu)
   #else
       PH1(3) = 34.0_gpu
-      PH1(3) = 0.0_gpu
       write(io(1),*) ':mars_read : L Phase DEFAULT : ', PH1(3)
   #endif
 
 #else
       PH1(1) = 0.0_gpu
       PH1(2) = 0.0_gpu
-      PH1(3) = 0.0_gpu
+#endif
+
+#if defined (COILROW)
+      write(io(1),*) ':mars_read : Coil Row separation requested - blank rows...'
+#if defined (MATCH)
+      write(io(1),*) ':mars_read : MATCH option does not work with COILROW!'
+      stop
+#endif
+#if defined (OLD)
+      write(io(1),*) ':mars_read : OLD option does not work with COILROW!'
+      stop
+#endif
+      if( COILROW < 1 .or. COILROW > size(IMUL) )then
+          write(io(1),*) ':mars_read : COILROW does not match IMUL size!'
+          stop
+      endif
+
+      do i=1,size(IMUL)
+         if( i/=COILROW )IMUL(i) = 0.0_gpu
+      enddo
+
+      write(io(1),'(A20,3F11.8)') ':mars_read : IMUL =', IMUL
 #endif
 
 #if defined (MATCH)
@@ -890,6 +922,10 @@ program mars_read
       write(io(1),*) ':mars_read : Reading matching field....'
       write(io(1),*) ':mars_read : Tmin : ', Tmin_/360.0_gpu
       write(io(1),*) ':mars_read : Tmax : ', Tmax_/360.0_gpu
+      write(io(1),*) ':mars_read : WARNING : Matching produces a bespoke&
+                     & BPLASMA grid!'
+
+!     NOTE: The resulting BPLASMA file is not corrected
 
       read( lun, '(6E16.8)' ) BMTCH
 
@@ -998,9 +1034,9 @@ program mars_read
       read ( lun, * ) idat, ddat
       
 #if (TOKAMAK==2)
-print*, 'FUDGE'
-ddat(1) = 1.0d3
-ddat(2) = 1.0d0
+      print*, '********** FUDGE **********'
+      ddat(1) = 1.0d3
+      ddat(2) = 1.0d0
 #endif
 
       nmde  = idat(1)
@@ -1130,7 +1166,7 @@ ddat(2) = 1.0d0
       allocate  ( ddat(6) )
 
 !     Phase offset. See notes in header. The Min_n3 phase offsets applied to
-!     the data in the ITER coordinate system for a +|n| mode require a
+!     the data in the ITER coordinate sustem for a +|n| mode require a
 !     [+86,0,+34]*|n| phase rotation. -nmde = +ve.
 
 #if (TOKAMAK==1)
@@ -1159,7 +1195,7 @@ endif
 #endif
 
       write(io(1),*) ':mars_read : PHASE SHIFT:',                             &
-                       -nmde*( PH0(j)-PH1(j)-PH2(j) ),'deg'
+                       -nmde*( PH0(j)-PH1(j) ),'deg'
 
       do M=1,M2-M1+1
          do i=1,NT
@@ -1593,6 +1629,27 @@ endif
 !     n mode number string:
 
       write( STR_N, '(I2)' ) NC
+
+#if defined (COILROW)
+
+!     Coil row tag:
+
+#if (TOKAMAK==1)
+
+      if( COILROW<1 .or. COILROW>3 )then     
+          write(io(1),*) ':mars_read : ERROR : ITER has 3 coil rows!'
+          stop
+      else
+
+          STR_C = TAG_I(COILROW)
+
+      endif
+#else
+
+      write( STR_C, '(I1)' ) COILROW
+#endif
+
+#endif
 
       open( unit=lun, file=TRIM(ADJUSTL(root))//'mars_read_'//                &
                                          TRIM(ADJUSTL(STR_R))//'_'//          &
@@ -2224,6 +2281,11 @@ endif
                                      ddat(1)
       write(io(1),'(A33,3E16.8)')  ':mars_read : BR, BZ, BT [T]   : ',        &
                                      ddat(2:4)
+
+!-   This is the phase correction on BR,BZ,BT required to match the Aalto field
+!-   map at SMATCH and the highest field perturbation location on that flux
+!-   surface.
+
       write(io(1),'(A33,3E16.8)')  ':mars_read : Phase offsets    : ',        &
                                      ddat(5:7)*180.0_gpu/                     &
                                      (nmde*pi)
@@ -2235,31 +2297,33 @@ endif
 
       call display( bold, lun=io(1) )
 
+!-    The suggested adjustment will be the largest out of BR,BZ,BT. One can
+!-    force one component of the total field operturbation to be a best match
+!-    if one overides the conditionals below. The PH1 adjustments should be
+!-    added to the relevent component of PH1 to get a best fit.
+
       if ( maxval(ddat(2:4)) == ddat(2) )then
+      write(io(1),*)               ':mars_read : Matching to BR'
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjustment to PH1 : ',       &
+                                     ddat(5)*180.0_gpu/(nmde*pi)
 
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted PH2     : ',        &
-                                     PH2(MATCH) + ddat(5)*                    &
-                                     180.0_gpu/(nmde*pi)
-
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted IMUL    : ',        &
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjusted IMUL     : ',       &
                                      IMUL(MATCH)* ddat(8)
 
       elseif ( maxval(ddat(2:4)) == ddat(3) )then
+      write(io(1),*)               ':mars_read : Matching to BZ'
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjustment to PH1 : ',       &
+                                     ddat(6)*180.0_gpu/(nmde*pi)
 
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted PH2     : ',        &
-                                     PH2(MATCH) + ddat(6)*                    &
-                                     180.0_gpu/(nmde*pi)
-
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted IMUL    : ',        &
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjusted IMUL     : ',       &
                                      IMUL(MATCH)* ddat(9)
 
       else
+      write(io(1),*)               ':mars_read : Matching to BT'
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjustment to PH1 : ',       &
+                                     ddat(7)*180.0_gpu/(nmde*pi)
 
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted PH2     : ',        &
-                                     PH2(MATCH) + ddat(7)*                    &
-                                     180.0_gpu/(nmde*pi)
-
-      write(io(1),'(A33,1E16.8)')  ':mars_read : Adjusted IMUL    : ',        &
+      write(io(1),'(A34,1E16.8)')  ':mars_read : Adjusted IMUL     : ',       &
                                      IMUL(MATCH)* ddat(10)
 
       endif
@@ -2267,8 +2331,6 @@ endif
       call display( norm, lun=io(1) )
 
 #endif
-
-
 
 #if defined (UMPF)
 
@@ -2353,18 +2415,32 @@ endif
 
 !     BPLASMA# file:
 
+#ifndef COILROW
       write(io(1),*) ':mars_read : Write out file : '//'BPLASMA_n'//          &
                                                         TRIM(ADJUSTL(STR_N))
 
       open( unit=lun, file=TRIM(ADJUSTL(root))//'BPLASMA_n'//TRIM(ADJUSTL(STR_N)),                 &
             form='formatted', status='replace' )
+#else
+      write(io(1),*) ':mars_read : Write out file : '//'BPLASMA_n'//          &
+                                                        TRIM(ADJUSTL(STR_N))//&
+                                                   '_'//TRIM(ADJUSTL(STR_C))
+
+      open( unit=lun, file=TRIM(ADJUSTL(root))//'BPLASMA_n'//TRIM(ADJUSTL(STR_N))//                &
+                                   '_'//TRIM(ADJUSTL(STR_C)),                 &
+            form='formatted', status='replace' )
+#endif
 
             write( lun, '(A39,A2)' )                                          &
                             '**** Source mars_read.f90 **** : n = ',          &
                              TRIM(ADJUSTL(STR_N))
+#ifndef COILROW
             write( lun, * ) 'Phase U,M,L : '
-
             write( lun, '(3E15.8)' ) PH1(1:3)
+#else
+            write( lun, * ) 'Phase Row '//TRIM(ADJUSTL(STR_C))//' :'
+            write( lun, '(3E15.8)' ) PH1(COILROW)
+#endif
 
 #if defined (FXXYY)
             write( lun, '(2I9)' ) nR_f, nZ_f

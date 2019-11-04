@@ -83,7 +83,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         notes:
             most information stored in MARS_builder_run.environment and MARS_builder_run.build, most init args are to init these instances
         args:
-            filepath_input - default path to input file (can be overridden in MARS_builder_run.build.settings_mars_read)
+            filepath_input - default path to input file 
             dir_output - directory to write results to (defaults to dir_input since output of this is a LOCUST input)
             dir_MARS_builder - directory to temporarily store source code
             system_name - string identifier to choose from selection of environments stored as class attributes 
