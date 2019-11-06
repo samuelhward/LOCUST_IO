@@ -1911,10 +1911,8 @@ def read_kinetic_profile_data_excel_1(filepath,y,x='Fp',sheet_name=None):
                 sheet_names_avail.append(data.sheet_names()[nsheet])
                 sheet_numbers_avail.append(nsheet)
 
-        if sheet_name is None:
+        if sheet_name is None or sheet_name not in sheet_names_avail:
             print("ERROR: read_kinetic_profile_data_excel_1 requires sheet_name - available options are {sheet_names_avail} (for x={x},y={y} in filepath={filepath})!\nreturning\n".format(x=x,y=y,filepath=filepath,sheet_names_avail=[sheet_name for sheet_name in sheet_names_avail]))
-        elif len(sheet_names_avail)>1:
-            print("ERROR: read_kinetic_profile_data_excel_1 found multiple available sheets - please specify one from {sheet_names_avail}!\nreturning\n".format(sheet_names_avail=[sheet_name for sheet_name in sheet_names_avail]))
         else:
             sheet=data.sheet_by_name(sheet_name)
 
@@ -1942,6 +1940,27 @@ def read_kinetic_profile_data_excel_1(filepath,y,x='Fp',sheet_name=None):
                                     if col.value==x:
                                         x_out=np.array(sheet.col_values(colx=col_number,start_rowx=row_number+1))
                                         return x_out,y_out
+
+def command_line_arg_parse_dict(args):
+    """
+    translates dict-style object passed at command line to dict
+
+    notes:
+        e.g. --some_dict key=value another_key=value yet_another_key at command line stored will be return as proper dictionary
+        when numeric values not assigned, e.g. yet_another_key, consistent value is assigned
+    args:
+        wargs - command line args as yielded by parser.add_argument(nargs='+',type=str,action='store') 
+    """
+
+    parsed_subargs=[subarg.split('=') for subarg in args]    
+    dict_of_args={}
+    for subarg in parsed_subargs:
+        if len(subarg)>1:
+            dict_of_args[subarg[0]]=subarg[1]
+        else:
+            dict_of_args[subarg[0]]=True
+
+    return dict_of_args
 
 #################################
  

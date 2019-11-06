@@ -380,10 +380,12 @@ def read_temperature_excel_1(filepath,**properties):
 
     desired_field=None
     for available_species_name,available_species_name_long in zip(available_species_names,available_species_names_long):
-        if properties['species']==available_species_name_long
+        if properties['species']==available_species_name_long:
             desired_field=available_species_name 
     if desired_field is None:
         print("ERROR: cannot read_temperature_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
+
+    print(desired_field)
 
     input_data={}
     input_data['flux_pol_norm'],input_data['T']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
@@ -409,7 +411,7 @@ def dump_temperature_LOCUST(output_data,filepath,**properties):
         normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
         normalised_flux,output_T=processing.utils.sort_arrays(normalised_flux,output_data['T']) #check order
  
-        file.write("{}\n".format(processing.utils.fortran_string(output_T.size,8))) #re-insert line containing length
+        file.write("{}\n".format(processing.utils.fortran_string(output_T.size,12))) #re-insert line containing length
         
         for point in range(output_T.size): #iterate through all points i.e. length of our dictionary's arrays
             file.write("{flux_pol_norm}{T}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),T=processing.utils.fortran_string(output_T[point],16,8)))

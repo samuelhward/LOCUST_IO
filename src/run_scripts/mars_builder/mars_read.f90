@@ -507,7 +507,7 @@ program mars_read
 
       implicit none
 
-      character( len=1000 )       :: root = '/home/ITER/wards2/' !append this to all file writes
+      character( len=1000 )       :: root = '/home/ITER/wards2/' !prepend this to all file writes
 
 #if (TOKAMAK==1)
 #if defined (MATCH)
@@ -2416,13 +2416,13 @@ endif
 !     BPLASMA# file:
 
 #ifndef COILROW
-      write(io(1),*) ':mars_read : Write out file : '//'BPLASMA_n'//          &
+      write(io(1),*) ':mars_read : Write out file : '//TRIM(ADJUSTL(root))//'BPLASMA_n'//          &
                                                         TRIM(ADJUSTL(STR_N))
 
       open( unit=lun, file=TRIM(ADJUSTL(root))//'BPLASMA_n'//TRIM(ADJUSTL(STR_N)),                 &
             form='formatted', status='replace' )
 #else
-      write(io(1),*) ':mars_read : Write out file : '//'BPLASMA_n'//          &
+      write(io(1),*) ':mars_read : Write out file : '//TRIM(ADJUSTL(root))//'BPLASMA_n'//          &
                                                         TRIM(ADJUSTL(STR_N))//&
                                                    '_'//TRIM(ADJUSTL(STR_C))
 

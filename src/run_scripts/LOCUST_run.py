@@ -50,6 +50,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_build.py could not be imported!\nreturning\n")
     sys.exit(1)
+try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
 
 try:
     import support
@@ -273,16 +278,10 @@ if __name__=='__main__':
     args=parser.parse_args()
 
     #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
-    for arg in [args.flags,args.settings_prec_mod]:
-        parsed_subargs=[subarg.split('=') for subarg in arg]    
-        subargs={}
-        for subarg in parsed_subargs:
-            if len(subarg)>1:
-                subargs[subarg[0]]=subarg[1]
-            else:
-                subargs[subarg[0]]=True
+    args.settings_prec_mod=run_scripts.utils.command_line_arg_parse_dict(args.settings_prec_mod)
+    args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
 
-    this_run=LOCUST_run(system_name=args.system_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=settings_prec_mod,flags=flags)
+    this_run=LOCUST_run(system_name=args.system_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags)
     this_run.run()
 
 #################################

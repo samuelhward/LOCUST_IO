@@ -8,6 +8,8 @@ Table of Contents
 
 * [Combine beam depositions](#Combine-input-particle-lists)
 * [Create a workflow](#Create-a-workflow)
+* [Use mars_builder](#Use-mars_builder)
+* [Use LOCUST_edit_var](#Use-LOCUST_edit_var)
 
 
 ## Combine beam depositions
@@ -106,3 +108,44 @@ some_workflow_2.run_command('print finish message') #but are called in the same 
 ```
 
 Some examples of workflows are included in LOCUST_IO, namely LOCUST_run and MARS_builder_run. The former adds functions to send off a single run of LOCUST and the latter can be used to automatically trigger mars_builder to transform 3D field data.  
+
+## Use mars_builder
+
+mars_builder is a piece of FORTRAN90 written by Rob Akers which aims to process MARS-F output. More specifically, it linearly combines separate MARS-F fields by interpolating them onto a cylindrical RZ grid to arbitrary precision. You can call mars_builder from within Python using the script MARS_builder_run.py. Some commonly used flags and variables are:
+
+| flag    | description                                                                                            |
+|---------|--------------------------------------------------------------------------------------------------------|
+| TOKAMAK | integer value of desired tokamak (according to prec_mod.f90) e.g. -DTOKAMAK=1 corresponds to ITER      |
+| COILROW | integer value to select individual coil row to dump to file (floors contributions of other coil rows)  |
+| MATCH   | use to generate optimal RMP settings (e.g. phase, amplitude) to match field defined in variable `mtch` |
+
+| variable | description                                                                                                   |
+|----------|---------------------------------------------------------------------------------------------------------------|
+| `root`   | prepends this string to all written filepaths                                                                 |
+| `file`   | target 3D field filename string                                                                               |
+| `TAIL`   | array holding strings to append to `file` in the case of multiple 3D field files - usually denoting coil rows |
+
+## Use LOCUST_edit_var
+
+LOCUST_edit_var is a function which allows you to directly edit FORTRAN90 source code to change the starting value of a declared variable. To change this:
+
+```
+character( len=10057 )         :: file = 'some/nice/& !variables declared like this
+                                &file/somewhere' !delete this comment
+```
+
+to this:
+
+```
+character( len=10057 )         :: file = 'some/other/file/' !variables declared like this
+```
+
+you could do this:
+
+
+```python
+source_code_mods={}
+source_code_mods['file']="'some/other/file'" 
+run_scripts.LOCUST_edit_var.LOCUST_edit_var(filepath_in=some_filepath,filepath_out=some_filepath,**source_code_mods)
+```
+noting the double brackets (since whatever is inside the brackets is interpreted literally). Comments on the first line of the variable declaration are preserved, and the entire declaration is condensed onto a single line.

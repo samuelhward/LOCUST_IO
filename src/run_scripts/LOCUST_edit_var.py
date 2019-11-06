@@ -54,7 +54,7 @@ def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90
         filepath_out - location of output file
         variables - set of kwargs denoting variable names and values to set them to
     usage:
-        python LOCUST_edit_var.py --vars c file_tet --vals 5 \'"some string formatted like this"\' --filepath_in prec_mod.f90
+        python LOCUST_edit_var.py --vars c file_tet --vals 5 "'some string formatted like this'" --filepath_in prec_mod.f90
         LOCUST_edit_var(some_string="'I <3 LOCUST'") #within python - remember strings are interpreted literally so to inserting the text 'text' requires a string "'text'"
     """
 

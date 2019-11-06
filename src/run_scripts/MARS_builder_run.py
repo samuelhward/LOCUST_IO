@@ -51,6 +51,12 @@ except:
     sys.exit(1)
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -190,23 +196,10 @@ if __name__=='__main__':
     args=parser.parse_args()
 
     #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
-    parsed_flags=[flag.split('=') for flag in args.flags]    
-    flags={}
-    for flag in parsed_flags:
-        if len(flag)>1:
-            flags[flag[0]]=flag[1]
-        else:
-            flags[flag[0]]=None
+    args.settings_mars_read=run_scripts.utils.command_line_arg_parse_dict(args.settings_mars_read)
+    args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
 
-    parsed_settings_mars_read=[setting_prec_mod.split('=') for setting_prec_mod in args.settings_mars_read]    
-    settings_mars_read={}
-    for setting in parsed_settings_mars_read:
-        if len(setting)>1:
-            settings_mars_read[setting[0]]=setting[1]
-        else:
-            settings_mars_read[setting[0]]=None
-
-    this_run=MARS_builder_run(filepath_input=args.filepath_input,dir_output=args.dir_output,system_name=args.system_name,dir_MARS_builder=args.dir_MARS_builder,settings_mars_read=settings_mars_read,flags=flags)
+    this_run=MARS_builder_run(filepath_input=args.filepath_input,dir_output=args.dir_output,system_name=args.system_name,dir_MARS_builder=args.dir_MARS_builder,settings_mars_read=args.settings_mars_read,flags=args.flags)
     this_run.run()
 
 #################################

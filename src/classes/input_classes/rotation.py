@@ -187,7 +187,8 @@ def read_rotation_excel_1(filepath,**properties):
     reads rotation from excel spreadsheets supplied by Yueqiang Liu for ITER RMP study
 
     notes:  
-        must include spreadsheet name within file in properties['sheet_name']
+        must include spreadsheet name holding minor radius in properties['sheet_name']
+        must include spreadsheet name holding rotation in properties['sheet_name_rotation']
         must include name of rotation variable e.g. Vt(tF/tE=2) in properties['rotation_name']
         R_axis value is hardcoded here, please update accordingly
     """
@@ -202,7 +203,7 @@ def read_rotation_excel_1(filepath,**properties):
 
     input_data={}
     input_data['flux_pol_norm'],radius_minor=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y='a',sheet_name=properties['sheet_name'])
-    input_data['rotation_vel']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,y=properties['rotation_name'],sheet_name=properties['sheet_name'])
+    input_data['rotation_vel']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,y=properties['rotation_name'],sheet_name=properties['sheet_name_rotation'])
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['rotation_vel']*=1000. #convert from km/s
 
@@ -229,7 +230,7 @@ def dump_rotation_LOCUST(output_data,filepath,**properties):
         normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
         normalised_flux,output_rot=processing.utils.sort_arrays(normalised_flux,output_data['rotation_ang']) #check order
  
-        file.write("{}\n".format(processing.utils.fortran_string(output_rot.size,8))) #re-insert line containing length
+        file.write("{}\n".format(processing.utils.fortran_string(output_rot.size,12))) #re-insert line containing length
         
         for point in range(output_rot.size): #iterate through all points i.e. length of our dictionary's arrays
             file.write("{flux_pol_norm}{rot}\n".format(flux_pol_norm=processing.utils.fortran_string(normalised_flux[point],16,8),rot=processing.utils.fortran_string(output_rot[point],16,8)))

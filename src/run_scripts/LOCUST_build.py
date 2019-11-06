@@ -36,12 +36,6 @@ except:
     sys.exit(1)
 
 try:
-    import run_scripts.LOCUST_edit_var
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_edit_var.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 

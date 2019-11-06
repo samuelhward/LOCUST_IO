@@ -394,7 +394,7 @@ def read_number_density_excel_1(filepath,**properties):
 
     desired_field=None
     for available_species_name,available_species_name_long in zip(available_species_names,available_species_names_long):
-        if properties['species']==available_species_name_long
+        if properties['species']==available_species_name_long:
             desired_field=available_species_name 
     if desired_field is None:
         print("ERROR: cannot read_number_density_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
@@ -402,7 +402,7 @@ def read_number_density_excel_1(filepath,**properties):
     input_data={}
     input_data['flux_pol_norm'],input_data['n']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
-    input_data['n']*=10.e19. #convert units
+    input_data['n']*=1.e19 #convert units
 
     return input_data
 
