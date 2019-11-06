@@ -27,7 +27,7 @@ quantity_to_plot='dB_field_R_real' #magnitude of perturbation
 phase_min=0 #in degrees
 phase_max=180
 number_phases=10
-n2=True #read, plot and dump n=2 harmonic?
+n2=False#True #read, plot and dump n=2 harmonic?
 n6=True #read, plot and dump n=6 harmonic?
 response=False #include plasma response?
 response_tag = 'response' if response else 'vacuum'  
