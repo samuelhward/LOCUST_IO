@@ -99,7 +99,7 @@ def IMAS_2_LOCUST(shot,run,path_LOCUST=pathlib.Path(''),beam_depo_GC=True,GEQDSK
             perturbation.dump_data(data_format='LOCUST',filename=path_LOCUST / 'BPLASMA_n{}.dat'.format(perturbation.mode_number))
 
     except:
-        print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/input_files/{}\n".format(path_LOCUST))
+        print("ERROR: IMAS_2_LOCUST could not dump_inputs_LOCUST to LOCUST_IO/data/input_files/{}\n".format(path_LOCUST))
         return         
 
 if __name__=='__main__':

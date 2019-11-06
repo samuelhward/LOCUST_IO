@@ -82,13 +82,13 @@ def TRANSP_2_ASCOT(run_ID,shot_number,path_ASCOT=pathlib.Path(''),path_TRANSP=pa
     try:
         temperature_i,temperature_e,density_e,equilibrium,beam_deposition,wall=run_scripts.utils.read_inputs_TRANSP(run_ID=run_ID,shot_number=shot_number,input_path=path_TRANSP,beam_depo_GC=beam_depo_GC,beam_depo_number=beam_depo_number,GEQDSKFIX=GEQDSKFIX)
     except:
-        print("ERROR: TRANSP_2_ASCOT could not read_inputs_TRANSP from LOCUST_IO/input_files/{}\n".format(path_TRANSP))
+        print("ERROR: TRANSP_2_ASCOT could not read_inputs_TRANSP from LOCUST_IO/data/input_files/{}\n".format(path_TRANSP))
         return 
 
     try:
         run_scripts.utils.dump_inputs_ASCOT(temperature_i=temperature_i,temperature_e=temperature_e,density_i=density_e,density_e=density_e,rotation_toroidal=np.full(len(temperature_i['T']),0.),equilibrium=equilibrium,beam_deposition=beam_deposition,wall=wall,beam_depo_GC=beam_depo_GC,input_path=path_ASCOT,tag=tag)
     except:
-        print("ERROR: TRANSP_2_ASCOT could not dump_inputs_ASCOT to LOCUST_IO/input_files/{}\n".format(path_ASCOT))
+        print("ERROR: TRANSP_2_ASCOT could not dump_inputs_ASCOT to LOCUST_IO/data/input_files/{}\n".format(path_ASCOT))
         return         
 
 if __name__=='__main__':
