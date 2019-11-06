@@ -1952,13 +1952,19 @@ def command_line_arg_parse_dict(args):
         wargs - command line args as yielded by parser.add_argument(nargs='+',type=str,action='store') 
     """
 
-    parsed_subargs=[subarg.split('=') for subarg in args]    
+    parsed_subargs=[subarg.split('=') for subarg in args] #convert from strings to a dict    
     dict_of_args={}
     for subarg in parsed_subargs:
         if len(subarg)>1:
             dict_of_args[subarg[0]]=subarg[1]
         else:
             dict_of_args[subarg[0]]=True
+
+    for key,value in dict_of_args.items(): #translate strings of booleans to actual booleans
+        if value=='True':
+            dict_of_args[key]=True
+        elif value=='False':
+            dict_of_args[key]=False
 
     return dict_of_args
 
