@@ -1962,7 +1962,7 @@ def command_line_arg_parse_dict(args):
 
     for key,value in dict_of_args.items(): #translate strings of booleans to actual booleans
         dict_of_args[key]=string_2_bool(value)
-        
+
     return dict_of_args
 
 def string_2_bool(string):
@@ -1971,9 +1971,9 @@ def string_2_bool(string):
     """
 
     if string=='True':
-        return=True
+        return True
     elif string=='False':
-        return=False 
+        return False 
 
 #################################
  
