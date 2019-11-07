@@ -1961,12 +1961,19 @@ def command_line_arg_parse_dict(args):
             dict_of_args[subarg[0]]=True
 
     for key,value in dict_of_args.items(): #translate strings of booleans to actual booleans
-        if value=='True':
-            dict_of_args[key]=True
-        elif value=='False':
-            dict_of_args[key]=False
-
+        dict_of_args[key]=string_2_bool(value)
+        
     return dict_of_args
+
+def string_2_bool(string):
+    """
+    convert a string holding a boolean to a value of type boolean 
+    """
+
+    if string=='True':
+        return=True
+    elif string=='False':
+        return=False 
 
 #################################
  
