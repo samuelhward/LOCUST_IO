@@ -141,14 +141,8 @@ if __name__=='__main__':
     
     args=parser.parse_args()
 
-    print(args.read_settings)
-    print(args.plot_settings)
-
     read_settings=run_scripts.utils.command_line_arg_parse_dict(args.read_settings) #these are dict-style objects so need an extra layer of parsing
     plot_settings=run_scripts.utils.command_line_arg_parse_dict(args.plot_settings)
-
-    print(read_settings)
-    print(plot_settings)
 
     if args.data_type not in data_types_available:
         print("ERROR: {data_type_supplied} is unavailable --data_type - available options: {data_types_available} ".format(data_type_supplied=args.data_type,data_types_available=data_types_available))
