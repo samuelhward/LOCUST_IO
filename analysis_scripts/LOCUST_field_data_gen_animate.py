@@ -42,6 +42,7 @@ def draw_perturbation(perturbation,ax,fig):
     perturbation.plot(key=quantity_to_plot,fig=fig,ax=ax)
 
 phases=np.linspace(phase_min,phase_max,number_phases) #for each harmonic vary the phase between the upper and lower coils
+phases*=2.*np.pi/360 #in radians
 
 filepaths=[]
 harmonics=[]

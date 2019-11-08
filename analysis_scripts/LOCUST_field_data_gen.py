@@ -21,6 +21,7 @@ import pathlib
 
 
 phases=np.linspace(0,180,10)
+phases*=2.*np.pi/360 #in radians
 
 n2=True
 n6=True
