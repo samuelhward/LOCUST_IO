@@ -7,7 +7,7 @@ Samuel Ward
 tools to batch run workflows 
 ---
 notes:
-    essentially translates given settings into command line args for hard-coded batch scripts to call
+    essentially translates given settings into command line args for hard-coded batch scripts to parse
 ---
 '''
 
@@ -118,7 +118,7 @@ class Batch:
             for counter,(workflow_arg,workflow_settings) in enumerate(self.batch_settings.items()): #workflow_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), workflow_settings are corresponding settings (e.g. /some/file/path)
                 setting_values_this_run=workflow_settings[run] #at this point we have picked single element of list describing a particular setting over multiple runs e.g. compile flags 
 
-                if setting_values_this_run:
+                if setting_values_this_run is not None:
                     if type(setting_values_this_run)==type({}): #if type is dict then these workflow settings are passed at command line differently - in the form --settings setting1=value1 setting2=value2
                         for setting,value in setting_values_this_run.items(): #if value1 above is a string, will need extra set of quotes to maintain continuity
                             if type(value)==type(''): #add some extra formatting to insert quotes to maintain continuity when calling workflows

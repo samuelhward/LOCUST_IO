@@ -1974,7 +1974,9 @@ def string_2_bool(string):
         return True
     elif string=='False':
         return False 
-
+    else:
+        return string
+        
 #################################
  
 ##################################################################

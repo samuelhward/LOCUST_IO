@@ -141,8 +141,14 @@ if __name__=='__main__':
     
     args=parser.parse_args()
 
+    print(args.read_settings)
+    print(args.plot_settings)
+
     read_settings=run_scripts.utils.command_line_arg_parse_dict(args.read_settings) #these are dict-style objects so need an extra layer of parsing
     plot_settings=run_scripts.utils.command_line_arg_parse_dict(args.plot_settings)
+
+    print(read_settings)
+    print(plot_settings)
 
     if args.data_type not in data_types_available:
         print("ERROR: {data_type_supplied} is unavailable --data_type - available options: {data_types_available} ".format(data_type_supplied=args.data_type,data_types_available=data_types_available))
@@ -150,6 +156,8 @@ if __name__=='__main__':
 
         if 'filename' in read_settings and 'input_files' in str(read_settings['filename']): #in case user supplies full filepath to target
             read_settings['filename']=pathlib.Path(read_settings['filename']).relative_to(support.dir_input_files)
+        if 'filename' in read_settings and 'output_files' in str(read_settings['filename']): #in case user supplies full filepath to target
+            read_settings['filename']=pathlib.Path(read_settings['filename']).relative_to(support.dir_output_files)
         if 'axes' in plot_settings: #apply some extra formatting if defining plot axes at command line such as axes="['R','Z']"
             plot_settings['axes']=ast.literal_eval(plot_settings['axes'])
         read_settings['ID']='' #include dummy ID to assign the object to be plotted, since this is stipulated in LOCUST_IO
