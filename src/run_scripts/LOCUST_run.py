@@ -155,7 +155,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         if not self.dir_output.is_dir(): self.dir_output.mkdir()
         #create LOCUST directory - must not already exis
         if self.dir_LOCUST.is_dir(): 
-            print("ERROR: LOCUST_run.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n")
+            print("ERROR: {workflow_name}.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n".format(workflow_name=self.workflow_name))
             return
         else:
             self.dir_LOCUST.mkdir()
@@ -179,7 +179,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         try:
             self.build.clone(directory=self.dir_LOCUST)
         except:
-            print("ERROR: LOCUST_run.get_code() could not clone to {}!\nreturning\n".format(self.dir_LOCUST))
+            print("ERROR: {workflow_name}.get_code() could not clone to {directory}!\nreturning\n".format(directory=self.dir_LOCUST,workflow_name=self.workflow_name))
             return 
 
     def get_inputs(self,*args,**kwargs):
@@ -219,7 +219,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             subprocess.call(command,shell=True,cwd=str(self.dir_LOCUST / 'locust'))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
 
         except subprocess.CalledProcessError as err:
-            print("ERROR: LOCUST_run.run_code() failed to run LOCUST!\nreturning\n")
+            print("ERROR: {workflow_name}.run_code() failed to run LOCUST!\nreturning\n".format(workflow_name=self.workflow_name))
             #raise(err)
 
     def get_outputs(self,*args,**kwargs):
@@ -263,7 +263,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         try: #now remove folder containing LOCUST repo
             subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo
         except:
-            print("WARNING: .git repo not found in {} during LOCUST_run.cleanup!".format(str(self.dir_LOCUST / 'locust'))) 
+            print("WARNING: .git repo not found in {directory} during {workflow_name}.cleanup!".format(directory=str(self.dir_LOCUST / 'locust'),workflow_name=self.workflow_name)) 
 
         subprocess.run(shlex.split('rm -r {}'.format(str(self.dir_LOCUST / 'locust'))),shell=False) #delete specific folder holding rest of LOCUST source   
         self.dir_LOCUST.rmdir() #delete original containing folder IFF empty
