@@ -22,6 +22,7 @@ import pathlib
 import run_scripts.batch
 import support
 import settings
+import copy
 
 phase_min=0 #in degrees
 phase_max=180
@@ -56,9 +57,9 @@ LOCUST_run__settings_prec_mod['icoll']=0
 LOCUST_run__settings_prec_mod['omega']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['i3dr']=-1
-LOCUST_run__settings_prec_mod=[LOCUST_run__settings_prec_mod]*number_phases
+LOCUST_run__settings_prec_mod=[copy.deepcopy(LOCUST_run__settings_prec_mod) for _ in range(number_phases)]
 for counter,phase in enumerate(phase_shift_degrees):
-        LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
+    LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
 
 LOCUST_run__flags={}
 LOCUST_run__flags['LEIID']=8
