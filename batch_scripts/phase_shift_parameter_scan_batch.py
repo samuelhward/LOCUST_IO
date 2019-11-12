@@ -25,13 +25,13 @@ import settings
 
 phase_min=0 #in degrees
 phase_max=180
-number_phases=2
+number_phases=5
 phase_shift_degrees=np.linspace(phase_min,phase_max,number_phases)
 phase_shift=phase_shift_degrees*2.*np.pi/360 #in radians
 
 n2=[True]*number_phases #True #read, plot and dump n=2 harmonic?
-n6=[True]*number_phases #read, plot and dump n=6 harmonic?
-response=[False]*number_phases #include plasma response?
+n6=[False]*number_phases #read, plot and dump n=6 harmonic?
+response=[True]*number_phases #include plasma response?
 response_tag = ['response']*number_phases if response else ['vacuum']*number_phases  
 ideal=[True]*number_phases #ideal or resistive?
 ideal_tag = ['ideal']*number_phases if ideal else ['resistive']*number_phases  
@@ -45,14 +45,15 @@ LOCUST_run__repo_URL=[None]*number_phases
 LOCUST_run__commit_hash=[None]*number_phases
 
 LOCUST_run__settings_prec_mod={}
-LOCUST_run__settings_prec_mod['threadsPerBlock']=16
-LOCUST_run__settings_prec_mod['blocksPerGrid']=16#128
+LOCUST_run__settings_prec_mod['threadsPerBlock']=64
+LOCUST_run__settings_prec_mod['blocksPerGrid']=256
 LOCUST_run__settings_prec_mod['file_eqm']="'LOCUST_GEQDSK'"
-LOCUST_run__settings_prec_mod['nmde']=2
-LOCUST_run__settings_prec_mod['nnum']="[-2,-6]"
+LOCUST_run__settings_prec_mod['nmde']=1#2
+LOCUST_run__settings_prec_mod['nnum']="[-2]"#"[-2,-6]"
 LOCUST_run__settings_prec_mod['icoll']=0
-LOCUST_run__settings_prec_mod['omega']='[0.0e0_gpu,0.0e0_gpu]'
-LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu,0.0e0_gpu]'
+LOCUST_run__settings_prec_mod['omega']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
+LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
+LOCUST_run__settings_prec_mod['i3dr']=-1
 LOCUST_run__settings_prec_mod=[LOCUST_run__settings_prec_mod]*number_phases
 for phase,LOCUST_run__setting_prec_mod in zip(phase_shift_degrees,LOCUST_run__settings_prec_mod):
     LOCUST_run__setting_prec_mod['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
@@ -76,6 +77,10 @@ LOCUST_run__flags['LNLBT']=True
 LOCUST_run__flags['GEQDSKFIX1']=True
 LOCUST_run__flags['BP']=True
 LOCUST_run__flags['TIMAX']='0.01D0'
+LOCUST_run__flags['B3D']=True
+LOCUST_run__flags['B3D_EX']=True
+LOCUST_run__flags['SPLIT']=True
+LOCUST_run__flags['NOINF']=True
 
 LOCUST_run__flags=[LOCUST_run__flags]*number_phases
 

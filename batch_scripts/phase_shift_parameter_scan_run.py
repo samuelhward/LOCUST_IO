@@ -135,6 +135,7 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
 
     def cleanup(self,*args,**kwargs):
         subprocess.run(shlex.split('rm -r {directory}'.format(directory=str(self.dir_input_files))),shell=False)
+        subprocess.run(shlex.split('rm -r {directory}'.format(directory=self.LOCUST_run__settings_prec_mod['root'])),shell=False)
 
 if __name__=='__main__':
 
