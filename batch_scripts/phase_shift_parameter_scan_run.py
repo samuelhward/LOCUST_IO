@@ -64,7 +64,7 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
         self.dir_input_files=support.dir_input_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=self.phase_shift,ideal=self.ideal_tag,response=self.response_tag))
         self.dir_output_files=support.dir_output_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=self.phase_shift,ideal=self.ideal_tag,response=self.response_tag))
         self.dir_cache_files=support.dir_cache_files / 'RMP_phase_scan'
-        self.LOCUST_run__dir_LOCUST=pathlib.Path(LOCUST_run__dir_LOCUST) / ('locust_'.format(self.phase_shift))
+        self.LOCUST_run__dir_LOCUST=LOCUST_run__dir_LOCUST
         self.LOCUST_run__dir_input=self.dir_input_files
         self.LOCUST_run__dir_output=self.dir_output_files
         self.LOCUST_run__dir_cache=self.dir_cache_files
@@ -180,7 +180,7 @@ if __name__=='__main__':
         LOCUST_run__settings_prec_mod=args.LOCUST_run__settings_prec_mod,
         LOCUST_run__flags=args.LOCUST_run__flags
         )
-    this_run.generate_3D_fields()
+    this_run.run()
 
 #################################
 
