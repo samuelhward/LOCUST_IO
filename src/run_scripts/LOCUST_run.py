@@ -142,7 +142,8 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         self.add_command(command_name='get_input',command_function=self.get_inputs,position=4)
         self.add_command(command_name='run_code',command_function=self.run_code,position=5)
         self.add_command(command_name='get_output',command_function=self.get_outputs,position=6)
-        self.add_command(command_name='cleanup',command_function=self.cleanup,position=7)
+        self.add_command(command_name='get_cache',command_function=self.get_cache,position=7)
+        self.add_command(command_name='cleanup',command_function=self.cleanup,position=8)
 
     def setup_LOCUST_dirs(self,*args,**kwargs):
         """
@@ -233,6 +234,17 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         subprocess.run(shlex.split('mv {prec_mod} {dir_output}'.format(prec_mod=str(self.dir_LOCUST / 'locust' / 'prec_mod.f90'),dir_output=str(self.dir_output))),shell=False) #retain copy of prec_mod.f90            
         for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_outputfiles_default).glob('*'):
             subprocess.run(shlex.split('mv {file} {dir_output}'.format(file=str(file),dir_output=str(self.dir_output))),shell=False)
+
+    def get_cache(self,*args,**kwargs):
+        """
+        LOCUST_run stage for retrieving run cache
+
+        notes:
+        """
+
+        #retrieve cache
+        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('*'):
+            subprocess.run(shlex.split('mv {file} {dir_cache}'.format(file=str(file),dir_cache=str(self.dir_cache))),shell=False)
 
     def cleanup(self,*args,**kwargs):
         """
