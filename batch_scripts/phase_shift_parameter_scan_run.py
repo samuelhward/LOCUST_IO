@@ -119,7 +119,7 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
 
         for filepath,harmonic in zip(filepaths,harmonics): #cycle through harmonics
             perturbation=pert(ID='harmonic - {harmonic}, phase_shift - {phase_shift}'.format(harmonic=harmonic,phase_shift=self.phase_shift),data_format=self.data_format_input,filename=filepath,response=self.response,ideal=self.ideal,phase=self.phase_shift,bcentr=1.75660107,rmaxis=1.70210874)
-            perturbation.dump_data(data_format=self.data_format_output,filename=self.dir_input_files/'BPLASMA_{harmonic}.dat'.format(harmonic=harmonic))
+            perturbation.dump_data(data_format=self.data_format_output,filename=self.dir_input_files/'BPLASMA_{harmonic}'.format(harmonic=harmonic))
 
     def run_LOCUST(self,*args,**kwargs):
         run_LOCUST=run_scripts.LOCUST_run.LOCUST_run(dir_LOCUST=self.LOCUST_run__dir_LOCUST,
