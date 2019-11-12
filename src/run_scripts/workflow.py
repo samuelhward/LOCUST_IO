@@ -47,12 +47,14 @@ class Workflow:
     notes:
     """
 
+
     def __init__(self):
         """
         notes:
             defines fundamental tools to define and execute a workflow
         """
 
+        self.workflow_name=self.__class__.__name__
         self.commands=[] #holds list of functions to execute in order during .run()
         self.commands_dispatch={} #mapping between available run commands and their associated workflow() methods
 
@@ -85,12 +87,12 @@ class Workflow:
         """
 
         if command not in self.commands_dispatch.keys():
-            print("ERROR: Workflow.run_command() could not find {command}, available commands - '{commands_avail}'".format(command=command,commands_avail=[command_avail for command_avail in self.commands_dispatch.keys()]))
+            print("ERROR: {workflow_name}.run_command() could not find {command}, available commands - '{commands_avail}'".format(workflow_name=self.workflow_name,command=command,commands_avail=[command_avail for command_avail in self.commands_dispatch.keys()]))
         else:
             try:
                 self.commands_dispatch[command](*args,**kwargs)
             except:
-                print("ERROR: Workflow.run_command() could not execute '{command}'".format(command=command))
+                print("ERROR: {workflow_name}.run_command() could not execute '{command}'".format(workflow_name=self.workflow_name,command=command))
 
     def run(self,*args,**kwargs):
         """

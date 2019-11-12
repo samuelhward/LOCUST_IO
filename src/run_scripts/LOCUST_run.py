@@ -82,6 +82,8 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         some_run.run() #this will do all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
+    workflow_name='LOCUST_run'
+
     def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
         """
         notes:
@@ -159,13 +161,12 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             self.dir_LOCUST.mkdir()
 
         #create self.root and child directories if do not exist
-        for directory in [self.root,(self.root / settings.username),
-                         (self.root / settings.username / self.tokhead),
+        for directory in [
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_inputfiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_outputfiles_default)]:
             if not directory.exists():
-                directory.mkdir()
+                directory.mkdir(parents=True)
 
     def get_code(self,*args,**kwargs):
         """
@@ -246,9 +247,18 @@ class LOCUST_run(run_scripts.workflow.Workflow):
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_inputfiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_outputfiles_default)]:
-            subprocess.run(shlex.split('rm -r {}'.format(str(directory))),shell=False) #delete directories storing temporary InputFiles/OutputFiles/CacheFiles
-        (self.root / settings.username / self.tokhead).rmdir() #delete parent folders IFF empty
-        (self.root / settings.username).rmdir() 
+            try:
+                subprocess.run(shlex.split('rm -r {}'.format(str(directory))),shell=False) #delete directories storing temporary InputFiles/OutputFiles/CacheFiles
+            except:
+                pass
+        try:
+            (self.root / settings.username / self.tokhead).rmdir() #delete parent folders IFF empty
+        except:
+            pass
+        try:
+            (self.root / settings.username).rmdir() 
+        except:
+            pass
 
         try: #now remove folder containing LOCUST repo
             subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo
