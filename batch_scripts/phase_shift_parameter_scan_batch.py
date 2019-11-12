@@ -31,10 +31,12 @@ phase_shift=phase_shift_degrees*2.*np.pi/360 #in radians
 
 n2=[True]*number_phases #True #read, plot and dump n=2 harmonic?
 n6=[False]*number_phases #read, plot and dump n=6 harmonic?
-response=[True]*number_phases #include plasma response?
+response=True #include plasma response?
 response_tag = ['response']*number_phases if response else ['vacuum']*number_phases  
-ideal=[True]*number_phases #ideal or resistive?
+response=[response]*number_phases #include plasma response?
+ideal=False #ideal or resistive?
 ideal_tag = ['ideal']*number_phases if ideal else ['resistive']*number_phases  
+ideal=[ideal]*number_phases #ideal or resistive?
 data_format_input=['MARSF_bplas']*number_phases #data format of data source
 data_format_output=['LOCUST']*number_phases #data format to dump data to
 
@@ -55,8 +57,8 @@ LOCUST_run__settings_prec_mod['omega']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['i3dr']=-1
 LOCUST_run__settings_prec_mod=[LOCUST_run__settings_prec_mod]*number_phases
-for phase,LOCUST_run__setting_prec_mod in zip(phase_shift_degrees,LOCUST_run__settings_prec_mod):
-    LOCUST_run__setting_prec_mod['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
+for counter,phase in enumerate(phase_shift_degrees):
+        LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
 
 LOCUST_run__flags={}
 LOCUST_run__flags['LEIID']=8
