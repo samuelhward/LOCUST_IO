@@ -32,7 +32,11 @@ if __name__=='__main__':
     except:
         raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
         sys.exit(1)
-
+try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
 try:
     import support
 except:
@@ -42,17 +46,18 @@ except:
 ##################################################################
 #Main
 
-def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90',**variables):
+def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90',**settings):
     """
     function to change hardcoded parameters initialised within a FORTRAN source file
 
     notes:
         only retains comments if made on first line that variable is declared (in case of spillage over multiple lines)
         formatting of edited lines will differ slightly due to blank space not being reinserted
+        assumes lines may only contain a single !, signifying a comment
     args:
         filepath_in - location of source file 
         filepath_out - location of output file
-        variables - set of kwargs denoting variable names and values to set them to
+        settings - set of kwargs denoting variable names and values to set them to
     usage:
         python LOCUST_edit_var.py --vars c file_tet --vals 5 "'some string formatted like this'" --filepath_in prec_mod.f90
         LOCUST_edit_var(some_string="'I <3 LOCUST'") #within python - remember strings are interpreted literally so to inserting the text 'text' requires a string "'text'"
@@ -69,27 +74,34 @@ def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90
                 if '=' in line and '::' in line:
                     line_split_equals=line.split('=')
                     number_equals_signs=len(line_split_equals)-1 #number of equals signs on this line - matters because strings sometimes have length specified with =
+
+                    commented=False
+                    line_comment=''
+                    line_split_comment=line.strip().split('!') #extract comment on this line  
+                    if not len(line_split_comment)==1: #if there is a comment on the line
+                        commented=True
+                        line_comment=line_split_comment[-1]
+                        number_equals_signs_comments=len(line_comment.split('='))-1 #number of equals signs in comment of this line
+                        number_equals_signs-=number_equals_signs_comments
+
                     variable_name_prec_mod=line_split_equals[number_equals_signs-1].split()[-1] #holds current name of variable stored on this line in prec_mod.f90
 
-                    for variable_name,variable_value in variables.items():
+                    for variable_name,variable_value in settings.items():
                         if variable_name == variable_name_prec_mod:
 
-                            commented=False
-                            if '!' in line_split_equals[-1]: #line is commented
-                                commented=True
-                                line_comment=line_split_equals[-1].split('!')[1] #extract comment on this line                    
-                                line_split_equals[-1]=line_split_equals[-1].split('!')[0] #remove comment
+                            if not commented:                
+                                left_side_of_equals=''.join(substring for substring in line_split_equals[:-1])    
+                                right_side_of_equals=line_split_equals[-1]    
+                            else:
+                                left_side_of_equals=''.join(substring for substring in line_split_comment[0].split('=')[:-1])
+                                right_side_of_equals=line_split_comment[0].split('=')[-1]
 
-                            if '&' in line_split_equals[-1]: #check for spill onto additional lines
-                                line_split_equals[-1]=line_split_equals[1].replace('&',' ',3)
+                            if '&' in right_side_of_equals: #check for spill onto additional lines
                                 spilled_lines.append(counter+1)
                             
                             #create new line here
-                            new_line=line_split_equals[:-1] #include all text up to before equals sign in 'var = value'
-                            new_line.append(str(variable_value))
-                            new_line='='.join(new_line)
-                            if commented: #re-add comment if previously-existed
-                                new_line=' !'.join([new_line,line_comment])
+                            new_line=''.join([
+                            left_side_of_equals,'=',str(variable_value),' ! ',line_comment,' *edited with LOCUST_IO*']) #include all text up to before equals sign in 'var = value'
                             lines[counter]=new_line.strip()+'\n'
 
                             break
@@ -124,12 +136,12 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='function to edit variables in LOCUST source files')
     parser.add_argument('--filepath_in',type=str,action='store',default=support.dir_locust / 'prec_mod.f90',dest='filepath_in',help="location of source file",required=False)
     parser.add_argument('--filepath_out',type=str,action='store',default=support.dir_locust / 'prec_mod_edited.f90',dest='filepath_out',help="location of output file",required=False)
-    parser.add_argument('--vars',nargs='+',type=str,action='store',dest='variables',help="variables to replace in file e.g. --vars threadsPerBlock file_tet",required=True)
-    parser.add_argument('--vals',nargs='+',type=str,action='store',dest='values',help='values to replace in file e.g. --vals 64 \\\'"some string value"\\\'',required=True)
+    parser.add_argument('--settings',nargs='+',type=str,action='store',dest='settings',help="variables and corresponding values to replace in file e.g. --vars threadsPerBlock=32 file_tet=\"\'some_filename\'\"",required=True)
+    
     args=parser.parse_args()
-    variables=dict(zip(args.variables,args.values))
+    args.settings=run_scripts.utils.command_line_arg_parse_dict(args.settings) #transform into dictionary
 
-    LOCUST_edit_var(filepath_in=args.filepath_in,filepath_out=args.filepath_out,**variables)
+    LOCUST_edit_var(filepath_in=args.filepath_in,filepath_out=args.filepath_out,**args.settings)
 
 #################################
 
