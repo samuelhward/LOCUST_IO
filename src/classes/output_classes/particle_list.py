@@ -138,33 +138,34 @@ def read_final_particle_list_LOCUST(filepath,**properties):
 
             #get rid of white space and completely flatten IDL/FORTRAN-style
             lines=[[float(number) for number in line.split()] for line in lines]
-            lines=[number for line in lines for number  in line]
+            lines=[number for line in lines for number in line]
             del(lines[0:6])
             input_data['f']=np.array(lines[-1])
+            del(lines[-1])
 
-            for i in range(0,niter):
+            for i in range(niter):
                 
                 #transfer chunk from lines to file_buffer and assimilate into dictionary
-                file_buffer=np.array([lines[0:(n*ngpu)*npt_*nphc]]).reshape((n*ngpu),npt_,nphc,order='F')
-                del(lines[0:(n*ngpu)*npt_*nphc])
+                file_buffer=np.array([lines[0:npt_*nphc*(n*ngpu)]]).reshape(npt_,nphc,(n*ngpu),order='F')
+                del(lines[0:npt_*nphc*(n*ngpu)])
                 
-                input_data['R']=np.append(input_data['R'],file_buffer[:,0,0])
-                input_data['phi']=np.append(input_data['phi'],file_buffer[:,1,0])
-                input_data['Z']=np.append(input_data['Z'],file_buffer[:,2,0])
-                input_data['V_R']=np.append(input_data['V_R'],file_buffer[:,3,0])
-                input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[:,4,0])
-                input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[:,5,0])
-                input_data['time']=np.append(input_data['time'],file_buffer[:,6,0])
-                input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[:,7,0])
-                input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[:,8,0])
-                input_data['PFC_intercept']=np.append(input_data['PFC_intercept'],file_buffer[:,9,0])
-                input_data['psi']=np.append(input_data['psi'],file_buffer[:,10,0])
-                input_data['V_R_final']=np.append(input_data['V_R_final'],file_buffer[:,11,0])
-                input_data['V_tor_final']=np.append(input_data['V_tor_final'],file_buffer[:,12,0])
-                input_data['V_Z_final']=np.append(input_data['V_Z_final'],file_buffer[:,13,0])
-                input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[:,14,0])
-                input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[:,15,0])
-                input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[:,16,0])   
+                input_data['R']=np.append(input_data['R'],file_buffer[0,0,:])
+                input_data['phi']=np.append(input_data['phi'],file_buffer[1,0,:])
+                input_data['Z']=np.append(input_data['Z'],file_buffer[2,0,:])
+                input_data['V_R']=np.append(input_data['V_R'],file_buffer[3,0,:])
+                input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[4,0,:])
+                input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[5,0,:])
+                input_data['time']=np.append(input_data['time'],file_buffer[6,0,:])
+                input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[7,0,:])
+                input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[8,0,:])
+                input_data['PFC_intercept']=np.append(input_data['PFC_intercept'],file_buffer[9,0,:])
+                input_data['psi']=np.append(input_data['psi'],file_buffer[10,0,:])
+                input_data['V_R_final']=np.append(input_data['V_R_final'],file_buffer[11,0,:])
+                input_data['V_tor_final']=np.append(input_data['V_tor_final'],file_buffer[12,0,:])
+                input_data['V_Z_final']=np.append(input_data['V_Z_final'],file_buffer[13,0,:])
+                input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[14,0,:])
+                input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[15,0,:])
+                input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[16,0,:])
 
             input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
             input_data['status_flags']['ok_if_greater']=0.0 
