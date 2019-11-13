@@ -24,6 +24,7 @@ try:
     import pathlib
     import copy
     import datetime
+    import ast
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -632,6 +633,11 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             N - total #
             list of indices and slices
         """
+
+        #do some preliminary parsing of variables in case supplied as strings from command line etc.
+        axes=ast.literal_eval(axes)
+        number_bins=ast.literal_eval(number_bins)
+        vminmax=ast.literal_eval(vminmax)
 
         import scipy
         import matplotlib

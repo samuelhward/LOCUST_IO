@@ -22,6 +22,7 @@ import sys #have global imports --> makes less modular (no "from output_classes 
 try:
     import numpy as np
     import pathlib
+    import ast
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -286,6 +287,10 @@ class Orbits(classes.base_output.LOCUST_output):
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
+
+        #do some preliminary parsing of variables in case supplied as strings from command line etc.
+        particles=ast.literal_eval(particles)
+        axes=ast.literal_eval(axes)
 
         import scipy
         import matplotlib

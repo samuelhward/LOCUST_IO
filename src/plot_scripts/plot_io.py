@@ -154,11 +154,6 @@ if __name__=='__main__':
         if 'filename' in read_settings and 'output_files' in str(read_settings['filename']): #in case user supplies full filepath to target
             read_settings['filename']=pathlib.Path(read_settings['filename']).relative_to(support.dir_output_files)
         
-        #apply some extra formatting if defining plot axes at command line such as axes="['R','Z']"
-        for plot_setting in ['axes','status_flags']:
-            if plot_setting in plot_settings:
-                plot_settings[plot_setting]=ast.literal_eval(plot_settings[plot_setting])
-
         read_settings['ID']='' #include dummy ID to assign the object to be plotted, since this is stipulated in LOCUST_IO
 
         try:

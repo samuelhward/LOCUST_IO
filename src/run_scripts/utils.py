@@ -27,6 +27,7 @@ try:
     import matplotlib
     from matplotlib import cm
     import matplotlib.pyplot as plt
+    import ast
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)

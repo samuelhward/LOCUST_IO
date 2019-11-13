@@ -22,6 +22,7 @@ import sys #have global imports --> makes less modular (no "from input_classes i
 try:
     import numpy as np
     import pathlib
+    import ast
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -999,6 +1000,10 @@ class Perturbation(classes.base_input.LOCUST_input):
             fig - take input fig (can be used to add colourbars etc)
         """
 
+        #do some preliminary parsing of variables in case supplied as strings from command line etc.
+        number_bins=ast.literal_eval(number_bins)
+        vminmax=ast.literal_eval(vminmax)
+
         import scipy
         import matplotlib
         from matplotlib import cm
@@ -1158,6 +1163,15 @@ class Perturbation(classes.base_input.LOCUST_input):
         notes:
             user must either supply both fig and ax_array or none
         """
+
+        #do some preliminary parsing of variables in case supplied as strings from command line etc.
+        R=ast.literal_eval(R)
+        Z=ast.literal_eval(Z)
+        phi=ast.literal_eval(phi)
+        phase=ast.literal_eval(phase)
+        i3dr=ast.literal_eval(i3dr)
+        number_bins=ast.literal_eval(number_bins)
+        vminmax=ast.literal_eval(vminmax)
 
         import matplotlib
         import matplotlib.pyplot as plt

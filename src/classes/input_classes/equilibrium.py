@@ -23,6 +23,7 @@ try:
     import numpy as np
     import pathlib
     import re
+    import ast
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -675,6 +676,10 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
+
+        #do some preliminary parsing of variables in case supplied as strings from command line etc.
+        axes=ast.literal_eval(axes)
+        number_bins=ast.literal_eval(number_bins)
 
         import scipy
         import matplotlib
