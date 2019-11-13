@@ -61,8 +61,8 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
         self.ideal_tag=ideal_tag
         self.data_format_input=data_format_input
         self.data_format_output=data_format_output
-        self.dir_input_files=support.dir_input_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=self.phase_shift,ideal=self.ideal_tag,response=self.response_tag))
-        self.dir_output_files=support.dir_output_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=self.phase_shift,ideal=self.ideal_tag,response=self.response_tag))
+        self.dir_input_files=support.dir_input_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=int(self.phase_shift/(2.*np.pi)*360),ideal=self.ideal_tag,response=self.response_tag))
+        self.dir_output_files=support.dir_output_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=int(self.phase_shift/(2.*np.pi)*360),ideal=self.ideal_tag,response=self.response_tag))
         self.dir_cache_files=support.dir_cache_files / 'RMP_phase_scan'
         self.LOCUST_run__dir_LOCUST=LOCUST_run__dir_LOCUST
         self.LOCUST_run__dir_input=self.dir_input_files
