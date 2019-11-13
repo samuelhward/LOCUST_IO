@@ -89,11 +89,12 @@ def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90
                     for variable_name,variable_value in settings.items():
                         if variable_name == variable_name_prec_mod:
 
-                            if not commented:                
-                                left_side_of_equals=''.join(substring for substring in line_split_equals[:-1])    
+                            #need to take everything before comment section, split according to equals and leave off the very last entry (must preserve = that come before the = we care about)                 
+                            if not commented: 
+                                left_side_of_equals='='.join(substring for substring in line_split_equals[:-1])    
                                 right_side_of_equals=line_split_equals[-1]    
                             else:
-                                left_side_of_equals=''.join(substring for substring in line_split_comment[0].split('=')[:-1])
+                                left_side_of_equals='='.join(substring for substring in line_split_comment[0].split('=')[:-1])
                                 right_side_of_equals=line_split_comment[0].split('=')[-1]
 
                             if '&' in right_side_of_equals: #check for spill onto additional lines
