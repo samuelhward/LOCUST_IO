@@ -40,6 +40,12 @@ except:
     sys.exit(1) 
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -1001,8 +1007,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        number_bins=ast.literal_eval(number_bins)
-        vminmax=ast.literal_eval(vminmax)
+        number_bins,vminmax=run_scripts.utils.literal_eval(number_bins,vminmax)
 
         import scipy
         import matplotlib
@@ -1165,13 +1170,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        R=ast.literal_eval(R)
-        Z=ast.literal_eval(Z)
-        phi=ast.literal_eval(phi)
-        phase=ast.literal_eval(phase)
-        i3dr=ast.literal_eval(i3dr)
-        number_bins=ast.literal_eval(number_bins)
-        vminmax=ast.literal_eval(vminmax)
+        R,Z,phi,phase,i3dr,number_bins,vminmax=run_scripts.utils.literal_eval(R,Z,phi,phase,i3dr,number_bins,vminmax)
 
         import matplotlib
         import matplotlib.pyplot as plt

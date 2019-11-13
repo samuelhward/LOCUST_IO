@@ -1977,7 +1977,23 @@ def string_2_bool(string):
         return False 
     else:
         return string
-        
+
+def literal_eval(*things):
+    """
+    perform ast.literal_eval on an arbitrary number of things
+
+    notes:
+        checks for strings (does not perform if not)
+    """
+
+    outputs=[]
+    for thing in things:
+        if type(thing)==type('string'):
+            outputs.append(ast.literal_eval(thing))
+        else:
+            outputs.append(thing)
+    return outputs
+
 #################################
  
 ##################################################################

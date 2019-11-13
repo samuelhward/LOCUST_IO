@@ -39,6 +39,12 @@ except:
     sys.exit(1)
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import classes.base_output 
 except:
     raise ImportError("ERROR: LOCUST_IO/src/classes/base_output.py could not be imported!\nreturning\n")
@@ -463,9 +469,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes=ast.literal_eval(axes)
-        status_flags=ast.literal_eval(status_flags)
-        number_bins=ast.literal_eval(number_bins)
+        axes,status_flags,number_bins=run_scripts.utils.literal_eval(axes,status_flags,number_bins)
 
         import scipy
         import matplotlib

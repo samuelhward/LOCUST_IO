@@ -46,6 +46,12 @@ except:
     sys.exit(1) 
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -678,8 +684,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes=ast.literal_eval(axes)
-        number_bins=ast.literal_eval(number_bins)
+        axes,number_bins=run_scripts.utils.literal_eval(axes,number_bins)
 
         import scipy
         import matplotlib
