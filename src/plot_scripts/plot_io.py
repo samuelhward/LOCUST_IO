@@ -8,6 +8,7 @@ plot a LOCUST_IO object from command line
 ---
 notes: 
     essentially wraps argparse to feed command line args straight to a quick instantiation/plotting of a LOCUST_IO object
+    must be kept up to date for plot functions which require more exotic settings such as lists etc.
 ---
 '''
 
@@ -152,8 +153,12 @@ if __name__=='__main__':
             read_settings['filename']=pathlib.Path(read_settings['filename']).relative_to(support.dir_input_files)
         if 'filename' in read_settings and 'output_files' in str(read_settings['filename']): #in case user supplies full filepath to target
             read_settings['filename']=pathlib.Path(read_settings['filename']).relative_to(support.dir_output_files)
-        if 'axes' in plot_settings: #apply some extra formatting if defining plot axes at command line such as axes="['R','Z']"
-            plot_settings['axes']=ast.literal_eval(plot_settings['axes'])
+        
+        #apply some extra formatting if defining plot axes at command line such as axes="['R','Z']"
+        for plot_setting in ['axes','status_flags']:
+            if plot_setting in plot_settings:
+                plot_settings[plot_setting]=ast.literal_eval(plot_settings[plot_setting])
+
         read_settings['ID']='' #include dummy ID to assign the object to be plotted, since this is stipulated in LOCUST_IO
 
         try:
