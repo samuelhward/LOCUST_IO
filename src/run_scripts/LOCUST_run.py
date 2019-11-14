@@ -240,10 +240,13 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         LOCUST_run stage for retrieving run cache
 
         notes:
+            only retrieves mesh data
         """
 
         #retrieve cache
-        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('*'):
+        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('MESH*'):
+            subprocess.run(shlex.split('mv {file} {dir_cache}'.format(file=str(file),dir_cache=str(self.dir_cache))),shell=False)
+        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('LINK*'):
             subprocess.run(shlex.split('mv {file} {dir_cache}'.format(file=str(file),dir_cache=str(self.dir_cache))),shell=False)
 
     def cleanup(self,*args,**kwargs):
