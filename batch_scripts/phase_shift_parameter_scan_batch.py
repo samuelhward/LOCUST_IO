@@ -41,6 +41,10 @@ ideal=[ideal]*number_phases #ideal or resistive?
 data_format_input=['MARSF_bplas']*number_phases #data format of data source
 data_format_output=['LOCUST']*number_phases #data format to dump data to
 
+#define file structure here, uses <parameter_name>_<value>_.....format
+dir_input_files=[support.dir_input_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_)) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
+dir_output_files=[support.dir_output_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_)) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
+
 LOCUST_run__dirs_LOCUST=['locust_{}'.format(phase) for phase in phase_shift_degrees]
 LOCUST_run__dir_LOCUST=[support.dir_locust / LOCUST_run__dir_LOCUST for LOCUST_run__dir_LOCUST in LOCUST_run__dirs_LOCUST]
 LOCUST_run__system_name=[None]*number_phases
@@ -98,6 +102,8 @@ RMP_batch_run=run_scripts.batch.Batch(
         ideal_tag=ideal_tag,
         data_format_input=data_format_input,
         data_format_output=data_format_output,
+        dir_input_files=dir_input_files,
+        dir_output_files=dir_output_files,
         LOCUST_run__dir_LOCUST=LOCUST_run__dir_LOCUST,
         LOCUST_run__system_name=LOCUST_run__system_name,
         LOCUST_run__repo_URL=LOCUST_run__repo_URL,

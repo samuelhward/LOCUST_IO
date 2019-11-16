@@ -40,6 +40,8 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
         ideal_tag,
         data_format_input,
         data_format_output,
+        dir_input_files,
+        dir_output_files,
         LOCUST_run__dir_LOCUST,
         LOCUST_run__system_name,
         LOCUST_run__repo_URL,
@@ -61,8 +63,8 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
         self.ideal_tag=ideal_tag
         self.data_format_input=data_format_input
         self.data_format_output=data_format_output
-        self.dir_input_files=support.dir_input_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=int(self.phase_shift/(2.*np.pi)*360),ideal=self.ideal_tag,response=self.response_tag))
-        self.dir_output_files=support.dir_output_files / 'RMP_phase_scan' / ('{phase_shift}_{ideal}_{response}'.format(phase_shift=int(self.phase_shift/(2.*np.pi)*360),ideal=self.ideal_tag,response=self.response_tag))
+        self.dir_input_files=dir_input_files
+        self.dir_output_files=dir_output_files
         self.dir_cache_files=support.dir_cache_files / 'RMP_phase_scan'
         self.LOCUST_run__dir_LOCUST=LOCUST_run__dir_LOCUST
         self.LOCUST_run__dir_input=self.dir_input_files
@@ -151,6 +153,8 @@ if __name__=='__main__':
     parser.add_argument('--ideal_tag',type=str,action='store',dest='ideal_tag',help="")
     parser.add_argument('--data_format_input',type=str,action='store',dest='data_format_input',help="")
     parser.add_argument('--data_format_output',type=str,action='store',dest='data_format_output',help="")
+    parser.add_argument('--dir_input_files',type=str,action='store',dest='dir_input_files',help="")
+    parser.add_argument('--dir_output_files',type=str,action='store',dest='dir_output_files',help="")
     parser.add_argument('--LOCUST_run__dir_LOCUST',type=str,action='store',dest='LOCUST_run__dir_LOCUST',help="",default=support.dir_locust)
     parser.add_argument('--LOCUST_run__system_name',type=str,action='store',dest='LOCUST_run__system_name',help="",default='TITAN')
     parser.add_argument('--LOCUST_run__repo_URL',type=str,action='store',dest='LOCUST_run__repo_URL',help="",default=settings.repo_URL_LOCUST)
@@ -174,6 +178,8 @@ if __name__=='__main__':
         ideal_tag=args.ideal_tag,
         data_format_input=args.data_format_input,
         data_format_output=args.data_format_output,
+        dir_input_files=args.dir_input_files,
+        dir_output_files=args.dir_output_files,
         LOCUST_run__dir_LOCUST=args.LOCUST_run__dir_LOCUST,
         LOCUST_run__system_name=args.LOCUST_run__system_name,
         LOCUST_run__repo_URL=args.LOCUST_run__repo_URL,
