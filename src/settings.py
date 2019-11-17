@@ -39,7 +39,10 @@ def cmap_custom(from_rgb,to_rgb):
             'blue':((0,b1,b1),(1,b1,b1))}
     cmap=LinearSegmentedColormap('custom cmap - {from_rgb}/{to_rgb}'.format(from_rgb=str(from_rgb),to_rgb=str(to_rgb)),cdict)
     return cmap
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
+
+cmap_plasma=matplotlib.cm.get_cmap('plasma')
+cmap_jet=matplotlib.cm.get_cmap('jet')
+cmap_viridis=matplotlib.cm.get_cmap('viridis')
 cmap_r=cmap_custom([1,0,0],[1,0,0]) #red
 cmap_g=cmap_custom([0,1,0],[0,1,0]) #green
 cmap_b=cmap_custom([0,0,1],[0,0,1]) #blue
@@ -48,6 +51,7 @@ cmap_m=cmap_custom([1,0,1],[1,0,1]) #magenta
 cmap_c=cmap_custom([0,1,1],[0,1,1]) #cyan
 cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
 cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
+cmap_default=cmap_plasma #set default colourmap
 
 plot_style_LCFS='m-' #set plot style for LCFS
 plot_style_limiters='k-' #set plot style for limiters
