@@ -74,7 +74,7 @@ def read_perturbation_LOCUST(filepath,**properties):
     print("reading LOCUST perturbation")
 
     with open(filepath,'r') as file:
-                 
+
         #initialise data
         input_data={}
         input_data['R_2D']=[]
@@ -89,14 +89,15 @@ def read_perturbation_LOCUST(filepath,**properties):
         #read lazily
         for line in file:
             split_line=line.split()
-            input_data['R_2D'].append(float(split_line[0]))
-            input_data['Z_2D'].append(float(split_line[1]))
-            input_data['dB_field_R_real'].append(float(split_line[2]))
-            input_data['dB_field_R_imag'].append(float(split_line[3]))
-            input_data['dB_field_Z_real'].append(float(split_line[4]))
-            input_data['dB_field_Z_imag'].append(float(split_line[5]))
-            input_data['dB_field_tor_real'].append(float(split_line[6]))
-            input_data['dB_field_tor_imag'].append(float(split_line[7]))
+            if len(split_line)==8:
+                input_data['R_2D'].append(float(split_line[0]))
+                input_data['Z_2D'].append(float(split_line[1]))
+                input_data['dB_field_R_real'].append(float(split_line[2]))
+                input_data['dB_field_R_imag'].append(float(split_line[3]))
+                input_data['dB_field_Z_real'].append(float(split_line[4]))
+                input_data['dB_field_Z_imag'].append(float(split_line[5]))
+                input_data['dB_field_tor_real'].append(float(split_line[6]))
+                input_data['dB_field_tor_imag'].append(float(split_line[7]))
 
         input_data['R_2D']=np.asarray(input_data['R_2D'])
         input_data['Z_2D']=np.asarray(input_data['Z_2D'])
@@ -988,7 +989,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key='dB_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots a perturbation
         
@@ -1002,6 +1003,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -1041,7 +1043,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(np.random.uniform()))
+            ax.plot(self[key],color=colmap(colmap_val))
             ax.set_ylabel(key)
 
         #2D data
@@ -1147,7 +1149,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         return dB_R,dB_tor,dB_Z
 
-    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default,ax_array=False,fig=False):
+    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
         """
         generates plot of perturbation components for field checking
 
@@ -1163,6 +1165,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             vminmax - set mesh Vmin/Vmax values 
             absolute - plot absolute value of perturbation
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax_array - take input array of axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:

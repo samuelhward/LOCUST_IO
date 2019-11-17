@@ -1265,7 +1265,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT_FO/ASCOT_GC)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,fill=True,ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),fill=True,ax=False,fig=False):
         """
         plots beam deposition
 
@@ -1279,6 +1279,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             limiters - object which contains limiter data rlim and zlim
             real_scale - sets r,z scale to real tokamak cross section
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             fill - toggle contour fill on 2D plots
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -1321,7 +1322,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             else:
                 self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins)
             self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-            ax.plot(self_binned_centres,self_binned,color=colmap(np.random.uniform()))
+            ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val))
             ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -1428,7 +1429,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             if real_scale is True:
                 ax.set_aspect('equal')
  
-            mesh=ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(np.random.uniform()),s=0.1,label=self.ID)
+            mesh=ax.scatter(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(colmap_val),s=0.1,label=self.ID)
         
         if ax_flag is False and fig_flag is False:
             plt.show() 

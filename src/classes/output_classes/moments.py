@@ -395,7 +395,7 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key,axis='flux_pol_norm',colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key,axis='flux_pol_norm',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots moments
 
@@ -403,6 +403,7 @@ class Moments(classes.base_output.LOCUST_output):
             key - selects which data to plot
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -428,7 +429,7 @@ class Moments(classes.base_output.LOCUST_output):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self[key],color=colmap(np.random.uniform()))
+        ax.plot(self[axis],self[key],color=colmap(colmap_val))
         ax.set_xlabel(axis)
         ax.set_ylabel(key)
 

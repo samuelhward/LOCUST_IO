@@ -405,7 +405,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
+    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -420,6 +420,7 @@ class TRANSP_output_FI(TRANSP_output):
             limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - select desired colourmap
+            colmap_val - optional numerical value for defining single colour plots 
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
@@ -562,14 +563,14 @@ class TRANSP_output_FI(TRANSP_output):
         elif axes==['E']: #integrate over all volume and plot as a function of energy in #/eV
 
             dfn_copy=self.dfn_integrate(energy=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(np.random.uniform()))
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val))
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('density [#/eV]')
 
         elif axes==['V_pitch']:
 
             dfn_copy=self.dfn_integrate(pitch=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(np.random.uniform()))
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val))
             ax.set_xlabel('pitch [V||/V]')
             ax.set_ylabel('density [#/dPitch]')
 
@@ -1497,7 +1498,7 @@ class FINT_LOCUST:
 
         print("finished reading LOCUST FINT distribution")
 
-    def plot(self,axes=['E','time'],colmap=cmap_default,number_bins=20,ax=False,fig=False):
+    def plot(self,axes=['E','time'],colmap=cmap_default,colmap_val=np.random.uniform(),number_bins=20,ax=False,fig=False):
         """
         plot dfn vs time
         

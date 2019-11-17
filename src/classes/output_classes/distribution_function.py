@@ -605,7 +605,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=cmap_default,transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
         plot the distribution function
 
@@ -619,6 +619,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             limiters - object which contains limiter data rlim and zlim
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             transform - set to False if supplied dfn has already been cut down to correct dimensions
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
@@ -675,7 +676,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],color=colmap(np.random.uniform()))
+            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val))
             ax.set_ylabel(key)
 
         #plot distribution function
@@ -698,7 +699,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
             elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(np.random.uniform()))
+                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(colmap_val))
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(key)
             elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D

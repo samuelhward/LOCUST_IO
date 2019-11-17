@@ -509,6 +509,7 @@ class Wall(classes.base_input.LOCUST_input):
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """

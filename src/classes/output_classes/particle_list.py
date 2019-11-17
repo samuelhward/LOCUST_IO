@@ -448,7 +448,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=cmap_default,colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -464,6 +464,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             status_flags - plot particles with these statuses
             weight - toggle whether to include marker weights in histograms
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag, where the numerical value of the status_flag will dictate the colour)
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -506,7 +507,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 else:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-                ax.plot(self_binned_centres,self_binned,color=colmap(np.random.uniform()))
+                ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val))
                 ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms

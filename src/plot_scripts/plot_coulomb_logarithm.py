@@ -56,7 +56,7 @@ except:
 
 ##################################################################
 
-def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=cmap_default,ax=False,fig=False):
+def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -76,6 +76,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=cmap_default,
         Pdep - injection power [W]
         Bmod - magnetic field strength [T]
         colmap - plotted line colour
+        colmap_val - optional numerical value for defining single colour plots 
         ax - ax object to add plot to
     """
 
@@ -115,7 +116,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=cmap_default,
     E=E.T[0]
 
     for counter,lnL_ in enumerate(lnL):
-        ax.plot(E/(1000.*echg),lnL_,color=colmap(np.random.uniform()))#(counter/len(lnL))) #cycle through colours
+        ax.plot(E/(1000.*echg),lnL_,color=colmap(colmap_val))#(counter/len(lnL))) #cycle through colours
         ax.set_ylabel('Coulomb Logarithm')
         ax.set_xlabel('Energy [KeV]')
     ax.legend(tuple(['mass = {mass} [amu] temperature = {temp} [keV]'.format(mass=str(mass),temp=str((temp)/echg/1000)) for mass,temp in zip(Ai,Ti)]))

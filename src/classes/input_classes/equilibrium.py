@@ -666,7 +666,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
-    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,colmap=cmap_default,ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots equilibrium
         
@@ -679,6 +679,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -718,7 +719,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(np.random.uniform()))
+            ax.plot(self[key],color=colmap(colmap_val))
             ax.set_ylabel(key)
 
         #2D data
@@ -766,7 +767,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=cmap_default,ax=False,fig=False):
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots random field lines for 'angle' radians around the tokamak
 
@@ -781,6 +782,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plot_full - choose whether each field line will trace the whole plasma topology (see below also)
             start_mark - add marker for start of the field line
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -885,13 +887,13 @@ class Equilibrium(classes.base_input.LOCUST_input):
             Y_points=R_points*np.sin(tor_points/R_points) 
 
             if plot_full is True: #if wanting to trace the flux surfaces, then plot in r,z plane
-                ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
+                ax.plot(R_points,Z_points,color=colmap(colmap_val))
                 if start_mark: 
                     ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
             else:
                 
                 if axes==['R','Z']: #poloidal plot
-                    ax.plot(R_points,Z_points,color=colmap(np.random.uniform()))
+                    ax.plot(R_points,Z_points,color=colmap(colmap_val))
                     if start_mark: 
                         ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
                     if LCFS: #plot plasma boundary
@@ -905,7 +907,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
 
                 elif axes==['X','Y']: #top-down plot
-                    ax.plot(X_points,Y_points,color=colmap(np.random.uniform()))
+                    ax.plot(X_points,Y_points,color=colmap(colmap_val))
                     if start_mark: 
                         ax.scatter(X_points[0],Y_points[0],color=colour_start_mark,s=10)
                     if LCFS: #plot plasma boundary
@@ -945,13 +947,13 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
                     ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
                     ax.set_zlim(np.min(self['Z_1D']),np.max(self['Z_1D'])) 
-                    ax.plot(X_points,Y_points,zs=Z_points,color=colmap(np.random.uniform()))
+                    ax.plot(X_points,Y_points,zs=Z_points,color=colmap(colmap_val))
 
         if ax_flag is False and fig_flag is False:
             plt.show()
 
 
-    def plot_field_stream(self,LCFS=True,limiters=True,colmap=cmap_default,ax=False,fig=False):
+    def plot_field_stream(self,LCFS=True,limiters=True,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         stream plot of magnetic field in R,Z plane
 
@@ -959,6 +961,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             LCFS - toggles plasma boundary on/off in 2D plots
             limiters - toggles limiters on/off in 2D plots
             colmap - set the colour map (use get_cmap names)
+            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:

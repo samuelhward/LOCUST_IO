@@ -57,7 +57,7 @@ except:
 
 ##################################################################
 
-def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=cmap_default,ax=False,fig=False):
+def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -79,6 +79,7 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=c
         Bmod - magnetic field strength [T]
         type - toggle various representations from different codes
         colmap - plotted line colour
+        colmap_val - optional numerical value for defining single colour plots 
         ax - ax object to add plot to
     """
 
@@ -165,7 +166,7 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=c
         dE_dt=1.*np.array(dE_dt,ndmin=2)
         
     for counter,(drag,Ti_) in enumerate(zip(dE_dt,Ti/echg)):
-        a_colour=colmap(np.random.uniform())
+        a_colour=colmap(colmap_val)
         ax.plot(E/(1000.*echg),(drag/1.0e-13),color=a_colour)#(counter/len(dE_dt))) #cycle through colours
         ax.scatter(Ti_/1000.,0.,color=a_colour)
         ax.set_xlabel('Energy [KeV]')
