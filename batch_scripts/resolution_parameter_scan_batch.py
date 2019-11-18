@@ -24,8 +24,8 @@ import support
 import settings
 import copy
 
-number_simulations=10
-study_name='convergence_test'
+number_simulations=1
+study_name='perturbation_resolution_scan'
 
 phase_min=0 #in degrees
 phase_max=0
@@ -43,14 +43,14 @@ ideal=[ideal]*number_simulations #ideal or resistive?
 data_format_input=['MARSF_bplas']*number_simulations #data format of data source
 data_format_output=['LOCUST']*number_simulations #data format to dump data to
 
-perturbation_nR=np.linspace(40,800,number_simulations)
-perturbation_nZ=np.linspace(60,1200,number_simulations)
+perturbation_nR=np.linspace(40,800,number_simulations,dtype=int)
+perturbation_nZ=np.linspace(60,1200,number_simulations,dtype=int)
 
 #define file structure here, uses <parameter_name>_<value>_.....format
 dir_input_files=[str(support.dir_input_files / study_name / ('nR_1D_{nR_1D}_nZ_1D_{nZ_1D}_response_{response}'.format(nR_1D=nR_1D,nZ_1D=nZ_1D,response=response_tag_))) for nR_1D,nZ_1D,response_tag_ in zip(perturbation_nR,perturbation_nZ,response)]
 dir_output_files=[str(support.dir_output_files / study_name / ('nR_1D_{nR_1D}_nZ_1D_{nZ_1D}_response_{response}'.format(nR_1D=nR_1D,nZ_1D=nZ_1D,response=response_tag_))) for nR_1D,nZ_1D,response_tag_ in zip(perturbation_nR,perturbation_nZ,response)]
 
-LOCUST_run__dirs_LOCUST=['locust_{}'.format(phase) for phase in phase_shift_degrees]
+LOCUST_run__dirs_LOCUST=['locust_nR_1D_{nR_1D}_nZ_1D_{nZ_1D}'.format(nR_1D=nR_1D,nZ_1D=nZ_1D) for nR_1D,nZ_1D in zip(perturbation_nR,perturbation_nZ)]
 LOCUST_run__dir_LOCUST=[support.dir_locust / LOCUST_run__dir_LOCUST for LOCUST_run__dir_LOCUST in LOCUST_run__dirs_LOCUST]
 LOCUST_run__system_name=[None]*number_simulations
 LOCUST_run__repo_URL=[None]*number_simulations
@@ -68,8 +68,8 @@ LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['i3dr']=-1
 LOCUST_run__settings_prec_mod['niter']=1
 LOCUST_run__settings_prec_mod=[copy.deepcopy(LOCUST_run__settings_prec_mod) for _ in range(number_simulations)]
-for counter,phase in enumerate(phase_shift_degrees):
-    LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/{study_name}/{phase}'".format(phase=phase,study_name=study_name)
+for counter,(nR_1D,nZ_1D) in enumerate(zip(perturbation_nR,perturbation_nZ)):
+    LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/{study_name}/nR_1D_{nR_1D}_nZ_1D_{nZ_1D}'".format(study_name=study_name,nR_1D=nR_1D,nZ_1D=nZ_1D)
 
 LOCUST_run__flags={}
 LOCUST_run__flags['LEIID']=8
@@ -119,7 +119,7 @@ resolution_batch_run=run_scripts.batch.Batch(
         LOCUST_run__flags=LOCUST_run__flags
         )
 
-resolution_batch_run.launch(workflow_filepath='phase_shift_parameter_scan_run.py',system_name='TITAN')   
+resolution_batch_run.launch(workflow_filepath='resolution_parameter_scan_run.py',system_name='TITAN')   
 
 #################################
 

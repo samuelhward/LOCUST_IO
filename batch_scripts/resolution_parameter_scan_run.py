@@ -58,8 +58,8 @@ class resolution_scan_workflow(run_scripts.workflow.Workflow):
 
         #attach settings to class
         self.phase_shift=phase_shift
-        self.perturbation_nR=perturbation_nR,
-        self.perturbation_nZ=perturbation_nZ,        
+        self.perturbation_nR=perturbation_nR
+        self.perturbation_nZ=perturbation_nZ        
         self.n2=n2
         self.n6=n6
         self.response=response
@@ -116,19 +116,21 @@ class resolution_scan_workflow(run_scripts.workflow.Workflow):
     def generate_3D_fields(self,*args,**kwargs):
 
         equilibrium=equi(ID='',data_format='GEQDSK',filename=self.dir_input_files/'LOCUST_GEQDSK') #open up the equilibrium to extract some quantities for reading perturbation
-
         filepaths=[]
         harmonics=[]
+        mode_numbers=[]
         if self.n2:
             filepaths.append(pathlib.Path('ASCOT')/'dryan_data'/'33143_2730_mars_data')
             harmonics.append('n2')
+            mode_numbers.append(2)
         if self.n6:
             filepaths.append(pathlib.Path('ASCOT')/'dryan_data'/'33143_2730_n_6')
             harmonics.append('n6')
+            mode_numbers.append(6)
 
-        for filepath,harmonic in zip(filepaths,harmonics): #cycle through harmonics
+        for filepath,harmonic,mode_number in zip(filepaths,harmonics,mode_numbers): #cycle through harmonics
             perturbation=pert(ID='harmonic - {harmonic}, phase_shift - {phase_shift}'.format(harmonic=harmonic,phase_shift=self.phase_shift),
-                data_format=self.data_format_input,filename=filepath,response=self.response,ideal=self.ideal,phase=self.phase_shift,
+                data_format=self.data_format_input,filename=filepath,mode_number=mode_number,response=self.response,ideal=self.ideal,phase=self.phase_shift,
                 bcentr=equilibrium['bcentr'],rmaxis=equilibrium['rmaxis'],nR_1D=self.perturbation_nR,nZ_1D=self.perturbation_nZ)
             perturbation.dump_data(data_format=self.data_format_output,filename=self.dir_input_files/'BPLASMA_{harmonic}'.format(harmonic=harmonic))
 
@@ -181,8 +183,8 @@ if __name__=='__main__':
 
     this_run=resolution_scan_workflow(
         phase_shift=args.phase_shift,
-        perturbation_nR=perturbation_nR,
-        perturbation_nZ=perturbation_nZ,
+        perturbation_nR=args.perturbation_nR,
+        perturbation_nZ=args.perturbation_nZ,
         n2=args.n2,
         n6=args.n6,
         response=args.response,
