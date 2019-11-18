@@ -898,7 +898,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
-                self.mode_number=mode_number
+                self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath,**properties)
 
@@ -908,7 +908,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
-                self.mode_number=mode_number
+                self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
@@ -918,7 +918,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
-                self.mode_number=mode_number
+                self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
 
@@ -928,7 +928,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.mode_number=mode_number
+                self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_IDS_mhd_linear(self.shot,self.run,self.mode_number,**properties)
 
@@ -948,7 +948,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
-                self.mode_number=mode_number
+                self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
 
@@ -989,7 +989,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field_R_real',LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=cmap_default,colmap_val=np.random.uniform(),gridlines=False,ax=False,fig=False):
         """
         plots a perturbation
         
@@ -997,19 +997,23 @@ class Perturbation(classes.base_input.LOCUST_input):
             
         args:
             key - selects which data in perturbation to plot
+            axes - list of strings specifying which axes should be plotted (current options only XY or RZ)
             LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium argument)
             limiters - object which contains limiter data rlim and zlim
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
+            i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
+            phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            gridlines - toggle gridlines on plot
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        number_bins,vminmax=run_scripts.utils.literal_eval(number_bins,vminmax)
+        axes,number_bins,vminmax,i3dr,phase,colmap_val=run_scripts.utils.literal_eval(axes,number_bins,vminmax,i3dr,phase,colmap_val)
 
         import scipy
         import matplotlib
@@ -1029,67 +1033,132 @@ class Perturbation(classes.base_input.LOCUST_input):
             fig_flag=True
 
         #0D data
-        if self[key].ndim==0:
-            print([key])
-            return
+        if key in self.data.keys():
+            if self[key].ndim==0:
+                print([key])
+                return
         
         #>0D data is plottable
         if fig_flag is False:
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)
+            polar=True if axes==['X','Y'] else False
+            ax = fig.add_subplot(111,polar=polar)
+        
+        ax.grid(False) if gridlines is False else ax.grid(True)
+        if gridlines is False: ax.set_yticklabels([])
+
         ax.set_title(self.ID)
 
         #1D data
-        if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(colmap_val))
-            ax.set_ylabel(key)
+        if key in self.data.keys():
+            if self[key].ndim==1:
+                ax.plot(self[key],color=colmap(colmap_val))
+                ax.set_ylabel(key)
 
         #2D data
-        elif self[key].ndim==2:
+        if len(axes)==2:
+            if axes==['R','Z']:
 
-            X=self['R_1D'] #make a mesh
-            Y=self['Z_1D'] 
-            Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
-            Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
- 
-            if vminmax:
-                vmin=vminmax[0]
-                vmax=vminmax[1]
-            else:
-                vmin=np.amin(Z)
-                vmax=np.amax(Z)
+                R=self['R_1D'] #make a mesh
+                Z=self['Z_1D'] 
+                Z,R=np.meshgrid(Z,R) #swap since things are defined r,z 
+                values=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+     
+                if vminmax:
+                    vmin=vminmax[0]
+                    vmax=vminmax[1]
+                else:
+                    vmin=np.amin(values)
+                    vmax=np.amax(values)
 
-            #2D plot
-            if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                for c in mesh.collections: #for use in contourf
-                    c.set_edgecolor("face")
-            else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                if plot_contour_labels:
-                    ax.clabel(mesh,inline=1,fontsize=10)
+                #2D plot
+                if fill is True:
+                    mesh=ax.contourf(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    for c in mesh.collections: #for use in contourf
+                        c.set_edgecolor("face")
+                else:
+                    mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    if plot_contour_labels:
+                        ax.clabel(mesh,inline=1,fontsize=10)
+                    
+                #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
+
+                #3D plot
+                #ax=ax.axes(projection='3d')
+                #ax.view_init(elev=90, azim=None) #rotate the camera
+                #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
                 
-            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
+                ax.set_aspect('equal')
+                ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
+                ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
+                ax.set_xlabel('R [m]')
+                ax.set_ylabel('Z [m]')
 
-            #3D plot
-            #ax=ax.axes(projection='3d')
-            #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
-            
-            if fig_flag is False:    
-                fig.colorbar(mesh,ax=ax,orientation='horizontal')
-            ax.set_aspect('equal')
-            ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
-            ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
-            ax.set_xlabel('R [m]')
-            ax.set_ylabel('Z [m]')
+                if LCFS:
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                if limiters: #add boundaries if desired
+                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
 
-            if LCFS:
-                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
-            if limiters: #add boundaries if desired
-                ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
+            elif axes==['X','Y']:
+
+                R=self['R_1D'] #make a mesh
+                phi=np.linspace(0.,2.*np.pi*self.mode_number,100) 
+                nR,nphi=len(R),len(phi)
+                phi,R=np.meshgrid(phi,R)
+                R_flat,phi_flat=R.flatten(),phi.flatten()
+                Z_flat=np.zeros(len(phi_flat))
+
+                dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
+
+                if key=='dB_field_R':
+                    values=dB_R
+                elif key=='dB_field_tor':
+                    values=dB_tor
+                elif key=='dB_field_Z':
+                    values=dB_Z
+                elif key=='dB_field':
+                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                values=values.reshape(nR,nphi)
+
+                if vminmax:
+                    vmin=vminmax[0]
+                    vmax=vminmax[1]
+                else:
+                    vmin=np.amin(values)
+                    vmax=np.amax(values)
+
+                #2D plot
+                if fill is True:
+                    mesh=ax.contourf(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    for c in mesh.collections: #for use in contourf
+                        c.set_edgecolor("face")
+                else:
+                    mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    if plot_contour_labels:
+                        ax.clabel(mesh,inline=1,fontsize=10)
+                    
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
+
+                if LCFS: #plot plasma boundary
+                    plasma_max_R=np.max(LCFS['lcfs_r'])
+                    plasma_min_R=np.min(LCFS['lcfs_r'])
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_max_R,100),plot_style_LCFS)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_min_R,100),plot_style_LCFS)
+                    ax.set_rmax(1.1*plasma_max_R)
+ 
+                if limiters: #add boundaries if desired
+                    limiters_max_R=np.max(limiters['rlim'])
+                    limiters_min_R=np.min(limiters['rlim'])
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),plot_style_limiters)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),plot_style_limiters)
+                    ax.set_rmax(1.1*limiters_max_R)
+
+                ax.set_rmin(0.0)
 
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
@@ -1103,16 +1172,16 @@ class Perturbation(classes.base_input.LOCUST_input):
         returns the three components of perturbation field at a point in the plasma 
         
         args:
-            R - list of R coordinates to calculate perturbation field components at 
-            phi - toroidal angle
-            Z - list of Z coordinates to calculate perturbation field components at
+            R - list of R coordinates
+            phi - list of phi coordinates
+            Z - list of Z coordinates
             mode_number - mode number of this toroidal harmonic
             i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
             phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
         notes:
 
         usage:
-            dB_R,dB_tor,dB_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
+            dB_R,dB_tor,dB_Z=my_equilibrium.B_calc_point(R=[1,2,3],phi=[0,0,0],Z=[1,2,3])
         """
 
         print("perturbation_calc_point generating B_field interpolators")
@@ -1173,7 +1242,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        R,Z,phi,phase,i3dr,number_bins,vminmax=run_scripts.utils.literal_eval(R,Z,phi,phase,i3dr,number_bins,vminmax)
+        R,Z,phi,phase,i3dr,number_bins,vminmax,colmap_val=run_scripts.utils.literal_eval(R,Z,phi,phase,i3dr,number_bins,vminmax,colmap_val)
 
         import matplotlib
         import matplotlib.pyplot as plt

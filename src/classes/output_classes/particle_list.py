@@ -448,7 +448,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -457,6 +457,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             style - choose from scatter or histogram
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
+            vminmax - set mesh Vmin/Vmax values
             axes - define plot axes
             LCFS - object which contains LCFS data lcfs_r and lcfs_z
             limiters - object which contains limiter data rlim and zlim
@@ -471,7 +472,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes,status_flags,number_bins=run_scripts.utils.literal_eval(axes,status_flags,number_bins)
+        axes,status_flags,number_bins,vminmax,colmap_val=run_scripts.utils.literal_eval(axes,status_flags,number_bins,vminmax,colmap_val)
 
         import scipy
         import matplotlib
@@ -532,13 +533,20 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
                     self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
                     self_binned_y,self_binned_x=np.meshgrid(self_binned_y,self_binned_x)
-                    
+
+                    if vminmax:
+                        vmin=vminmax[0]
+                        vmax=vminmax[1]
+                    else:
+                        vmin=np.amin(self_binned)
+                        vmax=np.amax(self_binned)
+
                     if fill:
-                        ax.set_facecolor(colmap(np.amin(self_binned)))
-                        mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                        ax.set_facecolor(colmap(vmin))
+                        mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=vmin,vmax=vmax)
                         #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
-                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                         if plot_contour_labels:
                             ax.clabel(mesh,inline=1,fontsize=10)
                         

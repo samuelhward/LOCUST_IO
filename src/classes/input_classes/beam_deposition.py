@@ -1286,7 +1286,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes,number_bins=run_scripts.utils.literal_eval(axes,number_bins)
+        axes,number_bins,colmap_val=run_scripts.utils.literal_eval(axes,number_bins,colmap_val)
 
         import scipy
         import matplotlib

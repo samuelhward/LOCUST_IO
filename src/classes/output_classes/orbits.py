@@ -296,7 +296,7 @@ class Orbits(classes.base_output.LOCUST_output):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes,particles=run_scripts.utils.literal_eval(axes,particles)
+        axes,particles,colmap_val=run_scripts.utils.literal_eval(axes,particles,colmap_val)
 
         import scipy
         import matplotlib

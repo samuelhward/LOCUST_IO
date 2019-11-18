@@ -642,7 +642,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes,number_bins,vminmax=run_scripts.utils.literal_eval(axes,number_bins,vminmax)
+        axes,number_bins,vminmax,colmap_val=run_scripts.utils.literal_eval(axes,number_bins,vminmax,colmap_val)
         
         import scipy
         import matplotlib
