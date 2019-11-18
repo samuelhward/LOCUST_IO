@@ -15,6 +15,7 @@ notes:
 
 import context
 from classes.input_classes.perturbation import Perturbation as pert  
+from classes.input_classes.equilibrium import Equilibrium as equi
 import numpy as np
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
@@ -32,6 +33,8 @@ import shlex
 class RMP_scan_workflow(run_scripts.workflow.Workflow):
     def __init__(self,
         phase_shift,
+        perturbation_nR,
+        perturbation_nZ,
         n2,
         n6,
         response,
@@ -54,17 +57,19 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
         super().__init__()
 
         #attach settings to class
+        self.phase_shift=phase_shift
+        self.perturbation_nR=perturbation_nR,
+        self.perturbation_nZ=perturbation_nZ,        
         self.n2=n2
         self.n6=n6
-        self.phase_shift=phase_shift
         self.response=response
         self.response_tag=response_tag
         self.ideal=ideal
         self.ideal_tag=ideal_tag
         self.data_format_input=data_format_input
         self.data_format_output=data_format_output
-        self.dir_input_files=dir_input_files
-        self.dir_output_files=dir_output_files
+        self.dir_input_files=pathlib.Path(dir_input_files)
+        self.dir_output_files=pathlib.Path(dir_output_files)
         self.dir_cache_files=support.dir_cache_files / 'RMP_phase_scan'
         self.LOCUST_run__dir_LOCUST=LOCUST_run__dir_LOCUST
         self.LOCUST_run__dir_input=self.dir_input_files
@@ -110,6 +115,8 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
 
     def generate_3D_fields(self,*args,**kwargs):
 
+        equilibrium=equi(ID='',data_format='GEQDSK',filename=self.dir_input_files/'LOCUST_GEQDSK') #open up the equilibrium to extract some quantities for reading perturbation
+
         filepaths=[]
         harmonics=[]
         if self.n2:
@@ -120,7 +127,9 @@ class RMP_scan_workflow(run_scripts.workflow.Workflow):
             harmonics.append('n6')
 
         for filepath,harmonic in zip(filepaths,harmonics): #cycle through harmonics
-            perturbation=pert(ID='harmonic - {harmonic}, phase_shift - {phase_shift}'.format(harmonic=harmonic,phase_shift=self.phase_shift),data_format=self.data_format_input,filename=filepath,response=self.response,ideal=self.ideal,phase=self.phase_shift,bcentr=1.75660107,rmaxis=1.70210874)
+            perturbation=pert(ID='harmonic - {harmonic}, phase_shift - {phase_shift}'.format(harmonic=harmonic,phase_shift=self.phase_shift),
+                data_format=self.data_format_input,filename=filepath,response=self.response,ideal=self.ideal,phase=self.phase_shift,
+                bcentr=equilibrium['bcentr'],rmaxis=equilibrium['rmaxis'],nR_1D=self.perturbation_nR,nZ_1D=self.perturbation_nZ)
             perturbation.dump_data(data_format=self.data_format_output,filename=self.dir_input_files/'BPLASMA_{harmonic}'.format(harmonic=harmonic))
 
     def run_LOCUST(self,*args,**kwargs):
@@ -145,6 +154,8 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='run RMP scan')
     
     parser.add_argument('--phase_shift',type=float,action='store',dest='phase_shift',help="")
+    parser.add_argument('--perturbation_nR',type=int,action='store',dest='perturbation_nR',help="")
+    parser.add_argument('--perturbation_nZ',type=int,action='store',dest='perturbation_nZ',help="")
     parser.add_argument('--n2',type=run_scripts.utils.string_2_bool,action='store',dest='n2',help="")
     parser.add_argument('--n6',type=run_scripts.utils.string_2_bool,action='store',dest='n6',help="")
     parser.add_argument('--response',type=run_scripts.utils.string_2_bool,action='store',dest='response',help="")
@@ -170,6 +181,8 @@ if __name__=='__main__':
 
     this_run=RMP_scan_workflow(
         phase_shift=args.phase_shift,
+        perturbation_nR=perturbation_nR,
+        perturbation_nZ=perturbation_nZ,
         n2=args.n2,
         n6=args.n6,
         response=args.response,

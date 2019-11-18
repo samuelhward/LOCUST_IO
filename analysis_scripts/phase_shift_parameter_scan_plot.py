@@ -82,7 +82,7 @@ def filter_simulations(filepaths,parameters,**criteria):
                     del(parameters_[counter])
     return filepaths_,parameters_
 
-def draw_frame(output,filenames,fig,ax1,axes,real_scale):
+def draw_frame(output,filenames,fig,ax1,ax2,axes):
     """
     notes:
     args:
@@ -91,20 +91,27 @@ def draw_frame(output,filenames,fig,ax1,axes,real_scale):
         fig - fig object
         ax1 - axis object
         axes - .plot() axes arg
-        real_scale - .plot() real_scale arg
     """
 
     for counter,filename in enumerate(filenames): #find where we are in the cycle
         if filename==output.filename:
             colmap_value=np.linspace(0.,1.,len(filenames))[counter] #set colourmap according to where we are in cycle
 
-    output.plot(fig=fig,ax=ax1,axes=axes,real_scale=real_scale,number_bins=100,colmap_val=colmap_value)
+    ax1.collections=[]
+    ax2.cla()
+
+    mesh=output.plot(fig=fig,ax=ax1,axes=axes,number_bins=100,colmap_val=colmap_value,real_scale=True)
+
+    cbar=fig.colorbar(mesh,cax=ax2,orientation='vertical')
+    ax2.set_xlim([0,20])
+    ax2.tick_params(axis="y",direction="in", pad=-150,length=0)
+    
     ax1.set_title('')
     ax1.set_xlabel(axes[0])
     #ax1.set_ylabel(axes[1])
     #ax1.set_xlim(-1.1*np.pi,1.1*np.pi)
-    ax1.set_xlim(0.,.003)
-    ax1.set_ylim(0,150.)
+    ax1.set_xlim(1.,2.3)
+    ax1.set_ylim(0,35)
 
 def yield_outputs(filenames,output_type=Distribution_Function,**init):
     """
@@ -120,16 +127,16 @@ def yield_outputs(filenames,output_type=Distribution_Function,**init):
         yield output_type(filename=filename,**init)
 
 
-fig,(ax1)=plt.subplots(1,1)
+fig,(ax1,ax2)=plt.subplots(1,2)
 filenames,parameters=parse_scan_directories(return_filetype='particle_list')
 #filenames,parameters=filter_simulations(filenames,parameters,phase=0) #optionally filter out some simulations
 phases=[float(parameter['phase']) for parameter in parameters]
 phases,filenames,parameters=processing.utils.sort_arrays(np.array(phases),np.array(filenames),np.array(parameters))
-axes=['time']
+axes=['R','Z']
 outputs=yield_outputs(filenames,output_type=Final_Particle_List,ID='',data_format='LOCUST',compression=True,coordinates=axes+['status_flag'])
-animation=FuncAnimation(fig,draw_frame,frames=outputs,fargs=[filenames,fig,ax1,axes,False],repeat=True) #cycle through phases and make animation
+animation=FuncAnimation(fig,draw_frame,frames=outputs,fargs=[filenames,fig,ax1,ax2,axes],repeat=True) #cycle through phases and make animation
 #plt.show()
-animation.save('RMP_phase_scan_time.gif',writer='pillow')
+animation.save('RMP_phase_scan_RZ.gif',writer='pillow')
 
 
 #################################

@@ -24,32 +24,36 @@ import support
 import settings
 import copy
 
+number_simulations=10
+
 phase_min=0 #in degrees
-phase_max=180
-number_phases=5
-phase_shift_degrees=np.linspace(phase_min,phase_max,number_phases)
+phase_max=0
+phase_shift_degrees=np.zeros(number_simulations)
 phase_shift=phase_shift_degrees*2.*np.pi/360 #in radians
 
-n2=[True]*number_phases #True #read, plot and dump n=2 harmonic?
-n6=[False]*number_phases #read, plot and dump n=6 harmonic?
+n2=[True]*number_simulations #True #read, plot and dump n=2 harmonic?
+n6=[False]*number_simulations #read, plot and dump n=6 harmonic?
 response=True #include plasma response?
-response_tag = ['response']*number_phases if response else ['vacuum']*number_phases  
-response=[response]*number_phases #include plasma response?
+response_tag = ['response']*number_simulations if response else ['vacuum']*number_simulations  
+response=[response]*number_simulations #include plasma response?
 ideal=False #ideal or resistive?
-ideal_tag = ['ideal']*number_phases if ideal else ['resistive']*number_phases  
-ideal=[ideal]*number_phases #ideal or resistive?
-data_format_input=['MARSF_bplas']*number_phases #data format of data source
-data_format_output=['LOCUST']*number_phases #data format to dump data to
+ideal_tag = ['ideal']*number_simulations if ideal else ['resistive']*number_simulations  
+ideal=[ideal]*number_simulations #ideal or resistive?
+data_format_input=['MARSF_bplas']*number_simulations #data format of data source
+data_format_output=['LOCUST']*number_simulations #data format to dump data to
+
+perturbation_nR=np.linspace(40,800,number_simulations)
+perturbation_nZ=np.linspace(60,1200,number_simulations)
 
 #define file structure here, uses <parameter_name>_<value>_.....format
-dir_input_files=[support.dir_input_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_)) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
-dir_output_files=[support.dir_output_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_)) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
+dir_input_files=[str(support.dir_input_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_))) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
+dir_output_files=[str(support.dir_output_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_))) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
 
 LOCUST_run__dirs_LOCUST=['locust_{}'.format(phase) for phase in phase_shift_degrees]
 LOCUST_run__dir_LOCUST=[support.dir_locust / LOCUST_run__dir_LOCUST for LOCUST_run__dir_LOCUST in LOCUST_run__dirs_LOCUST]
-LOCUST_run__system_name=[None]*number_phases
-LOCUST_run__repo_URL=[None]*number_phases
-LOCUST_run__commit_hash=[None]*number_phases
+LOCUST_run__system_name=[None]*number_simulations
+LOCUST_run__repo_URL=[None]*number_simulations
+LOCUST_run__commit_hash=[None]*number_simulations
 
 LOCUST_run__settings_prec_mod={}
 LOCUST_run__settings_prec_mod['threadsPerBlock']=64
@@ -62,7 +66,7 @@ LOCUST_run__settings_prec_mod['omega']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['phase']='[0.0e0_gpu]'#'[0.0e0_gpu,0.0e0_gpu]'
 LOCUST_run__settings_prec_mod['i3dr']=-1
 LOCUST_run__settings_prec_mod['niter']=1
-LOCUST_run__settings_prec_mod=[copy.deepcopy(LOCUST_run__settings_prec_mod) for _ in range(number_phases)]
+LOCUST_run__settings_prec_mod=[copy.deepcopy(LOCUST_run__settings_prec_mod) for _ in range(number_simulations)]
 for counter,phase in enumerate(phase_shift_degrees):
     LOCUST_run__settings_prec_mod[counter]['root']="'/tmp/locust_RMP_scan/{}'".format(phase)
 
@@ -90,10 +94,12 @@ LOCUST_run__flags['B3D_EX']=True
 LOCUST_run__flags['SPLIT']=True
 LOCUST_run__flags['NOINF']=True
 
-LOCUST_run__flags=[LOCUST_run__flags]*number_phases
+LOCUST_run__flags=[LOCUST_run__flags]*number_simulations
 
 RMP_batch_run=run_scripts.batch.Batch(
         phase_shift=phase_shift,
+        perturbation_nR=perturbation_nR,
+        perturbation_nZ=perturbation_nZ,
         n2=n2,
         n6=n6,
         response=response,
