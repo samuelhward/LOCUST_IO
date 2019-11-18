@@ -900,7 +900,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
-                self.mode_number=int(mode_number)
+                if mode_number is not None: self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST(self.filepath,**properties)
 
@@ -910,7 +910,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
-                self.mode_number=int(mode_number)
+                if mode_number is not None: self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_LOCUST_field_data(self.filepath,**properties)
 
@@ -920,7 +920,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename
-                self.mode_number=int(mode_number)
+                if mode_number is not None: self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_ASCOT_field_data(self.filepath,**properties)
 
@@ -930,7 +930,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format
                 self.shot=shot
                 self.run=run
-                self.mode_number=int(mode_number)
+                if mode_number is not None: self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_IDS_mhd_linear(self.shot,self.run,self.mode_number,**properties)
 
@@ -950,7 +950,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_input_files / filename
-                self.mode_number=int(mode_number)
+                if mode_number is not None: self.mode_number=int(mode_number)
                 self.properties={**properties}
                 self.data=read_perturbation_MARSF_bplas(self.filepath,**properties)
 
@@ -1124,6 +1124,9 @@ class Perturbation(classes.base_input.LOCUST_input):
                     values=dB_Z
                 elif key=='dB_field':
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                else:
+                    values=self[key]
+                
                 values=values.reshape(nR,nphi)
 
                 if vminmax:
