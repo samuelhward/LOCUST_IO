@@ -384,7 +384,7 @@ def read_perturbation_MARSF(filepath,**properties):
     
     return input_data
 
-def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=False,phase=0,bcentr=1.75660107,rmaxis=1.70210874):
+def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=False,phase=0,bcentr=1.75660107,rmaxis=1.70210874,nR_1D=400,nZ_1D=600):
     """
     read perturbation bplas files produced by MARSF for individual harmonics and coil sets 
     
@@ -395,6 +395,8 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
        phase - phase shift between upper and lower rows (applied to upper coils) [radians]
        bcentr - vacuum toroidal magnetic field at rcentr
        rmaxis - R at magnetic axis (O-point)
+       nR_1D - number of points in R
+       nZ_1D - number of points in Z
     notes:
        adapted from David Ryan's scripts david.ryan@ukaea.uk
        response overrides ideal toggle setting
@@ -647,8 +649,8 @@ def read_perturbation_MARSF_bplas(filepath=pathlib.Path(''),response=True,ideal=
     Z_min=-1.5
     Z_max=1.5
   
-    numR=400
-    numZ=600
+    numR=nR_1D
+    numZ=nZ_1D
   
     rz_geom=rzcoords(rmzm_geom_path, nchi)
     jc_geom=jacobian(rz_geom)
