@@ -60,7 +60,7 @@ class Batch:
     batch_system['TITAN']['flags']['partition']='gpu_p100_titan'
     batch_system['TITAN']['flags']['cpus-per-task']=1
     batch_system['TITAN']['flags']['exclusive']=True
-    batch_system['TITAN']['flags']['mail-user']='samuel.ward@iter.org'
+    batch_system['TITAN']['flags']['mail-user']='samuel.ward@york.ac.uk'
     batch_system['TITAN']['flags']['mail-type']='END,FAIL,TIME_LIMIT'
     batch_system['TITAN']['flags']['o']='LOCUST_SLURM.out'
     batch_system['TITAN']['flags']['e']='LOCUST_SLURM.err'
@@ -77,6 +77,25 @@ class Batch:
     batch_system['CUMULUS']['flags']['N']='LOCUST'
     batch_system['CUMULUS']['flags']['o']='LOCUST_PBS.out'
     batch_system['CUMULUS']['flags']['e']='LOCUST_PBS.err'
+
+    batch_system['VIKING']={}
+    batch_system['VIKING']['shebang']='#!/bin/bash'
+    batch_system['VIKING']['command_execute_workflow']='python'
+    batch_system['VIKING']['command_launch_batch']='sbatch'
+    batch_system['VIKING']['flag_command']='#SBATCH'
+    batch_system['VIKING']['flags']={}
+    batch_system['VIKING']['flags']['job-name']='LOCUST'
+    batch_system['VIKING']['flags']['gres']='gpu:1'
+    batch_system['VIKING']['flags']['partition']='gpu'
+    batch_system['VIKING']['flags']['cpus-per-task']=1
+    batch_system['VIKING']['flags']['mail-user']='samuel.ward@york.ac.uk'
+    batch_system['VIKING']['flags']['mail-type']='END,FAIL,TIME_LIMIT'
+    batch_system['VIKING']['flags']['output']='LOCUST_SLURM.out'
+    batch_system['VIKING']['flags']['error']='LOCUST_SLURM.err'
+    batch_system['VIKING']['flags']['ntasks']=1
+    batch_system['VIKING']['flags']['mem']='24gb'
+    batch_system['VIKING']['flags']['time']='02:00:00'
+
 
     def __init__(self,**batch_settings):
         """

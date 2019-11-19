@@ -165,7 +165,8 @@ class Environment:
     environments['VIKING']['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
     environments['VIKING']['module load']=[
                             'compiler/PGI/18.10-GCC-7.3.0-2.30',
-                            'system/CUDA/9.2.88-GCC-7.3.0-2.30']
+                            'system/CUDA/9.2.88-GCC-7.3.0-2.30',
+                            'lang/Python/3.7.0-intel-2018b']
     environments['VIKING']['module unload']=[
                             'compiler/GCCcore/7.3.0']
     environments['VIKING']['misc']={}
@@ -203,7 +204,7 @@ class Environment:
 
         commands=[]
 
-        for command in ['module load','module unload','module switch','misc','export']: #user can control order of execution of commands here
+        for command in ['module purge','module load','module unload','module switch','misc','export']: #user can control order of execution of commands here
             things_to_command=self.environment[command]
 
             if command=='export':
@@ -214,6 +215,8 @@ class Environment:
                 commands.extend(['module switch {}'.format(module) for module in things_to_command])
             elif command=='module unload':
                 commands.extend(['module unload {}'.format(module) for module in things_to_command])
+            elif command=='module purge':
+                commands.extend(['module purge'])
             elif command=='misc':
                 commands.extend([' '.join([thing_to_command,str(self.environment[command][thing_to_command])]) for thing_to_command in things_to_command])
 
