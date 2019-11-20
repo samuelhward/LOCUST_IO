@@ -184,8 +184,8 @@ if __name__=='__main__':
 
     this_run=RMP_scan_workflow(
         phase_shift=args.phase_shift,
-        perturbation_nR=perturbation_nR,
-        perturbation_nZ=perturbation_nZ,
+        perturbation_nR=args.perturbation_nR,
+        perturbation_nZ=args.perturbation_nZ,
         n2=args.n2,
         n6=args.n6,
         response=args.response,

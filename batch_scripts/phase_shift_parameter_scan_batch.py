@@ -41,8 +41,8 @@ ideal=[ideal]*number_phases #ideal or resistive?
 data_format_input=['MARSF_bplas']*number_phases #data format of data source
 data_format_output=['LOCUST']*number_phases #data format to dump data to
 
-perturbation_nR=400
-perturbation_nZ=600
+perturbation_nR=[400]*number_phases
+perturbation_nZ=[600]*number_phases
 
 #define file structure here, uses <parameter_name>_<value>_.....format
 dir_input_files=[str(support.dir_input_files / 'RMP_phase_scan' / ('phase_{phase_shift}_ideal_{ideal}_response_{response}'.format(phase_shift=phase,ideal=ideal_tag_,response=response_tag_))) for phase,ideal_tag_,response_tag_ in zip(phase_shift_degrees,ideal,response)]
