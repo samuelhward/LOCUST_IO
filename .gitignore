@@ -1,4 +1,4 @@
-#files to ignore...
+#ignore all data stored in data folder except supplied samples
 
 data/*/*
 !data/*/sample_*
@@ -30,14 +30,11 @@ data/*/*
 #__pycache__ file
 __pycache__
 
-#environment load files
-*env
-
-#LOCUST run script files
-*.run
-
 #changes file
 changes
+
+#notes file
+notes
 
 #VS code things
 .vscode/*
