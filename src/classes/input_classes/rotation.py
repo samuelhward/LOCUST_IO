@@ -261,7 +261,50 @@ def dump_rotation_MARSF(output_data,filepath,**properties):
             file.write("{flux_pol_norm_sqrt}{rotation}\n".format(flux_pol_norm_sqrt=processing.utils.fortran_string(flux_pol_norm_sqrt[point],24,18),rotation=processing.utils.fortran_string(rotation[point],24,18)))
 
     print("finished writing rotation to MARSF mogui")
-        
+
+def dump_rotation_IDS(output_data,filepath,**properties):
+    """
+    notes:
+
+    """
+    
+    print("writing rotation to IDS")
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: dump_rotation_IDS could not import IMAS module!\nreturning\n")
+        return
+
+    output_IDS=imas.ids(shot,run) 
+    output_IDS.open_env(username,imasdb,'3') #open the IDS
+ 
+    #write out code properties
+    output_IDS.core_profiles.ids_properties.comment=ID #write out identification
+    output_IDS.core_profiles.code.name="LOCUST_IO"
+    output_IDS.core_profiles.code.version=support.LOCUST_IO_version
+    output_IDS.core_profiles.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
+    output_IDS.core_profiles.time=np.array([0.0])
+     
+    #add a time_slice and set the time
+    output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
+    output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
+ 
+    #write out rotation
+    output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species 
+    output_IDS.core_profiles.profiles_1d[0].ion[-1].rotation_frequency_tor=output_data['rotation_ang']
+    if 'Z' in properties:
+        output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=float(properties['Z'])
+            
+    #write out the axes
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
+
+    #'put' all the output_data into the file and close
+    output_IDS.core_profiles.put()
+    output_IDS.close()
+
+    print("finished writing rotation to IDS")
+
 ################################################################## rotation class
  
 class Rotation(classes.base_input.LOCUST_input):
