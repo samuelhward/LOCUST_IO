@@ -385,8 +385,11 @@ class Rotation(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files / filename
                 dump_rotation_MARSF(self.data,filepath)
 
+        elif data_format=='IDS':
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,self.properties):
+                dump_rotation_IDS(self.ID,self.data,shot,run,**properties)
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/MARSF)\n".format(self.ID))
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/MARSF/IDS)\n".format(self.ID))
  
     def plot(self,axis='flux_pol_norm',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
