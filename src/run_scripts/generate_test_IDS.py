@@ -58,6 +58,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
         test_IDS.core_profiles.get()
         test_IDS.core_profiles.code.version='1'
         test_IDS.core_profiles.code.name="LOCUST_IO"
+        if settings.commit_hash_default_LOCUST_IO: output_IDS.core_profiles.code.commit=str(settings.commit_hash_default_LOCUST_IO)
         test_IDS.core_profiles.ids_properties.homogeneous_time=1   
         test_IDS.core_profiles.ids_properties.comment='a comment'
         test_IDS.core_profiles.time=np.array([0.0])

@@ -802,6 +802,7 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
 
     output_IDS.mhd_linear.ids_properties.comment=ID #write out identification
     output_IDS.mhd_linear.code.name="LOCUST_IO"
+    if settings.commit_hash_default_LOCUST_IO: output_IDS.mhd_linear.code.commit=str(settings.commit_hash_default_LOCUST_IO)
     output_IDS.mhd_linear.code.version=support.LOCUST_IO_version
     output_IDS.mhd_linear.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
     output_IDS.mhd_linear.time=np.array([0.0]) #define timebase
@@ -957,7 +958,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST/LOCUST_field_data/ASCOT_field_data/IDS/MARSF/MARSF_bplas)\n".format(self.ID))            
  
-    def dump_data(self,data_format=None,filename=None,shot=None,run=None,mode_number=None,BCHECK=1,**properties):
+    def dump_data(self,data_format=None,filename=None,shot=None,run=None,BCHECK=1,**properties):
         """
         write perturbation to file
  
@@ -980,8 +981,8 @@ class Perturbation(classes.base_input.LOCUST_input):
                 dump_perturbation_point_data_LOCUST(self.data,filepath,BCHECK,**properties)
 
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to IDS - shot, run and mode_number required\n".format(self.ID),shot,run,mode_number):
-                dump_perturbation_IDS_mhd_linear(self.ID,self.data,shot,run,mode_number,**properties)
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to IDS - shot and run required\n".format(self.ID),shot,run):
+                dump_perturbation_IDS_mhd_linear(self.ID,self.data,shot,run,self.mode_number,**properties)
 
         elif data_format=='POCA':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to POCA - filename required\n".format(self.ID),filename):

@@ -265,7 +265,8 @@ def dump_rotation_MARSF(output_data,filepath,**properties):
 def dump_rotation_IDS(output_data,filepath,**properties):
     """
     notes:
-
+        performing operations as per NEMO
+        assumes all species are comprised of a single element
     """
     
     print("writing rotation to IDS")
@@ -282,6 +283,7 @@ def dump_rotation_IDS(output_data,filepath,**properties):
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification
     output_IDS.core_profiles.code.name="LOCUST_IO"
+    if settings.commit_hash_default_LOCUST_IO: output_IDS.core_profiles.code.commit=str(settings.commit_hash_default_LOCUST_IO)
     output_IDS.core_profiles.code.version=support.LOCUST_IO_version
     output_IDS.core_profiles.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
     output_IDS.core_profiles.time=np.array([0.0])
@@ -291,10 +293,26 @@ def dump_rotation_IDS(output_data,filepath,**properties):
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
  
     #write out rotation
-    output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species 
-    output_IDS.core_profiles.profiles_1d[0].ion[-1].rotation_frequency_tor=output_data['rotation_ang']
-    if 'Z' in properties:
-        output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=float(properties['Z'])
+    if 'Z' not in properties or 'A' not in properties:
+        print("ERROR: could not dump_rotation_IDS - properties['A'] and properties['Z'] required!\nreturning\n")
+        return
+    else:
+
+        try:
+            species_number=[counter for counter,ion in enumerate(
+                            output_IDS.core_profiles.profiles_1d[0].ion)   
+                            if ion.element[0].a==properties['A']
+                            if ion.element[0].z_n==properties['Z']]
+        except:
+            species_number=[]
+
+        if not species_number: #if matching ion found in IDS, its number now held in species number
+            species_number=[-1]
+            output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+            output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
+            output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']
+
+        output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].rotation_frequency_tor=output_data['rotation_ang']
             
     #write out the axes
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']

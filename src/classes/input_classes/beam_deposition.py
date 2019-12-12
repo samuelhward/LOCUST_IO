@@ -809,6 +809,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     #write out code properties
     output_IDS.distribution_sources.ids_properties.comment=ID #write out identification
     output_IDS.distribution_sources.code.name="LOCUST_IO"
+    if settings.commit_hash_default_LOCUST_IO: output_IDS.distribution_sources.code.commit=str(settings.commit_hash_default_LOCUST_IO)
     output_IDS.distribution_sources.code.version=support.LOCUST_IO_version
     output_IDS.distribution_sources.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
     output_IDS.distribution_sources.time=np.array([0.0])

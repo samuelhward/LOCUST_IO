@@ -442,12 +442,27 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
             write_number(file,output_data[key],cnt)
  
         write_1d(file,output_data['fpol'],cnt)
+        if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
+            file.write('\n') 
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_1d(file,output_data['pres'],cnt)
+        if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
+            file.write('\n') 
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_1d(file,output_data['ffprime'],cnt)
+        if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
+            file.write('\n') 
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_1d(file,output_data['pprime'],cnt)
+        if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
+            file.write('\n') 
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_2d(file,output_data['psirz'],cnt)    
+        if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
+            file.write('\n') 
+        cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
         write_1d(file,output_data['qpsi'],cnt) 
-        if processing.utils.get_next(counter) == 0: #check if \n was written last
+        if processing.utils.get_next(cnt) == 0: #check if \n was written last
             file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
         else:
             file.write('\n'+processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
@@ -483,6 +498,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification
     output_IDS.equilibrium.code.name="LOCUST_IO"
+    if settings.commit_hash_default_LOCUST_IO: output_IDS.equilibrium.code.commit=str(settings.commit_hash_default_LOCUST_IO)
     output_IDS.equilibrium.code.version=support.LOCUST_IO_version
     output_IDS.equilibrium.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
     output_IDS.equilibrium.time=np.array([0.0])
@@ -685,7 +701,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        axes,number_bins,colmap_val=run_scripts.utils.literal_eval(axes,number_bins,colmap_val)
+        number_bins,colmap_val=run_scripts.utils.literal_eval(number_bins,colmap_val)
 
         import scipy
         import matplotlib

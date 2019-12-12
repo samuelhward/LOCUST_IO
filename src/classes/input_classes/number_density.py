@@ -432,6 +432,9 @@ def dump_number_density_LOCUST(output_data,filepath,**properties):
 def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     """
     writes LOCUST number density data to a core_profiles IDS
+    notes:
+        performing operations as per NEMO
+        assumes all species are comprised of a single element
     """
     
     print("writing number density to IDS")
@@ -448,6 +451,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification
     output_IDS.core_profiles.code.name="LOCUST_IO"
+    if settings.commit_hash_default_LOCUST_IO: output_IDS.core_profiles.code.commit=str(settings.commit_hash_default_LOCUST_IO)
     output_IDS.core_profiles.code.version=support.LOCUST_IO_version
     output_IDS.core_profiles.ids_properties.homogeneous_time=1   #must set homogeneous_time variable
     output_IDS.core_profiles.time=np.array([0.0])
@@ -459,15 +463,28 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     #write out number density depending on species
     if properties['species']=='electrons':
         output_IDS.core_profiles.profiles_1d[0].electrons.density=output_data['n']
-    elif properties['species']=='ions':
-        output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species 
-        output_IDS.core_profiles.profiles_1d[0].ion[-1].density=output_data['n']
-        if 'Z' in properties:
-            output_IDS.core_profiles.profiles_1d[0].ion[-1].z_ion=float(properties['Z'])
-
     else:
-        print("ERROR: cannot dump_number_density_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
-        return
+
+        if 'Z' not in properties or 'A' not in properties:
+            print("ERROR: could not dump_number_density_IDS - properties['A'] and properties['Z'] required!\nreturning\n")
+            return
+        else:
+
+            try:
+                species_number=[counter for counter,ion in enumerate(
+                                output_IDS.core_profiles.profiles_1d[0].ion)   
+                                if ion.element[0].a==properties['A']
+                                if ion.element[0].z_n==properties['Z']]
+            except:
+                species_number=[]
+
+            if not species_number: #if matching ion found in IDS, its number now held in species number
+                species_number=[-1]
+                output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+                output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
+                output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']
+
+            output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].density=output_data['n']
         
     #write out the axes
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
