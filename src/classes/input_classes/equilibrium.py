@@ -682,7 +682,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
-    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots equilibrium
         
@@ -694,6 +694,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             limiters - toggles limiters on/off in 2D plots
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
+            vminmax - set mesh Vmin/Vmax values
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
@@ -701,7 +702,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         """
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
-        number_bins,colmap_val=run_scripts.utils.literal_eval(number_bins,colmap_val)
+        number_bins,colmap_va,vminmax=run_scripts.utils.literal_eval(number_bins,colmap_val,vminmax)
 
         import scipy
         import matplotlib
@@ -745,14 +746,21 @@ class Equilibrium(classes.base_input.LOCUST_input):
             Y=self['Z_1D'] 
             Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.amin(Z)
+                vmax=np.amax(Z)
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(np.amin(Z),np.amax(Z),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
                 if plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 

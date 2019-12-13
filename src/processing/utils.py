@@ -149,14 +149,18 @@ def sort_arrays(main_array,*args):
 
     return returned_arrays
 
-def angle_pol(R_major_width,R,Z):
+def angle_pol(R_major,R,Z):
     """
     returns poloidal angle
 
     notes:
+    args:
+        R_major - major radius at geometric axis
+        R - R coordinate at point of interest
+        Z - Z coordinate at point of interest
     """
 
-    R_minor=R-R_major_width
+    R_minor=R-R_major
     angle=np.arctan2(Z,R_minor)
 
     return angle
@@ -281,6 +285,27 @@ def RZ_to_Psi(R_coordinate,Z_coordinate,equilibrium):
         psi_at_coordinate.append(np.squeeze(psi_point))
 
     return np.asarray(psi_at_coordinate)
+
+def flux_func_to_RZ(psi,quantity,equilibrium):
+    """
+    maps 1D flux function onto a 2D RZ grid equilibrium
+
+    notes:
+    args:
+        psi - 
+        quantity - 
+        equilibrium - equilibrium object with psi over 2D grid
+    """
+
+    interpolator=interpolate_1D(psi,quantity)
+    Z_2D,R_2D=np.meshgrid(equilibrium['Z_1D'],equilibrium['R_1D']) #this way around to order dimensions as [r,z]
+    quantity_2D=copy.deepcopy(R_2D)
+
+    for r_index in range(len(equilibrium['R_1D'])): #loop over grid, get psi at each point and feed to flux function interpolator
+        for z_index in range(len(equilibrium['Z_1D'])):            
+            quantity_2D[r_index,z_index]=interpolator(equilibrium['psirz'][r_index,z_index])
+
+    return quantity_2D
 
 def dot_product(vec1,vec2):
     """
