@@ -291,10 +291,12 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
     maps 1D flux function onto a 2D RZ grid equilibrium
 
     notes:
+        assumes psi is consistent between psi, quantity and equilibrium i.e all against normalised poloidal flux, or Wb/rad etc.
+        flux taken from psirz quantity stored in equilibrium object
     args:
-        psi - 
-        quantity - 
-        equilibrium - equilibrium object with psi over 2D grid
+        psi - 1D poloidal flux axis 
+        quantity - 1D quantity mapped to psi
+        equilibrium - equilibrium object with 2D psi grid
     """
 
     interpolator=interpolate_1D(psi,quantity)
