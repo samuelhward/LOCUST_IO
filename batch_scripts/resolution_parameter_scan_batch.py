@@ -95,7 +95,7 @@ LOCUST_run__flags['B3D_EX']=True
 LOCUST_run__flags['SPLIT']=True
 LOCUST_run__flags['NOINF']=True
 
-LOCUST_run__flags=[LOCUST_run__flags]*number_simulations
+LOCUST_run__flags=[copy.deepcopy(LOCUST_run__flags) for _ in range(number_simulations)]
 
 resolution_batch_run=run_scripts.batch.Batch(
         phase_shift=phase_shift,
