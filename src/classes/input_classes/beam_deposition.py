@@ -805,6 +805,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.distribution_sources.get()
  
     #write out code properties
     output_IDS.distribution_sources.ids_properties.comment=ID #write out identification

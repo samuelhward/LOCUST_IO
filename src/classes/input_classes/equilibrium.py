@@ -494,6 +494,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.equilibrium.get()
  
     #write out code properties
     output_IDS.equilibrium.ids_properties.comment=ID #write out identification

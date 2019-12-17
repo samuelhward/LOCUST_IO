@@ -436,6 +436,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
 
     output_IDS=imas.ids(shot,run) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.core_profiles.get()
  
     #write out code properties
     output_IDS.core_profiles.ids_properties.comment=ID #write out identification

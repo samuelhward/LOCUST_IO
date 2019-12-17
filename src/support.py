@@ -43,6 +43,7 @@ dir_run_scripts=dir_locust_io / 'src' / 'run_scripts'
 dir_processing=dir_locust_io / 'src' / 'processing'
 dir_classes=dir_locust_io / 'src' / 'classes'
 dir_locust=dir_locust_io / 'LOCUST'
+dir_nemo=dir_locust_io / 'NEMO'
 
 #data which must exist to be able to run LOCUST
 required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','simag','sibry','bcentr',
