@@ -478,10 +478,10 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     writes relevant LOCUST equilibrium data to an equilibrium IDS
  
     notes:
+        current format in line with NEMO input
         currently only for rectangular equilibria 
         currently overwrites pre-existing IDSs
         idum not dumped
- 
     """
  
     print("writing equilibrium to IDS")
@@ -548,7 +548,17 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
      
     #write out 2D profiles
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].psi=output_data['psirz'] 
-     
+
+    #write out magnetic field if present
+    #XXX this combination is deprecated but is compatible with NEMO
+    if 'B_field_R' in output_data: output_IDS.equilibrium.time_slice[0].profiles_2d[0].b_r=output_data['B_field_R']
+    if 'B_field_tor' in output_data: output_IDS.equilibrium.time_slice[0].profiles_2d[0].b_field_tor=output_data['B_field_tor']
+    if 'B_field_Z' in output_data: output_IDS.equilibrium.time_slice[0].profiles_2d[0].b_z=output_data['B_field_Z']
+    
+    #calculate and write out 2D toroidal flux profile 
+    if 'flux_pol' in output_data and 'flux_tor' in output_data:
+        output_IDS.equilibrium.time_slice[0].profiles_2d[0].phi=2.*np.pi*processing.utils.flux_func_to_RZ(output_data['flux_pol'],output_data['flux_tor'],output_data) 
+
     #'put' all the output_data into the file and close
     output_IDS.equilibrium.put()
     output_IDS.close()
