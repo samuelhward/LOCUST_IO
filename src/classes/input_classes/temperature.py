@@ -137,7 +137,8 @@ def read_temperature_IDS(shot,run,**properties):
     reads relevant LOCUST temperature data from a core_profiles IDS and returns as a dictionary
  
     notes:
-        
+        assumes NEMO layout of data
+        assumes single-element species i.e. no molecules
     """
  
     print("reading temperature from IDS")
@@ -155,31 +156,37 @@ def read_temperature_IDS(shot,run,**properties):
     input_data = {} #initialise blank dictionary to hold the data
     
     #read in temperature depending on species
+    species_avail_A=[]
+    species_avail_Z=[]
     if properties['species']=='electrons':
         input_data['T']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.temperature)
-    elif properties['species']=='ions':
+    else:
         species_number=None
-        if 'Z' in properties:
+        if 'A' in properties and 'Z' in properties:
             for counter,species in enumerate(input_IDS.core_profiles.profiles_1d[0].ion):
-                if int(properties['Z'])==species.z_ion:
+                if int(properties['A'])==species.element[0].a and int(properties['Z'])==species.element[0].z_n:
                     species_number=counter
+                species_avail_A.append(species.element[0].a)
+                species_avail_Z.append(species.element[0].z_n)
             if species_number is None:
-                print("ERROR: read_temperature_IDS could not find requested species in IDS (shot - {shot}, run - {run}, Z - {Z})!\nreturning\n!".format(shot=shot,run=run,Z=int(properties['Z'])))
+                print("ERROR: read_temperature_IDS could not find requested species in IDS \
+                    (shot - {shot}, run - {run}, Z - {Z}) - available species: {species_avail}!\nreturning\n!"\
+                    .format(shot=shot,run=run,Z=int(properties['Z']),species_avail=['\nA={},Z={}'.format(A,Z) for A,Z in zip(species_avail_A,species_avail_Z)]))
                 return
         else:
             species_number=0
+            print("WARNING: read_temperature_IDS not supplied species A or Z - reading first species in IDS A={A} Z={Z}".format(
+                A=input_IDS.core_profiles.profiles_1d[0].ion[species_number].element[0].a,
+                Z=input_IDS.core_profiles.profiles_1d[0].ion[species_number].element[0].z_n))
 
         input_data['T']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[species_number].temperature)
-    else:
-        print("ERROR: cannot read_temperature_IDS - properties['species'] must be set to 'electrons' or 'ions'\n")
-        return
 
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*constants.pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     processing.utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
-    if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
-        processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
+    if input_IDS.core_profiles.vacuum_toroidal_field.b0.size!=0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
+        processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0[0]*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     if 'flux_pol' in input_data: #calculate normalised flux
         input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol'])-np.min(input_data['flux_pol']))
@@ -422,8 +429,8 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
     """
     writes relevant LOCUST temperature data to a core_profiles IDS
     notes:
-        performing operations as per NEMO
-        assumes all species are comprised of a single element
+        assumes NEMO layout of data
+        assumes single-element species i.e. no molecules
     """
 
     print("writing temperature to IDS")
@@ -466,10 +473,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
                                 if ion.element[0].a==properties['A']
                                 if ion.element[0].z_n==properties['Z']]
             except:
-                species_number=[]
-
-            if not species_number: #if matching ion found in IDS, its number now held in species number
-                species_number=[-1]
+                species_number=[-1] #if matching ion found in IDS, its number now held in species number
                 output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']

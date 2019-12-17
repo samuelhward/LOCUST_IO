@@ -235,7 +235,6 @@ def read_equilibrium_IDS(shot,run,**properties):
     #easy bits
     #0D data
     input_data['rcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.r0).reshape([]) #need reshape to ensure shape consistency
-    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0).reshape([])
     input_data['rmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.r).reshape([])
     input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
     input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*constants.pi)).reshape([]) #convert to Wb/rad
@@ -243,6 +242,7 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
  
     #1D data
+    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0)
     input_data['fpol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f) #flux grid data
     input_data['pres']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.pressure)
     input_data['ffprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi)
