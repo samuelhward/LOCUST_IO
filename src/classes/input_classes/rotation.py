@@ -277,7 +277,7 @@ def dump_rotation_IDS(output_data,filepath,**properties):
         raise ImportError("ERROR: dump_rotation_IDS could not import IMAS module!\nreturning\n")
         return
 
-    output_IDS=imas.ids(shot,run) 
+    output_IDS=imas.ids(int(shot),int(run)) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
     output_IDS.core_profiles.get()
  

@@ -248,7 +248,7 @@ def read_beam_depo_IDS(shot,run,**properties):
         raise ImportError("ERROR: read_beam_depo_IDS could not import IMAS module!\nreturning\n")
         return
 
-    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     input_IDS.open_env(username,imasdb,'3')
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
@@ -257,18 +257,19 @@ def read_beam_depo_IDS(shot,run,**properties):
     for identifier in input_IDS.distribution_sources.source[0].markers[0].coordinate_identifier: #generate keys for input_data by looking at the coordinates of the particle markers
         input_data[identifier.name.replace('\x00','').strip()]=[] #need to remove the unicode bits
 
-    for source in input_IDS.distribution_sources.source: #cycle through all possible sources
-        if len(source.markers[0].positions)>0:
+    for source in input_IDS.distribution_sources.source: #cycle through all possible sources    
+        if len(source.markers)>0:
+            if len(source.markers[0].positions)>0:
 
-            for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
-                coordinate_name=source.markers[0].coordinate_identifier[coordinate_index].name.replace('\x00','').strip()
+                for coordinate_index in range(len(source.markers[0].positions[0,:])): #loop over the possible coordinate types e.g. r, phi, z
+                    coordinate_name=source.markers[0].coordinate_identifier[coordinate_index].name.replace('\x00','').strip()
 
-                for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
+                    for marker in source.markers[0].positions[:,coordinate_index]: #this range should/must be the same for all values of coordinate_index
 
-                    input_data[coordinate_name].extend([marker])    
+                        input_data[coordinate_name].extend([marker])    
 
-        if len(source.markers[0].weights)>0: #if markers have defined weights
-            input_data['weight'].extend(source.markers[0].weights)
+            if len(source.markers[0].weights)>0: #if markers have defined weights
+                input_data['weight'].extend(source.markers[0].weights)
 
     for key in input_data: #convert to numpy arrays
         input_data[key]=np.asarray(input_data[key])
@@ -803,7 +804,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
         raise ImportError("ERROR: dump_beam_depo_IDS could not import IMAS module!\nreturning\n")
         return
 
-    output_IDS=imas.ids(shot,run) 
+    output_IDS=imas.ids(int(shot),int(run)) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
     output_IDS.distribution_sources.get()
  

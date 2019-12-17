@@ -1809,7 +1809,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
         raise ImportError("ERROR: read_inputs_IMAS could not import IMAS module!\nreturning\n")
         return
 
-    input_IDS=imas.ids(shot,run) 
+    input_IDS=imas.ids(int(shot),int(run)) 
     input_IDS.open_env(username,imasdb,'3') #open the IDS
 
     input_IDS.core_profiles.get() #grab all the kinetic profile data to get species information

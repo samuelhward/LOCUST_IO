@@ -45,7 +45,7 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
     notes:
     """
 
-    test_IDS=imas.ids(shot,run)
+    test_IDS=imas.ids(int(shot),int(run))
     test_IDS.create_env('wards2','locust_imas','3')
 
     if use_core_profiles:

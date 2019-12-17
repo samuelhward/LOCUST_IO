@@ -247,7 +247,7 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
 
     print("reading perturbation from IMAS mhd_linear IDS")
 
-    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     input_IDS.open_env(username,imasdb,'3')
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
@@ -796,7 +796,7 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
 
     print("dumping perturbation from IMAS mhd_linear IDS")
 
-    output_IDS=imas.ids(shot,run) #initialise new blank IDS
+    output_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     output_IDS.open_env(username,imasdb,'3')
     output_IDS.mhd_linear.get() #open the file and get all the data from it
 

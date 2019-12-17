@@ -158,7 +158,7 @@ def read_number_density_IDS(shot,run,**properties):
         raise ImportError("ERROR: read_number_density_IDS could not import IMAS module!\nreturning\n")
         return
 
-    input_IDS=imas.ids(shot,run) #initialise new blank IDS
+    input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     input_IDS.open_env(username,imasdb,'3')
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
@@ -445,7 +445,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         raise ImportError("ERROR: dump_number_density_IDS could not import IMAS module!\nreturning\n")
         return
 
-    output_IDS=imas.ids(shot,run) 
+    output_IDS=imas.ids(int(shot),int(run)) 
     output_IDS.open_env(username,imasdb,'3') #open the IDS
     output_IDS.core_profiles.get()
  
