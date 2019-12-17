@@ -21,6 +21,7 @@ Table of Contents
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
 * [Usage](#usage)
+* [How To Cite](#how-to-cite)
 
 
 
@@ -109,3 +110,7 @@ my_equilibrium.run_check(verbose=True)
 #you can also calculate new pieces of data using methods or functions in the processing folder
 my_equilibrium.B_calc()         
 ```
+
+## How To Cite
+
+Samuel H. Ward. __LOCUST_IO__, University of York, Culham Centre for Fusion Energy and ITER organization, samuel.ward@iter.org
