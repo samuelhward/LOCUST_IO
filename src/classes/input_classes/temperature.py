@@ -258,7 +258,7 @@ def read_temperature_UDA(shot,time,**properties):
     replace_nan(T,time_index)
     T=T.data[time_index,:]
 
-    flux_pol_grid=processing.utils.RZ_to_Psi(R_grid,np.full(len(R_grid),0.0),equilibrium) #assume measurements are along Z=0
+    flux_pol_grid=value_at_RZ(R=R_grid,Z=np.full(len(R_grid),0.0),quantity=equilibrium['psirz'],grid=equilibrium) #assume measurements are along Z=0
     flux_pol_grid_norm=(flux_pol_grid-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag'])
     flux_pol_grid_norm,T=processing.utils.sort_arrays(flux_pol_grid_norm,T) #take all data points along the line of sight
 

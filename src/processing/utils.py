@@ -149,7 +149,7 @@ def sort_arrays(main_array,*args):
 
     return returned_arrays
 
-def angle_pol(R_major,R,Z):
+def angle_pol(R_major,R,Z,Z_major=0.):
     """
     returns poloidal angle
 
@@ -158,12 +158,25 @@ def angle_pol(R_major,R,Z):
         R_major - major radius at geometric axis
         R - R coordinate at point of interest
         Z - Z coordinate at point of interest
+        Z_major - value of Z at geometric axis
     """
 
-    R_minor=R-R_major
-    angle=np.arctan2(Z,R_minor)
+    angle=np.arctan2(Z-Z_major,R-R_major)
+    if angle<0: angle+=2.*np.pi
+    return angle 
 
-    return angle
+def minor_radius(R_major,R,Z,Z_major=0.):
+    """
+    returns minor radius of R Z point
+    notes:
+    args:
+        R_major - major radius at geometric axis
+        R - R coordinate at point of interest
+        Z - Z coordinate at point of interest
+        Z_major - value of Z at geometric axis
+    """
+
+    return np.sqrt((R-R_major)**2+(Z-Z_major)**2) 
 
 def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smooth=0,rect_grid=True):
     """
@@ -265,26 +278,26 @@ def XYZ_to_RphiZ(X,Y):
 
     return R,phi
 
-def RZ_to_Psi(R_coordinate,Z_coordinate,equilibrium):
+def value_at_RZ(R,Z,quantity,grid):
     """
-    maps RZ point to corresponding poloidal flux
+    generic function to interpolate value of 2D quantity at position R,Z
 
     args:
-        R_coordinate - corresponding 1D R coordinates  
-        Z_coordinate - corresponding 1D Z coordinates
-        equilibrium - equilibrium object with psi over 2D grid
+        R - list of R coordinates  
+        Z - list of Z coordinates
+        quantity - 2D quantity
+        grid - quantity is stored on rectangular axes defined by grid['R_1D'] and grid['Z_1D']
     notes:
-        returned flux is in [Wb/rad]
     """
 
-    interpolator_psi=interpolate_2D(equilibrium['R_1D'],equilibrium['Z_1D'],equilibrium['psirz'])
-    psi_at_coordinate=[]
+    interpolator=interpolate_2D(grid['R_1D'],grid['Z_1D'],quantity)
+    value_at_coordinate=[]
 
-    for R,Z in zip(R_coordinate,Z_coordinate): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
-        psi_point=interpolator_psi(R,Z)
-        psi_at_coordinate.append(np.squeeze(psi_point))
+    for r,z in zip(R,Z): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
+        rz_point=interpolator(r,z)
+        value_at_coordinate.append(np.squeeze(rz_point))
 
-    return np.asarray(psi_at_coordinate)
+    return np.asarray(value_at_coordinate)
 
 def flux_func_to_RZ(psi,quantity,equilibrium):
     """
@@ -292,7 +305,7 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
 
     notes:
         assumes psi is consistent between psi, quantity and equilibrium i.e all against normalised poloidal flux, or Wb/rad etc.
-        flux taken from psirz quantity stored in equilibrium object
+        psi is measured against equilibrium['psirz']
     args:
         psi - 1D poloidal flux axis 
         quantity - 1D quantity mapped to psi
@@ -308,6 +321,106 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
             quantity_2D[r_index,z_index]=interpolator(equilibrium['psirz'][r_index,z_index])
 
     return quantity_2D
+
+def within_LCFS(R,Z,equilibrium):
+    """
+    determines whether R,Z point is within LCFS
+    args:
+        R - array of R coordinates at points of interest
+        Z - array of Z coordinates at points of interest
+        equilibrium - equilibrium object with LCFS
+    returns:
+        True if inside LCFS
+        False if outside LCFS
+    notes:
+        assumes LCFS points are monotonic in poloidal angle
+    """
+    distances_point_to_mag_axis=[]
+    pol_angle_points=[]
+    for r,z in zip(R,Z):
+        distances_point_to_mag_axis.append(minor_radius(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis'])) #translate point to polar coordinates
+        pol_angle_points.append(angle_pol(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis']))
+
+    distances_point_to_mag_axis=np.asarray(distances_point_to_mag_axis)
+    pol_angle_points=np.asarray(pol_angle_points)
+
+    minor_rad_LCFS=[] #calculate translate LCFS to polar coordinates 
+    pol_angle_LCFS=[] 
+    for r,z in zip(equilibrium['lcfs_r'],equilibrium['lcfs_z']): 
+        minor_rad_LCFS.append(minor_radius(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis']))
+        pol_angle_LCFS.append(angle_pol(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis']))
+    pol_angle_LCFS,minor_rad_LCFS=np.asarray(pol_angle_LCFS),np.asarray(minor_rad_LCFS)
+    pol_angle_LCFS[pol_angle_LCFS<0]=2.*np.pi+pol_angle_LCFS[pol_angle_LCFS<0]
+    pol_angle_LCFS,minor_rad_LCFS=sort_arrays(pol_angle_LCFS,minor_rad_LCFS)
+
+    interpolator_LCFS=interpolate_1D(pol_angle_LCFS,minor_rad_LCFS) #generate polar coordinate interpolator of LCFS
+    
+    distances_LCFS_to_mag_axis=[]
+    for pol_angle_point in pol_angle_points:
+        distances_LCFS_to_mag_axis.append(interpolator_LCFS(pol_angle_point)) #find radius of LCFS radius at that polar angle 
+
+    return np.array([False if r_point>r_LCFS else True for r_point,r_LCFS in zip(distances_point_to_mag_axis,distances_LCFS_to_mag_axis)]) #is this larger than distance between point and mag axis?
+
+def LCFS_crop(quantity,grid,equilibrium,crop_value=0.0,outside=True):
+    """
+    sets all values of quantity outside the LCFS = 0
+    args:
+        quantity - arbitrary 2D quantity
+        grid - quantity is stored on rectangular axes defined by grid['R_1D'] and grid['Z_1D']
+        equilibrium - equilibrium object with LCFS
+        crop_value - regions outside LCFS will be set to this value
+        outside - if outside then floor all values outside LCFS else floor all values inside
+    notes:
+    """
+
+    quantity_cropped=copy.deepcopy(quantity)
+
+    Z_2D,R_2D=np.meshgrid(grid['Z_1D'],grid['R_1D'])    
+    Z_2D_flat,R_2D_flat=Z_2D.flatten(),R_2D.flatten()
+    nR_1D,nZ_1D=len(grid['R_1D']),len(grid['Z_1D'])
+    within=np.array(within_LCFS(R_2D_flat,Z_2D_flat,equilibrium)).reshape(nR_1D,nZ_1D)
+
+    for r_counter,r in enumerate(grid['R_1D']):
+        for z_counter,z in enumerate(grid['Z_1D']):
+            if within[r_counter,z_counter] and outside is False: #crop inside LCFS
+                quantity_cropped[r_counter,z_counter]=crop_value
+            elif not within[r_counter,z_counter] and outside is True: #crop outside LCFS
+                quantity_cropped[r_counter,z_counter]=crop_value
+    
+    return quantity_cropped
+
+def crop_2D(quantity,grid,reference,key,value,crop_value=0.0,over=True):
+    """
+    crops 
+
+    args:
+        quantity - 2D quantity to crop
+        grid - quantity is stored on rectangular axes defined by grid['R_1D'] and grid['Z_1D']
+        reference - reference is an object which holds its R_1D,Z_1D grid and the 2D quantity to crop according to e.g. poloidal flux, temperature map, pressure 
+        key - name of quantity to crop in reference to
+        value - reference[key] is compared to value to determine whether point is cropped
+        crop_value - regions to be cropped will be set to this value
+        over - if over then floor all reference[key] which are greater than value else floor all reference[key] under value
+    notes:
+    usage:
+        cropped_quantity=crop_2D(quantity=pressure_map,grid=pressure_grid,reference=equilibrium,key='psirz',value=1.0,over=True) #this will remove all values of pressure which reside at a point where the poloidal flux is greater than 1.0
+    """
+
+    quantity_cropped=copy.deepcopy(quantity)
+
+    Z_2D,R_2D=np.meshgrid(grid['Z_1D'],grid['R_1D'])
+    Z_2D_flat,R_2D_flat=Z_2D.flatten(),R_2D.flatten()
+
+    reference_values=value_at_RZ(R=R_2D_flat,Z=Z_2D_flat,quantity=reference[key],grid=reference) #calculate value of reference at the gridpoints where quantity is known
+    reference_values=np.squeeze(reference_values)
+    reference_values=reference_values.reshape(len(grid['R_1D']),len(grid['Z_1D']))
+
+    for r_index,r in enumerate(grid['R_1D']): 
+        for z_index,z in enumerate(grid['Z_1D']): 
+            if reference_values[r_index,z_index]>value and over is True:
+                quantity_cropped[r_index,z_index]=crop_value
+
+    return quantity_cropped
 
 def dot_product(vec1,vec2):
     """
@@ -393,7 +506,7 @@ def get_dfn_point(dfn,type='LOCUST',**kwargs):
         kwargs - should define desired points in all possible dimensions to sample at
     usage:
         my_values=get_dfn_point(my_dfn,E=[1,2,3],V_pitch=[-1,0,1],R=[1,2,3],Z=[0,0,0],P=[-pi,-pi,-pi])
-        my_values=get_dfn_point(my_dfn,'TRANSP',E=[1,2,3],V_pitch=[-1,0,1],R=[1,2,3],Z=[0,0,0]) (for TRANSP)
+        my_values=get_dfn_point(my_dfn,type='TRANSP',E=[1,2,3],V_pitch=[-1,0,1],R=[1,2,3],Z=[0,0,0]) (for TRANSP)
     notes:
     """
 

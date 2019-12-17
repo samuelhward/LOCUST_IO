@@ -1126,7 +1126,8 @@ class Perturbation(classes.base_input.LOCUST_input):
                 elif key=='dB_field':
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 else:
-                    values=self[key]
+                    key='dB_field'
+                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
                 values=values.reshape(nR,nphi)
 

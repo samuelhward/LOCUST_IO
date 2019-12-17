@@ -537,13 +537,12 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     output_IDS.equilibrium.time_slice[0].profiles_2d.resize(1) #add an element onto the profiles_2d struct_array to define this grid
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.name='rectangular grid' #add some identifiers for this particular grid
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.description=''
-    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,Z), 0 for inverse (psi,theta)
+    output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid_type.index=1 #1 for rectangular (R,Z)
   
     #write out R,Z grid coordinate arrays
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1=output_data['R_1D'] #dim1=R values/dim2=Z values
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2=output_data['Z_1D']
-    R_2D,Z_2D=np.meshgrid(output_data['R_1D'],output_data['Z_1D']) #generate 2D arrays of R,Z values
-    R_2D,Z_2D=R_2D.T,Z_2D.T #since things are defined r,z need to take transpose here
+    Z_2D,R_2D=np.meshgrid(output_data['Z_1D'],output_data['R_1D']) #generate 2D arrays of R,Z values
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].r=R_2D
     output_IDS.equilibrium.time_slice[0].profiles_2d[0].z=Z_2D
      
