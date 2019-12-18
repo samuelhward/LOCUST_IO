@@ -173,6 +173,7 @@ class Environment:
     environments['VIKING']['misc']['ulimit']="-s 2000000"
 
     environments_avail=environments.keys()
+    for environment in environments: environments[environment]['module purge']=[] #add empty module purge to all environments
 
     def __init__(self,system_name=None):
         """
