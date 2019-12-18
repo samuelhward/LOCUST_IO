@@ -79,35 +79,27 @@ class Environment:
     environments['TITAN']['misc']['ulimit']="-s 2000000"
     ################################# NEMO TITAN
     environments['TITAN_NEMO']={}
-    environments['TITAN_NEMO']['module load']=['IMAS/3.21.0-3.8.11',
-                                           'Kepler/2.5p4-2.1.5',
-                                           'FC2K/4.4.0',
+    environments['TITAN_NEMO']['module load']=['IMAS',
+                                           'Kepler',
+                                           'FC2K/4.6.5-PyAL',
                                            'PyUAL/1.0.0-foss-2018a-Python-3.6.4',
-                                           'sh/1.12.14-foss-2018a-Python-3.6.4',
-                                           'lxml/4.2.0-foss-2018a-Python-3.6.4',
+                                           'sh/1.12.14-intel-2018a-Python-3.6.4',
+                                           'lxml/4.2.0-intel-2018a-Python-3.6.4',
                                            'FRUIT/3.4.3-intel-2018a-Ruby-2.5.1',
                                            'FRUIT_processor/3.4.3-intel-2018a-Ruby-2.5.1',
                                            'interpos/8.2.1-ifort',
-                                           'XMLlib/3.1.0-intel-2018a',
-                                           'PSPLINE/20181008-intel-2018a']
+                                           'XMLlib/3.2.0-intel-2018a',
+                                           'PSPLINE/20181008-intel-2018a',
+                                           'PyAL/1.1.1-intel-2018a-Python-3.6.4',
+                                           'NAG/26-intel-2018a']
     environments['TITAN_NEMO']['module unload']=['Anaconda3']
-    environments['TITAN_NEMO']['module switch']=['Python/3.6.4-foss-2018a',
-                                             'matplotlib/2.1.2-foss-2018a-Python-3.6.4',
-                                             'PyYAML/3.12-foss-2018a-Python-3.6.4',
-                                             'UDA/2.2.5-foss-2018a',
-                                             'IDStools/1.0.9-Python-3.6.4',
-                                             'PostgreSQL/10.3-foss-2018a-Python-3.6.4',
-                                             'SWIG/3.0.12-foss-2018a-Python-3.6.4',
-                                             'HDF5/1.10.1-foss-2018a',
-                                             'MDSplus/7.46.1-foss-2018a',
-                                             'MDSplus-Python/7.46.1-foss-2018a-Python-3.6.4',
-                                             'Boost/1.66.0-foss-2018a # ?',
-                                             'Tkinter/3.6.4-foss-2018a-Python-3.6.4']
+    environments['TITAN_NEMO']['module switch']=[]
     environments['TITAN_NEMO']['export']={}
-    environments['TITAN_NEMO']['export']['MD_ACCESS']='no'
+    environments['TITAN_NEMO']['export']['ACTOR_POOL']='$PWD/actor_install/actors'
     environments['TITAN_NEMO']['export']['DIAG_INFO']='-DNO_DIAG_INFO'
+    environments['TITAN_NEMO']['export']['KEPLER']='$ACTOR_POOL'
     environments['TITAN_NEMO']['misc']={}
-    environments['TITAN_NEMO']['misc']['ulimit']='-s unlimited'
+    environments['TITAN_NEMO']['misc']['ulimit']='-Ss unlimited'
     ################################# MARFE
     environments['MARFE']={}
     environments['MARFE']['export']={}
