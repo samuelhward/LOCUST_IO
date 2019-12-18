@@ -139,13 +139,14 @@ class Batch:
 
                 if setting_values_this_run is not None:
                     if type(setting_values_this_run)==type({}): #if type is dict then these workflow settings are passed at command line differently - in the form --settings setting1=value1 setting2=value2
-                        for setting,value in setting_values_this_run.items(): #if value1 above is a string, will need extra set of quotes to maintain continuity
-                            if type(value)==type(''): #add some extra formatting to insert quotes to maintain continuity when calling workflows
-                                setting_values_this_run[setting]='"{value}"'.format(value=value)
+                        if setting_values_this_run: #check if dict is empty    
+                            for setting,value in setting_values_this_run.items(): #if value1 above is a string, will need extra set of quotes to maintain continuity
+                                if type(value)==type(''): #add some extra formatting to insert quotes to maintain continuity when calling workflows
+                                    setting_values_this_run[setting]='"{value}"'.format(value=value)
 
-                        #parse args in form --settings setting1=value1 setting2=value2 setting3
-                        workflow_args_this_setting=' '.join(['{}={}'.format(setting,value) if value is not True else '{}'.format(setting) for setting,value in setting_values_this_run.items()])                               
-                        workflow_args=' '.join([workflow_args,'--'+str(workflow_arg),workflow_args_this_setting])
+                            #parse args in form --settings setting1=value1 setting2=value2 setting3
+                            workflow_args_this_setting=' '.join(['{}={}'.format(setting,value) if value is not True else '{}'.format(setting) for setting,value in setting_values_this_run.items()])                               
+                            workflow_args=' '.join([workflow_args,'--'+str(workflow_arg),workflow_args_this_setting])
 
                     else:
 
