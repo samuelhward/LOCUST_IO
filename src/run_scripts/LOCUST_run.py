@@ -8,7 +8,6 @@ tools to run the LOCUST code
 ---
 notes: 
     contains the tools to perform a single simple run of LOCUST
-    use run_scripts.LOCUST_batch to send multiple run_scripts.LOCUST_runs
     custom steps can be added via add_command
 ---
 '''
@@ -79,7 +78,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
         some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
-        some_run.run() #this will do all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
+        some_run.run() #this will execute all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
     workflow_name='LOCUST_run'
@@ -89,7 +88,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
         args:
-            dir_LOCUST - directory to temporarily store source code (must not already xist)
+            dir_LOCUST - directory to temporarily store source code (must not already exist)
             dir_input - directory to read input data from 
             dir_output - directory to write results to 
             dir_cache - directory to read cache data from 

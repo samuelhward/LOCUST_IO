@@ -73,9 +73,15 @@ system_default='TITAN'
 
 #LOCUST git
 repo_URL_LOCUST='ssh://git@git.iter.org/traj/locust.git'
-repo_URL_LOCUST_IO='https://github.com/armoured-moose/LOCUST_IO.git'
 branch_default_LOCUST='hot_fix/ITER'
+
+#LOCUST_IO git
+repo_URL_LOCUST_IO='https://github.com/armoured-moose/LOCUST_IO.git'
 branch_default_LOCUST_IO='develop'
+
+#NEMO git
+repo_URL_NEMO='ssh://git@git.iter.org/heat/nemo.git'
+branch_default_NEMO='develop'
 
 try: #get default commit hash
     git_ls_remote=subprocess.run(['git', 'ls-remote','-q',repo_URL_LOCUST],stdout=subprocess.PIPE).stdout.decode('utf-8').split()

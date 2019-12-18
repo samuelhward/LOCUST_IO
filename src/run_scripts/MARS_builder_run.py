@@ -81,7 +81,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
     usage:
         python MARS_builder_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_mars_read a_string="'should be formatted like this'" a_number="like_this"
         some_run=MARS_builder_run(filepath_input='here',system_name='TITAN',flags=flags) #by default this will run compile and run MARS_builder on filepath_input and dump to LOCUST_IO/data/input_files (since output of this function is still a LOCUST input)
-        some_run.run() #this will do all stages of a mars_build run
+        some_run.run() #this will execute all stages of a mars_build run
     """ 
 
     def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',system_name='TITAN',settings_mars_read={},flags={}):
