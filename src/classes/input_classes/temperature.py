@@ -392,8 +392,6 @@ def read_temperature_excel_1(filepath,**properties):
     if desired_field is None:
         print("ERROR: cannot read_temperature_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
 
-    print(desired_field)
-
     input_data={}
     input_data['flux_pol_norm'],input_data['T']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
