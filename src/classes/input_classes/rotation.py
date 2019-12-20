@@ -290,7 +290,7 @@ def dump_rotation_IDS(output_data,filepath,**properties):
     output_IDS.core_profiles.time=np.array([0.0])
      
     #add a time_slice and set the time
-    output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
+    if len(output_IDS.core_profiles.profiles_1d==0): output_IDS.core_profiles.profiles_1d.resize(1) #add a time_slice
     output_IDS.core_profiles.profiles_1d[0].time=0.0 #set the time of the time_slice
  
     #write out rotation
