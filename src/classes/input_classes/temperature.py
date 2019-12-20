@@ -107,6 +107,10 @@ def read_temperature_LOCUST_h5(filepath,**properties):
     """
 
     print("reading temperature from LOCUST_h5")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_temperature_LOCUST_h5 - properties['species'] must be set!")
+        return
     
     try:
         import h5py
@@ -142,6 +146,10 @@ def read_temperature_IDS(shot,run,**properties):
     """
  
     print("reading temperature from IDS")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_temperature_IDS - properties['species'] must be set!")
+        return
 
     try:
         import imas 
@@ -206,6 +214,10 @@ def read_temperature_UDA(shot,time,**properties):
     """
 
     print("reading temperature from UDA")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_temperature_UDA - properties['species'] must be set!")
+        return
 
     try:
         import pyuda
@@ -327,6 +339,12 @@ def read_temperature_ASCOT(filepath,**properties):
         include integer species_number in properties to select species (1 by default)
     """
 
+    print("reading temperature from ASCOT")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_temperature_ASCOT - properties['species'] must be set!")
+        return
+
     with open(filepath,'r') as file:
 
         for line in file:
@@ -367,6 +385,8 @@ def read_temperature_ASCOT(filepath,**properties):
         input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
         input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
 
+    print("finished reading temperature from ASCOT")
+
     return input_data
 
 def read_temperature_excel_1(filepath,**properties):
@@ -377,6 +397,12 @@ def read_temperature_excel_1(filepath,**properties):
         must include 'species' in properties - either 'electrons','ions'
         must include spreadsheet name within file in properties['sheet_name']
     """
+
+    print("reading temperature from EXCEL1")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_temperature_excel_1 - properties['species'] must be set!")
+        return
 
     if 'sheet_name' not in properties: #must supply some sort of sheet_name
         print("ERROR: cannot read_temperature_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
@@ -396,6 +422,8 @@ def read_temperature_excel_1(filepath,**properties):
     input_data['flux_pol_norm'],input_data['T']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['T']*=1000. #convert from KeV
+
+    print("finished reading temperature from EXCEL1")
 
     return input_data
 
@@ -433,6 +461,10 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
 
     print("writing temperature to IDS")
  
+    if 'species' not in properties:
+        print("ERROR: cannot dump_temperature_IDS - properties['species'] must be set!")
+        return
+
     try:
         import imas 
     except:

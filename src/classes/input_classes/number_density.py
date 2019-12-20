@@ -72,6 +72,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    import settings
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ################################################################## Number_Density read functions
  
@@ -117,7 +122,11 @@ def read_number_density_LOCUST_h5(filepath,**properties):
     """
 
     print("reading number density from LOCUST_h5")
-    
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_LOCUST_h5 - properties['species'] must be set to 'electrons' or 'ions'\n")
+        return
+
     try:
         import h5py
     except:
@@ -137,7 +146,7 @@ def read_number_density_LOCUST_h5(filepath,**properties):
         else:
             print("ERROR: cannot read_number_density_LOCUST_h5 - properties['species'] must be set to 'electrons' or 'ions'\n")
             return
-            
+
     print("finished reading number density from LOCUST_h5")
 
     return input_data
@@ -152,6 +161,10 @@ def read_number_density_IDS(shot,run,**properties):
     """
  
     print("reading number density from IDS")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_IDS - properties['species'] must be set'\n")
+        return
 
     try:
         import imas 
@@ -168,6 +181,7 @@ def read_number_density_IDS(shot,run,**properties):
     #read in number density depending on species
     species_avail_A=[]
     species_avail_Z=[]
+
     if properties['species']=='electrons':
         input_data['n']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.density)
     else:
@@ -216,6 +230,10 @@ def read_number_density_UDA(shot,time,**properties):
     """
 
     print("reading number density from UDA")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_UDA - properties['species'] must be set!")
+        return
 
     try:
         import pyuda
@@ -341,6 +359,12 @@ def read_number_density_ASCOT(filepath,**properties):
         include integer species_number in properties to select species (1 by default)
     """
 
+    print("reading number density from ASCOT")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_ASCOT - properties['species'] must be set!")
+        return
+
     with open(filepath,'r') as file:
 
         for line in file:
@@ -350,6 +374,7 @@ def read_number_density_ASCOT(filepath,**properties):
         split_line=line.split()
 
         fields=[]
+
 
         if properties['species']=='electrons':
             desired_field='Ne'
@@ -381,6 +406,8 @@ def read_number_density_ASCOT(filepath,**properties):
         input_data['flux_pol_norm_sqrt']=np.asarray(input_data['flux_pol_norm_sqrt'])
         input_data['flux_pol_norm']=input_data['flux_pol_norm_sqrt']**2
 
+    print("finished reading number density from ASCOT")
+
     return input_data
 
 def read_number_density_excel_1(filepath,**properties):
@@ -391,6 +418,12 @@ def read_number_density_excel_1(filepath,**properties):
         must include 'species' in properties - either 'electrons','tritium','deuterium','helium','hydrogen','tungsten','helium3'
         must include spreadsheet name within file in properties['sheet_name']
     """
+
+    print("reading number density from EXCEL1")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_excel_1 - properties['species'] must be set!")    
+        return
 
     if 'sheet_name' not in properties: #must supply some sort of sheet_name
         print("ERROR: cannot read_number_density_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
@@ -410,6 +443,8 @@ def read_number_density_excel_1(filepath,**properties):
     input_data['flux_pol_norm'],input_data['n']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['n']*=1.e19 #convert units
+
+    print("finished reading number density from EXCEL1")
 
     return input_data
 
@@ -443,8 +478,12 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         assumes NEMO layout of data
         assumes single-element species i.e. no molecules
     """
-    
-    print("writing number density to IDS")
+
+    print("reading number density from IDS")
+
+    if 'species' not in properties:
+        print("ERROR: cannot dump_number_density_IDS - properties['species'] must be set!")    
+        return
 
     try:
         import imas 
