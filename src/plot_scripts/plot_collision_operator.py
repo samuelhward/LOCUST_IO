@@ -57,7 +57,7 @@ except:
 
 ##################################################################
 
-def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -198,13 +198,13 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     args=parser.parse_args()
 
     fig,ax=plt.subplots(1)
-    E,drag=plot_collision_operator(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,type=args.type,colmap=cmap_default)
+    E,drag=plot_collision_operator(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,type=args.type,colmap=settings.cmap_default)
     ax.set_title('individual drag coefficients for test particle mass={} amu'.format(args.At))
     plt.show()
 
     drag_total=np.sum(drag,axis=0) #sum electron and ion drags and plot
     fig,ax=plt.subplots(1)
-    ax.plot(E/(1000.*constants.charge_e),(drag_total/1.0e-13),color=cmap_default(np.random.uniform()))
+    ax.plot(E/(1000.*constants.charge_e),(drag_total/1.0e-13),color=settings.cmap_default(np.random.uniform()))
     ax.set_title('total drag for test particle mass={} amu'.format(args.At))
     ax.set_xlabel('Energy [KeV]')
     ax.set_ylabel('Energy drift [10e-13 J/s]')
@@ -212,7 +212,7 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     
     #plot expected steady state distribution function (assuming no diffusion)
     fig,ax=plt.subplots(1)
-    ax.plot(E/(1000.*constants.charge_e),-args.Pdep/args.Einj/(drag_total),color=cmap_default(np.random.uniform()))
+    ax.plot(E/(1000.*constants.charge_e),-args.Pdep/args.Einj/(drag_total),color=settings.cmap_default(np.random.uniform()))
     ax.set_title('expected steady-state diffusionless distribution function')
     ax.set_xlabel('Energy [KeV]')
     ax.set_ylabel('# [eV**-1]')

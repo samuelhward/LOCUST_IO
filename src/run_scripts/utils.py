@@ -405,7 +405,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
+    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),number_bins=20,fill=True,vminmax=None,ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -482,9 +482,9 @@ class TRANSP_output_FI(TRANSP_output):
             else:
                 ax.set_aspect('auto')
             if LCFS: #plot plasma boundary
-                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
             if limiters: #add boundaries if desired
-                ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
+                ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
@@ -708,7 +708,7 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
         executable - filename of executable binary
         input_path - path to target in input_files dir (input_files/path/)
         tag - optional identifier tag for each set of run files produced
-        user - username for email notifications
+        user - settings.username for email notifications
     notes:
     """
 
@@ -1498,7 +1498,7 @@ class FINT_LOCUST:
 
         print("finished reading LOCUST FINT distribution")
 
-    def plot(self,axes=['E','time'],colmap=cmap_default,colmap_val=np.random.uniform(),number_bins=20,ax=False,fig=False):
+    def plot(self,axes=['E','time'],colmap=settings.cmap_default,colmap_val=np.random.uniform(),number_bins=20,ax=False,fig=False):
         """
         plot dfn vs time
         
@@ -1810,7 +1810,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) 
-    input_IDS.open_env(username,imasdb,'3') #open the IDS
+    input_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
 
     input_IDS.core_profiles.get() #grab all the kinetic profile data to get species information
 

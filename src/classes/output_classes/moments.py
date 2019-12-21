@@ -263,7 +263,7 @@ def read_moments_IDS(shot,run,**properties):
         return
     
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.distributions.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
@@ -395,7 +395,7 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key,axis='flux_pol_norm',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,key,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots moments
 

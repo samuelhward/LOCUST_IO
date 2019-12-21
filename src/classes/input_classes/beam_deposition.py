@@ -249,7 +249,7 @@ def read_beam_depo_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
@@ -805,7 +805,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
-    output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.distribution_sources.get()
  
     #write out code properties
@@ -1268,7 +1268,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT_FO/ASCOT_GC)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),fill=True,ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),fill=True,ax=False,fig=False):
         """
         plots beam deposition
 
@@ -1363,7 +1363,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                 else:
                     mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
-                    if plot_contour_labels:
+                    if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
@@ -1378,9 +1378,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 else:
                     ax.set_aspect('auto')
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
 
             elif axes==['X','Y']:
                 if real_scale is True: #set x and y plot limits to real scales
@@ -1390,15 +1390,15 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)          
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)          
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)           
             
             if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh
@@ -1420,14 +1420,14 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_LCFS)
 
             if limiters: #plot periodic poloidal cross-sections in 3D
                 for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=limiters['rlim']*np.cos(angle)
                     y_points=limiters['rlim']*np.sin(angle)
                     z_points=limiters['zlim']
-                    ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_limiters)
 
             if real_scale is True:
                 ax.set_aspect('equal')

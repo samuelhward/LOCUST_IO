@@ -232,7 +232,7 @@ def read_equilibrium_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.equilibrium.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -498,7 +498,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
-    output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.equilibrium.get()
  
     #write out code properties
@@ -697,7 +697,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
-    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots equilibrium
         
@@ -776,7 +776,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     c.set_edgecolor("face")
             else:
                 mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                if plot_contour_labels:
+                if settings.plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
             #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
@@ -795,9 +795,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_ylabel('Z [m]')
 
             if LCFS:
-                ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+                ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
             if limiters: #add boundaries if desired
-                ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
+                ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters) 
 
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
@@ -806,7 +806,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots random field lines for 'angle' radians around the tokamak
 
@@ -928,17 +928,17 @@ class Equilibrium(classes.base_input.LOCUST_input):
             if plot_full is True: #if wanting to trace the flux surfaces, then plot in r,z plane
                 ax.plot(R_points,Z_points,color=colmap(colmap_val))
                 if start_mark: 
-                    ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
+                    ax.scatter(R_points[0],Z_points[0],color=settings.colour_start_mark,s=10)
             else:
                 
                 if axes==['R','Z']: #poloidal plot
                     ax.plot(R_points,Z_points,color=colmap(colmap_val))
                     if start_mark: 
-                        ax.scatter(R_points[0],Z_points[0],color=colour_start_mark,s=10)
+                        ax.scatter(R_points[0],Z_points[0],color=settings.colour_start_mark,s=10)
                     if LCFS: #plot plasma boundary
-                        ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+                        ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
                     if limiters: #add boundaries if desired
-                        ax.plot(self['rlim'],self['zlim'],plot_style_limiters)       
+                        ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters)       
             
                     ax.set_xlabel('R [m]')
                     ax.set_ylabel('Z [m]')
@@ -948,19 +948,19 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 elif axes==['X','Y']: #top-down plot
                     ax.plot(X_points,Y_points,color=colmap(colmap_val))
                     if start_mark: 
-                        ax.scatter(X_points[0],Y_points[0],color=colour_start_mark,s=10)
+                        ax.scatter(X_points[0],Y_points[0],color=settings.colour_start_mark,s=10)
                     if LCFS: #plot plasma boundary
                         plasma_max_R=np.max(self['lcfs_r'])
                         plasma_min_R=np.min(self['lcfs_r'])
-                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS)
-                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_LCFS) 
+                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
+                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS) 
                     if limiters: #add boundaries if desired
                         ax.set_xlim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         ax.set_ylim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         limiters_max_R=np.max(self['rlim'])
                         limiters_min_R=np.min(self['rlim'])
-                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)
-                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),plot_style_limiters)   
+                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
+                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)   
                         
                     ax.set_xlabel('X [m]')
                     ax.set_ylabel('Y [m]')
@@ -969,19 +969,19 @@ class Equilibrium(classes.base_input.LOCUST_input):
                 
                 else: #3D plot
                     if start_mark: 
-                        ax.scatter(X_points[0],Y_points[0],Z_points[0],color=colour_start_mark,s=10)
+                        ax.scatter(X_points[0],Y_points[0],Z_points[0],color=settings.colour_start_mark,s=10)
                     if LCFS: #plot periodic poloidal cross-sections in 3D
                         for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                             x_points=self['lcfs_r']*np.cos(angle)
                             y_points=self['lcfs_r']*np.sin(angle)
                             z_points=self['lcfs_z']
-                            ax.plot(x_points,y_points,zs=z_points,color=plot_style_LCFS)
+                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_LCFS)
                     if limiters: #plot periodic poloidal cross-sections in 3D
                         for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                             x_points=self['rlim']*np.cos(angle)
                             y_points=self['rlim']*np.sin(angle)
                             z_points=self['zlim']
-                            ax.plot(x_points,y_points,zs=z_points,color=plot_style_limiters)
+                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_limiters)
 
                     ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
                     ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
@@ -992,7 +992,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_stream(self,LCFS=True,limiters=True,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot_field_stream(self,LCFS=True,limiters=True,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         stream plot of magnetic field in R,Z plane
 
@@ -1040,9 +1040,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
         strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
 
         if LCFS:
-            ax.plot(self['lcfs_r'],self['lcfs_z'],plot_style_LCFS) 
+            ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
         if limiters: #add boundaries if desired
-            ax.plot(self['rlim'],self['zlim'],plot_style_limiters) 
+            ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters) 
 
         if fig_flag is False:    
             fig.colorbar(strm.lines,ax=ax,orientation='horizontal')

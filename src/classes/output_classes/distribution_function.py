@@ -472,7 +472,7 @@ def read_distribution_function_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.distributions.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -605,7 +605,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
         """
         plot the distribution function
 
@@ -727,7 +727,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                         c.set_edgecolor("face")'''
                 else:
                     mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                    if plot_contour_labels:
+                    if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 
                 if fig_flag is False:    
@@ -740,9 +740,9 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 else:
                     ax.set_aspect('auto')
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
                 if gridlines:
                     #get bin edges
                     d_ax_0=dfn_copy[axes[0]][1]-dfn_copy[axes[0]][0]

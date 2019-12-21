@@ -173,7 +173,7 @@ def read_number_density_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -492,7 +492,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
-    output_IDS.open_env(username,imasdb,'3') #open the IDS
+    output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.core_profiles.get()
  
     #write out code properties
@@ -692,7 +692,7 @@ class Number_Density(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n".format(self.ID))
 
-    def plot(self,axis='flux_pol_norm',colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots number density
          

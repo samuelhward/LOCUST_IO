@@ -253,7 +253,7 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     print("reading perturbation from IMAS mhd_linear IDS")
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(username,imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,'3')
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
     mode_index=None
@@ -802,7 +802,7 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
     print("dumping perturbation from IMAS mhd_linear IDS")
 
     output_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    output_IDS.open_env(username,imasdb,'3')
+    output_IDS.open_env(settings.username,settings.imasdb,'3')
     output_IDS.mhd_linear.get() #open the file and get all the data from it
 
     output_IDS.mhd_linear.ids_properties.comment=ID #write out identification
@@ -997,7 +997,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=cmap_default,colmap_val=np.random.uniform(),gridlines=False,ax=False,fig=False):
+    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),gridlines=False,ax=False,fig=False):
         """
         plots a perturbation
         
@@ -1088,7 +1088,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                         c.set_edgecolor("face")
                 else:
                     mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                    if plot_contour_labels:
+                    if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
                     
                 #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
@@ -1107,9 +1107,9 @@ class Perturbation(classes.base_input.LOCUST_input):
                 ax.set_ylabel('Z [m]')
 
                 if LCFS:
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],plot_style_limiters) 
+                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters) 
 
             elif axes==['X','Y']:
 
@@ -1150,7 +1150,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                         c.set_edgecolor("face")
                 else:
                     mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
-                    if plot_contour_labels:
+                    if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
                     
                 if fig_flag is False:    
@@ -1159,15 +1159,15 @@ class Perturbation(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_max_R,100),plot_style_LCFS)
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_min_R,100),plot_style_LCFS)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_max_R,100),settings.plot_style_LCFS)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_min_R,100),settings.plot_style_LCFS)
                     ax.set_rmax(1.1*plasma_max_R)
  
                 if limiters: #add boundaries if desired
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),plot_style_limiters)
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),plot_style_limiters)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),settings.plot_style_limiters)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),settings.plot_style_limiters)
                     ax.set_rmax(1.1*limiters_max_R)
 
                 ax.set_rmin(0.0)
@@ -1230,7 +1230,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         return dB_R,dB_tor,dB_Z
 
-    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
+    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
         """
         generates plot of perturbation components for field checking
 
@@ -1315,10 +1315,10 @@ class Perturbation(classes.base_input.LOCUST_input):
             ax4.plot(phi_toroidal,component_toroidal,colour) #plot the toroidal variation
 
             if LCFS:
-                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],plot_style_LCFS) #add a LCFS
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) #add a LCFS
 
             if limiters:
-                ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],plot_style_limiters) #add a LCFS
+                ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],settings.plot_style_limiters) #add a LCFS
 
         legend=['dB_field_R','dB_field_tor','dB_field_Z']
         if absolute:

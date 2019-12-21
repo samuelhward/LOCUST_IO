@@ -56,7 +56,7 @@ except:
 
 ##################################################################
 
-def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -145,7 +145,7 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     args=parser.parse_args()
 
     fig,ax=plt.subplots(1)
-    E,lnL=plot_coulomb_logarithm(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,colmap=cmap_default)
+    E,lnL=plot_coulomb_logarithm(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,colmap=settings.cmap_default)
     ax.set_title('coulomb logarithm for test particle mass={} amu'.format(args.At))
     plt.show()
 
