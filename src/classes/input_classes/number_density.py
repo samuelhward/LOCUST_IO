@@ -517,14 +517,15 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
             return
         else:
 
-            try:
-                species_number=[counter for counter,ion in enumerate(
-                                output_IDS.core_profiles.profiles_1d[0].ion)   
-                                if ion.element[0].a==properties['A']
-                                if ion.element[0].z_n==properties['Z']]
-            except:
+            species_number=[counter for counter,ion in enumerate(
+                            output_IDS.core_profiles.profiles_1d[0].ion) 
+                            if len(ion.element)!=0  
+                            if ion.element[0].a==properties['A']
+                            if ion.element[0].z_n==properties['Z']]
+            if not species_number:            
                 species_number=[-1] #if matching ion found in IDS, its number now held in species number
                 output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+                output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element.resize(1)
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']
 

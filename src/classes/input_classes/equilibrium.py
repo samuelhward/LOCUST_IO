@@ -66,6 +66,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    import settings
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ################################################################## Equilibrium read functions
 
@@ -505,7 +510,7 @@ def dump_equilibrium_IDS(ID,output_data,shot,run,**properties):
     output_IDS.equilibrium.time=np.array([0.0])
 
     #add a time_slice and set the time of this slice
-    if len(output_IDS.equilibrium.time_slice==0): output_IDS.equilibrium.time_slice.resize(1) #just add one time_slice i.e. static equilibrium
+    if len(output_IDS.equilibrium.time_slice)==0: output_IDS.equilibrium.time_slice.resize(1) #just add one time_slice i.e. static equilibrium
     output_IDS.equilibrium.time_slice[0].time=0.0
     output_IDS.equilibrium.time=np.array(0.0,ndmin=1) #set the global time (required by vacuum_toroidal_field.b0)
  

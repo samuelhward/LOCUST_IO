@@ -54,6 +54,8 @@ required_number_density=['flux_pol_norm','n']
 required_perturbation=['R_2D','Z_2D','dB_field_R_real','dB_field_R_imag','dB_field_Z_real','dB_field_Z_imag','dB_field_tor_real','dB_field_tor_imag']
 required_rotation=['flux_pol_norm','rotation_ang']
 
+alphabet='abcdefghijklmnopqrstuvwxyz'
+
 #################################
 
 ##################################################################

@@ -60,6 +60,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 ################################################################## Perturbation read functions
  
@@ -89,7 +94,7 @@ def read_perturbation_LOCUST(filepath,**properties):
         #read lazily
         for line in file:
             split_line=line.split()
-            if len(split_line)==8:
+            if len(split_line)==8 and not any(letter in line for letter in support.alphabet):
                 input_data['R_2D'].append(float(split_line[0]))
                 input_data['Z_2D'].append(float(split_line[1]))
                 input_data['dB_field_R_real'].append(float(split_line[2]))
