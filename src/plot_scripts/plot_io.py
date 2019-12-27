@@ -109,7 +109,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from settings import *
+    import settings
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
