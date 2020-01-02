@@ -204,7 +204,7 @@ def read_number_density_IDS(shot,run,**properties):
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*constants.pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
     processing.utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
-    if input_IDS.core_profiles.vacuum_toroidal_field.b0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
+    if input_IDS.core_profiles.vacuum_toroidal_field.b0.size!=0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
         processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0[0]*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     if 'flux_pol' in input_data: #calculate normalised flux
