@@ -208,7 +208,7 @@ def read_number_density_IDS(shot,run,**properties):
         processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0[0]*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
 
     if 'flux_pol' in input_data: #calculate normalised flux
-        input_data['flux_pol_norm']=(input_data['flux_pol']-np.min(input_data['flux_pol']))/(np.max(input_data['flux_pol'])-np.min(input_data['flux_pol']))
+        input_data['flux_pol_norm']=(input_data['flux_pol']-input_data['flux_pol'][0])/(input_data['flux_pol'][-1]-input_data['flux_pol'][0])
 
     input_IDS.close()
 
@@ -457,8 +457,7 @@ def dump_number_density_LOCUST(output_data,filepath,**properties):
 
     with open(filepath,'w') as file: #open file
 
-        normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_n=processing.utils.sort_arrays(normalised_flux,output_data['n']) #check order
+        normalised_flux,output_n=processing.utils.sort_arrays(output_data['flux_pol_norm'],output_data['n']) #check order
  
         file.write("{}\n".format(processing.utils.fortran_string(output_data['flux_pol_norm'].size,12))) #re-insert line containing length
         for point in range(normalised_flux.size): #iterate through all points i.e. length of our dictionary's arrays

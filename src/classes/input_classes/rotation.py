@@ -226,8 +226,7 @@ def dump_rotation_LOCUST(output_data,filepath,**properties):
  
     with open(filepath,'w') as file: #open file
 
-        normalised_flux=np.abs(output_data['flux_pol_norm']) #take abs
-        normalised_flux,output_rot=processing.utils.sort_arrays(normalised_flux,output_data['rotation_ang']) #check order
+        normalised_flux,output_rot=processing.utils.sort_arrays(output_data['flux_pol_norm'],output_data['rotation_ang']) #check order
  
         file.write("{}\n".format(processing.utils.fortran_string(output_rot.size,12))) #re-insert line containing length
         
