@@ -44,7 +44,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
-    from settings import *
+    import settings
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -53,14 +53,14 @@ except:
 #Main Code
 
 print('''\n\n\n\
-88                                                          88              
-88                                                ,d        ""              
-88                                                88                    
-88  ,adPPYba,   ,adPPYba, 88       88 ,adPPYba, MM88MMM     88  ,adPPYba,   
-88 a8"     "8a a8"     "" 88       88 I8[    ""   88        88 a8"     "8a  
-88 8b       d8 8b         88       88  `"Y8ba,    88        88 8b       d8  
-88 "8a,   ,a8" "8a,   ,aa "8a,   ,a88 aa    ]8I   88,       88 "8a,   ,a8"  
-88  `"YbbdP"'   `"Ybbd8"'  `"YbbdP'Y8 `"YbbdP"'   "Y888 ____88  `"YbbdP"' \n\n\n''')
+88                                                              88              
+88                                                ,d            ""              
+88                                                88                        
+88  ,adPPYba,   ,adPPYba, 88       88 ,adPPYba, MM88MMM         88  ,adPPYba,   
+88 a8"     "8a a8"     "" 88       88 I8[    ""   88            88 a8"     "8a  
+88 8b       d8 8b         88       88  `"Y8ba,    88            88 8b       d8  
+88 "8a,   ,a8" "8a,   ,aa "8a,   ,a88 aa    ]8I   88,           88 "8a,   ,a8"  
+88  `"YbbdP"'   `"Ybbd8"'  `"YbbdP'Y8 `"YbbdP"'   "Y888 ________88  `"YbbdP"' \n\n\n''')
 
 
 
@@ -73,7 +73,7 @@ my_orbit=orbits.Orbits(ID='LOCUST_IO sample orbits',data_format='LOCUST',filenam
 my_orbit.set(number_of_orbits=1)
 
 #what do the orbits look like?
-my_orbit.plot(colmap=cmap_g) #use default green colour map - see settings.py
+my_orbit.plot(colmap=settings.cmap_g) #use default green colour map - see settings.py
 
 #what if I want to plot my orbits and the number density in one figure?
 
