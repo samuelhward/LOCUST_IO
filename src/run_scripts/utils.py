@@ -1810,7 +1810,7 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) 
-    input_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
+    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version) #open the IDS
 
     input_IDS.core_profiles.get() #grab all the kinetic profile data to get species information
 
@@ -1943,6 +1943,47 @@ def read_kinetic_profile_data_excel_1(filepath,y,x='Fp',sheet_name=None):
                                         x_out=np.array(sheet.col_values(colx=col_number,start_rowx=row_number+1))
                                         return x_out,y_out
 
+def command_line_arg_parse_generate_string(command_number_=0,**command_args):
+    """
+    generate argparsable command line string defined by multiple sets of arguments stored in command_args
+
+    notes:
+        strings are interpreted literally, so string_arg=["'some_arg'"] yields --string_arg 'some_arg'
+        use with command_line_arg_parse_dict to parse dicts produced by this function
+    args:
+        command_number_ - integer to choose desired entry from lists stored in command_args (trailing _ to stop interference with possible arg names) 
+        command_args - kwargs storing lists which describe sets of command line args for multiple command_number_s e.g. filepaths_in=[/some/path/1,some/path/2] where --filepaths_in=/some/path/1 for command_number_=1 and --filepaths_in=/some/path/2 for command_number_=2
+    usage:
+        command_line_arg_parse_generate_string(arg1=[1],arg2=['a']) #yields '--arg1 1 --arg2 a'
+        command_line_arg_parse_generate_string(command_number_=1,arg1=[1,2],arg2=['a',"'b'"]) #yields '--arg1 2 --arg2 "b"'
+
+        some_dict={}
+        some_dict['key1'],some_dict['key2']=1,2
+        command_line_arg_parse_generate_string(command_number_=0,arg1=[some_dict],arg2=['1']) #yields '--arg1 key1=1 key2=2 --arg2 1'
+    """
+
+    command_arg_string=''
+    for command_arg,command_value in command_args.items(): #command_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), command_value are corresponding arg_s (e.g. /some/file/path)
+        arg_value_this_run=command_value[command_number_] #at this point we have picked single element of list describing a particular arg over multiple runs e.g. compile flags 
+
+        if arg_value_this_run is not None:
+            if type(arg_value_this_run)==type({}): #if this command arg is of type dict then we must pass to command line differently in the form: --args sub_arg_1=sub_value1 sub_arg_2=sub_value2
+                if arg_value_this_run: #check if dict is empty    
+                    for sub_arg,sub_value in arg_value_this_run.items(): #if sub_value is a string, will need extra set of quotes to maintain continuity
+                        if type(sub_value)==type(''): #add some extra formatting to insert quotes to maintain continuity
+                            arg_value_this_run[sub_arg]='"{sub_value}"'.format(sub_value=sub_value)
+
+                    #parse args in form --sub_args sub_arg1=sub_value1 sub_arg2=sub_value2 sub_arg3
+                    command_args_this_sub_arg=' '.join(['{}={}'.format(sub_arg,sub_value) if sub_value is not True else '{}'.format(sub_arg) for sub_arg,sub_value in arg_value_this_run.items()])                               
+                    command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),command_args_this_sub_arg])
+
+            else:
+
+                #parse args in form --sub_args sub_arg1
+                command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),str(arg_value_this_run)]) 
+
+    return command_arg_string
+
 def command_line_arg_parse_dict(args):
     """
     translates dict-style object passed at command line to dict
@@ -1950,6 +1991,7 @@ def command_line_arg_parse_dict(args):
     notes:
         e.g. --some_dict key=value another_key=value yet_another_key at command line stored will be return as proper dictionary
         when numeric values not assigned, e.g. yet_another_key, consistent value is assigned
+        compatible with command line strings produced by command_line_arg_parse_generate_string
     args:
         wargs - command line args as yielded by parser.add_argument(nargs='+',type=str,action='store') 
     """

@@ -248,7 +248,7 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     print("reading perturbation from IMAS mhd_linear IDS")
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version)
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
     mode_index=None
@@ -808,7 +808,7 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
     output_IDS.mhd_linear.time=np.array([0.0]) #define timebase
     output_IDS.mhd_linear.time_slice.resize(1) #create first time slice
 
-    output_IDS.mhd_linear.time_slice[0].toroidal_mode.resize(len(output_IDS.mhd_linear.time_slice[0].toroidal_mode)+1) #add a perturbation
+    output_IDS.mhd_linear.time_slice[0].toroidal_mode.resize(len(output_IDS.mhd_linear.time_slice[0].toroidal_mode)+1,keep=True) #add a perturbation
 
     output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].n_tor=mode_number #set mode number 
     output_IDS.mhd_linear.time_slice[0].toroidal_mode[-1].plasma.grid_type.index=1 #define geometry

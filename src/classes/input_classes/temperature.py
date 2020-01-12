@@ -157,7 +157,7 @@ def read_temperature_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version)
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -502,7 +502,7 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
                             if ion.element[0].z_n==properties['Z']]
             if not species_number:
                 species_number=[-1] #if matching ion found in IDS, its number now held in species number
-                output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+                output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1,keep=True) #add an ion species if desired species does not already exist in IDS
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element.resize(1)
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']

@@ -263,7 +263,7 @@ def read_moments_IDS(shot,run,**properties):
         return
     
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,'3')
+    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version)
     input_IDS.distributions.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
