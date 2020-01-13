@@ -22,7 +22,7 @@ try:
     import pathlib
     import shlex
     import os
-
+except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 
@@ -142,6 +142,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         # IMPORT MODULE(S) FOR SPECIFIC PHYSICS CODE(S)
         actor_path = os.path.join(os.getenv('KEPLER'), 'imas/src/org/iter/imas/python')
+        print(actor_path)
         list_of_actors = ['nemo']
         for name in list_of_actors:
             sys.path.insert(1,str(os.path.join(actor_path,name)))
@@ -183,7 +184,9 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         # CREATE OUTPUT DATAFILE AND EXPORT RESULTS TO LOCAL DATABASE
         print('=> Export output IDSs to local database')
-        output.create_env(self.user,self.tokamakname,self.version)
+        output.create_env(self.username,self.imasdb,self.version)
+        output.distribution_sources.ids_properties.homogeneous_time=1
+        output.distribution_sources.time=np.array([0.0])
         output.distribution_sources.put()
         output.close()
         print('Done exporting.')
@@ -212,7 +215,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
         NEMO_run_environment=run_scripts.environment.Environment('TITAN_NEMO')
         command=' '.join([NEMO_run_environment.create_command_string(),
                                 '; python NEMO_run.py',
-                                run_scripts.utils.command_line_arg_parse_generate_string(NEMO_run_args)])
+                                run_scripts.utils.command_line_arg_parse_generate_string(**NEMO_run_args)])
 
         try:
             pass
@@ -229,16 +232,16 @@ if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser(description='run NEMO from command line in Python!')
 
-    parser.add_argument('--dir_NEMO',type=str,action='store',dest=dir_NEMO,help="directory where NEMO source is stored",required=True)
-    parser.add_argument('--shot_in',type=int,action='store',dest=shot_in,help="input IDS shot number",required=True)
-    parser.add_argument('--shot_out',type=int,action='store',dest=shot_out,help="output IDS shot number",required=True)
-    parser.add_argument('--run_in',type=int,action='store',dest=run_in,help="input IDS run number",required=True)
-    parser.add_argument('--run_out',type=int,action='store',dest=run_out,help="output IDS run number",required=True)
-    parser.add_argument('--username',type=str,action='store',default=settings.username,dest=username,help="IMAS username",required=False)
-    parser.add_argument('--imasdb',type=str,action='store',default=settings.imasdb,dest=imasdb,help="local IMAS database name set by imasdb command, sometimes called 'tokamak name'",required=False)
-    parser.add_argument('--imas_version',type=str,action='store',default=settings.imas_version,dest=imas_version,help="string denoting IMAS major version e.g. '3'",required=False)
-    parser.add_argument('--nmarker',type=int,action='store',default=int(1.e6),dest=nmarker,help="number of Monte Carlo markers to generate",required=False)
-    parser.add_argument('--fokker_flag',type=int,action='store',default=0,dest=fokker_flag,help="",required=False)
+    parser.add_argument('--dir_NEMO',type=str,action='store',dest='dir_NEMO',help="directory where NEMO source is stored",required=True)
+    parser.add_argument('--shot_in',type=int,action='store',dest='shot_in',help="input IDS shot number",required=True)
+    parser.add_argument('--shot_out',type=int,action='store',dest='shot_out',help="output IDS shot number",required=True)
+    parser.add_argument('--run_in',type=int,action='store',dest='run_in',help="input IDS run number",required=True)
+    parser.add_argument('--run_out',type=int,action='store',dest='run_out',help="output IDS run number",required=True)
+    parser.add_argument('--username',type=str,action='store',default=settings.username,dest='username',help="IMAS username",required=False)
+    parser.add_argument('--imasdb',type=str,action='store',default=settings.imasdb,dest='imasdb',help="local IMAS database name set by imasdb command, sometimes called 'tokamak name'",required=False)
+    parser.add_argument('--imas_version',type=str,action='store',default=settings.imas_version,dest='imas_version',help="string denoting IMAS major version e.g. '3'",required=False)
+    parser.add_argument('--nmarker',type=int,action='store',default=int(1.e6),dest='nmarker',help="number of Monte Carlo markers to generate",required=False)
+    parser.add_argument('--fokker_flag',type=int,action='store',default=0,dest='fokker_flag',help="",required=False)
 
     args=parser.parse_args()
 
@@ -251,7 +254,7 @@ if __name__=='__main__':
                     imasdb=args.imasdb,
                     imas_version=args.imas_version,
                     nmarker=args.nmarker,
-                    fokker_flag=args.fokker_flag):
+                    fokker_flag=args.fokker_flag)
     this_run.run()
 
 #################################
