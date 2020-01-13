@@ -45,6 +45,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
+try:
+    import run_scripts.environment
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/environment.py could not be imported!\nreturning\n")
+    sys.exit(1)
 
 try:
     import support
@@ -72,8 +77,6 @@ class NEMO_run(run_scripts.workflow.Workflow):
         some_run=NEMO_run(run_in=1,shot_in=1,run_out=2,shot_out=2,nmarker=1000) 
         some_run.run() #this will execute all stages of a NEMO run
     """ 
-
-    workflow_name='NEMO_run'
 
     def __init__(self,
                 dir_NEMO,
@@ -184,6 +187,40 @@ class NEMO_run(run_scripts.workflow.Workflow):
         output.distribution_sources.put()
         output.close()
         print('Done exporting.')
+
+    def call_NEMO_actor_command_line(self):
+        """
+        function for calling NEMO python wrapper from command line
+
+        notes:
+            motivation for this function is to be able to define runtime environment whilst calling NEMO python actor from command line
+            NOT intended for use in workflows via add_command - otherwise recursion will occur
+        """
+
+        NEMO_run_args={}
+        NEMO_run_args['dir_NEMO']=[self.dir_NEMO]
+        NEMO_run_args['shot_in']=[self.shot_in]
+        NEMO_run_args['shot_out']=[self.shot_out]
+        NEMO_run_args['run_in']=[self.run_in]
+        NEMO_run_args['run_out']=[self.run_out]
+        NEMO_run_args['username']=[self.username]
+        NEMO_run_args['imasdb']=[self.imasdb]
+        NEMO_run_args['imas_version']=[self.imas_version]
+        NEMO_run_args['nmarker']=[self.nmarker]
+        NEMO_run_args['fokker_flag']=[self.fokker_flag]
+
+        NEMO_run_environment=run_scripts.environment.Environment('TITAN_NEMO')
+        command=' '.join([NEMO_run_environment.create_command_string(),
+                                '; python NEMO_run.py',
+                                run_scripts.utils.command_line_arg_parse_generate_string(NEMO_run_args)])
+
+        try:
+            pass
+            subprocess.call(command,shell=True,cwd=str(support.dir_run_scripts))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+
+        except subprocess.CalledProcessError as err:
+            print("ERROR: {workflow_name}.call_NEMO_actor_command_line() failed to run NEMO!\nreturning\n".format(workflow_name=self.workflow_name))
+            #raise(err)
 
 ##################################################################
 
