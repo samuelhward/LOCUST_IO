@@ -255,12 +255,14 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
     input_IDS.mhd_linear.get() #open the file and get all the data from it
 
     mode_index=None
+    modes_available=[]
     for counter,mode in enumerate(input_IDS.mhd_linear.time_slice[0].toroidal_mode): #determine where desired harmonic is stored in the IDS
+        modes_available.extend(mode)
         if mode_number==mode.n_tor:
             mode_index=counter
 
     if mode_index is None:
-        print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot - {shot}, run - {run}, n - {mode})!\nreturning\n!".format(shot=shot,run=run,mode=mode_number))
+        print("ERROR: read_perturbation_IDS_mhd_linear could not find requested mode in IDS (shot - {shot}, run - {run}, n - {mode}) - modes available = {modes_available}!\nreturning\n!".format(shot=shot,run=run,mode=mode_number,modes_available=modes_available))
         return
 
     if input_IDS.mhd_linear.time_slice[0].toroidal_mode[mode_index].plasma.grid_type.index!=1:    
