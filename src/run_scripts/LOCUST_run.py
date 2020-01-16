@@ -156,7 +156,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             print("ERROR: {workflow_name}.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n".format(workflow_name=self.workflow_name))
             return
         else:
-            self.dir_LOCUST.mkdir()
+            self.dir_LOCUST.mkdir(parents=True)
 
         #create self.root and child directories if do not exist
         for directory in [

@@ -472,7 +472,10 @@ def read_distribution_function_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version)
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    input_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version'])
     input_IDS.distributions.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data

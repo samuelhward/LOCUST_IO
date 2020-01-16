@@ -398,21 +398,22 @@ def dump_wall_IDS_2D(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    output_IDS.open_env(username,imasdb,'3')
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    output_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version'])
     output_IDS.wall.get() #open the file and get all the data from it
 
     if len(output_IDS.wall.description_2d)==0:
         output_IDS.wall.description_2d.resize(1)
-    if len(output_IDS.wall.description_2d[0].limiter)==0:
-        output_IDS.wall.description_2d[0].limiter.resize(1)
-    if len(output_IDS.wall.description_2d[0].limiter[0].unit)==0:
-        output_IDS.wall.description_2d[0].limiter[0].unit.resize(1)
+    if len(output_IDS.wall.description_2d[0].limiter.unit)==0:
+        output_IDS.wall.description_2d[0].limiter.unit.resize(1)
 
     if output_data['rlim'][-1]==output_data['rlim'][0]: output_data['rlim']=output_data['rlim'][:-1].copy() #remove any repeating of first/final elements
     if output_data['zlim'][-1]==output_data['zlim'][0]: output_data['rlim']=output_data['zlim'][:-1].copy()
 
-    output_IDS.wall.description_2d[0].limiter[0].unit[0].outline.r=output_data['rlim']
-    output_IDS.wall.description_2d[0].limiter[0].unit[0].outline.z=output_data['zlim']
+    output_IDS.wall.description_2d[0].limiter.unit[0].outline.r=output_data['rlim']
+    output_IDS.wall.description_2d[0].limiter.unit[0].outline.z=output_data['zlim']
 
     print("finished dumping wall to IDS")
  

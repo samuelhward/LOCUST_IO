@@ -249,7 +249,10 @@ def read_beam_depo_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version)
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    input_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version'])
     input_IDS.distribution_sources.get() #open the file and get all the data from it
 
     input_data = {} #initialise blank dictionary to hold the data
@@ -708,13 +711,23 @@ def read_beam_depo_SPIRAL_FO(filepath,**properties):
 def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
     """
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z 
-     
+    
+    args:
+        output_data - dict holding data to dump
+        filepath - full path of target file
+        shuffle - if True then shuffle particle list 
     notes:
         if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
         if absorption_fraction or absorption_scaling have length>1 it writes first value
     """
  
     print("writing full orbit beam deposition to LOCUST")
+
+    if 'shuffle' not in properties: properties['shuffle']=True
+    if properties['shuffle']: 
+        R,phi,Z,V_R,V_tor,V_Z=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'])
+    else:
+        R,phi,Z,V_R,V_tor,V_Z=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']
 
     with open(filepath,'w') as file: #open file
  
@@ -726,20 +739,30 @@ def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
 
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),v_tor=processing.utils.fortran_string(V_tor[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6)))
     
     print("finished writing full orbit beam deposition to LOCUST") 
 
 def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties):
     """
     writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z weight
-     
+
+    args:
+        output_data - dict holding data to dump
+        filepath - full path of target file
+        shuffle - if True then shuffle particle list 
     notes:
         -DWLIST -DWREAL are corresponding LOCUST flags
         if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
     """
  
     print("writing weighted full orbit beam deposition to LOCUST")
+
+    if 'shuffle' not in properties: properties['shuffle']=True
+    if properties['shuffle']: 
+        R,phi,Z,V_R,V_tor,V_Z,weight=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'],output_data['weight'])
+    else:
+        R,phi,Z,V_R,V_tor,V_Z,weight=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'],output_data['weight']
 
     with open(filepath,'w') as file: #open file
  
@@ -751,7 +774,7 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties)
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),v_r=processing.utils.fortran_string(output_data['V_R'][this_particle],14,6),v_tor=processing.utils.fortran_string(output_data['V_tor'][this_particle],14,6),v_z=processing.utils.fortran_string(output_data['V_Z'][this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}{weight}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),v_tor=processing.utils.fortran_string(V_tor[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6),weight=processing.utils.fortran_string(weight[this_particle],14,6)))
     
     print("finished writing weighted full orbit beam deposition to LOCUST") 
 
@@ -761,6 +784,10 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
     """
     writes weighted birth profile to LOCUST format - R phi Z V_parallel V weight
      
+    args:
+        output_data - dict holding data to dump
+        filepath - full path of target file
+        shuffle - if True then shuffle particle list 
     notes:
         assumes R,Z,V_parallel are at the guiding centre
         if absorption_fraction and absorption_scaling missing in output_data, assumes 1.0
@@ -783,12 +810,18 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
         V=np.sqrt(constants.species_charge*output_data['E']*2./constants.species_mass)
         V_parallel=V*output_data['V_pitch']
  
+    if 'shuffle' not in properties: properties['shuffle']=True
+    if properties['shuffle']: 
+        R,phi,Z,V,V_parallel,weight=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],V,V_parallel,output_data['weight'])
+    else:
+        R,phi,Z,V,V_parallel,weight=output_data['R'],output_data['phi'],output_data['Z'],V,V_parallel,output_data['weight']
+
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
 
-            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(output_data['R'][this_particle],14,6),phi=processing.utils.fortran_string(output_data['phi'][this_particle],14,6),z=processing.utils.fortran_string(output_data['Z'][this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(output_data['weight'][this_particle],14,6)))
+            file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(weight[this_particle],14,6)))
     
     print("finished writing weighted guiding centre beam deposition to LOCUST") 
-  
+    
 def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     """
     writes birth profile to a distribution_sources IDS
@@ -805,6 +838,9 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
     output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.distribution_sources.get()
  

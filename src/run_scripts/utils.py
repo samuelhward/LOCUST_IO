@@ -1810,7 +1810,10 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) 
-    input_IDS.open_env(settings.username,settings.imasdb,settings.imas_version) #open the IDS
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    input_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version']) #open the IDS
 
     input_IDS.core_profiles.get() #grab all the kinetic profile data to get species information
 
