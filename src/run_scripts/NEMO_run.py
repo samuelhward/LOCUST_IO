@@ -9,6 +9,16 @@ tools to run the NEMO code in python actor form
 notes: 
     contains the tools to perform a single run of NEMO
     custom steps can be added via add_command
+
+    to get nemo all ready:
+    git clone ssh://git@git.iter.org/heat/nemo.git
+    cd nemo
+    git checkout develop
+    (source correct environment)
+    make 
+    kepler_load <some_kepler_installation_name> - in my case this is new_lowlevel
+    make actor
+    DONE!
 ---
 '''
 
@@ -22,6 +32,7 @@ try:
     import pathlib
     import shlex
     import os
+    import numpy as np
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -110,7 +121,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         ################################# first generate class data that will be needed in workflow
 
-        self.dir_NEMO=dir_NEMO
+        self.dir_NEMO=pathlib.Path(dir_NEMO)
         self.shot_in=shot_in
         self.shot_out=shot_out
         self.run_in=run_in
@@ -141,12 +152,9 @@ class NEMO_run(run_scripts.workflow.Workflow):
             return 
 
         # IMPORT MODULE(S) FOR SPECIFIC PHYSICS CODE(S)
-        actor_path = os.path.join(os.getenv('KEPLER'), 'imas/src/org/iter/imas/python')
-        print(actor_path)
-        list_of_actors = ['nemo']
-        for name in list_of_actors:
-            sys.path.insert(1,str(os.path.join(actor_path,name)))
-            globals()[name] = getattr(__import__(name), name)
+        actor_path=self.dir_NEMO / 'actor_install' / 'actors' / 'imas' / 'src' / 'org' / 'iter' / 'imas' / 'python' / 'nemo'
+        sys.path.insert(1,str(actor_path))
+        globals()['nemo'] = getattr(__import__('nemo'), 'nemo') #alternative to import nemo for importing multiple actors
 
         # OPEN INPUT DATAFILE TO GET DATA FROM IMAS SCENARIO DATABASE
         print('=> Open input datafile')
@@ -184,7 +192,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         # CREATE OUTPUT DATAFILE AND EXPORT RESULTS TO LOCAL DATABASE
         print('=> Export output IDSs to local database')
-        output.create_env(self.username,self.imasdb,self.version)
+        output.create_env(self.username,self.imasdb,self.imas_version)
         output.distribution_sources.ids_properties.homogeneous_time=1
         output.distribution_sources.time=np.array([0.0])
         output.distribution_sources.put()
@@ -214,12 +222,12 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         NEMO_run_environment=run_scripts.environment.Environment('TITAN_NEMO')
         command=' '.join([NEMO_run_environment.create_command_string(),
-                                '; python NEMO_run.py',
+                                '; python {}'.format(str(support.dir_run_scripts / 'NEMO_run.py')),
                                 run_scripts.utils.command_line_arg_parse_generate_string(**NEMO_run_args)])
 
         try:
             pass
-            subprocess.call(command,shell=True,cwd=str(support.dir_run_scripts))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+            subprocess.call(command,shell=True,cwd=str(self.dir_NEMO))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
 
         except subprocess.CalledProcessError as err:
             print("ERROR: {workflow_name}.call_NEMO_actor_command_line() failed to run NEMO!\nreturning\n".format(workflow_name=self.workflow_name))
