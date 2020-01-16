@@ -17,12 +17,13 @@ notes:
 #Preamble
 
 import sys
+import os
 import pathlib
 
 ##################################################################
 #Main
 
-thisdirectory=pathlib.Path.cwd()
+thisdirectory=pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 parts=list(thisdirectory.parts)
 parts.reverse()
 for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for licence, then if user deletes licence code will not work

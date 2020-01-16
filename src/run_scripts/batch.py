@@ -25,6 +25,12 @@ except:
     sys.exit(1)
 
 try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -133,25 +139,7 @@ class Batch:
 
             ################################# create arg string to pass to workflow script
 
-            workflow_args='' #string to hold args passed to run script called from batch script
-            for counter,(workflow_arg,workflow_settings) in enumerate(self.batch_settings.items()): #workflow_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), workflow_settings are corresponding settings (e.g. /some/file/path)
-                setting_values_this_run=workflow_settings[run] #at this point we have picked single element of list describing a particular setting over multiple runs e.g. compile flags 
-
-                if setting_values_this_run is not None:
-                    if type(setting_values_this_run)==type({}): #if type is dict then these workflow settings are passed at command line differently - in the form --settings setting1=value1 setting2=value2
-                        if setting_values_this_run: #check if dict is empty    
-                            for setting,value in setting_values_this_run.items(): #if value1 above is a string, will need extra set of quotes to maintain continuity
-                                if type(value)==type(''): #add some extra formatting to insert quotes to maintain continuity when calling workflows
-                                    setting_values_this_run[setting]='"{value}"'.format(value=value)
-
-                            #parse args in form --settings setting1=value1 setting2=value2 setting3
-                            workflow_args_this_setting=' '.join(['{}={}'.format(setting,value) if value is not True else '{}'.format(setting) for setting,value in setting_values_this_run.items()])                               
-                            workflow_args=' '.join([workflow_args,'--'+str(workflow_arg),workflow_args_this_setting])
-
-                    else:
-
-                        #parse args in form --settings setting1
-                        workflow_args=' '.join([workflow_args,'--'+str(workflow_arg),str(setting_values_this_run)]) 
+            workflow_args=run_scripts.utils.command_line_arg_parse_generate_string(command_number_=run,**self.batch_settings) #string to hold args passed to run script called from batch script
 
             ################################# combine to generate final batch script
 

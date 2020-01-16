@@ -90,7 +90,9 @@ class Workflow:
             print("ERROR: {workflow_name}.run_command() could not find {command}, available commands - '{commands_avail}'".format(workflow_name=self.workflow_name,command=command,commands_avail=[command_avail for command_avail in self.commands_dispatch.keys()]))
         else:
             try:
+                print("{workflow_name} running {command_name}".format(workflow_name=self.workflow_name,command_name=self.commands_dispatch[command].__name__))
                 self.commands_dispatch[command](*args,**kwargs)
+                print("{workflow_name} completed {command_name}".format(workflow_name=self.workflow_name,command_name=self.commands_dispatch[command].__name__))
             except:
                 print("ERROR: {workflow_name}.run_command() could not execute '{command}'".format(workflow_name=self.workflow_name,command=command))
 

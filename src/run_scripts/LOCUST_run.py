@@ -81,8 +81,6 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         some_run.run() #this will execute all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    workflow_name='LOCUST_run'
-
     def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
         """
         notes:
@@ -158,7 +156,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             print("ERROR: {workflow_name}.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n".format(workflow_name=self.workflow_name))
             return
         else:
-            self.dir_LOCUST.mkdir()
+            self.dir_LOCUST.mkdir(parents=True)
 
         #create self.root and child directories if do not exist
         for directory in [

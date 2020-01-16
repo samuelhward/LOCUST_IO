@@ -70,6 +70,7 @@ markersize_start_mark=1
 username='wards2'
 imasdb='test'
 system_default='TITAN'
+imas_version='3'
 
 #LOCUST git
 repo_URL_LOCUST='ssh://git@git.iter.org/traj/locust.git'

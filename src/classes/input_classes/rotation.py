@@ -212,6 +212,71 @@ def read_rotation_excel_1(filepath,**properties):
 
     return input_data
 
+def read_rotation_IDS(shot,run,**properties):
+    """
+
+    notes:
+    """
+
+    print("reading rotation from IDS")
+
+    if 'species' not in properties:
+        print("ERROR: cannot read_number_density_IDS - properties['species'] must be set'\n")
+        return
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: read_number_density_IDS could not import IMAS module!\nreturning\n")
+        return
+
+    input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    input_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version'])
+    input_IDS.core_profiles.get() #open the file and get all the data from it
+
+    input_data = {} #initialise blank dictionary to hold the data
+
+    if properties['species']=='electrons':
+        try:
+            input_data['rotation_vel']=np.asarray(input_IDS.core_profiles.profiles_1d[0].electrons.velocity.toroidal)
+        except:
+            pass    
+    else:
+        species_number=None
+        if 'A' in properties and 'Z' in properties:
+            for counter,species in enumerate(input_IDS.core_profiles.profiles_1d[0].ion):
+                if int(properties['A'])==species.element[0].a and int(properties['Z'])==species.element[0].z_n:
+                    species_number=counter
+                species_avail_A.append(species.element[0].a)
+                species_avail_Z.append(species.element[0].z_n)
+            if species_number is None:
+                print("ERROR: read_number_density_IDS could not find requested species in IDS \
+                    (shot - {shot}, run - {run}, Z - {Z}) - available species: {species_avail}!\nreturning\n!"\
+                    .format(shot=shot,run=run,Z=int(properties['Z']),species_avail=['\nA={},Z={}'.format(A,Z) for A,Z in zip(species_avail_A,species_avail_Z)]))
+                return
+        else:
+            species_number=0
+            print("WARNING: read_rotation_IDS not supplied species A or Z - reading first species in IDS A={A} Z={Z}".format(
+                A=input_IDS.core_profiles.profiles_1d[0].ion[species_number].element[0].a,
+                Z=input_IDS.core_profiles.profiles_1d[0].ion[species_number].element[0].z_n))
+
+        try:
+            input_data['rotation_vel']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[species_number].velocity.toroidal)
+        except:
+            pass
+        try:
+            input_data['rotation_ang']=np.asarray(input_IDS.core_profiles.profiles_1d[0].ion[species_number].rotation_frequency_tor)
+        except:
+            try:
+                pass #XXX how to derive this from rotation_velocity in IDS?
+            except:
+                pass
+
+    print("finished reading rotation from IDS")
+
 ################################################################## rotation write functions
 
 def dump_rotation_LOCUST(output_data,filepath,**properties):
@@ -276,6 +341,9 @@ def dump_rotation_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
     output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.core_profiles.get()
  
@@ -304,7 +372,7 @@ def dump_rotation_IDS(ID,output_data,shot,run,**properties):
                         if ion.element[0].z_n==properties['Z']]
         if not species_number:
             species_number=[-1] #if matching ion found in IDS, its number now held in species number
-            output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+            output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1,keep=True) #add an ion species if desired species does not already exist in IDS
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element.resize(1)
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']

@@ -27,7 +27,7 @@ numpy_version=np.version.version.split('.')
 python_version=sys.version_info
 
 #look for input_files and output_files directories
-thisdirectory=pathlib.Path.cwd()
+thisdirectory=pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 parts=list(thisdirectory.parts)
 parts.reverse()
 for counter,level in enumerate(parts): #find LOCUST_IO directory by looking for licence, then if user deletes licence code will not work
@@ -44,6 +44,7 @@ dir_processing=dir_locust_io / 'src' / 'processing'
 dir_classes=dir_locust_io / 'src' / 'classes'
 dir_locust=dir_locust_io / 'LOCUST'
 dir_nemo=dir_locust_io / 'NEMO'
+dir_nemo=pathlib.Path('/home/ITER/wards2/scratch/nemo')
 
 #data which must exist to be able to run LOCUST
 required_equilibrium=['rdim','zdim','rcentr','rleft','zmid','rmaxis','zmaxis','simag','sibry','bcentr',

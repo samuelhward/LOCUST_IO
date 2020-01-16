@@ -21,6 +21,22 @@ except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
 
+try:
+    import support
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    import constants
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/constants.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    import settings
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+
 ##################################################################
 #Main
 
@@ -95,11 +111,12 @@ class Environment:
     environments['TITAN_NEMO']['module unload']=['Anaconda3']
     environments['TITAN_NEMO']['module switch']=[]
     environments['TITAN_NEMO']['export']={}
-    environments['TITAN_NEMO']['export']['ACTOR_POOL']='$PWD/actor_install/actors'
+    environments['TITAN_NEMO']['export']['ACTOR_POOL']=str(support.dir_nemo / 'actor_install' / 'actors')
     environments['TITAN_NEMO']['export']['DIAG_INFO']='-DNO_DIAG_INFO'
-    environments['TITAN_NEMO']['export']['KEPLER']='$ACTOR_POOL'
+    environments['TITAN_NEMO']['export']['KEPLER']=str(support.dir_nemo / 'actor_install' / 'actors')
     environments['TITAN_NEMO']['misc']={}
     environments['TITAN_NEMO']['misc']['ulimit']='-Ss unlimited'
+    environments['TITAN_NEMO']['misc']['imasdb']=settings.imasdb
     ################################# MARFE
     environments['MARFE']={}
     environments['MARFE']['export']={}

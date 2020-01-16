@@ -70,7 +70,7 @@ Environments contain all the information needed to describe a system environment
 import context
 from run_scripts.workflow import Workflow as wf
 from run_scripts.environment import Environment as ev
-from run_scripts.workflow import Build as bu
+from run_scripts.build import Build as bu
 
 class better_workflow(wf):
     def __init__(self,*args,**kwargs):

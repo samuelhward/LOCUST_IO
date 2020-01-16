@@ -168,7 +168,10 @@ def read_number_density_IDS(shot,run,**properties):
         return
 
     input_IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
-    input_IDS.open_env(settings.username,settings.imasdb,'3')
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
+    input_IDS.open_env(properties['username'],properties['imasdb'],properties['imas_version'])
     input_IDS.core_profiles.get() #open the file and get all the data from it
  
     input_data = {} #initialise blank dictionary to hold the data
@@ -203,6 +206,7 @@ def read_number_density_IDS(shot,run,**properties):
     #read in axes
     processing.utils.dict_set(input_data,flux_pol=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.psi)/(2.0*constants.pi)) #convert to Wb/rad
     processing.utils.dict_set(input_data,flux_tor_coord=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_tor))
+    processing.utils.dict_set(input_data,flux_pol_norm=np.asarray(input_IDS.core_profiles.profiles_1d[0].grid.rho_pol_norm))
     processing.utils.dict_set(input_data,q=np.asarray(input_IDS.core_profiles.profiles_1d[0].q))
     if input_IDS.core_profiles.vacuum_toroidal_field.b0.size!=0: #if we are supplied a vacuum toroidal field to derive toroidal flux, then derive it
         processing.utils.dict_set(input_data,flux_tor=np.asarray(input_IDS.core_profiles.vacuum_toroidal_field.b0[0]*(input_data['flux_tor_coord']**2)/2.)) #in Wb/rad
@@ -424,7 +428,7 @@ def read_number_density_excel_1(filepath,**properties):
         print("ERROR: cannot read_number_density_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
         return
 
-    available_species_names=['ne','nT','nD','nAlp','nH','nW','nHe3'] #list of available species in these files
+    available_species_names=['ne','nT','nD','nHe','nH','nW','nHe3'] #list of available species in these files
     available_species_names_long=['electrons','tritium','deuterium','helium','hydrogen','tungsten','helium3']
 
     desired_field=None
@@ -486,6 +490,9 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
         return
 
     output_IDS=imas.ids(int(shot),int(run)) 
+    if 'username' not in properties: properties['username']=settings.username
+    if 'imasdb' not in properties: properties['imasdb']=settings.imasdb
+    if 'imas_version' not in properties: properties['imas_version']=settings.imas_version
     output_IDS.open_env(settings.username,settings.imasdb,'3') #open the IDS
     output_IDS.core_profiles.get()
  
@@ -518,7 +525,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
                             if ion.element[0].z_n==properties['Z']]
             if not species_number:            
                 species_number=[-1] #if matching ion found in IDS, its number now held in species number
-                output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1) #add an ion species if desired species does not already exist in IDS
+                output_IDS.core_profiles.profiles_1d[0].ion.resize(len(output_IDS.core_profiles.profiles_1d[0].ion)+1,keep=True) #add an ion species if desired species does not already exist in IDS
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element.resize(1)
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].a=properties['A']
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']
