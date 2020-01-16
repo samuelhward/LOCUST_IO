@@ -113,7 +113,7 @@ class Environment:
     environments['TITAN_NEMO']['export']={}
     environments['TITAN_NEMO']['export']['ACTOR_POOL']=str(support.dir_nemo / 'actor_install' / 'actors')
     environments['TITAN_NEMO']['export']['DIAG_INFO']='-DNO_DIAG_INFO'
-    environments['TITAN_NEMO']['export']['KEPLER']='$ACTOR_POOL'
+    environments['TITAN_NEMO']['export']['KEPLER']=str(support.dir_nemo / 'actor_install' / 'actors')
     environments['TITAN_NEMO']['misc']={}
     environments['TITAN_NEMO']['misc']['ulimit']='-Ss unlimited'
     environments['TITAN_NEMO']['misc']['imasdb']=settings.imasdb
