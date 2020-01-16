@@ -167,7 +167,8 @@ def angle_pol(R_major,R,Z,Z_major=0.):
 
 def minor_radius(R_major,R,Z,Z_major=0.):
     """
-    returns minor radius of R Z point
+    returns minor radius of R Z points
+
     notes:
     args:
         R_major - major radius at geometric axis
@@ -181,6 +182,7 @@ def minor_radius(R_major,R,Z,Z_major=0.):
 def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smooth=0,rect_grid=True):
     """
     generate a 2D grid interpolator
+
     notes:
         keep as separate functions so can freely swap out interpolation method
         RBF - https://stackoverflow.com/questions/37872171/how-can-i-perform-two-dimensional-interpolation-using-scipy
@@ -324,16 +326,17 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
 
 def within_LCFS(R,Z,equilibrium):
     """
-    determines whether R,Z point is within LCFS
+    determines whether R Z points are within LCFS
+
     args:
         R - array of R coordinates at points of interest
         Z - array of Z coordinates at points of interest
         equilibrium - equilibrium object with LCFS
+    notes:
+        assumes LCFS points are monotonic in poloidal angle
     returns:
         True if inside LCFS
         False if outside LCFS
-    notes:
-        assumes LCFS points are monotonic in poloidal angle
     """
     distances_point_to_mag_axis=[]
     pol_angle_points=[]
@@ -364,13 +367,14 @@ def within_LCFS(R,Z,equilibrium):
 def LCFS_crop(quantity,grid,equilibrium,crop_value=0.0,outside=True):
     """
     sets all values of quantity outside the LCFS = 0
+    
     args:
         quantity - arbitrary 2D quantity
         grid - quantity is stored on rectangular axes defined by grid['R_1D'] and grid['Z_1D']
         equilibrium - equilibrium object with LCFS
         crop_value - regions outside LCFS will be set to this value
         outside - if outside then floor all values outside LCFS else floor all values inside
-    notes:
+    notes:    
     """
 
     quantity_cropped=copy.deepcopy(quantity)
@@ -436,20 +440,20 @@ def dot_product(vec1,vec2):
 
     return dot_product
 
-def pitch_calc_2D(some_particle_list,some_equilibrium):
+def pitch_calc_2D(particle_list,equilibrium):
     """
     calculates the pitch angles of a given set of particle positions for axisymmetric B_field 
 
+    args:
+        equilibrium - equilibrium object
+        particle_list - generic particle list with positions particle_list['R'],particle_list['Z']
     notes:
         assumes RHS=R Phi Z (positive toroidal direction is counter-clockwise) 
-    args:
-        some_equilibrium - equilibrium object
-        some_particle_list - generic particle list with positions some_particle_list['R'],some_particle_list['Z']
     """
 
     print("pitch_calc_2D - start\n")
 
-    eq=copy.deepcopy(some_equilibrium)
+    eq=copy.deepcopy(equilibrium)
 
     if not np.all([component in eq.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
         eq.B_calc()
@@ -467,7 +471,7 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     Bz_at_particles=[]
     B_at_particles=[]
 
-    for R,Z in zip(some_particle_list['R'],some_particle_list['Z']):
+    for R,Z in zip(particle_list['R'],particle_list['Z']):
 
         Br=float(B_field_R_interpolator(R,Z))
         Btor=float(B_field_tor_interpolator(R,Z))
@@ -487,9 +491,9 @@ def pitch_calc_2D(some_particle_list,some_equilibrium):
     Btor_at_particles/=B_at_particles
     Bz_at_particles/=B_at_particles
 
-    V_parallel=dot_product([some_particle_list['V_R'],some_particle_list['V_tor'],some_particle_list['V_Z']],[Br_at_particles,Btor_at_particles,Bz_at_particles])
+    V_parallel=dot_product([particle_list['V_R'],particle_list['V_tor'],particle_list['V_Z']],[Br_at_particles,Btor_at_particles,Bz_at_particles])
 
-    V=np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_tor']**2+some_particle_list['V_Z']**2)
+    V=np.sqrt(particle_list['V_R']**2+particle_list['V_tor']**2+particle_list['V_Z']**2)
     V_pitch=V_parallel/V
 
     print("pitch_calc_2D - finished\n")
@@ -611,3 +615,26 @@ def Zeff_calc_density(Zeff,density,charge,fractions=False):
         return density/np.sum(density)
     else:
         return missing_density
+
+def knuth_shuffle(*args):
+   """
+
+   args:
+      *args - arrays of same length to be shuffled in parallel
+   notes:
+      preserves index mapping between arrays
+   """
+
+   import random
+
+   number_entries=len(args[0])
+   range_number_entries=list(range(number_entries))[1:] #remove first entry since do not want entries swapping with themselves
+   range_number_entries_reverse=range_number_entries.reverse()
+   
+   for i in range_number_entries:
+      rand=random.uniform(0.,1.)
+      rand_entry=int(rand*i+1)
+      #iterate over all *args
+      for arg in args:
+         arg[rand_entry],arg[i]=arg[i],arg[rand_entry]
+   return [arg for arg in args]
