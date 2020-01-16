@@ -325,6 +325,13 @@ class Orbits(classes.base_output.LOCUST_output):
 
         if ndim==2: #2D plotting
 
+            elif axes==['X','Y']: #plotting top-down
+                if 'X' not in self.data or 'Y' not in self.data:
+                    try:
+                        self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
+                    except:
+                        pass
+
             for particle in particles:
                 ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
                 if start_mark:

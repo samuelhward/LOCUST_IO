@@ -121,13 +121,23 @@ Since this package aims to bridge the gap between various file formats for diffe
         B_field_Z                                                       #magnetic field Z component at position [r,z] [T]
         B_field_mag                                                     #absolute magnitude of perturbation [T]
 
+##### Wall
+
+    0D data
+        limitr                                                          #number of points in the wall boundary (2D wall)
+    1D data
+        rlim                                                            #r coordinates of wall boundary (2D wall)
+        zlim                                                            #z coordinates of wall boundary (2D wall)
+
 #### Orbits:
 
     0D data
         number_particles                                                #total number of particles
         number_timesteps                                                #total number of timesteps
-    3D data
-        orbits[t,i,p]                                                   #spatial coordinate i for particle p at time step t
+    2D data
+        R[t,p]                                                          #R for particle p at time step t
+        phi[t,p]                                                        #phi for particle p at time step t
+        Z[t,p]                                                          #Z for particle p at time step t
 
 #### Final Particle List:
 

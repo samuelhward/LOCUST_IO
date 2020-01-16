@@ -567,6 +567,11 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     ax.set_aspect('auto')
 
             elif axes==['X','Y']:
+                if 'X' not in self.data or 'Y' not in self.data:
+                    try:
+                        self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
+                    except:
+                        pass
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])

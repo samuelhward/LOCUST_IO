@@ -527,8 +527,7 @@ def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
 
         input_data['phi']*=2.*constants.pi/360.
-        input_data['X']=input_data['R']*np.cos(input_data['phi'])
-        input_data['Y']=input_data['R']*np.sin(input_data['phi'])
+        input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from ASCOT full orbit input.particles format")
@@ -583,8 +582,7 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
                 input_data[locust_io_name]=np.asarray(input_data[locust_io_name])
     
         input_data['phi']*=2.*constants.pi/360.
-        input_data['X']=input_data['R']*np.cos(input_data['phi'])
-        input_data['Y']=input_data['R']*np.sin(input_data['phi']) 
+        input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading beam deposition from ASCOT guiding centre input.particles format")
@@ -1377,6 +1375,12 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
+
+                if 'X' not in self.data or 'Y' not in self.data:
+                    try:
+                        self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
+                    except:
+                        pass
 
             if style=='histogram':
                 if grid is not False: #bin according to pre-defined grid
