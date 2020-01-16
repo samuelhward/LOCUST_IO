@@ -1346,7 +1346,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)
+            polar=True if axes==['X','Y'] else False
+            ax = fig.add_subplot(111,polar=polar)
+
         ax.set_title(self.ID)
 
         ndim=len(axes) #infer how many dimensions user wants to plot
