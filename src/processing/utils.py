@@ -179,6 +179,12 @@ def minor_radius(R_major,R,Z,Z_major=0.):
 
     return np.sqrt((R-R_major)**2+(Z-Z_major)**2) 
 
+def interpolate_3D():
+    """
+    args:
+    notes:
+    """
+
 def interpolate_2D(X_axis,Y_axis,Z_grid,function='multiquadric',type='RBS',smooth=0,rect_grid=True):
     """
     generate a 2D grid interpolator
