@@ -2,7 +2,7 @@
 
 #example.py
 
-"""
+'''
 Samuel Ward
 24/01/2018
 ----
@@ -11,7 +11,7 @@ very simple example project script for manipulating the sample input/output data
 notes:
 
 ---
-"""
+'''
 
 
 

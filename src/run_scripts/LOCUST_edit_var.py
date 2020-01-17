@@ -1,6 +1,6 @@
 #LOCUST_edit_var.py
  
-"""
+'''
 Samuel Ward
 27/09/2019
 ----
@@ -12,7 +12,7 @@ usage:
 notes:         
     edits prec_mod.f90 within LOCUST folder by default
 ---
-"""
+'''
 
 
 ###################################################################################################
