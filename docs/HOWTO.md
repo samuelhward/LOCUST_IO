@@ -107,7 +107,7 @@ some_workflow_1.run_command('print finish message') #these functions do differen
 some_workflow_2.run_command('print finish message') #but are called in the same way
 ```
 
-Some examples of workflows are included in LOCUST_IO, namely LOCUST_run and MARS_builder_run. The former adds functions to send off a single run of LOCUST and the latter can be used to automatically trigger mars_builder to transform 3D field data.  
+Some examples of workflows are included in LOCUST_IO, namely LOCUST_run, MARS_builder_run and NEMO_run. LOCUST_run adds functions to send off a single run of LOCUST, MARS_builder_run can be used to automatically trigger mars_builder to transform 3D field data and NEMO_run adds functions to automatically call the NEMO python actor (assuming it is pre-installed).  
 
 ## Use mars_builder
 
