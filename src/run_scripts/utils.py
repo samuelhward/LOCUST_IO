@@ -1967,7 +1967,7 @@ def command_line_arg_parse_generate_string(command_number_=0,**command_args):
 
     command_arg_string=''
     for command_arg,command_value in command_args.items(): #command_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), command_value are corresponding arg_s (e.g. /some/file/path)
-        arg_value_this_run=command_value[command_number_] #at this point we have picked single element of list describing a particular arg over multiple runs e.g. compile flags 
+        arg_value_this_run=copy.deepcopy(command_value[command_number_]) #at this point we have picked single element of list describing a particular arg over multiple runs e.g. compile flags, deepcopy to stop direct editing of **command_args 
 
         if arg_value_this_run is not None:
             if type(arg_value_this_run)==type({}): #if this command arg is of type dict then we must pass to command line differently in the form: --args sub_arg_1=sub_value1 sub_arg_2=sub_value2
