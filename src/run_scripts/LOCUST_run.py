@@ -241,9 +241,9 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         """
 
         #retrieve cache
-        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('MESH*'):
+        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('MESH*CACHE'):
             subprocess.run(shlex.split('mv {file} {dir_cache}'.format(file=str(file),dir_cache=str(self.dir_cache))),shell=False)
-        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('LINK*'):
+        for file in (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default).glob('LINK*CACHE'):
             subprocess.run(shlex.split('mv {file} {dir_cache}'.format(file=str(file),dir_cache=str(self.dir_cache))),shell=False)
 
     def cleanup(self,*args,**kwargs):
