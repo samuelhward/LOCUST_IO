@@ -2038,6 +2038,8 @@ def literal_eval(*things):
             outputs.append(ast.literal_eval(thing))
         else:
             outputs.append(thing)
+
+    if len(outputs)==1: outputs=outputs[0] #to avoid user having to results=literal_eval(*things)[0]
     return outputs
 
 #################################
