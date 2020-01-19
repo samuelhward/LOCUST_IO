@@ -113,17 +113,17 @@ Some examples of workflows are included in LOCUST_IO, namely LOCUST_run and MARS
 
 mars_builder is a piece of FORTRAN90 written by Rob Akers which aims to process MARS-F output. More specifically, it linearly combines separate MARS-F fields by interpolating them onto a cylindrical RZ grid to arbitrary precision. You can call mars_builder from within Python using the script MARS_builder_run.py. Some commonly used flags and variables are:
 
-| flag    | description                                                                                            |
-|---------|--------------------------------------------------------------------------------------------------------|
-| TOKAMAK | integer value of desired tokamak (according to prec_mod.f90) e.g. -DTOKAMAK=1 corresponds to ITER      |
-| COILROW | integer value to select individual coil row to dump to file (floors contributions of other coil rows)  |
-| MATCH   | use to generate optimal RMP settings (e.g. phase, amplitude) to match field defined in variable `mtch` |
+| flag    | description                                                                                                                      |
+|---------|----------------------------------------------------------------------------------------------------------------------------------|
+| TOKAMAK | integer value of desired tokamak (according to prec_mod.f90) e.g. -DTOKAMAK=1 corresponds to ITER                                |
+| COILROW | integer value to select individual coil row to dump to file (floors contributions of other coil rows) (COILROW==1 --> Upper row) |
+| MATCH   | use to generate optimal RMP settings (e.g. phase, amplitude) to match field defined in variable `mtch`                           |
 
-| variable | description                                                                                                   |
-|----------|---------------------------------------------------------------------------------------------------------------|
-| `root`   | prepends this string to all written filepaths                                                                 |
-| `file`   | target 3D field filename string                                                                               |
-| `TAIL`   | array holding strings to append to `file` in the case of multiple 3D field files - usually denoting coil rows |
+| variable | description                                                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------|
+| `root`   | prepends this string to all written filepaths                                                                                   |
+| `file`   | target 3D field filename string                                                                                                 |
+| `TAIL`   | array holding strings to append to `file` in the case of multiple 3D field files - usually denoting coil rows                   |
 
 ## Use LOCUST_edit_var
 
