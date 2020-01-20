@@ -95,7 +95,7 @@ class Environment:
     environments['TITAN']['misc']['ulimit']="-s 2000000"
     ################################# NEMO TITAN
     environments['TITAN_NEMO']={}
-    environments['TITAN_NEMO']['module load']=['IMAS',
+    environments['TITAN_NEMO']['module load']=['IMAS/3.25.0-4.4.0',
                                            'Kepler',
                                            'FC2K/4.6.5-PyAL',
                                            'PyUAL/1.0.0-foss-2018a-Python-3.6.4',
