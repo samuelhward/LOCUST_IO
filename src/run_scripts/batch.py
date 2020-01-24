@@ -91,7 +91,7 @@ class Batch:
     batch_system['VIKING']['flag_command']='#SBATCH'
     batch_system['VIKING']['flags']={}
     batch_system['VIKING']['flags']['job-name']='LOCUST'
-    batch_system['VIKING']['flags']['gres']='gpu:1'
+    batch_system['VIKING']['flags']['gres']='gpu:4'
     batch_system['VIKING']['flags']['partition']='gpu'
     batch_system['VIKING']['flags']['cpus-per-task']=1
     batch_system['VIKING']['flags']['mail-user']='samuel.ward@york.ac.uk'
