@@ -143,7 +143,7 @@ def read_perturbation_LOCUST(filepath,**properties):
 def read_perturbation_LOCUST_field_data(filepath,**properties):
     """
     notes:
-        reads from the file_data.out file produced by LOCUST BCHECK mode
+        reads from the field_data.out file produced by LOCUST BCHECK mode
     """
 
     print("reading LOCUST test field data")
@@ -1179,7 +1179,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def evaluate(self,R,phi,Z,mode_number,i3dr=1,phase=0):
+    def evaluate(self,R,phi,Z,mode_number=None,i3dr=1,phase=0):
         """
         returns the three components of perturbation field at a point in the plasma 
         
@@ -1195,6 +1195,8 @@ class Perturbation(classes.base_input.LOCUST_input):
         usage:
             dB_R,dB_tor,dB_Z=my_equilibrium.B_calc_point(R=[1,2,3],phi=[0,0,0],Z=[1,2,3])
         """
+
+        if not mode_number: mode_number=self.mode_number
 
         print("perturbation_calc_point generating B_field interpolators")
         dB_field_R_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_real']) #construct interpolators here
