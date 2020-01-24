@@ -173,9 +173,10 @@ class Environment:
     environments['VIKING']['export']['FFLAGS']='"-I$HDF5_DIR/include"'
     environments['VIKING']['export']['LDFLAGS']='"-L$HDF5_DIR/lib"'
     environments['VIKING']['module load']=[
-                            'compiler/PGI/18.10-GCC-7.3.0-2.30',
+                            'compiler/PGI/19.10-GCC-7.3.0-2.30',
                             'system/CUDA/9.2.88-GCC-7.3.0-2.30',
-                            'lang/Python/3.7.0-intel-2018b']
+                            'lang/Python/3.7.0-foss-2018b',
+                            'data/HDF5/1.10.2-PGI-19.10-GCC-7.3.0-2.30']
     environments['VIKING']['module unload']=[
                             'compiler/GCCcore/7.3.0']
     environments['VIKING']['misc']={}
