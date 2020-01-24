@@ -157,7 +157,7 @@ for thread in parameter__threads:
 #define and launch the batch scripts
 
 profiling_batch=Batch(**args_batch)
-profiling_batch.launch(workflow_filepath='profiling_workflow.py',system_name='TITAN')   
+profiling_batch.launch(workflow_filepath='profiling_workflow.py',system_name=LOCUST_run__system_name)   
 
 #################################
  
