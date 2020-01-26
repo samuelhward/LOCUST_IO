@@ -147,6 +147,8 @@ class Environment:
                             'pgi/18.1',
                             'hdf5/1.8.20',
                             'hdf5-devel/1.8.20']
+    environments['GPU']['module unload']=[]
+    environments['GPU']['module switch']=[]
     environments['GPU']['misc']={}
     environments['GPU']['misc']['ulimit']="-s 2000000"
     ################################# CUMULUS
@@ -162,6 +164,7 @@ class Environment:
                             'hdf5-devel/1.8.20'
                             ]
     environments['CUMULUS']['module unload']=[]
+    environments['CUMULUS']['module switch']=[]
     environments['CUMULUS']['misc']={}
     environments['CUMULUS']['misc']['ulimit']="-s 2000000"
     ################################# VIKING
@@ -179,6 +182,7 @@ class Environment:
                             'data/HDF5/1.10.2-PGI-19.10-GCC-7.3.0-2.30']
     environments['VIKING']['module unload']=[
                             'compiler/GCCcore/7.3.0']
+    environments['VIKING']['module switch']=[]
     environments['VIKING']['misc']={}
     environments['VIKING']['misc']['ulimit']="-s 2000000"
 
