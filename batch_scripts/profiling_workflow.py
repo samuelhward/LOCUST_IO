@@ -171,7 +171,7 @@ class profiling_workflow(run_scripts.workflow.Workflow):
         LOCUST_workflow=LOCUST_run(system_name=self.args['LOCUST_run__system_name'],
             repo_URL=self.args['LOCUST_run__repo_URL'],
             commit_hash=self.args['LOCUST_run__commit_hash'],
-            dir_locust=self.args['LOCUST_run__dir_LOCUST'],
+            dir_LOCUST=self.args['LOCUST_run__dir_LOCUST'],
             dir_input=self.args['LOCUST_run__dir_input'],
             dir_output=self.args['LOCUST_run__dir_output'],
             dir_cache=self.args['LOCUST_run__dir_cache'],
