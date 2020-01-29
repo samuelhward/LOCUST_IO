@@ -169,3 +169,5 @@
 | `LNLBT`       | Us BT in lnL instead of B                                                                                                                    |
 | `BRELAX`      | Ignore markers that are off grid                                                                                                             |
 | `PFCMOD`      | Output splot VTK files only if changed                                                                                                       |
+| `TITHRM`      | Set thermalisation cut-off energy to TITHRM*Ti                                                                                               |
+|               |                                                                                                                                              |
