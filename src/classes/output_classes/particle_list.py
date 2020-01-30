@@ -195,7 +195,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['status_flags']['generic_fail_hard']=-99999.0
 
             #calculate some additional things
-            input_data['E']=.5*constants.species_mass*constants.species_charge*(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)
+            input_data['E']=.5*constants.species_charge*(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)/constants.species_mass
             input_data['weight']=np.full(len(input_data['R']),1.)
 
         print("finished reading final particle list from LOCUST")
