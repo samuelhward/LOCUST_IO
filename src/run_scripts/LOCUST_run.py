@@ -77,11 +77,11 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         adds workflow components to workflow class for execution of a single standard LOCUST run
     usage:
         python LOCUST_run.py --flags TOKAMAK=8 BRELAX UNBOR=100 LEIID=8 OPENMESH OPENTRACK PFCMOD TOKHEAD JXB2 PROV GEQDSKFIX1 PITCHCUR EGSET=100000.0D0 EBASE UHST LNLBT B3D B3D_EX SPLIT NOINF SMALLEQ BP TIMAX=0.023D0 STDOUT
-        some_run=LOCUST_run(system_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
+        some_run=LOCUST_run(environment_name='TITAN',flags=flags) #by default this will clone LOCUST to the LOCUST_IO/LOCUST folder, run it on LOCUST_IO/data/input_files and dump to LOCUST_IO/data/output_files
         some_run.run() #this will execute all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,system_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
+    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,environment_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
         """
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
@@ -90,7 +90,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             dir_input - directory to read input data from 
             dir_output - directory to write results to 
             dir_cache - directory to read cache data from 
-            system_name - string identifier to choose from selection of environments stored as class attributes 
+            environment_name - string identifier to choose from selection of environments stored as class attributes 
             repo_URL - SSH address of remote target git repo 
             commit_hash - commit hash identifying this build - defaults to latest commit on settings.branch_default_LOCUST branch
             settings_prec_mod - dict denoting variable names and values to set them to within prec_mod.f90
@@ -114,9 +114,9 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         self.dir_output=dir_output if dir_output.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_output path!")
         self.dir_cache=dir_cache if dir_cache.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_cache path!")
         
-        self.environment=run_scripts.environment.Environment(system_name=system_name) #create a runtime environment for this workflow
+        self.environment=run_scripts.environment.Environment(environment_name=environment_name) #create a runtime environment for this workflow
         
-        self.build=run_scripts.LOCUST_build.LOCUST_build(system_name=system_name,repo_URL=repo_URL,commit_hash=commit_hash) #define a build for this workflow
+        self.build=run_scripts.LOCUST_build.LOCUST_build(environment_name=environment_name,repo_URL=repo_URL,commit_hash=commit_hash) #define a build for this workflow
         self.build.flags_add(**flags) 
         self.build.source_code_mods_add(source_code_filename='prec_mod.f90',**settings_prec_mod)
 
@@ -291,7 +291,7 @@ if __name__=='__main__':
     parser.add_argument('--dir_in',type=str,action='store',default=support.dir_input_files,dest='dir_input',help="directory to read input data from",required=False)
     parser.add_argument('--dir_out',type=str,action='store',default=support.dir_output_files,dest='dir_output',help="directory to write results to",required=False)
     parser.add_argument('--dir_cache',type=str,action='store',default=support.dir_cache_files,dest='dir_cache',help="directory to read cache data from",required=False)
-    parser.add_argument('--sys_name',type=str,action='store',default='TITAN',dest='system_name',help="computer system currently running on e.g. \'TITAN\'",required=False)
+    parser.add_argument('--sys_name',type=str,action='store',default='TITAN',dest='environment_name',help="computer system currently running on e.g. \'TITAN\'",required=False)
     parser.add_argument('--repo_URL',type=str,action='store',default=settings.repo_URL_LOCUST,dest='repo_URL',help="URL of LOCUST git repository",required=False)
     parser.add_argument('--commit',type=str,action='store',default=None,dest='commit_hash',help="optional commit hash of specific build",required=False)
     parser.add_argument('--settings_prec_mod',nargs='+',type=str,action='store',default={},dest='settings_prec_mod',help="variable names and values to set them to within prec_mod.f90",required=False)
@@ -303,7 +303,7 @@ if __name__=='__main__':
     args.settings_prec_mod=run_scripts.utils.command_line_arg_parse_dict(args.settings_prec_mod)
     args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
 
-    this_run=LOCUST_run(system_name=args.system_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags)
+    this_run=LOCUST_run(environment_name=args.environment_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags)
     this_run.run()
 
 #################################

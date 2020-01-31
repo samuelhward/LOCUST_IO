@@ -3,6 +3,9 @@
 data/*/*
 !data/*/sample_*
 
+#ignore temporary batch run script files
+src/run_scripts/.Batch_submission_script_*
+
 #files which contain prototyping code/not ready to be published yet
 *.prototype*
 

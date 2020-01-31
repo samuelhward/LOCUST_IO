@@ -135,22 +135,108 @@ class Environment:
     environments['MARFE']['module switch']=[]
     environments['MARFE']['misc']={}
     environments['MARFE']['misc']['ulimit']="-s 2000000"
-    ################################# GPU
-    environments['GPU']={}
-    environments['GPU']['export']={}
-    environments['GPU']['export']['OMP_NUM_THREADS']=1
-    environments['GPU']['export']['OMP_STACKSIZE']=102400
-    environments['GPU']['export']['NO_AT_BRIDGE']=1
-    environments['GPU']['export']['CUDA_CACHE_DISABLE']=1
-    environments['GPU']['module load']=[
+    ################################# GPU5
+    environments['GPU5']={}
+    environments['GPU5']['export']={}
+    environments['GPU5']['export']['OMP_NUM_THREADS']=1
+    environments['GPU5']['export']['OMP_STACKSIZE']=102400
+    environments['GPU5']['export']['NO_AT_BRIDGE']=1
+    environments['GPU5']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU5']['module load']=[
+                            'python/3.5.1',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
                             'hdf5-devel/1.8.20']
-    environments['GPU']['module unload']=[]
-    environments['GPU']['module switch']=[]
-    environments['GPU']['misc']={}
-    environments['GPU']['misc']['ulimit']="-s 2000000"
+    environments['GPU5']['module unload']=[]
+    environments['GPU5']['module switch']=[]
+    environments['GPU5']['misc']={}
+    environments['GPU5']['misc']['ulimit']="-s 2000000"
+    ################################# GPU6
+    environments['GPU6']={}
+    environments['GPU6']['export']={}
+    environments['GPU6']['export']['OMP_NUM_THREADS']=8
+    environments['GPU6']['export']['OMP_STACKSIZE']=102400
+    environments['GPU6']['export']['NO_AT_BRIDGE']=1
+    environments['GPU6']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU6']['module load']=[
+                            'python/3.3.2',
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU6']['module unload']=[]
+    environments['GPU6']['module switch']=[]
+    environments['GPU6']['misc']={}
+    environments['GPU6']['misc']['ulimit']="-s 2000000"
+    ################################# GPU7
+    environments['GPU7']={}
+    environments['GPU7']['export']={}
+    environments['GPU7']['export']['OMP_NUM_THREADS']=8
+    environments['GPU7']['export']['OMP_STACKSIZE']=102400
+    environments['GPU7']['export']['NO_AT_BRIDGE']=1
+    environments['GPU7']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU7']['module load']=[
+                            'python/3.3.2',
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU7']['module unload']=[]
+    environments['GPU7']['module switch']=[]
+    environments['GPU7']['misc']={}
+    environments['GPU7']['misc']['ulimit']="-s 2000000"
+    ################################# GPU8
+    environments['GPU8']={}
+    environments['GPU8']['export']={}
+    environments['GPU8']['export']['OMP_NUM_THREADS']=8
+    environments['GPU8']['export']['OMP_STACKSIZE']=102400
+    environments['GPU8']['export']['NO_AT_BRIDGE']=1
+    environments['GPU8']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU8']['module load']=[
+                            'python/3.6.4',
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU8']['module unload']=[]
+    environments['GPU8']['module switch']=[]
+    environments['GPU8']['misc']={}
+    environments['GPU8']['misc']['ulimit']="-s 2000000"
+    ################################# GPU9
+    environments['GPU9']={}
+    environments['GPU9']['export']={}
+    environments['GPU9']['export']['OMP_NUM_THREADS']=16
+    environments['GPU9']['export']['OMP_STACKSIZE']=102400
+    environments['GPU9']['export']['NO_AT_BRIDGE']=1
+    environments['GPU9']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU9']['module load']=[
+                            'python/3.6.4',
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU9']['module unload']=[]
+    environments['GPU9']['module switch']=[]
+    environments['GPU9']['misc']={}
+    environments['GPU9']['misc']['ulimit']="-s 2000000"
+    ################################# GPU10
+    environments['GPU10']={}
+    environments['GPU10']['export']={}
+    environments['GPU10']['export']['OMP_NUM_THREADS']=16
+    environments['GPU10']['export']['OMP_STACKSIZE']=102400
+    environments['GPU10']['export']['NO_AT_BRIDGE']=1
+    environments['GPU10']['export']['CUDA_CACHE_DISABLE']=1
+    environments['GPU10']['module load']=[
+                            'python/3.6.4',
+                            'cuda/9.1',
+                            'pgi/18.1',
+                            'hdf5/1.8.20',
+                            'hdf5-devel/1.8.20']
+    environments['GPU10']['module unload']=[]
+    environments['GPU10']['module switch']=[]
+    environments['GPU10']['misc']={}
+    environments['GPU10']['misc']['ulimit']="-s 2000000"
     ################################# CUMULUS
     environments['CUMULUS']={}
     environments['CUMULUS']['export']={}
@@ -189,30 +275,31 @@ class Environment:
     environments_avail=environments.keys()
     for environment in environments: environments[environment]['module purge']=[] #add empty module purge to all environments
 
-    def __init__(self,system_name=None):
+    def __init__(self,environment_name=None):
         """
         initialise an environment
 
         args:
-            system_name - string identifier to choose from selection of environments stored as class attributes 
+            environment_name - string identifier to choose from selection of environments stored as class attributes 
         notes:
             available options are held in environment.environments_avail
         """ 
 
         try:
-            self.environment=Environment.environments[system_name]
+            self.environment=Environment.environments[environment_name]
         except:
-            print("WARNING: environment failed to initialise - system_name options are {}".format(Environment.environments_avail))
+            print("WARNING: environment failed to initialise - environment_name options are {}".format(Environment.environments_avail))
             self.environment=None
 
-        self.system_name=system_name
+        self.environment_name=environment_name
         self.command_types=[command_type for command_type in self.environment]
         self.required_modules=[module_name for module_name in self.environment['module load']]
 
-    def create_command_string(self):
+    def create_command_string(self,listed=False):
         """
         create single command string to load/source a chosen environment
-
+        args:
+            listed - return string as list of individual commands
         notes:
             also returns command string 
         """ 
@@ -235,8 +322,12 @@ class Environment:
             elif command=='misc':
                 commands.extend([' '.join([thing_to_command,str(self.environment[command][thing_to_command])]) for thing_to_command in things_to_command])
 
-        commands=' ; '.join(command for command in commands)
-        self.commands=commands
+        if listed:
+            commands=[command for command in commands]
+        else:
+            commands=' ; '.join(command for command in commands)
+            self.commands=commands
+
         return commands
 
     def display(self,string=False,command_types=None):

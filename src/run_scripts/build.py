@@ -64,14 +64,14 @@ class Build:
         my_build.make(directory=some_dir) #make with flags stored in Build.flags
     """ 
 
-    def __init__(self,system_name=None):
+    def __init__(self,environment_name=None):
         """
         args:
-            system_name - optional specify system to choose environment e.g. TITAN
+            environment_name - optional specify system to choose environment e.g. TITAN
         notes:
         """
 
-        if system_name: self.environment=run_scripts.environment.Environment(system_name) #create an environment for building
+        if environment_name: self.environment=run_scripts.environment.Environment(environment_name) #create an environment for building
         self.source_code_mods={}  
 
     def flags_add(self,**flags):

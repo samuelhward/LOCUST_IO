@@ -80,11 +80,11 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         when editing mars_read.f90 source code using settings_mars_read, strings should be passed literally (see below) 
     usage:
         python MARS_builder_run.py --filepath_in 'some string formatted like this' --flags TOKAMAK=8 --settings_mars_read a_string="'should be formatted like this'" a_number="like_this"
-        some_run=MARS_builder_run(filepath_input='here',system_name='TITAN',flags=flags) #by default this will run compile and run MARS_builder on filepath_input and dump to LOCUST_IO/data/input_files (since output of this function is still a LOCUST input)
+        some_run=MARS_builder_run(filepath_input='here',environment_name='TITAN',flags=flags) #by default this will run compile and run MARS_builder on filepath_input and dump to LOCUST_IO/data/input_files (since output of this function is still a LOCUST input)
         some_run.run() #this will execute all stages of a mars_build run
     """ 
 
-    def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',system_name='TITAN',settings_mars_read={},flags={}):
+    def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',environment_name='TITAN',settings_mars_read={},flags={}):
         """
         notes:
             most information stored in MARS_builder_run.environment and MARS_builder_run.build, most init args are to init these instances
@@ -92,7 +92,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
             filepath_input - default path to input file 
             dir_output - directory to write results to (defaults to dir_input since output of this is a LOCUST input)
             dir_MARS_builder - directory to temporarily store source code
-            system_name - string identifier to choose from selection of environments stored as class attributes 
+            environment_name - string identifier to choose from selection of environments stored as class attributes 
             settings_mars_read - dict denoting variable names and values to set them to within mars_read.f90
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
         """
@@ -106,7 +106,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         self.filepath_input=pathlib.Path(filepath_input)
         self.dir_output=pathlib.Path(dir_output)
 
-        self.environment=run_scripts.environment.Environment(system_name=system_name) #create an environment for running
+        self.environment=run_scripts.environment.Environment(environment_name=environment_name) #create an environment for running
         
         if not settings_mars_read: settings_mars_read={} #turn __init__ args such as filepath_input into the corresponding source code edits
         settings_mars_read['file']="'{}'".format(str(self.filepath_input))
@@ -117,7 +117,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
             flags={}
             flags['TOKAMAK']=1
 
-        self.build=run_scripts.build.Build(system_name=system_name)
+        self.build=run_scripts.build.Build(environment_name=environment_name)
         self.build.flags_add(**flags)         
         self.build.source_code_mods_add(source_code_filename='mars_read.f90',**settings_mars_read)
 
@@ -188,7 +188,7 @@ if __name__=='__main__':
 
     parser.add_argument('--filepath_in',type=str,action='store',default=support.dir_input_files,dest='filepath_input',help="filepath to input data",required=True)
     parser.add_argument('--dir_out',type=str,action='store',default=support.dir_input_files,dest='dir_output',help="directory to write results to",required=False)
-    parser.add_argument('--sys_name',type=str,action='store',default='TITAN',dest='system_name',help="computer system currently running on e.g. \'TITAN\'",required=False)
+    parser.add_argument('--sys_name',type=str,action='store',default='TITAN',dest='environment_name',help="computer system currently running on e.g. \'TITAN\'",required=False)
     parser.add_argument('--dir_MARS_builder',type=str,action='store',default=support.dir_run_scripts / 'mars_builder',dest='dir_MARS_builder',help="path to mars_builder directory source code",required=False)
     parser.add_argument('--settings_mars_read',nargs='+',type=str,action='store',default={},dest='settings_mars_read',help="variable names and values to set them to within mars_read.f90",required=False)
     parser.add_argument('--flags',nargs='+',type=str,action='store',default={},dest='flags',help="compile flags",required=False)
@@ -199,7 +199,7 @@ if __name__=='__main__':
     args.settings_mars_read=run_scripts.utils.command_line_arg_parse_dict(args.settings_mars_read)
     args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
 
-    this_run=MARS_builder_run(filepath_input=args.filepath_input,dir_output=args.dir_output,system_name=args.system_name,dir_MARS_builder=args.dir_MARS_builder,settings_mars_read=args.settings_mars_read,flags=args.flags)
+    this_run=MARS_builder_run(filepath_input=args.filepath_input,dir_output=args.dir_output,environment_name=args.environment_name,dir_MARS_builder=args.dir_MARS_builder,settings_mars_read=args.settings_mars_read,flags=args.flags)
     this_run.run()
 
 #################################

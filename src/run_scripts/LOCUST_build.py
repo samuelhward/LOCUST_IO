@@ -68,17 +68,17 @@ class LOCUST_build(run_scripts.build.Build):
         my_build.make(directory=some_dir) #make with flags stored in LOCUST_build.flags
     """ 
 
-    def __init__(self,system_name=None,repo_URL=settings.repo_URL_LOCUST,commit_hash=None):
+    def __init__(self,environment_name=None,repo_URL=settings.repo_URL_LOCUST,commit_hash=None):
         """
         args:
-            system_name - optional specify system to choose environment e.g. TITAN
+            environment_name - optional specify system to choose environment e.g. TITAN
             repo_URL - SSH address of remote target git repo 
             commit_hash - commit hash identifying this build - defaults to latest commit on settings.branch_default_LOCUST branch
         notes:
         """
 
         #execute base class constructor to inherit required structures
-        super().__init__(system_name=system_name)
+        super().__init__(environment_name=environment_name)
 
         self.repo_URL=repo_URL
         if not commit_hash: 
