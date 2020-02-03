@@ -56,7 +56,7 @@ except:
 #Main 
 
 #define parameters which are fixed throughout a parameter scan - if we want to vary then add as a layer in the for loops
-LOCUST_run__system_name='TITAN'
+LOCUST_run__environment_name='TITAN'
 LOCUST_run__repo_URL=None
 LOCUST_run__commit_hash=None
 study_name='scan_threads_blocks'
@@ -69,7 +69,7 @@ args_batch['LOCUST_run__dir_LOCUST']=[]
 args_batch['LOCUST_run__dir_input']=[]
 args_batch['LOCUST_run__dir_output']=[]
 args_batch['LOCUST_run__dir_cache']=[]
-args_batch['LOCUST_run__system_name']=[]
+args_batch['LOCUST_run__environment_name']=[]
 args_batch['LOCUST_run__repo_URL']=[]
 args_batch['LOCUST_run__commit_hash']=[]
 args_batch['LOCUST_run__settings_prec_mod']=[]
@@ -79,7 +79,7 @@ args_batch['LOCUST_run__flags']=[]
 #define variable parameters
 
 parameter__threads=np.array([2**n for n in [4,5,6]])
-parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11,12]])
+parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11]])
 parameter__timax=np.array([0.001,0.01,0.1,1.0])
 
 ##################################################################
@@ -147,7 +147,7 @@ for thread in parameter__threads:
             args_batch['LOCUST_run__dir_input'].append(copy.deepcopy("'{}'".format(str(support.dir_input_files / study_name))))
             args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / study_name / parameter_string))))
             args_batch['LOCUST_run__dir_cache'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / study_name)))) #one level less to pool cache files into same directory across simulations
-            args_batch['LOCUST_run__system_name'].append(copy.deepcopy(LOCUST_run__system_name))
+            args_batch['LOCUST_run__environment_name'].append(copy.deepcopy(LOCUST_run__environment_name))
             args_batch['LOCUST_run__repo_URL'].append(copy.deepcopy(LOCUST_run__repo_URL))
             args_batch['LOCUST_run__commit_hash'].append(copy.deepcopy(LOCUST_run__commit_hash))
             args_batch['LOCUST_run__settings_prec_mod'].append(copy.deepcopy(LOCUST_run__settings_prec_mod))
@@ -157,7 +157,7 @@ for thread in parameter__threads:
 #define and launch the batch scripts
 
 profiling_batch=Batch(**args_batch)
-profiling_batch.launch(workflow_filepath='profiling_workflow.py',system_name=LOCUST_run__system_name)   
+profiling_batch.launch(workflow_filepath='profiling_workflow.py',environment_name_batch=LOCUST_run__environment_name,environment_name_workflow=LOCUST_run__environment_name)   
 
 #################################
  

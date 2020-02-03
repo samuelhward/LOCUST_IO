@@ -168,7 +168,7 @@ class profiling_workflow(run_scripts.workflow.Workflow):
         notes:
         """
 
-        LOCUST_workflow=LOCUST_run(system_name=self.args['LOCUST_run__system_name'],
+        LOCUST_workflow=LOCUST_run(environment_name=self.args['LOCUST_run__environment_name'],
             repo_URL=self.args['LOCUST_run__repo_URL'],
             commit_hash=self.args['LOCUST_run__commit_hash'],
             dir_LOCUST=self.args['LOCUST_run__dir_LOCUST'],
@@ -199,7 +199,7 @@ if __name__=='__main__':
     parser.add_argument('--LOCUST_run__dir_input',type=str,action='store',dest='LOCUST_run__dir_input',help="",default=support.dir_input_files)
     parser.add_argument('--LOCUST_run__dir_output',type=str,action='store',dest='LOCUST_run__dir_output',help="",default=support.dir_output_files)
     parser.add_argument('--LOCUST_run__dir_cache',type=str,action='store',dest='LOCUST_run__dir_cache',help="",default=support.dir_cache_files)
-    parser.add_argument('--LOCUST_run__system_name',type=str,action='store',dest='LOCUST_run__system_name',help="",default='TITAN')
+    parser.add_argument('--LOCUST_run__environment_name',type=str,action='store',dest='LOCUST_run__environment_name',help="",default='TITAN')
     parser.add_argument('--LOCUST_run__repo_URL',type=str,action='store',dest='LOCUST_run__repo_URL',help="",default=settings.repo_URL_LOCUST)
     parser.add_argument('--LOCUST_run__commit_hash',type=str,action='store',dest='LOCUST_run__commit_hash',help="",default=None)
     parser.add_argument('--LOCUST_run__settings_prec_mod',nargs='+',type=str,action='store',dest='LOCUST_run__settings_prec_mod',help="",default={})
