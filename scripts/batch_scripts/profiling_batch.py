@@ -56,16 +56,22 @@ except:
 #Main 
 
 #define parameters which are fixed throughout a parameter scan - if we want to vary then add as a layer in the for loops
-LOCUST_run__environment_name='TITAN'
-LOCUST_run__repo_URL=None
-LOCUST_run__commit_hash=None
+LOCUST_run__environment_name='GPU9'
+LOCUST_run__repo_URL=settings.repo_URL_LOCUST
+LOCUST_run__commit_hash=settings.commit_hash_default_LOCUST
 study_name='scan_threads_blocks'
+
+GPU_card_dispatch={} #all possible options listed here
+GPU_card_dispatch['TITAN']='P100'
+GPU_card_dispatch['GPU9']='K80'
+GPU_card_dispatch['VIKING']='V100'
 
 #################################
 #initialise args needed for Batch class
 
 args_batch={}
 args_batch['LOCUST_run__dir_LOCUST']=[]
+args_batch['LOCUST_run__dir_LOCUST_source']=[]
 args_batch['LOCUST_run__dir_input']=[]
 args_batch['LOCUST_run__dir_output']=[]
 args_batch['LOCUST_run__dir_cache']=[]
@@ -78,9 +84,9 @@ args_batch['LOCUST_run__flags']=[]
 ##################################################################
 #define variable parameters
 
-parameter__threads=np.array([2**n for n in [4,5,6]])
-parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11]])
-parameter__timax=np.array([0.001,0.01,0.1,1.0])
+parameter__threads=[1]#np.array([2**n for n in [4,5,6]])
+parameter__blocks=[1]#np.array([2**n for n in [4,5,6,7,8,9,10,11]])
+parameter__timax=[1]#np.array([0.001,0.01,0.1,1.0])
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -144,8 +150,9 @@ for thread in parameter__threads:
             LOCUST_run__settings_prec_mod['nion']=1
 
             args_batch['LOCUST_run__dir_LOCUST'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / study_name / parameter_string))))
+            args_batch['LOCUST_run__dir_LOCUST_source'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / 'source'))))
             args_batch['LOCUST_run__dir_input'].append(copy.deepcopy("'{}'".format(str(support.dir_input_files / study_name))))
-            args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / study_name / parameter_string))))
+            args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / study_name / GPU_card_dispatch[LOCUST_run__environment_name] / parameter_string))))
             args_batch['LOCUST_run__dir_cache'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / study_name)))) #one level less to pool cache files into same directory across simulations
             args_batch['LOCUST_run__environment_name'].append(copy.deepcopy(LOCUST_run__environment_name))
             args_batch['LOCUST_run__repo_URL'].append(copy.deepcopy(LOCUST_run__repo_URL))
@@ -156,8 +163,10 @@ for thread in parameter__threads:
 ##################################################################
 #define and launch the batch scripts
 
-profiling_batch=Batch(**args_batch)
-profiling_batch.launch(workflow_filepath='profiling_workflow.py',environment_name_batch=LOCUST_run__environment_name,environment_name_workflow=LOCUST_run__environment_name)   
+if __name__=='__main__':
+
+    profiling_batch=Batch(**args_batch)
+    profiling_batch.launch(workflow_filepath='profiling_workflow.py',environment_name_batch=LOCUST_run__environment_name,environment_name_workflow=LOCUST_run__environment_name,interactive=False)   
 
 #################################
  

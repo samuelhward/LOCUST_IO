@@ -51,16 +51,7 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/run_scripts/LOCUST_run.py could not be imported!\nreturning\n")
     sys.exit(1)
-try:
-    import run_scripts.NEMO_run
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/NEMO_run.py could not be imported!\nreturning\n")
-    sys.exit(1)
-try:
-    from run_scripts.MARS_builder_run import MARS_builder_run
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/MARS_builder_run.py could not be imported!\nreturning\n")
-    sys.exit(1)
+
 try:
     import run_scripts.utils
 except:
@@ -70,42 +61,6 @@ try:
     import processing.utils
 except:
     raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
-    sys.exit(1)
-
-try:
-    from classes.input_classes.temperature import Temperature
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/temperature.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.number_density import Number_Density
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/number_density.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.rotation import Rotation
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/rotation.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.equilibrium import Equilibrium
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/equilibrium.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.perturbation import Perturbation
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/perturbation.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.beam_deposition import Beam_Deposition
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/perturbation.py could not be imported!\nreturning\n") 
-    sys.exit(1)
-try:
-    from classes.input_classes.wall import Wall
-except:
-    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/wall.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
 try:
@@ -157,7 +112,6 @@ class profiling_workflow(run_scripts.workflow.Workflow):
         """
 
         for direc in [
-                        self.args['LOCUST_run__dir_input'],
                         self.args['LOCUST_run__dir_output'],
                         self.args['LOCUST_run__dir_cache']
                         ]:
@@ -172,6 +126,7 @@ class profiling_workflow(run_scripts.workflow.Workflow):
             repo_URL=self.args['LOCUST_run__repo_URL'],
             commit_hash=self.args['LOCUST_run__commit_hash'],
             dir_LOCUST=self.args['LOCUST_run__dir_LOCUST'],
+            dir_LOCUST_source=self.args['LOCUST_run__dir_LOCUST_source'],
             dir_input=self.args['LOCUST_run__dir_input'],
             dir_output=self.args['LOCUST_run__dir_output'],
             dir_cache=self.args['LOCUST_run__dir_cache'],
@@ -196,12 +151,13 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='run profiling_workflow from command line in Python!')
     
     parser.add_argument('--LOCUST_run__dir_LOCUST',type=str,action='store',dest='LOCUST_run__dir_LOCUST',help="",default=support.dir_locust)
+    parser.add_argument('--LOCUST_run__dir_LOCUST_source',type=str,action='store',dest='LOCUST_run__dir_LOCUST_source',help="",default=(support.dir_locust / 'source'))
     parser.add_argument('--LOCUST_run__dir_input',type=str,action='store',dest='LOCUST_run__dir_input',help="",default=support.dir_input_files)
     parser.add_argument('--LOCUST_run__dir_output',type=str,action='store',dest='LOCUST_run__dir_output',help="",default=support.dir_output_files)
     parser.add_argument('--LOCUST_run__dir_cache',type=str,action='store',dest='LOCUST_run__dir_cache',help="",default=support.dir_cache_files)
     parser.add_argument('--LOCUST_run__environment_name',type=str,action='store',dest='LOCUST_run__environment_name',help="",default='TITAN')
     parser.add_argument('--LOCUST_run__repo_URL',type=str,action='store',dest='LOCUST_run__repo_URL',help="",default=settings.repo_URL_LOCUST)
-    parser.add_argument('--LOCUST_run__commit_hash',type=str,action='store',dest='LOCUST_run__commit_hash',help="",default=None)
+    parser.add_argument('--LOCUST_run__commit_hash',type=str,action='store',dest='LOCUST_run__commit_hash',help="",default=settings.commit_hash_default_LOCUST)
     parser.add_argument('--LOCUST_run__settings_prec_mod',nargs='+',type=str,action='store',dest='LOCUST_run__settings_prec_mod',help="",default={})
     parser.add_argument('--LOCUST_run__flags',nargs='+',type=str,action='store',dest='LOCUST_run__flags',help="",default={})
 
