@@ -33,12 +33,11 @@ Tested with:
 * Python ≥v3.6
     * numpy ≥v1.14.2
     Optional modules:
-        * IMAS ≥v3.24.0
+        * IMAS ≥v3.26.0
         * matplotlib ≥v2.0.0
         * scipy ≥v0.17.0
         * h5py ≥v2.6.0
-        * xlrd
-        * hdf5
+        * xlrd ≥v1.2.0
 
 
 

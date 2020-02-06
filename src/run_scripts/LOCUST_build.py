@@ -68,7 +68,7 @@ class LOCUST_build(run_scripts.build.Build):
         my_build.make(directory=some_dir) #make with flags stored in LOCUST_build.flags
     """ 
 
-    def __init__(self,environment_name=None,repo_URL=settings.repo_URL_LOCUST,commit_hash=None):
+    def __init__(self,environment_name=None,repo_URL=settings.repo_URL_LOCUST,commit_hash=settings.commit_hash_default_LOCUST):
         """
         args:
             environment_name - optional specify system to choose environment e.g. TITAN
@@ -81,15 +81,13 @@ class LOCUST_build(run_scripts.build.Build):
         super().__init__(environment_name=environment_name)
 
         self.repo_URL=repo_URL
-        if not commit_hash: 
-            self.commit_hash=settings.commit_hash_default_LOCUST
-            if not self.commit_hash: print("WARNING: commit_hash not set for LOCUST_build")
+        self.commit_hash=commit_hash
 
     def clone(self,directory=support.dir_locust):
         """
         notes:
             default behaviour is shallow clone from settings.repo_URL_LOCUST of settings.branch_default_LOCUST branch
-            shallow clone is enabled if commit_hash has not been set or matches the latest commit hash of settings.branch_default_LOCUST branch
+            shallow clone is enabled if commit_hash same as default in settings
         args:
             directory - pathlib directory for where to clone LOCUST (new or empty dir), default to support.dir_locust
         """
@@ -104,12 +102,17 @@ class LOCUST_build(run_scripts.build.Build):
         else:
             directory.mkdir()
 
-        if self.commit_hash==settings.commit_hash_default_LOCUST: shallow = True #shallow toggles whether or not to only clone latest commit
-
         command=[]
         command.append('git')
         command.append('clone')
         command.append(str(self.repo_URL))
+
+        try: #to save time cloning, see if self.commit_hash is latest commit in its branch
+            git_ls_remote=subprocess.run(['git', 'ls-remote','-q',self.repo_URL],stdout=subprocess.PIPE).stdout.decode('utf-8').split()
+            if any(self.commit_hash==entry for entry in git_ls_remote): shallow=True #look for commit in command output (output of this command is in two columns - hash and branch)
+        except:
+            shallow=False 
+
         if shallow:
             command.append('--branch')
             command.append(settings.branch_default_LOCUST)

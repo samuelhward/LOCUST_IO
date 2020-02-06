@@ -13,9 +13,16 @@ notes:
 
 ##################################################################
 #Preamble
-import numpy as np
-import matplotlib
-from matplotlib import cm
+
+
+try:
+    import subprocess
+    import numpy as np
+    import matplotlib
+    from matplotlib import cm
+except:
+    raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
+    sys.exit(1)
 
 ##################################################################
 

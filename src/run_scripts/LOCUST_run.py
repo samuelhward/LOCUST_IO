@@ -18,6 +18,7 @@ notes:
 
 try:
     import sys
+    import os
     import subprocess
     import pathlib
     import shlex
@@ -81,12 +82,13 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         some_run.run() #this will execute all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    def __init__(self,dir_LOCUST=support.dir_locust,dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,environment_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=None,settings_prec_mod={},flags={},*args,**kwargs):
+    def __init__(self,dir_LOCUST=support.dir_locust,dir_LOCUST_source=(support.dir_locust/'source'),dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,environment_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=settings.commit_hash_default_LOCUST,settings_prec_mod={},flags={},*args,**kwargs):
         """
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
         args:
-            dir_LOCUST - directory to temporarily store source code (must not already exist)
+            dir_LOCUST - directory to temporarily store/compile/run LOCUST source code
+            dir_LOCUST_source - directory where LOCUST source code is stored i.e. ..../dir_LOCUST_source/locust/<source_files> (if not supplied then LOCUST_run will attempt to clone code)
             dir_input - directory to read input data from 
             dir_output - directory to write results to 
             dir_cache - directory to read cache data from 
@@ -103,20 +105,21 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         ################################# first generate class data that will be needed in workflow
 
         dir_LOCUST=pathlib.Path(dir_LOCUST) #convert strings to paths just in case supplied at command line
+        dir_LOCUST_source=pathlib.Path(dir_LOCUST_source)
         dir_input=pathlib.Path(dir_input)
         dir_output=pathlib.Path(dir_output)
         dir_cache=pathlib.Path(dir_cache)
-        if dir_LOCUST.is_dir(): #check if dir_LOCUST already exists
-            print("ERROR: dir_LOCUST already exists for this run - please specify new dir!\nreturning\n")
-            sys.exit(1)
-        self.dir_LOCUST=dir_LOCUST if dir_LOCUST.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_LOCUST path!")
-        self.dir_input=dir_input if dir_input.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_input path!")
-        self.dir_output=dir_output if dir_output.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_output path!")
-        self.dir_cache=dir_cache if dir_cache.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_cache path!")
-        
+        self.dir_LOCUST=dir_LOCUST if dir_LOCUST and dir_LOCUST.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_LOCUST path!")
+        self.dir_LOCUST_source=dir_LOCUST_source if dir_LOCUST_source and dir_LOCUST_source.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_LOCUST_source path!")
+        self.dir_input=dir_input if dir_input and dir_input.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_input path!")
+        self.dir_output=dir_output if dir_output and dir_output.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_output path!")
+        self.dir_cache=dir_cache if dir_cache and dir_cache.is_absolute() else print("ERROR: LOCUST_run requires absolute dir_cache path!")
+        self.repo_URL=repo_URL
+        self.commit_hash=commit_hash
+
         self.environment=run_scripts.environment.Environment(environment_name=environment_name) #create a runtime environment for this workflow
         
-        self.build=run_scripts.LOCUST_build.LOCUST_build(environment_name=environment_name,repo_URL=repo_URL,commit_hash=commit_hash) #define a build for this workflow
+        self.build=run_scripts.LOCUST_build.LOCUST_build(environment_name=environment_name,repo_URL=self.repo_URL,commit_hash=self.commit_hash) #define a build for this workflow
         self.build.flags_add(**flags) 
         self.build.source_code_mods_add(source_code_filename='prec_mod.f90',**settings_prec_mod)
 
@@ -149,17 +152,10 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         notes:
         """
 
-        #create output directory if does not already exist
-        if not self.dir_output.is_dir(): self.dir_output.mkdir()
-        #create LOCUST directory - must not already exis
-        if self.dir_LOCUST.is_dir(): 
-            print("ERROR: {workflow_name}.setup_LOCUST_dirs() found previous dir_LOCUST -  must not already exist!\nreturning\n".format(workflow_name=self.workflow_name))
-            return
-        else:
-            self.dir_LOCUST.mkdir(parents=True)
-
         #create self.root and child directories if do not exist
         for directory in [
+                          self.dir_output,
+                          self.dir_LOCUST,
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_inputfiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_cachefiles_default),
                          (self.root / settings.username / self.tokhead / settings.LOCUST_dir_outputfiles_default)]:
@@ -171,14 +167,20 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         LOCUST_run stage for retrieving code
 
         notes:
+            checks to see if locust source code already exists in dir_LOCUST_source/locust (must be a git repository)
         """
 
-        #retrieve code
-        try:
-            self.build.clone(directory=self.dir_LOCUST)
-        except:
-            print("ERROR: {workflow_name}.get_code() could not clone to {directory}!\nreturning\n".format(directory=self.dir_LOCUST,workflow_name=self.workflow_name))
-            return 
+        if (self.dir_LOCUST_source / 'locust' / 'locust.f90').exists() and (self.dir_LOCUST_source / 'locust' / '.git').exists():  #check if locust source code already exists locally
+            if not (self.dir_LOCUST / 'locust').exists(): (self.dir_LOCUST / 'locust').mkdir(parents=True)
+            for file in (self.dir_LOCUST_source / 'locust').glob('*'):
+                subprocess.run(shlex.split('cp -r {file} {dir_LOCUST}'.format(file=str(file),dir_LOCUST=str(self.dir_LOCUST / 'locust')+f'{os.sep}',shell=False)))
+            subprocess.run(['git','checkout','{commit_hash}'.format(commit_hash=self.commit_hash)],shell=False,cwd=str(self.dir_LOCUST / 'locust'))
+        else: #otherwise retrieve code
+            try:
+                self.build.clone(directory=self.dir_LOCUST)
+            except:
+                print("ERROR: {workflow_name}.get_code() could not clone to {directory}!\nreturning\n".format(directory=self.dir_LOCUST,workflow_name=self.workflow_name))
+                return 
 
     def get_inputs(self,*args,**kwargs):
         """
@@ -303,7 +305,7 @@ if __name__=='__main__':
     args.settings_prec_mod=run_scripts.utils.command_line_arg_parse_dict(args.settings_prec_mod)
     args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
 
-    this_run=LOCUST_run(environment_name=args.environment_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags)
+    this_run=LOCUST_run(environment_name=args.environment_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags,interactive=True)
     this_run.run()
 
 #################################
