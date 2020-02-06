@@ -68,14 +68,23 @@ def read_rundata_LOCUST(filepath,**properties):
 
     input_data={} #initialise data dictionary
 
-    
+    input_data['time_total']=None
+
+    with open(filepath,'r') as file: #loop through file here
+        for line in file:
+
+
+            if 'End of Kernel wrapper' in line: 
+                input_data['time_total']=float(line.split()[-1]) #extract time without units
+
+
     print("finished reading rundata from LOCUST")
 
     return input_data
 
 ################################################################## Orbits class
 
-class rundata(classes.base_output.LOCUST_output):
+class Rundata(classes.base_output.LOCUST_output):
     """
     class describing a generic rundata output for LOCUST
     
@@ -98,7 +107,7 @@ class rundata(classes.base_output.LOCUST_output):
 
     LOCUST_output_type='rundata'
 
-    def read_data(self,data_format=None,filename=None,**properties):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read rundata from file 
 
