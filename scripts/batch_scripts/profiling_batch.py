@@ -56,14 +56,15 @@ except:
 #Main 
 
 #define parameters which are fixed throughout a parameter scan - if we want to vary then add as a layer in the for loops
-LOCUST_run__environment_name='GPU9'
+LOCUST_run__environment_name='TITAN'
 LOCUST_run__repo_URL=settings.repo_URL_LOCUST
 LOCUST_run__commit_hash=settings.commit_hash_default_LOCUST
 study_name='scan_threads_blocks'
 
 GPU_card_dispatch={} #all possible options listed here
-GPU_card_dispatch['TITAN']='P100'
+GPU_card_dispatch['GPU6']='GTX_TITAN'
 GPU_card_dispatch['GPU9']='K80'
+GPU_card_dispatch['TITAN']='P100'
 GPU_card_dispatch['VIKING']='V100'
 
 #################################
@@ -84,9 +85,9 @@ args_batch['LOCUST_run__flags']=[]
 ##################################################################
 #define variable parameters
 
-parameter__threads=[1]#np.array([2**n for n in [4,5,6]])
-parameter__blocks=[1]#np.array([2**n for n in [4,5,6,7,8,9,10,11]])
-parameter__timax=[1]#np.array([0.001,0.01,0.1,1.0])
+parameter__threads=np.array([2**n for n in [4,5,6]])
+parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11]])
+parameter__timax=np.array([0.001,0.01,0.1,1.0])
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -139,7 +140,7 @@ for thread in parameter__threads:
             LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
             LOCUST_run__settings_prec_mod['threadsPerBlock']=thread
             LOCUST_run__settings_prec_mod['blocksPerGrid']=block
-            LOCUST_run__settings_prec_mod['root']="'/tmp/wards2/{study}/{params}'".format(study=study_name,params=parameter_string)
+            LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=study_name,params=parameter_string)
             LOCUST_run__settings_prec_mod['nnum']='[-3,-3,-3,-6,-6,-6]'
             LOCUST_run__settings_prec_mod['nmde']=6
             LOCUST_run__settings_prec_mod['phase']='[0.0_gpu,0.0_gpu,0.0_gpu,0.0_gpu,0.0_gpu,0.0_gpu]'
