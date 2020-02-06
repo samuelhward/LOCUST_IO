@@ -143,7 +143,7 @@ class Environment:
     environments['GPU5']['export']['NO_AT_BRIDGE']=1
     environments['GPU5']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU5']['module load']=[
-                            'python/3.5.1',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
@@ -160,7 +160,7 @@ class Environment:
     environments['GPU6']['export']['NO_AT_BRIDGE']=1
     environments['GPU6']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU6']['module load']=[
-                            'python/3.3.2',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
@@ -177,7 +177,7 @@ class Environment:
     environments['GPU7']['export']['NO_AT_BRIDGE']=1
     environments['GPU7']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU7']['module load']=[
-                            'python/3.3.2',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
@@ -194,7 +194,7 @@ class Environment:
     environments['GPU8']['export']['NO_AT_BRIDGE']=1
     environments['GPU8']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU8']['module load']=[
-                            'python/3.6.4',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
@@ -211,7 +211,7 @@ class Environment:
     environments['GPU9']['export']['NO_AT_BRIDGE']=1
     environments['GPU9']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU9']['module load']=[
-                            'python/3.6.4',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
@@ -228,7 +228,7 @@ class Environment:
     environments['GPU10']['export']['NO_AT_BRIDGE']=1
     environments['GPU10']['export']['CUDA_CACHE_DISABLE']=1
     environments['GPU10']['module load']=[
-                            'python/3.6.4',
+                            'python/3.7',
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
