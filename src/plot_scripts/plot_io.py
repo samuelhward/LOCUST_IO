@@ -137,6 +137,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='')
 
     parser.add_argument('--data_type',type=str,action='store',dest='data_type',help="target data type - available options: {} ".format(data_types_available),default=None,required=True) #in addition to the usual arguements given within Python, 'data_type' is needed to select the correct LOCUST_IO class
+    parser.add_argument('--plot_type',type=str,action='store',dest='plot_type',help="plot type (blank for default plot method) e.g. plot_field_line",default='plot',required=False) #in addition to the usual arguements given within Python, 'data_type' is needed to select the correct LOCUST_IO class
     parser.add_argument('--read_settings',nargs='+',type=str,action='store',dest='read_settings',help="settings for LOCUST_IO object instantiation e.g. data_format='GEQDSK'",default={})
     parser.add_argument('--plot_settings',nargs='+',type=str,action='store',dest='plot_settings',help="settings for LOCUST_IO object plot method e.g. fill=False",default={})
     
@@ -158,7 +159,7 @@ if __name__=='__main__':
 
         try:
             obj=dispatch_table_objects[args.data_type](**read_settings)
-            obj.plot(**plot_settings)
+            getattr(obj,args.plot_type)(**plot_settings)
         except:
             print("ERROR: plot_io could not plot")
 

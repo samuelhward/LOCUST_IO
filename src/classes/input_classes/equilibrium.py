@@ -186,18 +186,20 @@ def read_equilibrium_GEQDSK(filepath,**properties):
      
         input_data['lcfs_r'],input_data['lcfs_z'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['lcfs_n'],input_data['limitr'])
 
-        if 'GEQDSKFIX' in properties:
-            if properties['GEQDSKFIX']==0:
-                pass
-
-            elif properties['GEQDSKFIX']==1:
-                input_data['psirz']*=-1
-                input_data['sibry']*=-1
-                input_data['simag']*=-1
-                input_data['current']*=-1
-
-            elif properties['GEQDSKFIX']==2:
-                pass
+        if 'GEQDSKFIX1' in properties and properties['GEQDSKFIX1'] is True: #apply LOCUST flag transformations
+            input_data['psirz']*=-1.
+            input_data['sibry']*=-1.
+            input_data['simag']*=-1.
+            input_data['current']*=-1.
+        if 'GEQDSKFIX2' in properties and properties['GEQDSKFIX2'] is True: 
+            input_data['fpol']*=-1.
+        PSI_sclh=1./(input_data['sibry']-input_data['simag'])
+        IPDIRh=-1. if PSI_sclh > 0. else 1. 
+        if 'BPFLIP' in properties and properties['BPFLIP'] is True:
+            IPDIRh*=-1.
+        ITDIRh=-1. if input_data['fpol'][0]<0. else 1.
+        if 'BTFLIP' in properties and properties['BTFLIP'] is True:
+            ITDIRh*=-1.
 
         #additional data
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nR_1D'])     
@@ -807,7 +809,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=True,start_coord=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
         """
         plots random field lines for 'angle' radians around the tokamak
 
@@ -821,8 +823,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
             angle - plot field line for this many radians around central column
             plot_full - choose whether each field line will trace the whole plasma topology (see below also)
             start_mark - add marker for start of the field line
+            start_coord - optional choose [R,phi,Z] starting position 
             colmap - set the colour map (use get_cmap names)
-            colmap_val - optional numerical value for defining single colour plots 
+            colmap_val - optional numerical value for defining single colour plots
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
@@ -875,8 +878,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
         print('plot_B_field_line - generating B field interpolators')
         B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R'])
-        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
-        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
         print('plot_B_field_line - finished generating B field interpolators')
 
         for line in range(number_field_lines): 
@@ -885,17 +888,19 @@ class Equilibrium(classes.base_input.LOCUST_input):
             Z_points=np.array([])
             tor_points=np.array([])
 
-            R_point=float(self['rmaxis']) #pick some starting points                                                       
-            tor_point=np.random.uniform(0.0,2.0*constants.pi*R_point) 
-            if plot_full is True: 
-                Z_point=float(1.05*self['zmaxis'])
+            if not start_coord:
+                R_point=float(self['rmaxis']) #pick some starting points                                                       
+                tor_point=np.random.uniform(0.0,2.0*constants.pi*R_point) 
+                if plot_full is True: 
+                    Z_point=float(1.05*self['zmaxis'])
+                else:
+                    Z_point=np.random.uniform(1.05*self['zmaxis'],0.9*np.max(self['lcfs_z']))      
             else:
-                Z_point=np.random.uniform(1.05*self['zmaxis'],0.9*np.max(self['lcfs_z']))      
-                
+                R_point,tor_point,Z_point=[coord for coord in start_coord]
+
             R_points=np.append(R_points,R_point) #add this position to our array of points along trajectory
             Z_points=np.append(Z_points,Z_point)
             tor_points=np.append(tor_points,tor_point)     
-
             tor_point_start=tor_point #remember where we started toroidally
 
             while np.abs(tor_point-tor_point_start)<self['rmaxis']*angle: #keep going until we rotate 'angle' radians around the tokamak
@@ -993,7 +998,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_stream(self,LCFS=True,limiters=True,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot_field_stream(self,LCFS=True,limiters=True,colmap=settings.cmap_default,ax=False,fig=False):
         """
         stream plot of magnetic field in R,Z plane
 
@@ -1001,7 +1006,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
             LCFS - toggles plasma boundary on/off in 2D plots
             limiters - toggles limiters on/off in 2D plots
             colmap - set the colour map (use get_cmap names)
-            colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:
@@ -1069,19 +1073,17 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         print("fpolrz_calc - calculating 2D flux function")
 
-        fpolrz=np.zeros((self['nR_1D'],self['nZ_1D'])) #initialise 2D grid
-        fpolrz_interpolator=processing.utils.interpolate_1D(self['flux_pol'],self['fpol']) #generate the interpolator
+        fpolrz=processing.utils.flux_func_to_RZ(self['flux_pol'],self['fpol'],self)
+        Z,R=np.meshgrid(self['Z_1D'],self['R_1D'])
+        within_LCFS=processing.utils.within_LCFS(R.flatten(),Z.flatten(),self).reshape(self['nR_1D'],self['nZ_1D'])
 
-        for w in np.arange(self['nR_1D']): #loop over 2D grid
+        for w in np.arange(self['nR_1D']): #loop over 2D grid and any points outside LCFS set to vacuum field
             for h in np.arange(self['nZ_1D']):
-                
-                if self['psirz'][w,h]<=np.max(self['flux_pol']) and self['psirz'][w,h]>=np.min(self['flux_pol']): #if the poloidal flux function is defined for this poloidal flux
-                    fpolrz[w,h]=fpolrz_interpolator(self['psirz'][w,h])
-                else:
+                if not within_LCFS[w,h]:
                     fpolrz[w,h]=self['bcentr']*self['rcentr']
 
         print("fpolrz_calc - finished calculating 2D flux function")
-        
+
         self.set(fpolrz=fpolrz)
 
     def B_calc(self): #ordering OK - for Z[X,Y].shape=(2,3), gradient(Z,X,Y) --> gradient[0] along X, gradient[1] along Y

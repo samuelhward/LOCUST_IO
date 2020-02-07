@@ -353,10 +353,13 @@ def within_LCFS(R,Z,equilibrium):
         minor_rad_LCFS.append(minor_radius(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis']))
         pol_angle_LCFS.append(angle_pol(R=r,R_major=equilibrium['rmaxis'],Z=z,Z_major=equilibrium['zmaxis']))
     pol_angle_LCFS,minor_rad_LCFS=np.asarray(pol_angle_LCFS),np.asarray(minor_rad_LCFS)
-    pol_angle_LCFS[pol_angle_LCFS<0]=2.*np.pi+pol_angle_LCFS[pol_angle_LCFS<0]
-    pol_angle_LCFS,minor_rad_LCFS=sort_arrays(pol_angle_LCFS,minor_rad_LCFS)
 
-    interpolator_LCFS=interpolate_1D(pol_angle_LCFS,minor_rad_LCFS) #generate polar coordinate interpolator of LCFS
+    pol_angle_LCFS[pol_angle_LCFS<0]=2.*np.pi+pol_angle_LCFS[pol_angle_LCFS<0] #modulo angles
+    pol_angle_LCFS,minor_rad_LCFS=sort_arrays(pol_angle_LCFS,minor_rad_LCFS)
+    pol_angle_LCFS=np.concatenate(([pol_angle_LCFS[-1]-2.*np.pi],pol_angle_LCFS,[pol_angle_LCFS[0]+2.*np.pi])) #wrap around arrays for values that lie between last and first poloidal angle
+    minor_rad_LCFS=np.concatenate(([minor_rad_LCFS[-1]],minor_rad_LCFS,[minor_rad_LCFS[0]]))
+
+    interpolator_LCFS=interpolate_1D(pol_angle_LCFS,minor_rad_LCFS,function='linear',type='interp1d') #generate polar coordinate interpolator of LCFS
     
     distances_LCFS_to_mag_axis=[]
     for pol_angle_point in pol_angle_points:
