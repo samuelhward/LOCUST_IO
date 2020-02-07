@@ -57,8 +57,8 @@ except:
 
 #define parameters which are fixed throughout a parameter scan - if we want to vary then add as a layer in the for loops
 LOCUST_run__environment_name='TITAN'
-LOCUST_run__repo_URL=settings.repo_URL_LOCUST
-LOCUST_run__commit_hash=settings.commit_hash_default_LOCUST
+LOCUST_run__repo_URL=f"'{settings.repo_URL_LOCUST}'"
+LOCUST_run__commit_hash=f"'{settings.commit_hash_default_LOCUST}'"
 study_name='scan_threads_blocks'
 
 GPU_card_dispatch={} #all possible options listed here
