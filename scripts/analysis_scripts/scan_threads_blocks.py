@@ -111,26 +111,32 @@ for machine in ['TITAN']:#batch_scripts.profiling_batch.GPU_card_dispatch.keys()
     output_times_total[type_gpu]=np.ma.masked_array(output_times_total[type_gpu],mask=output_times_total_mask[type_gpu]).reshape(len(batch_scripts.profiling_batch.parameter__threads),len(batch_scripts.profiling_batch.parameter__blocks),len(batch_scripts.profiling_batch.parameter__timax))
     output_times_total_error[type_gpu]=np.ma.masked_array(output_times_total_error[type_gpu],mask=output_times_total_error_mask[type_gpu]).reshape(len(batch_scripts.profiling_batch.parameter__threads),len(batch_scripts.profiling_batch.parameter__blocks),len(batch_scripts.profiling_batch.parameter__timax))
 
-#plotting stuff
-import matplotlib.pyplot as plt
-fig,(ax1)=plt.subplots(1)
-legend=[]
-plot_styles=[settings.cmap_r,settings.cmap_b,settings.cmap_g]
-index_timax=-2 #choose which slice we want to take
-index_threads=slice(None)
-index_blocks=slice(None)
-#batch_scripts.profiling_batch.parameter__threads
-#batch_scripts.profiling_batch.parameter__blocks
-#batch_scripts.profiling_batch.parameter__timax
+    #output_times_total[type_gpu]=np.ma.masked_array(output_times_total[type_gpu],mask=output_times_total_mask[type_gpu]).reshape(len(batch_scripts.profiling_batch.parameter__timax),len(batch_scripts.profiling_batch.parameter__blocks),len(batch_scripts.profiling_batch.parameter__threads))
+    #output_times_total_error[type_gpu]=np.ma.masked_array(output_times_total_error[type_gpu],mask=output_times_total_error_mask[type_gpu]).reshape(len(batch_scripts.profiling_batch.parameter__timax),len(batch_scripts.profiling_batch.parameter__blocks),len(batch_scripts.profiling_batch.parameter__threads))
+
 
 for counter,type_gpu in enumerate(output_filepaths.keys()):
+
+    #plotting stuff
+    import matplotlib.pyplot as plt
+    fig,(ax1)=plt.subplots(1)
+    legend=[]
+    plot_styles=[settings.cmap_r,settings.cmap_b,settings.cmap_g]
+    index_timax=3 #choose which slice we want to take
+    index_threads=slice(None)
+    index_blocks=slice(None)
 
     #go through and scale by number of markers in total
     for thread,num_threads in enumerate(batch_scripts.profiling_batch.parameter__threads):
         for block,num_blocks in enumerate(batch_scripts.profiling_batch.parameter__blocks):
-            for timax, time_timax in enumerate(batch_scripts.profiling_batch.parameter__timax):
+            for timax,time_timax in enumerate(batch_scripts.profiling_batch.parameter__timax):
                 if not output_times_total[type_gpu].mask[thread,block,timax]:
-                    output_times_total[type_gpu][thread,block,timax]/=num_threads*num_blocks*batch_scripts.profiling_batch.parameter__timax[index_timax]
+                    output_times_total[type_gpu][thread,block,timax]/=(num_threads*num_blocks)
+                    print('{} {} {} {} {}'.format(
+                    output_times_total[type_gpu][thread,block,timax],
+                    num_threads,num_blocks,
+                    batch_scripts.profiling_batch.parameter__timax[timax],
+                    output_times_total[type_gpu].mask[thread,block,timax]))
 
     legend+=[type_gpu]
     Y,X=np.meshgrid(batch_scripts.profiling_batch.parameter__blocks,batch_scripts.profiling_batch.parameter__threads)
@@ -139,13 +145,17 @@ for counter,type_gpu in enumerate(output_filepaths.keys()):
     #ax1.set_facecolor(colmap(np.amin(dfn_copy[key])))
     #mesh=ax1.contour(X,Y,Z,levels=np.logspace(0,6,num=6),colors=plot_styles[counter](np.linspace(0,1,num=6)),edgecolor='none',linewidth=0,antialiased=True)
     #mesh=ax1.contour(X,Y,Z,levels=np.logspace(6,16,num=10,base=2),edgecolor='none',linewidth=0,antialiased=True)
-    mesh=ax1.contourf(np.log2(X),np.log2(Y),Z,edgecolor='none',linewidth=0,antialiased=True)
-    fig.colorbar(mesh,ax=ax1,orientation='horizontal')
+    mesh=ax1.contourf(np.log2(X),np.log2(Y),np.log2(Z.astype(np.float64)),edgecolor='none',linewidth=0,antialiased=True)#,levels=np.linspace(-12,-3,10))
+    cbar=fig.colorbar(mesh,ax=ax1,orientation='horizontal')
+    cbar.set_label('log_2(time/marker) (s)')
+
     #if settings.plot_contour_labels:
     #    ax.clabel(mesh,inline=1,fontsize=10)
 
-#plt.errorbar(np.ma.masked_array(output_times_total, mask=output_times_total_mask),plot_styles[counter])
-plt.show()
+    #plt.errorbar(np.ma.masked_array(output_times_total, mask=output_times_total_mask),plot_styles[counter])
+    ax1.set_xlabel('log_2(threads)')
+    ax1.set_ylabel('log_2(blocks)')
+    plt.show()
 
 #################################
 
