@@ -149,7 +149,12 @@ class Batch:
             print("ERROR: batch.launch() must know environment_name_workflow!\nreturning\n!")
             return
 
-        environment_batch=run_scripts.environment.Environment(environment_name_batch) if environment_name_batch else run_scripts.environment.Environment(environment_name_workflow) #attach an environment
+        if environment_name_batch:
+            try:
+                environment_batch=run_scripts.environment.Environment(environment_name_batch) #attach an environment
+            else:
+                print(f"WARNING: Batch.launch() could not find valid environment_name_batch ({environment_name_batch}) - running with default!")
+                environment_batch=None
 
         ################################# loop over each run in this set of batch runs
 
