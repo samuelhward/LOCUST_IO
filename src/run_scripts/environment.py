@@ -266,8 +266,7 @@ class Environment:
                             'system/CUDA/9.2.88-GCC-7.3.0-2.30',
                             'lang/Python/3.7.0-foss-2018b',
                             'data/HDF5/1.10.2-PGI-19.10-GCC-7.3.0-2.30']
-    environments['VIKING']['module unload']=[
-                            'compiler/GCCcore/7.3.0']
+    environments['VIKING']['module unload']=[]
     environments['VIKING']['module switch']=[]
     environments['VIKING']['misc']={}
     environments['VIKING']['misc']['ulimit']="-s 2000000"
@@ -323,11 +322,9 @@ class Environment:
                 commands.extend([' '.join([thing_to_command,str(self.environment[command][thing_to_command])]) for thing_to_command in things_to_command])
 
         if listed:
-            commands=[command for command in commands]
+            commands=list([command for command in commands])
         else:
             commands=' ; '.join(command for command in commands)
-            self.commands=commands
-
         return commands
 
     def display(self,string=False,command_types=None):

@@ -152,7 +152,7 @@ class Batch:
         if environment_name_batch:
             try:
                 environment_batch=run_scripts.environment.Environment(environment_name_batch) #attach an environment
-            else:
+            except:
                 print(f"WARNING: Batch.launch() could not find valid environment_name_batch ({environment_name_batch}) - running with default!")
                 environment_batch=None
 
@@ -188,7 +188,7 @@ class Batch:
                 """.format(
                 shebang=Batch.batch_system[environment_name_batch]['shebang'],
                 system_batch_flags=system_batch_flags,
-                environment_batch=environment_batch.create_command_string() if environment_batch else '',
+                environment_batch=''.join(f'{command}\n' for command in environment_batch.create_command_string(listed=True)) if environment_batch else '',
                 command_execute_workflow=Batch.batch_system[environment_name_batch]['command_execute_workflow'],
                 workflow_filepath=str(workflow_filepath),
                 workflow_args=workflow_args

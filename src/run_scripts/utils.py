@@ -2002,11 +2002,14 @@ def command_line_arg_parse_dict(args):
     parsed_subargs=[subarg.split('=') for subarg in args] #convert from strings to a dict    
     dict_of_args={}
     for subarg in parsed_subargs:
-        if len(subarg)>1:
-            try:
-                dict_of_args[subarg[0]]=literal_eval(subarg[1])
-            except:
+        if len(subarg)>1: #try to discern what the arg is - string, list, or something else?
+            if (subarg[1][0]=='\'' and subarg[1][-1]=='\'') or (subarg[1][0]=='\"' and subarg[1][-1]=='\"'): #if we have stringception then leave alone
                 dict_of_args[subarg[0]]=subarg[1]
+            else:
+                try:
+                    dict_of_args[subarg[0]]=literal_eval(subarg[1]) #try evaluate it and if it fails just leave it as a string
+                except:
+                    dict_of_args[subarg[0]]=subarg[1]
         else:
             dict_of_args[subarg[0]]=True
 
