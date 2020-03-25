@@ -134,8 +134,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     number_bins=6
 
-    TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=reds)
-    ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=blues)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=reds)
+    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=blues)
     LOCUST_mesh=LOCUST_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=greens)
 
     #add scatter point if you fancy

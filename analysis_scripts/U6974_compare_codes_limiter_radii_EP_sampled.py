@@ -116,21 +116,21 @@ for r_sample_point,z_sample_point,axcol in zip(r_sample_points,z_sample_points,a
         #either plotting at a single point
         
         #'''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
         dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
-        TRANSP_dfn_plot['dfn']=TRANSP_dfn_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
+        TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
         ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
         LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
         #'''
 
         #or plotting over all current space
         '''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(energy=False) #crop and plot the TRANSP dfn    
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(energy=False) #crop and plot the TRANSP dfn    
         '''
 
-        vminmax=[0,np.amax(2.*TRANSP_dfn_plot['dfn'])]
+        vminmax=[0,np.amax(2.*TRANSP_plot['dfn'])]
 
-        axcol[0].plot(TRANSP_dfn_plot['E'],TRANSP_dfn_plot['dfn'],'r')
+        axcol[0].plot(TRANSP_plot['E'],TRANSP_plot['dfn'],'r')
         ASCOT_dfn.plot(axes=axes,ax=axcol[0],fig=fig,colmap='b')
         LOCUST_dfn.plot(axes=axes,ax=axcol[0],fig=fig,colmap='g')
 
@@ -138,8 +138,8 @@ for r_sample_point,z_sample_point,axcol in zip(r_sample_points,z_sample_points,a
         axcol[0].set_xlabel('E [keV]')
         axcol[0].set_ylabel('[#/eV]')
         axcol[0].set_ylim(vminmax)
-        #axcol[0].set_ylim([0,np.max(TRANSP_dfn_plot['dfn'])])
-        #axcol[0].set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_dfn_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
+        #axcol[0].set_ylim([0,np.max(TRANSP_plot['dfn'])])
+        #axcol[0].set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
 
 
 
@@ -152,18 +152,18 @@ for r_sample_point,z_sample_point,axcol in zip(r_sample_points,z_sample_points,a
         #either plotting at a single point
         
         #'''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
-        TRANSP_dfn_plot['dfn']=TRANSP_dfn_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
+        TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
         #'''
 
         #or plotting over all current space
         '''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(pitch=False) #crop and plot the TRANSP dfn    
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(pitch=False) #crop and plot the TRANSP dfn    
         '''
 
-        vminmax=[0,np.amax(2.*TRANSP_dfn_plot['dfn'])]
+        vminmax=[0,np.amax(2.*TRANSP_plot['dfn'])]
 
-        axcol[1].plot(TRANSP_dfn_plot['V_pitch'],TRANSP_dfn_plot['dfn'],'r')
+        axcol[1].plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],'r')
         ASCOT_dfn.plot(axes=axes,ax=axcol[1],fig=fig,colmap='b')
         LOCUST_dfn.plot(axes=axes,ax=axcol[1],fig=fig,colmap='g')
 

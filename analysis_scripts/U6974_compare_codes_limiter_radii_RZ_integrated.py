@@ -135,7 +135,7 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     #'''
            
 
-    TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,real_scale=True)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,real_scale=True)
     ASCOT_mesh=ASCOT_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax2,fig=fig,real_scale=True)
     LOCUST_mesh=LOCUST_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax3,fig=fig,real_scale=True)
 

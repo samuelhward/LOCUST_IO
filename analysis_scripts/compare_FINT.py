@@ -44,10 +44,10 @@ LOCUST_dfn=run_scripts.utils.FINT_LOCUST('LOCUST fast ion density',filename_LOCU
 fig,(ax1,ax2)=plt.subplots(1,2)
 
 #plot TRANSP energy diffusion
-TRANSP_mesh=TRANSP_FI_array[0].dfn_plot(axes=['E','time'],TRANSP_output_FI_list=[FI for FI in TRANSP_FI_array],ax=ax1,fig=fig)
+TRANSP_mesh=TRANSP_FI_array[0].plot(axes=['E','time'],TRANSP_output_FI_list=[FI for FI in TRANSP_FI_array],ax=ax1,fig=fig)
 
 #plot LOCUST energy diffusion
-LOCUST_mesh=LOCUST_dfn.dfn_plot(some_equilibrium=equi,axes=['E','time'],ax=ax2,fig=fig)
+LOCUST_mesh=LOCUST_dfn.plot(some_equilibrium=equi,axes=['E','time'],ax=ax2,fig=fig)
 
 #fig.colorbar(TRANSP_mesh,ax=ax1)
 #fig.colorbar(LOCUST_mesh,ax=ax2)

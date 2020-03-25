@@ -23,6 +23,6 @@ for file in range(number_files): #add the next files
     filename='157418{}_fi_{}_gc.cdf'.format(run_2,file)
     FI_array.append(utils.TRANSP_output_FI(filename))
 
-FI_array[0].dfn_plot(axes=['E','time'],TRANSP_output_FI_list=[FI for FI in FI_array])
+FI_array[0].plot(axes=['E','time'],TRANSP_output_FI_list=[FI for FI in FI_array])
 
-#FI_1.dfn_plot(axes=['R','Z'],some_equilibrium=equi,LCFS=True,limiters=True,real_scale=True)
+#FI_1.plot(axes=['R','Z'],some_equilibrium=equi,LCFS=True,limiters=True,real_scale=True)

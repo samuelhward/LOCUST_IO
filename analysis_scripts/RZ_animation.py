@@ -28,7 +28,7 @@ for file in range(number_files): #add second set of files
 fig,(ax)=plt.subplots(1,1) #initialise plot
 
 for FI in FI_array:
-    mesh=FI.dfn_plot(axes=['R','Z'],some_equilibrium=equi,LCFS=True,limiters=True,real_scale=True,ax=ax,fig=fig)
+    mesh=FI.plot(axes=['R','Z'],some_equilibrium=equi,LCFS=True,limiters=True,real_scale=True,ax=ax,fig=fig)
     cbar=fig.colorbar(mesh,ax=ax)
     plt.draw()
     plt.pause(0.1)

@@ -34,8 +34,8 @@ fig,(ax1,ax2,ax3)=plt.subplots(1,3)
 #R Z
 '''
 axes=['R','Z']
-TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,some_equilibrium=equi,LCFS=True,limiters=True,ax=ax1,fig=fig)
-ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,some_equilibrium=equi,LCFS=True,limiters=True,ax=ax2,fig=fig)
+TRANSP_mesh=TRANSP_dfn.plot(axes=axes,some_equilibrium=equi,LCFS=True,limiters=True,ax=ax1,fig=fig)
+ASCOT_mesh=ASCOT_dfn.plot(axes=axes,some_equilibrium=equi,LCFS=True,limiters=True,ax=ax2,fig=fig)
 LOCUST_mesh=plot_output.plot_distribution_function(LOCUST_dfn,some_equilibrium=equi,axes=axes,LCFS=True,limiters=True,ax=ax3,fig=fig)
 
 ax1.set_xlim([np.amin(equi['R_1D']),np.amax(equi['R_1D'])])
@@ -56,8 +56,8 @@ ax3.set_ylabel('Z [m]')
 
 #ENERGY PITCH 
 axes=['E','V_pitch']
-TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,ax=ax1,fig=fig)
-ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,ax=ax2,fig=fig)
+TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax1,fig=fig)
+ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax2,fig=fig)
 LOCUST_mesh=plot_output.plot_distribution_function(LOCUST_dfn,axes=axes,ax=ax3,fig=fig)
 
 #fig.colorbar(TRANSP_mesh,ax=ax1)

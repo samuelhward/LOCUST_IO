@@ -55,8 +55,8 @@ for LOCUST_file,TRANSP_file,ASCOT_file,radius in zip(LOCUST_files,TRANSP_files,A
         #TOTAL R Z
 
         axes=['R','Z']
-        TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig)
-        ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,limiters=wall,LCFS=equi,ax=ax2,fig=fig)
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax2,fig=fig)
         LOCUST_mesh=LOCUST_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax3,fig=fig)
 
 
@@ -91,10 +91,10 @@ for LOCUST_file,TRANSP_file,ASCOT_file,radius in zip(LOCUST_files,TRANSP_files,A
 
         #LOCALISED ENERGY PITCH 
         axes=[index_rz_transp,slice(None),slice(None)]
-        TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,ax=ax4,fig=fig) #plotting with slices and specifying the point plots from the non-integrated distribution function
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax4,fig=fig) #plotting with slices and specifying the point plots from the non-integrated distribution function
 
         axes=[slice(None),slice(None),index_r_ascot,index_z_ascot]
-        ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,ax=ax5,fig=fig)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax5,fig=fig)
 
         axes=[0,slice(None),slice(None),index_r_locust,index_z_locust]
         LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax6,fig=fig)

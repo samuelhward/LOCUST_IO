@@ -37,7 +37,7 @@ for ASCOT_file,LOCUST_file,ax_group,LOCUST_FINT,run_type in zip(ascot_files,locu
 
 	axes=['R','Z']
     LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax_group[0],LCFS=equi,fig=fig)
-    ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,ax=ax_group[1],LCFS=equi,fig=fig)
+    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax_group[1],LCFS=equi,fig=fig)
 
 	for ax,mesh in zip([ax_group[0],ax_group[1]],[LOCUST_mesh,ASCOT_mesh]):
 	    cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')

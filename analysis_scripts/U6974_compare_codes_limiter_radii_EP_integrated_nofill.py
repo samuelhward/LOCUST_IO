@@ -119,8 +119,8 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
 
         vminmax=[0.,0.8e8]
 
-        TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,ax=ax4,fig=fig,vminmax=vminmax)
-        ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,ax=ax5,fig=fig,vminmax=vminmax)
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax4,fig=fig,vminmax=vminmax)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax5,fig=fig,vminmax=vminmax)
         LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax6,fig=fig,vminmax=vminmax)
 
         if colourbars is True:
@@ -135,8 +135,8 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         vminmax=[1.e7,6.e7]
         number_bins=5
 
-        TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=reds)
-        ASCOT_mesh=ASCOT_dfn.dfn_plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=blues)
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=reds)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=blues)
         LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=greens)
 
         if colourbars is True:
@@ -152,30 +152,30 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         #either plotting at a single point
         
         '''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
         dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
-        TRANSP_dfn_plot['dfn']=TRANSP_dfn_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
+        TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
         ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
         LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
         '''
 
         #or plotting over all current space
         #'''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(energy=False) #crop and plot the TRANSP dfn    
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(energy=False) #crop and plot the TRANSP dfn    
         #'''
 
-        vminmax=[0,np.amax(1.1*TRANSP_dfn_plot['dfn'])]
+        vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-        ax10.plot(TRANSP_dfn_plot['E'],TRANSP_dfn_plot['dfn'],'r')
-        ASCOT_dfn.dfn_plot(axes=axes,ax=ax10,fig=fig,colmap='b')
+        ax10.plot(TRANSP_plot['E'],TRANSP_plot['dfn'],'r')
+        ASCOT_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='b')
         LOCUST_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='g')
 
         ax10.set_xlabel('E [keV]')
         ax10.set_ylabel('[#/eV]')
         ax10.set_ylim(vminmax)
 
-        #ax10.set_ylim([0,np.max(TRANSP_dfn_plot['dfn'])])
-        #ax10.set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_dfn_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
+        #ax10.set_ylim([0,np.max(TRANSP_plot['dfn'])])
+        #ax10.set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
 
 
 
@@ -187,30 +187,30 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         #either plotting at a single point
         
         '''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
         dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
-        TRANSP_dfn_plot['dfn']=TRANSP_dfn_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
+        TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
         ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
         LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
         '''
 
         #or plotting over all current space
         #'''
-        TRANSP_dfn_plot=TRANSP_dfn.dfn_integrate(pitch=False) #crop and plot the TRANSP dfn    
+        TRANSP_plot=TRANSP_dfn.dfn_integrate(pitch=False) #crop and plot the TRANSP dfn    
         #'''
 
-        vminmax=[0,np.amax(1.1*TRANSP_dfn_plot['dfn'])]
+        vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-        ax11.plot(TRANSP_dfn_plot['V_pitch'],TRANSP_dfn_plot['dfn'],'r')
-        ASCOT_dfn.dfn_plot(axes=axes,ax=ax11,fig=fig,colmap='b')
+        ax11.plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],'r')
+        ASCOT_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='b')
         LOCUST_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='g')
 
         #ax11.set_title('')
         ax11.set_xlabel('V$_{\|\|}$/V')
         ax11.set_ylabel('[#/dPitch]')
         ax11.set_ylim(vminmax)
-        #ax11.set_ylim([0,np.max(TRANSP_dfn_plot['dfn'])])
-        #ax11.set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_dfn_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
+        #ax11.set_ylim([0,np.max(TRANSP_plot['dfn'])])
+        #ax11.set_ylim([0,np.max([np.max(dfn) for dfn in [TRANSP_plot['dfn'],ASCOT_dfn['dfn'],LOCUST_dfn['dfn']]])]) #find current max across arrays
 
 
 

@@ -37,12 +37,12 @@ for radius,TRANSP_run,axis_row in zip(radii,TRANSP_runs,axes):
     #RZ
 
     axes=['R','Z']
-    TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[0],fig=fig)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[0],fig=fig)
 
     #EP
 
     axes=['E','V_pitch']
-    TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[1],fig=fig)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[1],fig=fig)
 
     #sampled EP
 
@@ -54,7 +54,7 @@ for radius,TRANSP_run,axis_row in zip(radii,TRANSP_runs,axes):
     z_sample=TRANSP_dfn['Z2D'][index_rz_transp]
 
     axes=[index_rz_transp,slice(None),slice(None)]
-    TRANSP_mesh=TRANSP_dfn.dfn_plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[2],fig=fig)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,some_equilibrium=wall,limiters=True,ax=axis_row[2],fig=fig)
 
     #point we're sampling from
 
