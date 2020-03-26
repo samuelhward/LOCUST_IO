@@ -62,6 +62,7 @@ import matplotlib.pyplot as plt
 cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
+cmap_grey=settings.colour_custom([97,97,97,1])
 
 channel=5#5 #4567
 filepath_measured=support.dir_output_files / 'FIDASIM' / f'29034_chn_{channel}.dat'
@@ -99,9 +100,9 @@ data_radial_TRANSP=get_FIDA(filepath_radial_profile_TRANSP)
 data_radial_LOCUST=get_FIDA(filepath_radial_profile_LOCUST)
 
 fig,ax=plt.subplots(1)
-ax.errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements')
-ax.plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP')
-ax.plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST')
+ax.errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',color=cmap_grey(0))
+ax.plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP',color=cmap_r(0))
+ax.plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST',color=cmap_g(0))
 ax.set_xlim([0.8,1.5])
 ax.set_ylim([0,2.e16])
 ax.set_xlabel('Radius [m]')
