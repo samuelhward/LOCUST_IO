@@ -147,24 +147,23 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     TRANSP_dfn['E']/=1000
     ASCOT_dfn['E']/=1000
 
-    print(ASCOT_dfn['E'])
-    print(ASCOT_dfn['V_pitch'])
-    print(LOCUST_dfn['E'])
-    print(LOCUST_dfn['V_pitch'])
 
+
+    '''
     axes=['E','V_pitch']
     fig,((ax1))=plt.subplots(1) #plot the difference
     ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
     LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
     #interpolate ASCOT grid onto LOCUST grid
-    interpolator=processing.utils.interpolate_2D(LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch'],LOCUST_dfn_['dfn'],type='RBF')
+    interpolator=processing.utils.interpolate_2D(ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch'],ASCOT_dfn_['dfn'],type='RBF')
     V_pitch,E=np.meshgrid(LOCUST_dfn_['V_pitch'],LOCUST_dfn_['E'])
-    ASCOT_dfn_['dfn']=interpolator(V_pitch,E)
+    ASCOT_dfn_['dfn']=interpolator(E,V_pitch)
     ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
     DFN_diff=copy.deepcopy(LOCUST_dfn)
     DFN_diff.ID='LOCUST dfn - ASCOT dfn'
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
-    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
+    DFN_diff['dfn']=np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])
+    #DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
     DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
     cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
     ax1.set_xlabel('E [keV]')
@@ -174,7 +173,30 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
     ax1.set_facecolor(settings.cmap_default(0.0))
     plt.show() 
+    '''
 
+    axes=['E','V_pitch']
+    fig,((ax1))=plt.subplots(1) #plot the difference
+    ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
+    LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
+    #interpolate ASCOT grid onto LOCUST grid
+    interpolator=processing.utils.interpolate_2D(ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch'],ASCOT_dfn_['dfn'],type='RBF')
+    V_pitch,E=np.meshgrid(LOCUST_dfn_['V_pitch'],LOCUST_dfn_['E'])
+    ASCOT_dfn_['dfn']=interpolator(E,V_pitch)
+    ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
+    DFN_diff=copy.deepcopy(LOCUST_dfn)
+    DFN_diff.ID='LOCUST dfn - ASCOT dfn'
+    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
+    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
+    cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
+    ax1.set_xlabel('E [keV]',fontsize=25)
+    ax1.set_ylabel('$V_{||}\slash V$',fontsize=25)
+    ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$',fontsize=25)
+    #ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
+    #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+    ax1.set_facecolor(settings.cmap_default(0.0))
+    plt.show()
 
     #EP
 
@@ -306,27 +328,7 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     print(LOCUST_dfn['E'])
     print(LOCUST_dfn['V_pitch'])
 
-    axes=['E','V_pitch']
-    fig,((ax1))=plt.subplots(1) #plot the difference
-    ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
-    #interpolate ASCOT grid onto LOCUST grid
-    interpolator=processing.utils.interpolate_2D(LOCUST_dfn['Z'],LOCUST_dfn['R'],LOCUST_dfn['dfn'],type='RBF')
-    R,Z=np.meshgrid(LOCUST_dfn['R'],LOCUST_dfn['Z'])
-    ASCOT_dfn_['dfn']=interpolator(Z,R)
-    LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
-    DFN_diff=copy.deepcopy(LOCUST_dfn)
-    DFN_diff.ID='LOCUST dfn - ASCOT dfn'
-    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
-    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
-    cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
-    ax1.set_xlabel('E [keV]')
-    ax1.set_ylabel('$V_{||}\slash V$')
-    ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$')
-    #ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
-    #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
-    ax1.set_facecolor(settings.cmap_default(0.0))
-    plt.show()  
+
 
 
 

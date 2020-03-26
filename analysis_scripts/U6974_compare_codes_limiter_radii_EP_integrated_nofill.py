@@ -266,9 +266,9 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_r)
         ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_b)
         LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_g)
-        ax.legend(['TRANSP','ASCOT','LOCUST'])
-        ax.set_title('Fast ion density')
-        ax.set_xlabel('E [keV]')
-        ax.set_ylabel('$V_{||}\slash V$')
+        ax.legend(['TRANSP','ASCOT','LOCUST'],fontsize=25)
+        ax.set_title('Fast ion density',fontsize=25)
+        ax.set_xlabel('E [keV]',fontsize=25)
+        ax.set_ylabel('$V_{||}\slash V$',fontsize=25)
 
         plt.show()

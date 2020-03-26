@@ -185,13 +185,13 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     for ax in [ax1]:
         #ax.set_title('limiter radius = {}'.format(radii[0]))
-        ax.set_title('Fast ion density')
-        ax.set_xlabel('R [m]')  
-        ax.set_ylabel('Z [m]')  
+        ax.set_title('Fast ion density',fontsize=25)
+        ax.set_xlabel('R [m]',fontsize=25)  
+        ax.set_ylabel('Z [m]',fontsize=25)  
         #ax.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
         #ax.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[0:2], ['TRANSP','ASCOT','LOCUST'])
+        ax.legend(handles[0:2], ['TRANSP','ASCOT','LOCUST'],fontsize=25)
         #plt.legend(['TRANSP','ASCOT','LOCUST'])
 
 

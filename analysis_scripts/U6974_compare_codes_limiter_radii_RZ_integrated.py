@@ -174,9 +174,9 @@ DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['df
 DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
 DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False,limiters=wall,LCFS=equi,real_scale=True)
 cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
-ax1.set_xlabel('R [m]')  
-ax1.set_ylabel('Z [m]')  
-ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$')
+ax1.set_xlabel('R [m]',fontsize=25)  
+ax1.set_ylabel('Z [m]',fontsize=25)  
+ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$',fontsize=25)
 #ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
 #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
 ax1.set_facecolor(settings.cmap_default(0.0))
