@@ -1107,9 +1107,9 @@ class Perturbation(classes.base_input.LOCUST_input):
                 ax.set_ylabel('Z [m]')
 
                 if LCFS:
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters) 
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
 
             elif axes==['X','Y']:
 
@@ -1159,15 +1159,15 @@ class Perturbation(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_max_R,100),settings.plot_style_LCFS)
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_min_R,100),settings.plot_style_LCFS)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_max_R,100),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(plasma_min_R,100),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
                     ax.set_rmax(1.1*plasma_max_R)
  
                 if limiters: #add boundaries if desired
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),settings.plot_style_limiters)
-                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),settings.plot_style_limiters)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
                     ax.set_rmax(1.1*limiters_max_R)
 
                 ax.set_rmin(0.0)
@@ -1317,10 +1317,10 @@ class Perturbation(classes.base_input.LOCUST_input):
             ax4.plot(phi_toroidal,component_toroidal,colour) #plot the toroidal variation
 
             if LCFS:
-                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) #add a LCFS
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) #add a LCFS
 
             if limiters:
-                ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],settings.plot_style_limiters) #add a LCFS
+                ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) #add a LCFS
 
         legend=['dB_field_R','dB_field_tor','dB_field_Z']
         if absolute:

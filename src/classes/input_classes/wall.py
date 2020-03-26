@@ -541,7 +541,7 @@ class Wall(classes.base_input.LOCUST_input):
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input/IDS)\n".format(self.ID))
 
 
-    def plot(self,LCFS=False,real_scale=False,colmap=settings.plot_style_limiters,ax=False,fig=False): 
+    def plot(self,LCFS=False,real_scale=False,colmap=settings.plot_line_style_limiters,ax=False,fig=False): 
         """
         notes:
         args:
@@ -578,7 +578,7 @@ class Wall(classes.base_input.LOCUST_input):
         ax.set_title(self.ID)
 
         if LCFS: #plot plasma boundary
-            ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS)
+            ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
         
         ax.plot(self['rlim'],self['zlim'],colmap)
 

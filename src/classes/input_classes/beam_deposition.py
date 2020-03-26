@@ -1420,9 +1420,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 else:
                     ax.set_aspect('auto')
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
 
             elif axes==['X','Y']:
                 if real_scale is True: #set x and y plot limits to real scales
@@ -1432,15 +1432,15 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)          
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)          
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
             
             if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh
@@ -1462,14 +1462,14 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_LCFS)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_LCFS)
 
             if limiters: #plot periodic poloidal cross-sections in 3D
                 for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=limiters['rlim']*np.cos(angle)
                     y_points=limiters['rlim']*np.sin(angle)
                     z_points=limiters['zlim']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_limiters)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_limiters)
 
             if real_scale is True:
                 ax.set_aspect('equal')

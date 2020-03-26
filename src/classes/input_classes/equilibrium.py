@@ -798,9 +798,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_ylabel('Z [m]')
 
             if LCFS:
-                ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
+                ax.plot(self['lcfs_r'],self['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
             if limiters: #add boundaries if desired
-                ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters) 
+                ax.plot(self['rlim'],self['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
 
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
@@ -942,9 +942,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     if start_mark: 
                         ax.scatter(R_points[0],Z_points[0],color=settings.colour_start_mark,s=10)
                     if LCFS: #plot plasma boundary
-                        ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
+                        ax.plot(self['lcfs_r'],self['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
                     if limiters: #add boundaries if desired
-                        ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters)       
+                        ax.plot(self['rlim'],self['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)       
             
                     ax.set_xlabel('R [m]')
                     ax.set_ylabel('Z [m]')
@@ -958,15 +958,15 @@ class Equilibrium(classes.base_input.LOCUST_input):
                     if LCFS: #plot plasma boundary
                         plasma_max_R=np.max(self['lcfs_r'])
                         plasma_min_R=np.min(self['lcfs_r'])
-                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
-                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS) 
+                        ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                        ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
                     if limiters: #add boundaries if desired
                         ax.set_xlim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         ax.set_ylim(-1.0*np.max(self['rlim']),np.max(self['rlim']))
                         limiters_max_R=np.max(self['rlim'])
                         limiters_min_R=np.min(self['rlim'])
-                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
-                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)   
+                        ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                        ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)   
                         
                     ax.set_xlabel('X [m]')
                     ax.set_ylabel('Y [m]')
@@ -981,13 +981,13 @@ class Equilibrium(classes.base_input.LOCUST_input):
                             x_points=self['lcfs_r']*np.cos(angle)
                             y_points=self['lcfs_r']*np.sin(angle)
                             z_points=self['lcfs_z']
-                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_LCFS)
+                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_LCFS)
                     if limiters: #plot periodic poloidal cross-sections in 3D
                         for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                             x_points=self['rlim']*np.cos(angle)
                             y_points=self['rlim']*np.sin(angle)
                             z_points=self['zlim']
-                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_limiters)
+                            ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_limiters)
 
                     ax.set_xlim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
                     ax.set_ylim(-1.0*np.max(self['R_1D']),np.max(self['R_1D']))
@@ -1045,9 +1045,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
         strm = ax.streamplot(self['R_1D'],self['Z_1D'],self['B_field_R'].T,self['B_field_Z'].T, color=B_mag.T, linewidth=1, cmap=colmap)
 
         if LCFS:
-            ax.plot(self['lcfs_r'],self['lcfs_z'],settings.plot_style_LCFS) 
+            ax.plot(self['lcfs_r'],self['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
         if limiters: #add boundaries if desired
-            ax.plot(self['rlim'],self['zlim'],settings.plot_style_limiters) 
+            ax.plot(self['rlim'],self['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
 
         if fig_flag is False:    
             fig.colorbar(strm.lines,ax=ax,orientation='horizontal')

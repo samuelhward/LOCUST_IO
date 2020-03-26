@@ -559,9 +559,9 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
             if axes==['R','Z']:
                 if LCFS: #plot plasma boundarys
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS)
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters) 
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')
                 else:
@@ -576,15 +576,15 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')
                 else:

@@ -73,9 +73,12 @@ cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
 cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
 cmap_default=cmap_inferno #set default colourmap
 
-plot_style_LCFS='m-' #set plot style for LCFS
-plot_style_limiters='k-' #set plot style for limiters
-plot_style_gridlines='w'
+plot_colour_LCFS=cmap_m(0.)
+plot_line_style_LCFS='-' 
+plot_colour_limiters=cmap_k(0.)
+plot_line_style_limiters='-' 
+plot_colour_gridlines=cmap_w(0.) 
+plot_line_style_gridlines='-'
 plot_linewidth=0.5 #set plot line width
 plot_contour_labels=False #toggle level labels for contour plots
 font = {'family' : 'normal', #set figure font

@@ -344,9 +344,9 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.set_aspect('equal')
 
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
 
             elif axes==['X','Y']: #plotting top-down
                 
@@ -356,15 +356,15 @@ class Orbits(classes.base_output.LOCUST_output):
                 if LCFS: #plot concentric rings to show inboard/outboard plasma boundaries
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_LCFS)
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),settings.plot_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
@@ -383,9 +383,9 @@ class Orbits(classes.base_output.LOCUST_output):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_style_LCFS)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_LCFS)
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
 
             for particle in particles:
                 ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth)

@@ -1,4 +1,3 @@
-#run_scripts.utils.py
  
 '''
 Samuel Ward
@@ -482,9 +481,9 @@ class TRANSP_output_FI(TRANSP_output):
             else:
                 ax.set_aspect('auto')
             if LCFS: #plot plasma boundary
-                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],settings.plot_style_LCFS) 
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
             if limiters: #add boundaries if desired
-                ax.plot(limiters['rlim'],limiters['zlim'],settings.plot_style_limiters)
+                ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
