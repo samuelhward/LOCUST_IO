@@ -29,38 +29,15 @@ import pathlib
 import matplotlib.pyplot as plt
 import matplotlib
 
-def cmap_custom(from_rgb,to_rgb):
-    """
-    generate custom colormaps
-    args:
-        from_rgb - list of starting r g b values  
-        to_rgb - list of final r g b values
-    notes:
-    """
-    from matplotlib.colors import LinearSegmentedColormap
-    r1,g1,b1=from_rgb
-    r2,g2,b2=to_rgb
-    cdict={'red':((0,r1,r1),(1,r2,r2)),
-            'green':((0,g1,g1),(1,g1,g1)),
-            'blue':((0,b1,b1),(1,b1,b1))}
-    cmap=LinearSegmentedColormap('custom cmap - {from_rgb}/{to_rgb}'.format(from_rgb=str(from_rgb),to_rgb=str(to_rgb)),cdict)
-    return cmap
-cmap_default=matplotlib.cm.get_cmap('jet') #set default colourmap
-cmap_r=cmap_custom([1,0,0],[1,0,0]) #red
-cmap_g=cmap_custom([0,1,0],[0,1,0]) #green
-cmap_b=cmap_custom([0,0,1],[0,0,1]) #blue
-cmap_y=cmap_custom([1,1,0],[1,1,0]) #yellow
-cmap_m=cmap_custom([1,0,1],[1,0,1]) #magenta
-cmap_c=cmap_custom([0,1,1],[0,1,1]) #cyan
-cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
-cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
-
-cmap_LOCUST=settings.cmap_g
-cmap_ASCOT=settings.cmap_b
-cmap_TRANSP=settings.cmap_r
+#define some colourmaps
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_g_=settings.colour_custom([205,220,57,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+cmap_grey=settings.colour_custom([97,97,97,1])
 
 shot='29034'
-run='W04'
+run='W03'
 tinit=0.36 #start time
 axes=['E']
 real_scale=False
@@ -70,9 +47,10 @@ fill=False
 number_bins=10
 vminmax=False#[0.1e15,6.e15]
 legend=True
+linewidth=3
 title='1W BBNBI injection F(E) at 100ms - MAST #29034'
-xlabel='energy [keV]'
-ylabel='density [#/eV]'
+xlabel='Energy [keV]'
+ylabel='Density [#/eV]'
 
 file_eq=pathlib.Path('TRANSP') / (shot+run) / ('g'+shot) #grab the wall and equilibrium used in these simulations
 file_wall=pathlib.Path('TRANSP') / (shot+run) / ('OMF'+shot+'.LIM')
@@ -93,12 +71,12 @@ IDs=[] #some more information to put as plot legend or misc
 time_slices=np.linspace(0.37,0.46,10)
 
 ################################# BBNBI depositions
-'''
+
 dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
 extra_infos.append('BBNBI_birth_FO')
 data_formats.append('ASCOT')
-cmaps.append(settings.cmap_b)
+cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_FO') #if this is an ASCOT run, append the beam deposition data format so we can rescale according to true power deposited
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
 IDs.append('ASCOT FO')
@@ -107,7 +85,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
 extra_infos.append('BBNBI_birth_GC')
 data_formats.append('ASCOT')
-cmaps.append(settings.cmap_r)
+cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append('ASCOT_FO')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
 IDs.append('ASCOT GC')
@@ -117,7 +95,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('BBNBI_birth_GC_noDCTDC2')
 data_formats.append('LOCUST')
-cmaps.append(cmap_custom([0,0.7,0],[0,0.7,0]))
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC')
@@ -127,11 +105,11 @@ dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('BBNBI_birth_FO')
 data_formats.append('LOCUST')
-cmaps.append(settings.cmap_k)
+cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST FO truncated')
-'''
+
 
 ################################# NUBEAM depositions
 '''
@@ -139,7 +117,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append('LOCUST')
-cmaps.append(settings.cmap_k)
+cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC truncated') 
@@ -148,7 +126,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append('ASCOT')
-cmaps.append(cmap_ASCOT)
+cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_GC')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_NUBEAM_birth_GC')
 IDs.append('ASCOT GC')
@@ -157,7 +135,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('TRANSP')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append(None) #TRANSP distribution functions are unique here
-cmaps.append(cmap_TRANSP)
+cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('TRANSP GC')
@@ -166,7 +144,7 @@ dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('NUBEAM_birth_GC_noDCTDC2')
 data_formats.append('LOCUST')
-cmaps.append(cmap_custom([0,0.7,0],[0,0.7,0]))
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC')
@@ -174,7 +152,7 @@ IDs.append('LOCUST GC')
 '''
 
 ################################################################## W04
-#'''
+'''
 
 time_slices=np.array([1,2,3,4,5,10,20,40,70,100])
 
@@ -182,7 +160,7 @@ dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append('LOCUST')
-cmaps.append(settings.cmap_k)
+cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC truncated') 
@@ -191,23 +169,22 @@ dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append('ASCOT')
-cmaps.append(cmap_ASCOT)
+cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_GC')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_NUBEAM_birth_GC')
 IDs.append('ASCOT GC')
 
-#'''
 dimensions.append('2D') #append a run's metadata
 codes.append('TRANSP')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append(None) #TRANSP distribution functions are unique here
-cmaps.append(cmap_TRANSP)
+cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('TRANSP GC')
-#'''
+'''
 
-#'''
+
 
 
 '''
@@ -274,14 +251,14 @@ for counter_time_slice,time_slice in enumerate([time_slices[-1]]): #XXX hack to 
             cbar=fig.colorbar(mesh,ax=ax1,orientation='vertical')
     
     if legend:
-        plt.legend(([ID for ID in IDs]))
+        plt.legend(([ID for ID in IDs]),fontsize=25)
     
     if title:
-        ax1.set_title(title)
+        ax1.set_title(title,fontsize=25)
     if xlabel:
-        ax1.set_xlabel(xlabel)
+        ax1.set_xlabel(xlabel,fontsize=25)
     if ylabel:
-        ax1.set_ylabel(ylabel)
+        ax1.set_ylabel(ylabel,fontsize=25)
     plt.show()
 
 #################################
