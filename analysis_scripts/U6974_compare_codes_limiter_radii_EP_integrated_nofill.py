@@ -16,6 +16,7 @@ import constants
 import matplotlib
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
+import settings
 
 #define some colourmaps
 cmap_r=settings.colour_custom([194,24,91,1])
