@@ -545,9 +545,9 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     if fill:
                         ax.set_facecolor(colmap(vmin))
                         mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=vmin,vmax=vmax)
-                        #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                        #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
-                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                         if settings.plot_contour_labels:
                             ax.clabel(mesh,inline=1,fontsize=10)
                         

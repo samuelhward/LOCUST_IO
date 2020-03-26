@@ -774,20 +774,20 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                 if settings.plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
-            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
             #3D plot
             #ax=ax.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')

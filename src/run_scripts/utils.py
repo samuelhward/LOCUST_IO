@@ -470,7 +470,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
                 mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=vmin,vmax=vmax)
             else:
-                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('R [m]')
@@ -507,7 +507,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=vmin,vmax=vmax)            
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -545,7 +545,7 @@ class TRANSP_output_FI(TRANSP_output):
                     ax.set_facecolor(colmap(np.amin(dfn_int_all)))
                     mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=vmin,vmax=vmax)           
                 else:
-                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     #ax.clabel(mesh,inline=1,fontsize=10)
 
                 ax.set_xlabel('energy [eV]')                
@@ -589,7 +589,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy)))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=vmin,vmax=vmax)         
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -1524,7 +1524,7 @@ class FINT_LOCUST:
             ax.set_facecolor(colmap(np.amin(self['dfn'])))
             mesh=ax.pcolormesh(time,E,self['dfn'],cmap=colmap,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
         else:
-            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
             #ax.clabel(mesh,inline=1,fontsize=10)
 
         ax.set_xlabel('time [s]')

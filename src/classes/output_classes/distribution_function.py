@@ -725,11 +725,11 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
                     mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
-                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
-                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 

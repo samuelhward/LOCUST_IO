@@ -1083,20 +1083,20 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 #2D plot
                 if fill is True:
-                    mesh=ax.contourf(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contourf(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")
                 else:
-                    mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
                     
-                #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
+                #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
 
                 #3D plot
                 #ax=ax.axes(projection='3d')
                 #ax.view_init(elev=90, azim=None) #rotate the camera
-                #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
+                #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
                 
                 if fig_flag is False:    
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
@@ -1145,11 +1145,11 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 #2D plot
                 if fill is True:
-                    mesh=ax.contourf(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contourf(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")
                 else:
-                    mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=0,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
                     
