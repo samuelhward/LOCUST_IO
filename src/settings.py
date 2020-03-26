@@ -57,8 +57,7 @@ def colour_custom(rgba,N=256):
     notes:
     """
     from matplotlib.colors import ListedColormap
-
-    return ListedColormap(np.array(rgba)/N)
+    return ListedColormap(np.array(rgba)/np.array([N,N,N,1]))
 
 cmap_plasma=matplotlib.cm.get_cmap('plasma')
 cmap_jet=matplotlib.cm.get_cmap('jet')
