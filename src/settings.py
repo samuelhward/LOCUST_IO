@@ -47,6 +47,19 @@ def cmap_custom(from_rgb,to_rgb):
     cmap=LinearSegmentedColormap('custom cmap - {from_rgb}/{to_rgb}'.format(from_rgb=str(from_rgb),to_rgb=str(to_rgb)),cdict)
     return cmap
 
+def colour_custom(rgba,N=256):
+    """
+    generate custom colours for colmaps
+
+    args:
+        rgba - array containing red, green, blue, alpha values 
+        N - depth
+    notes:
+    """
+    from matplotlib.colors import ListedColormap
+
+    return ListedColormap(np.array(rgba)/N)
+
 cmap_plasma=matplotlib.cm.get_cmap('plasma')
 cmap_jet=matplotlib.cm.get_cmap('jet')
 cmap_viridis=matplotlib.cm.get_cmap('viridis')

@@ -2,13 +2,13 @@
 
 |      flag     |                                                                 description                                                                  |
 |---------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| `LEIID`=1     |                                                                                                                                              |
-| `LEIID`=2     |                                                                                                                                              |
-| `LEIID`=3     |                                                                                                                                              |
-| `LEIID`=4     |                                                                                                                                              |
-| `LEIID`=5     |                                                                                                                                              |
-| `LEIID`=6     |                                                                                                                                              |
-| `LEIID`=7     |                                                                                                                                              |
+| `LEIID`=1     | McClements, Thyagaraja & Hamilton                                                                                                            |
+| `LEIID`=2     | Runge-Kutta Fehlberg                                                                                                                         |
+| `LEIID`=3     | Runge-Kutta Cash & Karp                                                                                                                      |
+| `LEIID`=4     | Runge-Kutta Dormand & Prince                                                                                                                 |
+| `LEIID`=5     | Runge-Kutta Goeken & Johnson                                                                                                                 |
+| `LEIID`=6     | Boris                                                                                                                                        |
+| `LEIID`=7     | Guiding-centre tracking                                                                                                                      |
 | `LEIID`=8     | Strang-Splitting particle trajectory integrator                                                                                              |
 | `TOKAMAK`=1   | set tokamak to ITER                                                                                                                          |
 | `TOKAMAK`=2   | set tokamak to ASDEX-U                                                                                                                       |
@@ -22,13 +22,14 @@
 | `TOKAMAK`=10  | set tokamak to STEP                                                                                                                          |
 | `NOPFC`       | disable 3D CAD PFC model and hit checking                                                                                                    |
 | `PFC2D`       | enable 2D limiter profile                                                                                                                    |
-| `TOKHEAD`     | something                                                                                                                                    |
+| `TOKHEAD`     | set data directory structure to contain tokamak name                                                                                         |
 | `JXB2`        | something                                                                                                                                    |
-| `PROV`        | something                                                                                                                                    |
+| `PROV`        | use git provenance                                                                                                                           |
 | `PITCHCUR`    | define pitch angle as parallel to plasma current instead of B                                                                                |
 | `EBASE`       | dump distribution function against energy instead of velocity                                                                                |
 | `EGSET`=x     | set maximum energy value of distribution function (overide Vsclh)                                                                            |
-| `GEQDSKFIX1`  | something                                                                                                                                    |
+| `GEQDSKFIX1`  | flips sign of poloidal flux                                                                                                                  |
+| `GEQDSKFIX2`  | flips sign of RB i.e. flips sign of toroidal flux                                                                                            |
 | `CURANDOMP`   | Make CURAND wrappers openMP thread-safe                                                                                                      |
 | `NTMAX`=N     | Limit iterations to nt=N                                                                                                                     |
 | `NTMIN`=N     | Start Dfn. integration at N                                                                                                                  |
@@ -170,4 +171,5 @@
 | `BRELAX`      | Ignore markers that are off grid                                                                                                             |
 | `PFCMOD`      | Output splot VTK files only if changed                                                                                                       |
 | `TITHRM`      | Set thermalisation cut-off energy to TITHRM*Ti                                                                                               |
+| `NCOILS`      | Specify total number of separate RMP coil rows                                                                                               |
 |               |                                                                                                                                              |

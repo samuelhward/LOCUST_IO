@@ -454,8 +454,8 @@ class TRANSP_output_FI(TRANSP_output):
 
             dfn_copy=self.dfn_integrate(space=False)
 
-            R=np.linspace(np.min(dfn_copy['R2D']),np.max(dfn_copy['R2D']),np.sqrt(len(dfn_copy['R2D']))) #need to interpolate since irregular grid
-            Z=np.linspace(np.min(dfn_copy['Z2D']),np.max(dfn_copy['Z2D']),np.sqrt(len(dfn_copy['Z2D'])))
+            R=np.linspace(np.min(dfn_copy['R2D']),np.max(dfn_copy['R2D']),int(np.sqrt(len(dfn_copy['R2D'])))) #need to interpolate since irregular grid
+            Z=np.linspace(np.min(dfn_copy['Z2D']),np.max(dfn_copy['Z2D']),int(np.sqrt(len(dfn_copy['Z2D']))))
             R,Z=np.meshgrid(R,Z)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Z,R)

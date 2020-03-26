@@ -777,7 +777,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         notes:
             remember dimensions of unedited dfn are my_dfn['dfn'][P,V/E,V_pitch,R,Z]
             assumes unedited dfn
-            assumes the bin widths for a given dimension are constant (keep this as dfn_crop may add discontinuities in dimension axes)
+            assumes the bin widths for a given dimension are constant (keep this as crop may add discontinuities in dimension axes)
             assumes toroidal symmetry (no toroidal dimension in dfn)
             if an array of indices is given, then slice the dfn accordingly and return without any integration
                 note for an infinite slice, axes will need to contain slice() objects e.g. axes=[0,0,0,slice(None),slice(None)] for all R,Z values
@@ -950,9 +950,9 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             kwargs - axes and their limits 
             inside - toggle whether to crop inside or outside supplied limits if 2D
         usage:
-            new_dfn=dfn_crop(R=[1]) generates dfn at point closest to R=1
-            new_dfn=dfn_crop(R=[0,1]) crops dfn between 0<R<1 (sets outside of this=0)
-            new_dfn=dfn_crop(R=[1,0]) crops dfn between 1<R and R<0 (sets inside of this=0)
+            new_dfn=crop(R=[1]) generates dfn at point closest to R=1
+            new_dfn=crop(R=[0,1]) crops dfn between 0<R<1 (sets outside of this=0)
+            new_dfn=crop(R=[1,0]) crops dfn between 1<R and R<0 (sets inside of this=0)
         """
 
         dfn=copy.deepcopy(self)
@@ -962,7 +962,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         for key,value in kwargs.items():
             if key not in dfn['dfn_index']:
-                print("ERROR: dfn_crop supplied invalid axis name ({}) - see ['dfn_index'] for possible axes".format(key))    
+                print("ERROR: crop supplied invalid axis name ({}) - see ['dfn_index'] for possible axes".format(key))    
             else:
                 dimension_to_edit=dfn['dfn_index'].tolist().index(key) #figure out which dimension we are cropping over
                 if len(value)==2: #user has supplied range - get new indices which satisfy range
