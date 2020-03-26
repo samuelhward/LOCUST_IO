@@ -100,7 +100,7 @@ data_radial_TRANSP=get_FIDA(filepath_radial_profile_TRANSP)
 data_radial_LOCUST=get_FIDA(filepath_radial_profile_LOCUST)
 
 fig,ax=plt.subplots(1)
-ax.errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',color=cmap_grey(0))
+ax.errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0))
 ax.plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP',color=cmap_r(0))
 ax.plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST',color=cmap_g(0))
 ax.set_xlim([0.8,1.5])
