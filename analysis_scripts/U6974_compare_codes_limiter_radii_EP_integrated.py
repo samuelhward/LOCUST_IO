@@ -12,7 +12,17 @@ from classes.output_classes.particle_list import Final_Particle_List
 from processing import process_input
 from processing import process_output
 import run_scripts.utils
+import processing.utils
 import constants
+from matplotlib.colors import ListedColormap
+import copy
+import settings
+
+#define some colourmaps
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -29,16 +39,28 @@ colours=['r-','g-','b-','m-','k-','c-']
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
 
-from U6974_files_ASCOT import * #import all the ASCOT filenames
+#NEW
+
+ASCOT_files=['ascot_freia_1470025.h5','ascot_freia_1470029.h5','ascot_freia_1470032.h5','ascot_freia_1470036.h5','ascot_freia_1470040.h5','ascot_freia_1470044.h5']
+ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrapolated, ORBITMETHOD=1
+
+ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
+ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
+ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
 LOCUST_beam_depo_tail='_ptcles.dat'
 LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
 LOCUST_moments=['LOCUST_04-12-2018_16-11-28.285.h5','LOCUST_03-12-2018_22-55-59.961.h5','LOCUST_03-12-2018_22-58-49.281.h5','LOCUST_03-12-2018_22-57-37.348.h5','LOCUST_04-12-2018_00-13-14.371.h5','LOCUST_04-12-2018_14-11-36.625.h5']
 LOCUST_run='locust/run_1/'
 
-#LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
-#LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
-#LOCUST_run='locust/run_2/' #added -DSOLCOL
+LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
+LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
+LOCUST_run='locust/run_2/' #added -DSOLCOL
 
 
 #plot just one radius (still need to comment out desired files where necessary)
@@ -97,10 +119,10 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     for quantity in ['dfn','dVOL','R2D','Z2D']: #remember space is first dimension in TRANSP array, so can do this
         TRANSP_dfn[quantity]=TRANSP_dfn[quantity][i]
     '''
-    TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,E=[energy_min,energy_max])
-    ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[R_min,R_max],Z=[Z_min,Z_max],E=[energy_min,energy_max])
-    LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[R_min,R_max],Z=[Z_min,Z_max],E=[energy_min,energy_max])
-    TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,V_pitch=[pitch_min,pitch_max],inside=False)
+    TRANSP_dfn=process_output.crop(TRANSP_dfn,E=[energy_min,energy_max])
+    ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[R_min,R_max],Z=[Z_min,Z_max],E=[energy_min,energy_max])
+    LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[R_min,R_max],Z=[Z_min,Z_max],E=[energy_min,energy_max])
+    TRANSP_dfn=process_output.crop(TRANSP_dfn,V_pitch=[pitch_min,pitch_max],inside=False)
     ASCOT_dfn=ASCOT_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)
     LOCUST_dfn=LOCUST_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)    
     '''
@@ -121,9 +143,37 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     #'''
 
 
-    LOCUST_dfn['E']/=1000 #so the axes are in KeV
+    LOCUST_dfn['E']/=1000 #so the axes are in KeV (does not affect integration since uses dE quantity)
     TRANSP_dfn['E']/=1000
     ASCOT_dfn['E']/=1000
+
+    print(ASCOT_dfn['E'])
+    print(ASCOT_dfn['V_pitch'])
+    print(LOCUST_dfn['E'])
+    print(LOCUST_dfn['V_pitch'])
+
+    axes=['E','V_pitch']
+    fig,((ax1))=plt.subplots(1) #plot the difference
+    ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
+    LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
+    #interpolate ASCOT grid onto LOCUST grid
+    interpolator=processing.utils.interpolate_2D(LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch'],LOCUST_dfn_['dfn'],type='RBF')
+    V_pitch,E=np.meshgrid(LOCUST_dfn_['V_pitch'],LOCUST_dfn_['E'])
+    ASCOT_dfn_['dfn']=interpolator(V_pitch,E)
+    ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
+    DFN_diff=copy.deepcopy(LOCUST_dfn)
+    DFN_diff.ID='LOCUST dfn - ASCOT dfn'
+    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
+    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
+    cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
+    ax1.set_xlabel('E [keV]')
+    ax1.set_ylabel('$V_{||}\slash V$')
+    ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$')
+    #ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
+    #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+    ax1.set_facecolor(settings.cmap_default(0.0))
+    plt.show() 
 
 
     #EP
@@ -153,8 +203,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
     dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
     TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
-    ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
-    LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
+    ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
+    LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
     '''
 
     #or plotting over all current space
@@ -164,9 +214,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-    ax10.plot(TRANSP_plot['E'],TRANSP_plot['dfn'],'r')
-    ASCOT_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='b')
-    LOCUST_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='g')
+    ax10.plot(TRANSP_plot['E'],TRANSP_plot['dfn'],color=cmap_r(0))
+    ASCOT_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap=cmap_b)
+    LOCUST_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap=cmap_g)
 
     ax10.set_xlabel('E [keV]')
     ax10.set_ylabel('[#/eV]')
@@ -186,8 +236,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
     dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
     TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
-    ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
-    LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
+    ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
+    LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
     '''
 
     #or plotting over all current space
@@ -197,9 +247,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-    ax11.plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],'r')
-    ASCOT_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='b')
-    LOCUST_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='g')
+    ax11.plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],color=cmap_r(0))
+    ASCOT_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap=cmap_b)
+    LOCUST_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap=cmap_g)
 
     #ax11.set_title('')
     ax11.set_xlabel('V$_{\|\|}$/V')
@@ -214,14 +264,14 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     #either plotting at a single point
     
     '''
-    ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
-    LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
+    ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
+    LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
     '''
 
     #or plotting over all current space
 
-    ASCOT_dfn.plot(axes=axes,ax=ax12,fig=fig,colmap='b')
-    LOCUST_dfn.plot(axes=axes,ax=ax12,fig=fig,colmap='g')
+    ASCOT_dfn.plot(axes=axes,ax=ax12,fig=fig,colmap=cmap_b)
+    LOCUST_dfn.plot(axes=axes,ax=ax12,fig=fig,colmap=cmap_g)
 
     ax12.set_xlabel('R [m]')
     ax12.set_ylabel('[#/m^3]')
@@ -249,6 +299,34 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     plt.show()
     plt.pause(0.0001)
     #fig.clear()
+
+
+    print(ASCOT_dfn['E'])
+    print(ASCOT_dfn['V_pitch'])
+    print(LOCUST_dfn['E'])
+    print(LOCUST_dfn['V_pitch'])
+
+    axes=['E','V_pitch']
+    fig,((ax1))=plt.subplots(1) #plot the difference
+    ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
+    #interpolate ASCOT grid onto LOCUST grid
+    interpolator=processing.utils.interpolate_2D(LOCUST_dfn['Z'],LOCUST_dfn['R'],LOCUST_dfn['dfn'],type='RBF')
+    R,Z=np.meshgrid(LOCUST_dfn['R'],LOCUST_dfn['Z'])
+    ASCOT_dfn_['dfn']=interpolator(Z,R)
+    LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
+    DFN_diff=copy.deepcopy(LOCUST_dfn)
+    DFN_diff.ID='LOCUST dfn - ASCOT dfn'
+    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
+    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
+    cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
+    ax1.set_xlabel('E [keV]')
+    ax1.set_ylabel('$V_{||}\slash V$')
+    ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$')
+    #ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
+    #ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+    ax1.set_facecolor(settings.cmap_default(0.0))
+    plt.show()  
 
 
 

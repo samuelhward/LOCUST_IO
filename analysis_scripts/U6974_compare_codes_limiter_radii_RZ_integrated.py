@@ -14,6 +14,7 @@ from processing import process_input
 from processing import process_output
 import run_scripts.utils
 import constants
+import settings
 
 
 filename_eq='g157418.03000'
@@ -31,16 +32,25 @@ colours=['r-','g-','b-','m-','k-','c-']
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
 
-from U6974_files_ASCOT import * #import all the ASCOT filenames
+ASCOT_files=['ascot_freia_1470025.h5','ascot_freia_1470029.h5','ascot_freia_1470032.h5','ascot_freia_1470036.h5','ascot_freia_1470040.h5','ascot_freia_1470044.h5']
+ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrapolated, ORBITMETHOD=1
+
+ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
+ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
+ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
 LOCUST_beam_depo_tail='_ptcles.dat'
 LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
 LOCUST_moments=['LOCUST_04-12-2018_16-11-28.285.h5','LOCUST_03-12-2018_22-55-59.961.h5','LOCUST_03-12-2018_22-58-49.281.h5','LOCUST_03-12-2018_22-57-37.348.h5','LOCUST_04-12-2018_00-13-14.371.h5','LOCUST_04-12-2018_14-11-36.625.h5']
 LOCUST_run='locust/run_1/'
-
-#LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
-#LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
-#LOCUST_run='locust/run_2/' #added -DSOLCOL
+LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
+LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
+LOCUST_run='locust/run_2/' #added -DSOLCOL
 
 #plot just one radius (still need to comment out desired files where necessary)
 rad=0
@@ -93,15 +103,15 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     
     energy_min=0#80300
     energy_max=1000000#81001
-    pitch_min=-0.3601
-    pitch_max=0.3601
+    #pitch_min=-0.3601
+    #pitch_max=0.3601
     
     TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,E=[energy_min,energy_max])
-    ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,E=[energy_min,energy_max])
-    LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,E=[energy_min,energy_max])
-    TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,V_pitch=[pitch_min,pitch_max],inside=False)
-    ASCOT_dfn=ASCOT_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)
-    LOCUST_dfn=LOCUST_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)    
+    ASCOT_dfn=ASCOT_dfn.crop(E=[energy_min,energy_max])
+    LOCUST_dfn=LOCUST_dfn.crop(E=[energy_min,energy_max])
+    #TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,V_pitch=[pitch_min,pitch_max],inside=False)
+    #ASCOT_dfn=ASCOT_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)
+    #LOCUST_dfn=LOCUST_dfn.crop(V_pitch=[pitch_min,pitch_max],inside=False)    
     print('ASCOT='+str(ASCOT_dfn.transform(axes=['N'])['dfn']))
     print('LOCUST='+str(LOCUST_dfn.transform(axes=['N'])['dfn']))
     print('TRANSP='+str(TRANSP_dfn.dfn_integrate()['dfn']))
@@ -160,7 +170,14 @@ ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
 LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
 DFN_diff=copy.deepcopy(LOCUST_dfn)
 DFN_diff.ID='LOCUST dfn - ASCOT dfn'
-DFN_diff['dfn']=LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn']
+DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
+DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
 DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False,limiters=wall,LCFS=equi,real_scale=True)
 cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
+ax1.set_xlabel('R [m]')  
+ax1.set_ylabel('Z [m]')  
+ax1.set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$')
+#ax1.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
+#ax1.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+ax1.set_facecolor(settings.cmap_default(0.0))
 plt.show()  

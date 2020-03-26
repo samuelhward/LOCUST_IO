@@ -15,14 +15,12 @@ import run_scripts.utils
 import constants
 import matplotlib
 from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
+
 #define some colourmaps
-colors=[(1,0, 0), (1, 0, 0)]
-reds=LinearSegmentedColormap.from_list('reds', colors, N=10)
-colors=[(0,1, 0), (0, 1, 0)]
-blues=LinearSegmentedColormap.from_list('blues', colors, N=10)
-colors=[(0,0, 1), (0, 0, 1)]
-greens=LinearSegmentedColormap.from_list('greens', colors, N=10)
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -39,7 +37,19 @@ colours=['r-','g-','b-','m-','k-','c-']
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
 
-from U6974_files_ASCOT import * #import all the ASCOT filenames
+#NEW
+
+ASCOT_files=['ascot_freia_1470025.h5','ascot_freia_1470029.h5','ascot_freia_1470032.h5','ascot_freia_1470036.h5','ascot_freia_1470040.h5','ascot_freia_1470044.h5']
+ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrapolated, ORBITMETHOD=1
+
+ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
+ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
+ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
 LOCUST_beam_depo_tail='_ptcles.dat'
 LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
@@ -52,7 +62,7 @@ LOCUST_run='locust/run_1/'
 
 
 #plot just one radius (still need to comment out desired files where necessary)
-rad=5
+rad=0
 radii=[radii[rad]]
 ASCOT_files=[ASCOT_files[rad]]
 run_IDs=[run_IDs[rad]]
@@ -86,11 +96,11 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         colourbars=False
         colourbar_array=[]
 
-        LOCUST_dfn=Distribution_Function('LOCUST density (0.1s) - r = {}'.format(str(radius)),'LOCUST',filename=LOCUST_run+LOCUST_file)
+        LOCUST_dfn=Distribution_Function('LOCUST density (0.1s) - r = {}'.format(str(radius)),data_format='LOCUST',filename=LOCUST_run+LOCUST_file)
         TRANSP_dfn=run_scripts.utils.TRANSP_output_FI('TRANSP density (0.1s) - r = {}'.format(str(radius)),filename=shot_number+run_ID+TRANSP_files_tail_FI)
-        ASCOT_dfn=run_scripts.utils.ASCOT_output('ASCOT density (0.1s) - r = {}'.format(str(radius)),filename=ASCOT_run+ASCOT_file,datatype='distribution_function')
+        ASCOT_dfn=Distribution_Function('ASCOT density (0.1s) - r = {}'.format(str(radius)),data_format='ASCOT',filename=ASCOT_run+ASCOT_file)
 
-        LOCUST_dfn['E']/=1000
+        LOCUST_dfn['E']/=1000 #so the axes are in KeV (does not affect integration since uses dE quantity)
         TRANSP_dfn['E']/=1000
         ASCOT_dfn['E']/=1000
 
@@ -135,9 +145,9 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         vminmax=[1.e7,6.e7]
         number_bins=5
 
-        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=reds)
-        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=blues)
-        LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=greens)
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_r)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_b)
+        LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax12,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_g)
 
         if colourbars is True:
             for ax,mesh in zip([ax12],[LOCUST_mesh]):
@@ -155,8 +165,8 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,energy=False) #crop and plot the TRANSP dfn
         dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
         TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
-        ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
-        LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
+        ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
+        LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
         '''
 
         #or plotting over all current space
@@ -166,9 +176,9 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
 
         vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-        ax10.plot(TRANSP_plot['E'],TRANSP_plot['dfn'],'r')
-        ASCOT_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='b')
-        LOCUST_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap='g')
+        ax10.plot(TRANSP_plot['E'],TRANSP_plot['dfn'],color=cmap_r(0))
+        ASCOT_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap=cmap_b)
+        LOCUST_dfn.plot(axes=axes,ax=ax10,fig=fig,colmap=cmap_g)
 
         ax10.set_xlabel('E [keV]')
         ax10.set_ylabel('[#/eV]')
@@ -190,8 +200,8 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         TRANSP_plot=TRANSP_dfn.dfn_integrate(space=False,pitch=False) #crop and plot the TRANSP dfn
         dVOL=2.*constants.pi*LOCUST_dfn['R'][index_r_locust]*LOCUST_dfn['dR']*LOCUST_dfn['dZ'] #TRANSP volume elements dVOL are different sizes to ASCOT/LOCUST so need to do some scaling
         TRANSP_plot['dfn']=TRANSP_plot['dfn'][index_rz_transp,:]*dVOL #integrate over cell of interest and scale according to LOCUST volume elements
-        ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
-        LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
+        ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the ASCOT dfn
+        LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[r_sample_point],Z=[z_sample_point]) #crop and plot the LOCUST dfn
         '''
 
         #or plotting over all current space
@@ -201,9 +211,9 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
 
         vminmax=[0,np.amax(1.1*TRANSP_plot['dfn'])]
 
-        ax11.plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],'r')
-        ASCOT_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='b')
-        LOCUST_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap='g')
+        ax11.plot(TRANSP_plot['V_pitch'],TRANSP_plot['dfn'],color=cmap_r(0))
+        ASCOT_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap=cmap_b)
+        LOCUST_dfn.plot(axes=axes,ax=ax11,fig=fig,colmap=cmap_g)
 
         #ax11.set_title('')
         ax11.set_xlabel('V$_{\|\|}$/V')
@@ -237,5 +247,27 @@ for r_sample_point,z_sample_point in zip(r_sample_points,z_sample_points):
         #fig.clear()
 
 
-    
-    #plt.draw()
+
+
+
+
+
+
+        #EP
+
+        fig,ax=plt.subplots(1)
+
+        axes=['E','V_pitch']
+
+        vminmax=[1.e7,6.e7]
+        number_bins=5
+
+        TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_r)
+        ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_b)
+        LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax,fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_g)
+        ax.legend(['TRANSP','ASCOT','LOCUST'])
+        ax.set_title('Fast ion density')
+        ax.set_xlabel('E [keV]')
+        ax.set_ylabel('$V_{||}\slash V$')
+
+        plt.show()

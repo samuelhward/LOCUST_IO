@@ -14,15 +14,13 @@ from processing import process_output
 import run_scripts.utils
 import constants
 from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
-#define some colourmaps
-colors=[(1,0, 0), (1, 0, 0)]
-reds=LinearSegmentedColormap.from_list('reds', colors, N=10)
-colors=[(0,1, 0), (0, 1, 0)]
-blues=LinearSegmentedColormap.from_list('blues', colors, N=10)
-colors=[(0,0, 1), (0, 0, 1)]
-greens=LinearSegmentedColormap.from_list('greens', colors, N=10)
+from matplotlib.colors import ListedColormap
+import settings
 
+#define some colourmaps
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -39,7 +37,17 @@ colours=['r-','g-','b-','m-','k-','c-']
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
 
-from U6974_files_ASCOT import * #import all the ASCOT filenames
+ASCOT_files=['ascot_freia_1470025.h5','ascot_freia_1470029.h5','ascot_freia_1470032.h5','ascot_freia_1470036.h5','ascot_freia_1470040.h5','ascot_freia_1470044.h5']
+ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrapolated, ORBITMETHOD=1
+
+ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
+ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
+ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
 LOCUST_beam_depo_tail='_ptcles.dat'
 LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
@@ -71,7 +79,7 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     LOCUST_dfn=Distribution_Function('LOCUST density (0.1s) - r = {}'.format(str(radius)),'LOCUST',filename=LOCUST_run+LOCUST_file)
     TRANSP_dfn=run_scripts.utils.TRANSP_output_FI('TRANSP density (0.1s) - r = {}'.format(str(radius)),filename=shot_number+run_ID+TRANSP_files_tail_FI)
-    ASCOT_dfn=run_scripts.utils.ASCOT_output('ASCOT density (0.1s) - r = {}'.format(str(radius)),filename=ASCOT_run+ASCOT_file,datatype='distribution_function')
+    ASCOT_dfn=Distribution_Function('ASCOT density (0.1s) - r = {}'.format(str(radius)),'ASCOT',filename=ASCOT_run+ASCOT_file)
 
     #import wall, redefine pitch for ASCOT vs current in DIII-D and normalise DFNs according to beam powers
     wall=Wall('limiter - '+radius,data_format='ASCOT_2D_input',filename=wall_files+radius)
@@ -102,9 +110,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     energy_min=18000
     energy_max=100000
 
-    #TRANSP_dfn=process_output.dfn_crop(TRANSP_dfn,E=[energy_min,energy_max])
-    #ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,E=[energy_min,energy_max])
-    #LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,E=[energy_min,energy_max])
+    #TRANSP_dfn=process_output.crop(TRANSP_dfn,E=[energy_min,energy_max])
+    #ASCOT_dfn=process_output.crop(ASCOT_dfn,E=[energy_min,energy_max])
+    #LOCUST_dfn=process_output.crop(LOCUST_dfn,E=[energy_min,energy_max])
 
     #for ax in [ax4,ax5,ax6,ax7,ax8,ax9]: #show where we've cropped in energy
         #ax.axvline(energy_min,color='m')
@@ -123,8 +131,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     i=np.where((R_min<TRANSP_dfn['R2D'])&(TRANSP_dfn['R2D']<R_max)&(TRANSP_dfn['Z2D']>Z_min)&(TRANSP_dfn['Z2D']<Z_max))[0]
     #for quantity in ['dfn','dVOL','R2D','Z2D']: #remember space is first dimension in TRANSP array, so can do this
         #TRANSP_dfn[quantity]=TRANSP_dfn[quantity][i]
-    #ASCOT_dfn=process_output.dfn_crop(ASCOT_dfn,R=[R_min,R_max],Z=[Z_min,Z_max])
-    #LOCUST_dfn=process_output.dfn_crop(LOCUST_dfn,R=[R_min,R_max],Z=[Z_min,Z_max])
+    #ASCOT_dfn=process_output.crop(ASCOT_dfn,R=[R_min,R_max],Z=[Z_min,Z_max])
+    #LOCUST_dfn=process_output.crop(LOCUST_dfn,R=[R_min,R_max],Z=[Z_min,Z_max])
 
     #for ax in [ax1,ax2,ax3]: #show where we've cropped in R
         #ax.axvline(R_min,color='m')
@@ -134,9 +142,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
     number_bins=6
 
-    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=reds)
-    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=blues)
-    LOCUST_mesh=LOCUST_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=greens)
+    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_r)
+    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_b)
+    LOCUST_mesh=LOCUST_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax1,fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_g)
 
     #add scatter point if you fancy
 
@@ -176,11 +184,16 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     #set labels and plot
 
     for ax in [ax1]:
-        ax.set_title('limiter radius = {}'.format(radii[0]))
+        #ax.set_title('limiter radius = {}'.format(radii[0]))
+        ax.set_title('Fast ion density')
         ax.set_xlabel('R [m]')  
         ax.set_ylabel('Z [m]')  
-        ax.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
-        ax.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+        #ax.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
+        #ax.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[0:2], ['TRANSP','ASCOT','LOCUST'])
+        #plt.legend(['TRANSP','ASCOT','LOCUST'])
+
 
     plt.draw()
     plt.pause(0.0001)
