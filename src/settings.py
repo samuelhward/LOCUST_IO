@@ -63,6 +63,7 @@ def colour_custom(rgba,N=256):
 cmap_plasma=matplotlib.cm.get_cmap('plasma')
 cmap_jet=matplotlib.cm.get_cmap('jet')
 cmap_viridis=matplotlib.cm.get_cmap('viridis')
+cmap_inferno=matplotlib.cm.get_cmap('inferno')
 cmap_r=cmap_custom([1,0,0],[1,0,0]) #red
 cmap_g=cmap_custom([0,1,0],[0,1,0]) #green
 cmap_b=cmap_custom([0,0,1],[0,0,1]) #blue
@@ -71,7 +72,7 @@ cmap_m=cmap_custom([1,0,1],[1,0,1]) #magenta
 cmap_c=cmap_custom([0,1,1],[0,1,1]) #cyan
 cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
 cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
-cmap_default=cmap_plasma #set default colourmap
+cmap_default=cmap_inferno #set default colourmap
 
 plot_style_LCFS='m-' #set plot style for LCFS
 plot_style_limiters='k-' #set plot style for limiters
