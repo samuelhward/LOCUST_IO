@@ -56,7 +56,7 @@ except:
 
 ##################################################################
 
-def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -75,6 +75,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=settings.cmap
         Einj - injection energy [eV]
         Pdep - injection power [W]
         Bmod - magnetic field strength [T]
+        code - use coulomb logarithm from designated code (options=LOCUST,TRANSP,ASCOT)
         colmap - plotted line colour
         colmap_val - optional numerical value for defining single colour plots 
         ax - ax object to add plot to
@@ -111,7 +112,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,colmap=settings.cmap
 
     lnL=[]
     for E_ in E: #calculate coulomb logarithms for each species at each energy (lnLe~17 lnL~21)
-        lnL.append(run_scripts.utils.calc_coulomb_logarithm(Et=E_/echg,n=n_i,T=Ti/echg,Ai=Ai,At=At,Z=Zi,Zt=Zt,Bmod=Bmod))
+        lnL.append(run_scripts.utils.calc_coulomb_logarithm(Et=E_/echg,n=n_i,T=Ti/echg,Ai=Ai,At=At,Z=Zi,Zt=Zt,Bmod=Bmod,code=code))
     lnL=np.array(lnL,ndmin=2).T #now have 2D array, one axis for energy and one axis for species
     E=E.T[0]
 
@@ -140,12 +141,24 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
     parser.add_argument('--Zi',nargs='+',type=int,action='store',default=[1,1],dest='Zi',help="background species charges [e] e.g. --Zi 1 1",required=False)
     parser.add_argument('--At',type=float,action='store',default=constants.mass_deuteron_amu,dest='At',help="test particle mass [amu]",required=False)
     parser.add_argument('--Ai',nargs='+',type=float,action='store',default=[constants.mass_deuteron_amu,constants.mass_electron_amu],dest='Ai',help="background species masses [amu] e.g. --Ai 2.0141017781 0.00054858",required=False)
+    parser.add_argument('--code',type=str,action='store',default='LOCUST',dest='code',help="specify coulomb logarithm used in this code (options=LOCUST,TRANSP,ASCOT)",required=False)
 
-    
     args=parser.parse_args()
 
     fig,ax=plt.subplots(1)
-    E,lnL=plot_coulomb_logarithm(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,colmap=settings.cmap_default)
+    E,lnL=plot_coulomb_logarithm(At=args.At,
+                                Ai=np.array(args.Ai),
+                                Zt=args.Zt,
+                                Zi=np.array(args.Zi),
+                                Ti=np.array(args.Ti),
+                                ni=np.array(args.ni),
+                                Einj=args.Einj,
+                                Pdep=args.Pdep,
+                                Bmod=args.Bmod,
+                                code=args.code,
+                                fig=fig,
+                                ax=ax,
+                                colmap=settings.cmap_default)
     ax.set_title('coulomb logarithm for test particle mass={} amu'.format(args.At))
     plt.show()
 

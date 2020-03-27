@@ -1692,7 +1692,7 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
     print("dump_inputs_LOCUST finished")
 
 
-def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod):
+def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod,code='LOCUST'):
     """
     calculates the Coulomb logarithm at single test particle energy Et for arbitrary background species
 
@@ -1708,6 +1708,7 @@ def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod):
         Z - array of atomic charges for background species [int]
         Zt - atomic charge for test particle species [int]
         Bmod - magnetic field strength [T]
+        code - use coulomb logarithm from designated code (options=LOCUST,TRANSP,ASCOT)
     """
     Et/=1000. #convert to keV
     T/=1000. #convert to KeV
@@ -1717,13 +1718,22 @@ def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod):
     Ai=np.asarray(Ai)
     Z=np.asarray(Z)
 
-    omega2 = 1.74*Z**2/Ai*n + 9.18e15*Z**2/Ai**2*Bmod**2
-    vrel2  = 9.58e10*(T/Ai + 2.0*Et/At)
+    if code=='LOCUST' or code =='TRANSP':
+        omega2 = 1.74*Z**2/Ai*n + 9.18e15*Z**2/Ai**2*Bmod**2
+        vrel2  = 9.58e10*(T/Ai + 2.0*Et/At)
+        rminqu = 1.9121e-08*(Ai+At)/Ai/At/np.sqrt(vrel2)
+    elif code=='ASCOT':
+        omega2 = 1.74*Z**2/Ai*n
+        vrel2  = 9.58e10*(T/Ai)
+        rminqu = np.exp(0.5)*1.9121e-08*(Ai+At)/(Ai*At*np.sqrt(vrel2))
+    else:
+        print("ERROR: calc_coulomb_logarithm() requires code to be LOCUST, TRANSP or ASCOT\nreturning!\n")
+        return
+
     rmx    = np.sqrt(1.0/np.sum(omega2/vrel2))
 
     vrel2  = 9.58e10*(3.0*T/Ai+2.0*Et/At)
     rmincl = 0.13793*np.abs(Z*Zt)*(Ai+At)/Ai/At/vrel2
-    rminqu = 1.9121e-08*(Ai+At)/Ai/At/np.sqrt(vrel2)
 
     rmn=[]
     for rmincl_,rminqu_ in zip(rmincl,rminqu): 
