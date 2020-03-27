@@ -448,7 +448,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',label='',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -468,6 +468,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             colmap_val - optional numerical value for defining single colour plots 
             colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag, where the numerical value of the status_flag will dictate the colour)
             ax - take input axes (can be used to stack plots)
+            label - plot label for legends
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -509,7 +510,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 else:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-                ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val))
+                ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val),label=label)
                 ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -559,9 +560,9 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
 
             if axes==['R','Z']:
                 if LCFS: #plot plasma boundarys
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall') 
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')
                 else:
@@ -576,15 +577,15 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')           
                 if real_scale is True: #set x and y plot limits to real scales
                     ax.set_aspect('equal')
                 else:

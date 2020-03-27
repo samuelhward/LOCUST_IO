@@ -608,7 +608,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,label='',ax=False,fig=False):
         """
         plot the distribution function
 
@@ -628,6 +628,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
             ax - take input axes (can be used to stack plots)
+            label - plot label for legends
             fig - take input fig (can be used to add colourbars etc)
         usage:
             plot_distribution_function(my_dfn) #basic default R,Z plot
@@ -679,7 +680,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
+            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
             ax.set_ylabel(key)
 
         #plot distribution function
@@ -702,7 +703,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
             elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(colmap_val))
+                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(colmap_val),label=label)
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(key)
             elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
@@ -743,9 +744,9 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 else:
                     ax.set_aspect('auto')
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
                 if gridlines:
                     #get bin edges
                     d_ax_0=dfn_copy[axes[0]][1]-dfn_copy[axes[0]][0]

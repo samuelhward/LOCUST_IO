@@ -1302,7 +1302,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT_FO/ASCOT_GC)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),fill=True,ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),fill=True,label='',ax=False,fig=False):
         """
         plots beam deposition
 
@@ -1319,6 +1319,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             colmap_val - optional numerical value for defining single colour plots 
             fill - toggle contour fill on 2D plots
             ax - take input axes (can be used to stack plots)
+            label - plot label for legends
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -1361,7 +1362,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             else:
                 self_binned,self_binned_edges=np.histogram(self[axes[0]],bins=number_bins)
             self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-            ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val))
+            ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val),label=label)
             ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -1420,9 +1421,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 else:
                     ax.set_aspect('auto')
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             elif axes==['X','Y']:
                 if real_scale is True: #set x and y plot limits to real scales
@@ -1432,15 +1433,15 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)          
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')          
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')           
             
             if ax_flag is True or fig_flag is True: #return the plot object
                     return mesh
@@ -1462,14 +1463,14 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_LCFS)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_colour_LCFS,label='LCFS')
 
             if limiters: #plot periodic poloidal cross-sections in 3D
                 for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=limiters['rlim']*np.cos(angle)
                     y_points=limiters['rlim']*np.sin(angle)
                     z_points=limiters['zlim']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_limiters)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_colour_limiters,label='wall')
 
             if real_scale is True:
                 ax.set_aspect('equal')

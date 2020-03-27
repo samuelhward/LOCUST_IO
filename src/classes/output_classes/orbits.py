@@ -278,7 +278,7 @@ class Orbits(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
         """
         simple orbits plot in the R,Z/X,Y planes
          
@@ -292,6 +292,7 @@ class Orbits(classes.base_output.LOCUST_output):
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             ax - take input axes (can be used to stack plots)
+            label - plot label for legends
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -334,7 +335,7 @@ class Orbits(classes.base_output.LOCUST_output):
                         pass
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
                 if start_mark:
                     ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,markersize=settings.markersize_start_mark)
 
@@ -344,9 +345,9 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.set_aspect('equal')
 
                 if LCFS: #plot plasma boundary
-                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
+                    ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             elif axes==['X','Y']: #plotting top-down
                 
@@ -356,15 +357,15 @@ class Orbits(classes.base_output.LOCUST_output):
                 if LCFS: #plot concentric rings to show inboard/outboard plasma boundaries
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
-                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
-                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS)
+                    ax.plot(plasma_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
+                    ax.plot(plasma_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),plasma_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
                 if limiters: #add boundaries if desired
                     ax.set_xlim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     ax.set_ylim(-1.0*np.max(limiters['rlim']),np.max(limiters['rlim']))
                     limiters_max_R=np.max(limiters['rlim'])
                     limiters_min_R=np.min(limiters['rlim'])
-                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
-                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)           
+                    ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
+                    ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')           
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
@@ -383,14 +384,14 @@ class Orbits(classes.base_output.LOCUST_output):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_line_style_LCFS)
+                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
                 if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters)
+                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
                 if start_mark:
-                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark)
+                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='start')
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
