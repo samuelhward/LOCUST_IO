@@ -754,7 +754,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(colmap_val))
+            ax.plot(self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
             ax.set_ylabel(key)
 
         #2D data

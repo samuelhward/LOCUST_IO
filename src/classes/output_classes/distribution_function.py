@@ -679,7 +679,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val))
+            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth)
             ax.set_ylabel(key)
 
         #plot distribution function
