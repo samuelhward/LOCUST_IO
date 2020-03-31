@@ -20,6 +20,7 @@ try:
     import numpy as np
     import pathlib
     import copy
+    import subprocess
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -60,13 +61,20 @@ study_name='scan_threads_blocks'
 
 LOCUST_run__environment_name='TITAN'
 LOCUST_run__repo_URL=f"'{settings.repo_URL_LOCUST}'"
-LOCUST_run__commit_hash=f"'{settings.commit_hash_default_LOCUST}'"
-
-GPU_card_dispatch={} #all possible options listed here
+GPU_card_dispatch={} #select graphics card type based on system
 GPU_card_dispatch['GPU6']='GTX_TITAN'
+GPU_card_dispatch['GPU8']='K80'
 GPU_card_dispatch['GPU9']='K80'
+GPU_card_dispatch['GPU10']='K80'
 GPU_card_dispatch['TITAN']='P100'
 GPU_card_dispatch['VIKING']='V100'
+commit_hash_dispatch={} #select LOCUST commit hash based on system
+commit_hash_dispatch['GPU6']='1c08dca5308cf868771f9deb1f5a4114a0e74378'
+commit_hash_dispatch['GPU8']='aea255bae105982a83a9cd1c3d07762284e3461a'
+commit_hash_dispatch['GPU9']='aea255bae105982a83a9cd1c3d07762284e3461a'
+commit_hash_dispatch['GPU10']='aea255bae105982a83a9cd1c3d07762284e3461a'
+commit_hash_dispatch['TITAN']='d1281155ec7e584744536fc0865ad4c2b39cb479'
+commit_hash_dispatch['VIKING']='02f4ec69692da67dc2c12bc9e2c2175e689a9a7c'
 
 #################################
 #initialise args needed for Batch class
@@ -88,7 +96,7 @@ args_batch['LOCUST_run__flags']=[]
 
 parameter__threads=np.array([2**n for n in [4,5,6,7,8,9]])
 parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11,12,13,14,15]])
-parameter__timax=np.array([0.001,0.01,0.1,1.0])
+parameter__timax=np.array([0.01]) #0.001,0.01,0.1,1.0 was original range, so these files may still be lying around
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -158,7 +166,7 @@ for thread in parameter__threads:
             args_batch['LOCUST_run__dir_cache'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / study_name)))) #one level less to pool cache files into same directory across simulations
             args_batch['LOCUST_run__environment_name'].append(copy.deepcopy(LOCUST_run__environment_name))
             args_batch['LOCUST_run__repo_URL'].append(copy.deepcopy(LOCUST_run__repo_URL))
-            args_batch['LOCUST_run__commit_hash'].append(copy.deepcopy(LOCUST_run__commit_hash))
+            args_batch['LOCUST_run__commit_hash'].append(copy.deepcopy(commit_hash_dispatch[LOCUST_run__environment_name]))
             args_batch['LOCUST_run__settings_prec_mod'].append(copy.deepcopy(LOCUST_run__settings_prec_mod))
             args_batch['LOCUST_run__flags'].append(copy.deepcopy(LOCUST_run__flags))
 
