@@ -80,8 +80,8 @@ output_times_total={}
 output_times_total_error={}
 output_times_total_mask={}
 output_times_total_error_mask={}
-for machine in ['TITAN']:#batch_scripts.profiling_batch.GPU_card_dispatch.keys(): 
-    
+for machine in batch_scripts.profiling_batch.GPU_card_dispatch.keys(): 
+
     type_gpu=batch_scripts.profiling_batch.GPU_card_dispatch[machine]
     output_filepaths[type_gpu]=[] #initialise lists for holding filepaths, times and errors
     output_times_total[type_gpu]=[]
@@ -98,8 +98,12 @@ for machine in ['TITAN']:#batch_scripts.profiling_batch.GPU_card_dispatch.keys()
             for output_filepath in output_rundata_filepaths:
                 run_data=Rundata(ID='',data_format='LOCUST',filename=output_filepath)
                 if run_data['time_total']: _times.append(run_data['time_total'])
-            output_times_total[type_gpu].append(np.mean(_times))
-            output_times_total_error[type_gpu].append(np.std(_times))
+            if _times:
+                output_times_total[type_gpu].append(np.mean(_times))
+                output_times_total_error[type_gpu].append(np.std(_times))
+            else:
+                output_times_total[type_gpu].append(None)
+                output_times_total_error[type_gpu].append(None)
         else: 
             output_times_total[type_gpu].append(None)
             output_times_total_error[type_gpu].append(None)
@@ -122,7 +126,7 @@ for counter,type_gpu in enumerate(output_filepaths.keys()):
     fig,(ax1)=plt.subplots(1)
     legend=[]
     plot_styles=[settings.cmap_r,settings.cmap_b,settings.cmap_g]
-    index_timax=3 #choose which slice we want to take
+    index_timax=1 #choose which slice we want to take
     index_threads=slice(None)
     index_blocks=slice(None)
 
@@ -131,7 +135,7 @@ for counter,type_gpu in enumerate(output_filepaths.keys()):
         for block,num_blocks in enumerate(batch_scripts.profiling_batch.parameter__blocks):
             for timax,time_timax in enumerate(batch_scripts.profiling_batch.parameter__timax):
                 if not output_times_total[type_gpu].mask[thread,block,timax]:
-                    output_times_total[type_gpu][thread,block,timax]/=(num_threads*num_blocks)
+                    output_times_total[type_gpu][thread,block,timax]/=(num_threads*num_blocks*batch_scripts.profiling_batch.parameter__timax[timax])
                     print('{} {} {} {} {}'.format(
                     output_times_total[type_gpu][thread,block,timax],
                     num_threads,num_blocks,
