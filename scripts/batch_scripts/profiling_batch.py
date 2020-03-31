@@ -20,7 +20,6 @@ try:
     import numpy as np
     import pathlib
     import copy
-    import subprocess
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -159,7 +158,7 @@ for thread in parameter__threads:
             LOCUST_run__settings_prec_mod['Zi']='[+1.0_gpu]'
             LOCUST_run__settings_prec_mod['nion']=1
 
-            args_batch['LOCUST_run__dir_LOCUST'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / study_name / parameter_string))))
+            args_batch['LOCUST_run__dir_LOCUST'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / study_name / GPU_card_dispatch[LOCUST_run__environment_name] / parameter_string))))
             args_batch['LOCUST_run__dir_LOCUST_source'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / 'source'))))
             args_batch['LOCUST_run__dir_input'].append(copy.deepcopy("'{}'".format(str(support.dir_input_files / study_name))))
             args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / study_name / GPU_card_dispatch[LOCUST_run__environment_name] / parameter_string))))
