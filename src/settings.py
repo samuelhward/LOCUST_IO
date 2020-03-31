@@ -20,6 +20,7 @@ try:
     import numpy as np
     import matplotlib
     from matplotlib import cm
+    import getpass
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -90,7 +91,10 @@ marker_start_mark='o'
 markersize_start_mark=1
 
 #system environment
-username='wards2'
+try:
+    username=getpass.getuser()
+except:
+    username='wards2'
 imasdb='test'
 system_default='TITAN'
 imas_version='3'
