@@ -86,8 +86,8 @@ args_batch['LOCUST_run__flags']=[]
 ##################################################################
 #define variable parameters
 
-parameter__threads=np.array([2**n for n in [4,5,6]])
-parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11]])
+parameter__threads=np.array([2**n for n in [4,5,6,7,8,9]])
+parameter__blocks=np.array([2**n for n in [4,5,6,7,8,9,10,11,12,13,14,15]])
 parameter__timax=np.array([0.001,0.01,0.1,1.0])
 
 ##################################################################
