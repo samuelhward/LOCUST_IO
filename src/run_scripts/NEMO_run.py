@@ -84,8 +84,8 @@ class NEMO_run(run_scripts.workflow.Workflow):
         adds workflow components to workflow class for execution of a single standard NEMO run
         since calling from within Python, compatible environment must already be loaded before calling this workflow (call from command line using argparse if necessary) 
     usage:
-        python NEMO_run.py --run_in 1 --shot_in 1 --run_out 2 --shot_out 2 --nmarker 1000 
-        some_run=NEMO_run(run_in=1,shot_in=1,run_out=2,shot_out=2,nmarker=1000) 
+        python NEMO_run.py --run_in 1 --shot_in 1 --run_out 2 --shot_out 2 --xml_settings nmarker 1000 
+        some_run=NEMO_run(run_in=1,shot_in=1,run_out=2,shot_out=2,xml_settings=some_dict) 
         some_run.run() #this will execute all stages of a NEMO run
     """ 
 
@@ -98,8 +98,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
                 username=settings.username,
                 imasdb=settings.imasdb,
                 imas_version=settings.imas_version,
-                nmarker=int(1.e6),
-                fokker_flag=0,
+                xml_settings=None,
                 *args,**kwargs):
         """
         notes:
@@ -112,8 +111,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
             username - IMAS username
             imasdb - local IMAS database name set by 'imasdb' command, sometimes called 'tokamak name'
             imas_version - string denoting IMAS major version e.g. '3'
-            nmarker - number of Monte Carlo markers to generate
-            fokker_flag - 
+            xml_settings - dict containing settings to hard code in input XML
         """
 
         #execute base class constructor to inherit required structures
@@ -129,12 +127,33 @@ class NEMO_run(run_scripts.workflow.Workflow):
         self.username=username
         self.imasdb=imasdb
         self.imas_version=imas_version
-        self.nmarker=nmarker
-        self.fokker_flag=fokker_flag
+        self.xml_settings=xml_settings
 
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
         
-        self.add_command(command_name='run_code',command_function=self.call_NEMO_actor,position=1) #add new workflow 
+        self.add_command(command_name='write_xml',command_function=self.write_xml_settings,position=1) #add new workflow 
+        self.add_command(command_name='run_code',command_function=self.call_NEMO_actor,position=2) 
+
+    def write_xml_settings(self,*args,**kwargs):
+        """
+                
+
+        notes:
+        """
+
+        if self.xml_settings:
+            try:
+                import xml.etree.ElementTree
+            except:
+                raise ImportError("ERROR: NEMO_run.write_xml_settings could not import xml module!\nreturning\n")
+                return 
+
+            nemo_settings_xml_filepath = self.dir_NEMO / 'input' / 'input_nemo_sa_imas.xml'
+            tree=xml.etree.ElementTree.parse(nemo_settings_xml_filepath) #open/grab xml data
+            root=tree.getroot()
+            for key,value in self.xml_settings.items():
+                next(root.iter(key)).text=str(value) #do a search for each setting and apply value
+            tree.write(nemo_settings_xml_filepath,method='xml',xml_declaration=True,encoding='utf-8')
 
     def call_NEMO_actor(self,*args,**kwargs):
         """
@@ -142,7 +161,6 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         notes:
             assumes you have already cloned and compiled the nemo source and actor into dir_NEMO 
-            adapted from run_NEMO.py within NEMO source code
         """
 
         try:
@@ -151,10 +169,12 @@ class NEMO_run(run_scripts.workflow.Workflow):
             raise ImportError("ERROR: NEMO_run.call_NEMO_actor could not import IMAS module!\nreturning\n")
             return 
 
+
         # IMPORT MODULE(S) FOR SPECIFIC PHYSICS CODE(S)
-        actor_path=self.dir_NEMO / 'actor_install' / 'actors' / 'imas' / 'src' / 'org' / 'iter' / 'imas' / 'python' / 'nemo'
+        actor_path=pathlib.Path('/') / 'home' / 'ITER' / f'{self.username}' / 'public' / 'imas_actors' / 'nemo'
         sys.path.insert(1,str(actor_path))
-        globals()['nemo'] = getattr(__import__('nemo'), 'nemo') #alternative to import nemo for importing multiple actors
+        from nemo.wrapper import nemo_actor as nemo
+        time=0.0
 
         # OPEN INPUT DATAFILE TO GET DATA FROM IMAS SCENARIO DATABASE
         print('=> Open input datafile')
@@ -164,15 +184,17 @@ class NEMO_run(run_scripts.workflow.Workflow):
         # READ INPUT IDS'S AND CLOSE INPUT FILE
         print('=> Read input IDSs')
         print('   ---> equilibrium')
-        input.equilibrium.get()
+        input.equilibrium.getSlice(time,1)
         print('   ---> core_profiles')
-        input.core_profiles.get()
+        input.core_profiles.getSlice(time,1)
         print('   ---> nbi')
-        input.nbi.get()
+        input.nbi.getSlice(time,1)
+        print('   ---> wall')
+        input.wall.getSlice(time,1)
         print('   ---> distribution_sources')
-        input.distribution_sources.get()
+        input.distribution_sources.getSlice(time,1)
         print('   ---> distributions')
-        input.distributions.get()
+        input.distributions.getSlice(time,1)
         input.close()
 
         # IF DISTRIBUTIONS HAS NEVER BEEN FILLED
@@ -183,16 +205,22 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         # OPEN OUTPUT OBJECT, IN VIEW OF SAVING RESULTS TO LOCAL DB
         print('=> Create output datafile')
-        output = imas.ids(self.shot_out,self.run_out,0,0)
+        output=imas.ids(self.shot_out,self.run_out,0)
+        output.open_env(self.username,self.imasdb,self.imas_version)
+        idx_out=output.distribution_sources.getPulseCtx()
 
         # EXECUTE PHYSICS CODE
         print('=> Execute NEMO')
-        output.distribution_sources = nemo(input.equilibrium,input.core_profiles,input.nbi,
-                                           input.distribution_sources,self.fokker_flag,self.nmarker,pathlib.Path(self.dir_NEMO) / 'input' / 'input_nemo_reg_imas.xml')
+        output.distribution_sources=nemo(input.equilibrium,
+                                            input.core_profiles,
+                                            input.nbi,
+                                            input.wall,
+                                            input.distribution_sources,
+                                            pathlib.Path(self.dir_NEMO) / 'input' / 'input_nemo_sa_imas.xml')
 
         # CREATE OUTPUT DATAFILE AND EXPORT RESULTS TO LOCAL DATABASE
         print('=> Export output IDSs to local database')
-        output.create_env(self.username,self.imasdb,self.imas_version)
+        output.distribution_sources.setPulseCtx(idx_out)
         output.distribution_sources.ids_properties.homogeneous_time=1
         output.distribution_sources.time=np.array([0.0])
         output.distribution_sources.put()
@@ -217,8 +245,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
         NEMO_run_args['username']=[self.username]
         NEMO_run_args['imasdb']=[self.imasdb]
         NEMO_run_args['imas_version']=[self.imas_version]
-        NEMO_run_args['nmarker']=[self.nmarker]
-        NEMO_run_args['fokker_flag']=[self.fokker_flag]
+        NEMO_run_args['xml_settings']=[self.xml_settings]
 
         NEMO_run_environment=run_scripts.environment.Environment('TITAN_NEMO')
         command=' '.join([NEMO_run_environment.create_command_string(),
@@ -248,10 +275,10 @@ if __name__=='__main__':
     parser.add_argument('--username',type=str,action='store',default=settings.username,dest='username',help="IMAS username",required=False)
     parser.add_argument('--imasdb',type=str,action='store',default=settings.imasdb,dest='imasdb',help="local IMAS database name set by imasdb command, sometimes called 'tokamak name'",required=False)
     parser.add_argument('--imas_version',type=str,action='store',default=settings.imas_version,dest='imas_version',help="string denoting IMAS major version e.g. '3'",required=False)
-    parser.add_argument('--nmarker',type=int,action='store',default=int(1.e6),dest='nmarker',help="number of Monte Carlo markers to generate",required=False)
-    parser.add_argument('--fokker_flag',type=int,action='store',default=0,dest='fokker_flag',help="",required=False)
+    parser.add_argument('--xml_settings',nargs='+',type=str,action='store',default={},dest='xml_settings',help="settings contained in input XML file e.g. nmarker=64",required=False)
 
     args=parser.parse_args()
+    args.xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.xml_settings)
 
     this_run=NEMO_run(dir_NEMO=args.dir_NEMO,
                     shot_in=args.shot_in,
@@ -261,8 +288,7 @@ if __name__=='__main__':
                     username=args.username,
                     imasdb=args.imasdb,
                     imas_version=args.imas_version,
-                    nmarker=args.nmarker,
-                    fokker_flag=args.fokker_flag)
+                    xml_settings=args.xml_settings)
     this_run.run()
 
 #################################

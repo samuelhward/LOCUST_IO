@@ -79,6 +79,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap
         colmap - plotted line colour
         colmap_val - optional numerical value for defining single colour plots 
         ax - ax object to add plot to
+        fig - take input fig (can be used to add colourbars etc)
     """
 
     if ax is False:

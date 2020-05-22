@@ -1975,25 +1975,30 @@ def command_line_arg_parse_generate_string(command_number_=0,**command_args):
     """
 
     command_arg_string=''
-    for command_arg,command_value in command_args.items(): #command_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), command_value are corresponding arg_s (e.g. /some/file/path)
-        arg_value_this_run=copy.deepcopy(command_value[command_number_]) #at this point we have picked single element of list describing a particular arg over multiple runs e.g. compile flags, deepcopy to stop direct editing of **command_args 
+    for command_arg,command_value in command_args.items(): #command_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), command_value are corresponding arg_s (e.g. /some/file/path)    
 
-        if arg_value_this_run is not None:
-            if type(arg_value_this_run)==type({}): #if this command arg is of type dict then we must pass to command line differently in the form: --args sub_arg_1=sub_value1 sub_arg_2=sub_value2
-                if arg_value_this_run: #check if dict is empty    
-                    for sub_arg,sub_value in arg_value_this_run.items(): #if sub_value is a string, will need extra set of quotes to maintain continuity
-                        if type(sub_value)==type(''): #add some extra formatting to insert quotes to maintain continuity
-                            arg_value_this_run[sub_arg]='"{sub_value}"'.format(sub_value=sub_value)
+        try:
+            arg_value_this_run=copy.deepcopy(command_value[command_number_]) #at this point we have picked single element of list describing a particular arg over multiple runs e.g. compile flags, deepcopy to stop direct editing of **command_args 
 
-                    #parse args in form --sub_args sub_arg1=sub_value1 sub_arg2=sub_value2 sub_arg3
-                    command_args_this_sub_arg=' '.join(['{}={}'.format(sub_arg,sub_value) if sub_value is not True else '{}'.format(sub_arg) for sub_arg,sub_value in arg_value_this_run.items()])                               
-                    command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),command_args_this_sub_arg])
+            if arg_value_this_run is not None:
+                if type(arg_value_this_run)==type({}): #if this command arg is of type dict then we must pass to command line differently in the form: --args sub_arg_1=sub_value1 sub_arg_2=sub_value2
+                    if arg_value_this_run: #check if dict is empty    
+                        for sub_arg,sub_value in arg_value_this_run.items(): #if sub_value is a string, will need extra set of quotes to maintain continuity
+                            if type(sub_value)==type(''): #add some extra formatting to insert quotes to maintain continuity
+                                arg_value_this_run[sub_arg]='"{sub_value}"'.format(sub_value=sub_value)
 
-            else:
+                        #parse args in form --sub_args sub_arg1=sub_value1 sub_arg2=sub_value2 sub_arg3
+                        command_args_this_sub_arg=' '.join(['{}={}'.format(sub_arg,sub_value) if sub_value is not True else '{}'.format(sub_arg) for sub_arg,sub_value in arg_value_this_run.items()])                               
+                        command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),command_args_this_sub_arg])
 
-                #parse args in form --sub_args sub_arg1
-                command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),str(arg_value_this_run)]) 
+                else:
 
+                    #parse args in form --sub_args sub_arg1
+                    command_arg_string=' '.join([command_arg_string,'--'+str(command_arg),str(arg_value_this_run)]) 
+
+        except: #command_number_ > len(command_value) i.e. some supplied args do not have enough values - if this is the case just skip these and construct string without them
+            print(f"WARNING!: command_line_arg_parse_generate_string() tried to generate command number {command_number_} but '{command_arg}' arg contains {len(command_value)} options!\nskipping\n")
+            
     return command_arg_string
 
 def command_line_arg_parse_dict(args):

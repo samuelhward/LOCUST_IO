@@ -174,7 +174,7 @@ def read_moments_TRANSP(filepath,**properties):
     input_data['r/a ctr']=np.array(file.variables['X'].data)
     input_data['r/a bdy']=np.array(file.variables['XB'].data)
     input_data['flux_pol']=np.array(file.variables['PLFLX'].data) #Wb/rad
-    input_data['flux_pol_norm']=(input_data['flux_pol']-input_data['flux_pol'][0])/(input_data['flux_pol'][-1]-input_data['flux_pol'][0])
+    input_data['flux_pol_norm']=(input_data['flux_pol']-input_data['flux_pol'][0,0])/(input_data['flux_pol'][0,-1]-input_data['flux_pol'][0,0])
     input_data['flux_pol_norm_sqrt']=np.sqrt(np.array(input_data['flux_pol_norm']))
 
     '''out of date or not needed for now
@@ -407,8 +407,8 @@ class Moments(classes.base_output.LOCUST_output):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 

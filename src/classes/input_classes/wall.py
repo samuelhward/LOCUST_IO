@@ -409,11 +409,15 @@ def dump_wall_IDS_2D(ID,output_data,shot,run,**properties):
     if len(output_IDS.wall.description_2d[0].limiter.unit)==0:
         output_IDS.wall.description_2d[0].limiter.unit.resize(1)
 
-    if output_data['rlim'][-1]==output_data['rlim'][0]: output_data['rlim']=output_data['rlim'][:-1].copy() #remove any repeating of first/final elements
-    if output_data['zlim'][-1]==output_data['zlim'][0]: output_data['rlim']=output_data['zlim'][:-1].copy()
+    if output_data['rlim'][-1]==output_data['rlim'][0] and output_data['zlim'][-1]==output_data['zlim'][0]: #remove any repeating of first/final elements
+        output_data['rlim']=output_data['rlim'][:-1].copy() 
+        output_data['rlim']=output_data['zlim'][:-1].copy()
 
     output_IDS.wall.description_2d[0].limiter.unit[0].outline.r=output_data['rlim']
     output_IDS.wall.description_2d[0].limiter.unit[0].outline.z=output_data['zlim']
+
+    output_IDS.wall.put()
+    output_IDS.close()
 
     print("finished dumping wall to IDS")
  
@@ -533,13 +537,12 @@ class Wall(classes.base_input.LOCUST_input):
                 filepath=support.dir_input_files / filename
                 dump_wall_ASCOT_2D_input(self.data,filepath,**properties)                
 
-        elif data_format=='IDS':
+        elif data_format=='IDS_2D':
             if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to wall IDS - shot and run required\n".format(self.ID),shot,run):
                 dump_wall_IDS_2D(self.ID,self.data,shot,run,**properties)
 
         else:
-            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input/IDS)\n".format(self.ID))
-
+            print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input/IDS_2D)\n".format(self.ID))
 
     def plot(self,LCFS=False,real_scale=False,colmap=settings.plot_line_style_limiters,label='',ax=False,fig=False): 
         """
@@ -549,8 +552,8 @@ class Wall(classes.base_input.LOCUST_input):
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 

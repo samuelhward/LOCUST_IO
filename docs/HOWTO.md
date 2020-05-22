@@ -10,6 +10,7 @@ Table of Contents
 * [Create a workflow](#Create-a-workflow)
 * [Use mars_builder](#Use-mars_builder)
 * [Use LOCUST_edit_var](#Use-LOCUST_edit_var)
+* [Extrapolate Kinetic Profiles](#extrapolate_kinetic_profiles)
 
 
 ## Combine beam depositions
@@ -111,13 +112,7 @@ Some examples of workflows are included in LOCUST_IO, namely LOCUST_run and MARS
 
 ## Use mars_builder
 
-mars_builder is a piece of FORTRAN90 written by Rob Akers which aims to process MARS-F output. More specifically, it linearly combines separate MARS-F fields by interpolating them onto a cylindrical RZ grid to arbitrary precision. You can call mars_builder from within Python using the script MARS_builder_run.py. Some commonly used flags and variables are:
-
-| flag    | description                                                                                                                      |
-|---------|----------------------------------------------------------------------------------------------------------------------------------|
-| TOKAMAK | integer value of desired tokamak (according to prec_mod.f90) e.g. -DTOKAMAK=1 corresponds to ITER                                |
-| COILROW | integer value to select individual coil row to dump to file (floors contributions of other coil rows) (COILROW==1 --> Upper row) |
-| MATCH   | use to generate optimal RMP settings (e.g. phase, amplitude) to match field defined in variable `mtch`                           |
+mars_builder is a piece of FORTRAN90 written by Rob Akers which aims to process MARS-F output. More specifically, it linearly combines separate MARS-F fields by interpolating them onto a cylindrical RZ grid to arbitrary precision. You can call mars_builder from within Python using the script MARS_builder_run.py. Some commonly used flags are found in MARS_READ_FLAG_GUIDE.md, whilst some common variables are:
 
 | variable | description                                                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------|
@@ -149,3 +144,32 @@ source_code_mods['file']="'some/other/file'"
 run_scripts.LOCUST_edit_var.LOCUST_edit_var(filepath_in=some_filepath,filepath_out=some_filepath,**source_code_mods)
 ```
 noting the double brackets (since whatever is inside the brackets is interpreted literally). Comments on the first line of the variable declaration are preserved, and the entire declaration is condensed onto a single line.
+
+
+## Extrapolate Kinetic Profiles
+
+For temperature and density objects, there's a function I have defined which artificially extrapolates them away from the magnetic axis starting at a given point. As always check doc strings for full list of settings.
+
+```python
+import context
+import settings
+from classes.input_classes import number_density
+from processing.utils import extrapolate_kinetic_profiles
+
+#read in some sample input data
+density_before=number_density.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='LOCUST',filename='sample_ne_profile.file',species='electrons')
+another_density_before=number_density.Number_Density(ID='LOCUST_IO sample Ne profile',data_format='LOCUST',filename='sample_ne_profile.file',species='electrons')
+another_density_before['n']*=2
+
+density_after,another_density_after=extrapolate_kinetic_profiles(density_before,another_density_before, #profiles to extrapolate
+                                        axis='flux_pol_norm'flux_pol_norm_start=0.5,start=1.,end=3.,floor_distance=.1, #extrapolation settings
+                                        return_indices=False, #do not return indices which have been extrapolated
+                                        uniform_grid=True) #ensures all points in extrapolation range are uniformly space - now profiles sit on the same grid 
+
+fig,(ax1)=plt.subplots(1)
+my_Ne.plot(ax=ax1,fig=fig,colmap=settings.cmap_r)
+my_Ne2.plot(ax=ax1,fig=fig,colmap=settings.cmap_g)
+my_Ne3.plot(ax=ax1,fig=fig,colmap=settings.cmap_b)
+my_Ne4.plot(ax=ax1,fig=fig,colmap=settings.cmap_m)
+plt.show()
+```

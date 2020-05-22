@@ -72,7 +72,8 @@ class Workflow:
             workflow.add_command('a nice name for a command',a_nice_command,position=3)
         """
 
-        if position is None: position=len(self.commands)
+        if position is None: position=len(self.commands)+1
+        if len(self.commands)==0: position+=1 #if no commands currently stored then set position=1 so command placed first (not last)
         self.commands.insert(position-1,command_name)
         self.commands_dispatch[command_name]=command_function
 

@@ -83,11 +83,11 @@ def generate_test_IDS(shot,run,use_core_profiles=True,
         beam.set(phi=np.abs(np.random.uniform(size=10)))
         beam.set(Z=np.random.uniform(size=10))
         beam.set(V_R=1.e6*np.random.uniform(size=10))
-        beam.set(V_tor=1.e6*np.random.uniform(size=10))
+        beam.set(V_phi=1.e6*np.random.uniform(size=10))
         beam.set(V_Z=1.e6*np.random.uniform(size=10))
         beam.set(V_pitch=np.random.uniform(size=10))
         beam.set(weight=1.e15*np.abs(np.random.uniform(size=10)))
-        beam.set(E=0.5*constants.mass_deuteron*beam['V_R']**2+beam['V_Z']**2+beam['V_tor']**2)
+        beam.set(E=0.5*constants.mass_deuteron*beam['V_R']**2+beam['V_Z']**2+beam['V_phi']**2)
         beam.dump_data(data_format='IDS',shot=shot,run=run)
 
     if use_equilibrium:

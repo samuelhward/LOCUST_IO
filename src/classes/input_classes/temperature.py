@@ -423,6 +423,8 @@ def read_temperature_excel_1(filepath,**properties):
 
     input_data={}
     input_data['flux_pol_norm'],input_data['T']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
+    input_data['flux_tor_norm_sqrt'],input_data['r_1D']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='x',y='a',sheet_name=properties['sheet_name'])
+    input_data['flux_tor_norm']=input_data['flux_tor_norm_sqrt']**2.
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['T']*=1000. #convert from KeV
 
@@ -517,8 +519,12 @@ def dump_temperature_IDS(ID,output_data,shot,run,**properties):
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].temperature=output_data['T']
         
     #write out the axes
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
-
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']*2.*np.pi
+    try:
+        output_IDS.core_profiles.profiles_1d[0].grid.rho_tor=output_data['flux_tor_coord']
+    except:
+        pass
+        
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
@@ -684,8 +690,8 @@ class Temperature(classes.base_input.LOCUST_input):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
         

@@ -627,8 +627,8 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         usage:
             plot_distribution_function(my_dfn) #basic default R,Z plot

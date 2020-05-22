@@ -72,7 +72,7 @@ except:
  
 def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
     """
-    reads birth profile stored in LOCUST format - R phi Z V_R V_tor V_Z
+    reads birth profile stored in LOCUST format - R phi Z V_R V_phi V_Z
 
     notes:
         calculates energy in eV
@@ -96,7 +96,7 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
         input_data['phi']=[]
         input_data['Z']=[]
         input_data['V_R']=[]
-        input_data['V_tor']=[]
+        input_data['V_phi']=[]
         input_data['V_Z']=[]
      
         for line in lines:
@@ -106,16 +106,16 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
             input_data['phi'].append(float(split_line[1]))
             input_data['Z'].append(float(split_line[2]))
             input_data['V_R'].append(float(split_line[3]))
-            input_data['V_tor'].append(float(split_line[4]))
+            input_data['V_phi'].append(float(split_line[4]))
             input_data['V_Z'].append(float(split_line[5]))
      
         input_data['R']=np.asarray(input_data['R']) #convert to arrays
         input_data['phi']=np.asarray(input_data['phi'])
         input_data['Z']=np.asarray(input_data['Z'])
         input_data['V_R']=np.asarray(input_data['V_R'])
-        input_data['V_tor']=np.asarray(input_data['V_tor'])
+        input_data['V_phi']=np.asarray(input_data['V_phi'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
-        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading full orbit beam deposition from LOCUST")
@@ -124,7 +124,7 @@ def read_beam_depo_LOCUST_full_orbit(filepath,**properties):
 
 def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
     """
-    reads birth profile stored in LOCUST format - R phi Z V_R V_tor V_Z weight
+    reads birth profile stored in LOCUST format - R phi Z V_R V_phi V_Z weight
 
     notes:
         calculates energy in eV
@@ -148,7 +148,7 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
         input_data['phi']=[]
         input_data['Z']=[]
         input_data['V_R']=[]
-        input_data['V_tor']=[]
+        input_data['V_phi']=[]
         input_data['V_Z']=[]
         input_data['weight']=[]
      
@@ -159,7 +159,7 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
             input_data['phi'].append(float(split_line[1]))
             input_data['Z'].append(float(split_line[2]))
             input_data['V_R'].append(float(split_line[3]))
-            input_data['V_tor'].append(float(split_line[4]))
+            input_data['V_phi'].append(float(split_line[4]))
             input_data['V_Z'].append(float(split_line[5]))
             input_data['weight'].append(float(split_line[6]))
      
@@ -167,10 +167,10 @@ def read_beam_depo_LOCUST_full_orbit_weighted(filepath,**properties):
         input_data['phi']=np.asarray(input_data['phi'])
         input_data['Z']=np.asarray(input_data['Z'])
         input_data['V_R']=np.asarray(input_data['V_R'])
-        input_data['V_tor']=np.asarray(input_data['V_tor'])
+        input_data['V_phi']=np.asarray(input_data['V_phi'])
         input_data['V_Z']=np.asarray(input_data['V_Z'])
         input_data['weight']=np.asarray(input_data['weight'])
-        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
+        input_data['E']=np.asarray((input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)*.5*constants.species_mass/constants.species_charge)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
     print("finished reading weighted full orbit beam deposition from LOCUST")
@@ -279,7 +279,7 @@ def read_beam_depo_IDS(shot,run,**properties):
 
     #check for common field names to convert to LOCUST_IO variable names
 
-    locust_io_names=['E','rho','V_tor','V_pitch'] #LOCUST_IO fields that we want to retain
+    locust_io_names=['E','rho_tor','V_phi','V_pitch'] #LOCUST_IO fields that we want to retain
     nemo_names=['Energy','Rhotor','V_PHI','Pitch angle'] #first check possible matching NEMO field names
     for nemo_name,locust_io_name in zip(nemo_names,locust_io_names):
         if nemo_name in input_data.keys():
@@ -321,7 +321,7 @@ def read_beam_depo_TRANSP_fbm(filepath,**properties):
         input_data['V_Y']=[]
         input_data['V_Z']=[]
         input_data['V_R']=[]
-        input_data['V_tor']=[]
+        input_data['V_phi']=[]
 
         for line in lines:
             split_line=line.split()
@@ -349,7 +349,7 @@ def read_beam_depo_TRANSP_fbm(filepath,**properties):
         input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
-        input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
+        input_data['V_phi']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
         input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*constants.species_mass)
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
@@ -520,7 +520,7 @@ def read_beam_depo_ASCOT_full_orbit(filepath,**properties):
 
         #rename variables to LOCUST_IO conventions
         ascot_names=['energy','rho','phiprt','Rprt','zprt','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_io_names=['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','rho','phi','R','Z','V_phi','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
             if ascot_name in raw_data.keys():
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
@@ -575,7 +575,7 @@ def read_beam_depo_ASCOT_guiding_centre(filepath,**properties):
 
         #rename variables to LOCUST_IO conventions
         ascot_names=['energy','pitch' ,'rho','phi','R','z','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_phi','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):
             if ascot_name in raw_data.keys():
                 input_data[locust_io_name]=copy.deepcopy(raw_data[ascot_name])
@@ -607,7 +607,7 @@ def read_beam_depo_ASCOT_full_orbit_hdf5_ini(filepath,**properties):
     with h5py.File(filepath,'r') as file:
         
         ascot_names=['energy','rho','phiprt','Rprt','zprt','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_io_names=['E','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','rho','phi','R','Z','V_phi','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         input_data={}
 
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
@@ -637,7 +637,7 @@ def read_beam_depo_ASCOT_guiding_centre_hdf5_ini(filepath,**properties):
     with h5py.File(filepath,'r') as file:
 
         ascot_names=['energy','pitch' ,'rho','phi','R','z','vphi','vR','vz','weight'] #possible ASCOT fields
-        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_tor','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
+        locust_io_names=['E','V_pitch','rho','phi','R','Z','V_phi','V_R','V_Z','weight'] #corresponding LOCUST_IO fields that we want to retain
         input_data={}
 
         for ascot_name,locust_io_name in zip(ascot_names,locust_io_names):    
@@ -696,7 +696,7 @@ def read_beam_depo_SPIRAL_FO(filepath,**properties):
         input_data['R']=np.asarray(np.sqrt(input_data['X']**2+input_data['Y']**2)) #need to convert from x,y,z 
         input_data['phi']=np.asarray(np.arctan2(input_data['Y'],input_data['X']))
         input_data['V_R']=np.asarray(input_data['V_X']*np.cos(input_data['phi'])+input_data['V_Y']*np.sin(input_data['phi']))
-        input_data['V_tor']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
+        input_data['V_phi']=np.asarray(-input_data['V_X']*np.sin(input_data['phi'])+input_data['V_Y']*np.cos(input_data['phi']))
         input_data['E']=np.asarray((input_data['V_X']**2+input_data['V_Y']**2+input_data['V_Z']**2)*.5*constants.species_mass)/constants.species_charge
         input_data['number_particles']=np.asarray(len(input_data['R']))
 
@@ -708,7 +708,7 @@ def read_beam_depo_SPIRAL_FO(filepath,**properties):
 
 def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
     """
-    writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z 
+    writes birth profile to LOCUST format - R phi Z V_R V_phi V_Z 
     
     args:
         output_data - dict holding data to dump
@@ -723,9 +723,9 @@ def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
 
     if 'shuffle' not in properties: properties['shuffle']=True
     if properties['shuffle']: 
-        R,phi,Z,V_R,V_tor,V_Z=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'])
+        R,phi,Z,V_R,V_phi,V_Z=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_phi'],output_data['V_Z'])
     else:
-        R,phi,Z,V_R,V_tor,V_Z=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z']
+        R,phi,Z,V_R,V_phi,V_Z=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_phi'],output_data['V_Z']
 
     with open(filepath,'w') as file: #open file
  
@@ -736,14 +736,14 @@ def dump_beam_depo_LOCUST_full_orbit(output_data,filepath,**properties):
                 file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
 
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
-
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),v_tor=processing.utils.fortran_string(V_tor[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6)))
+            if phi[this_particle]<0: phi[this_particle]+=2.*np.pi 
+            file.write("{r}{phi}{z}{v_r}{V_phi}{v_z}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),V_phi=processing.utils.fortran_string(V_phi[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6)))
     
     print("finished writing full orbit beam deposition to LOCUST") 
 
 def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties):
     """
-    writes birth profile to LOCUST format - R phi Z V_R V_tor V_Z weight
+    writes birth profile to LOCUST format - R phi Z V_R V_phi V_Z weight
 
     args:
         output_data - dict holding data to dump
@@ -758,9 +758,9 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties)
 
     if 'shuffle' not in properties: properties['shuffle']=True
     if properties['shuffle']: 
-        R,phi,Z,V_R,V_tor,V_Z,weight=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'],output_data['weight'])
+        R,phi,Z,V_R,V_phi,V_Z,weight=processing.utils.knuth_shuffle(output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_phi'],output_data['V_Z'],output_data['weight'])
     else:
-        R,phi,Z,V_R,V_tor,V_Z,weight=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_tor'],output_data['V_Z'],output_data['weight']
+        R,phi,Z,V_R,V_phi,V_Z,weight=output_data['R'],output_data['phi'],output_data['Z'],output_data['V_R'],output_data['V_phi'],output_data['V_Z'],output_data['weight']
 
     with open(filepath,'w') as file: #open file
  
@@ -771,8 +771,8 @@ def dump_beam_depo_LOCUST_full_orbit_weighted(output_data,filepath,**properties)
                 file.write("{}\n".format(processing.utils.fortran_string(1.0,13)))
  
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
-
-            file.write("{r}{phi}{z}{v_r}{v_tor}{v_z}{weight}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),v_tor=processing.utils.fortran_string(V_tor[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6),weight=processing.utils.fortran_string(weight[this_particle],14,6)))
+            if phi[this_particle]<0: phi[this_particle]+=2.*np.pi 
+            file.write("{r}{phi}{z}{v_r}{V_phi}{v_z}{weight}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),v_r=processing.utils.fortran_string(V_R[this_particle],14,6),V_phi=processing.utils.fortran_string(V_phi[this_particle],14,6),v_z=processing.utils.fortran_string(V_Z[this_particle],14,6),weight=processing.utils.fortran_string(weight[this_particle],14,6)))
     
     print("finished writing weighted full orbit beam deposition to LOCUST") 
 
@@ -795,7 +795,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
 
     if 'V_pitch' not in output_data:
         print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
-        output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
+        output_data['V_pitch']=processing.utils.pitch_calc_2D(particle_list=output_data,equilibrium=equilibrium)
 
     with open(filepath,'w') as file: #open file
  
@@ -815,7 +815,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
         R,phi,Z,V,V_parallel,weight=output_data['R'],output_data['phi'],output_data['Z'],V,V_parallel,output_data['weight']
 
         for this_particle in range(output_data['R'].size): #iterate through all particles i.e. length of our dictionary's arrays
-
+            if phi[this_particle]<0: phi[this_particle]+=2.*np.pi
             file.write("{r}{phi}{z}{V_parallel}{V}{weight}\n".format(r=processing.utils.fortran_string(R[this_particle],14,6),phi=processing.utils.fortran_string(phi[this_particle],14,6),z=processing.utils.fortran_string(Z[this_particle],14,6),V_parallel=processing.utils.fortran_string(V_parallel[this_particle],14,6),V=processing.utils.fortran_string(V[this_particle],14,6),weight=processing.utils.fortran_string(weight[this_particle],14,6)))
     
     print("finished writing weighted guiding centre beam deposition to LOCUST") 
@@ -855,7 +855,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers.resize(1) #adds a time_slice here    
     output_IDS.distribution_sources.source[0].markers[0].time=0.0 #set the time of this time_slice
  
-    #add definition of our coordinate basis - r,z,phi,v_r,v_z,v_tor in this case
+    #add definition of our coordinate basis - r,z,phi,v_r,v_z,V_phi in this case
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier.resize(9)
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].name="R" #name of coordinate
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[0].index=0 
@@ -889,7 +889,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[7].index=7
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[7].description="vertical velocity [m/s]"
 
-    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].name="V_tor"
+    output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].name="V_phi"
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].index=8
     output_IDS.distribution_sources.source[0].markers[0].coordinate_identifier[8].description="toroidal velocity [m/s]"
 
@@ -898,7 +898,7 @@ def dump_beam_depo_IDS(ID,output_data,shot,run,**properties):
     rho_tor=np.ones(output_data['R'].size)*-1.
     output_IDS.distribution_sources.source[0].markers[0].positions=np.array([output_data['R'],
         output_data['phi'],output_data['Z'],output_data['E'],output_data['V_pitch'],rho_tor,
-        output_data['V_R'],output_data['V_Z'],output_data['V_tor']]).T
+        output_data['V_R'],output_data['V_Z'],output_data['V_phi']]).T
  
     #'put' all the output_data into the file and close
     output_IDS.distribution_sources.put()
@@ -956,7 +956,7 @@ def dump_beam_depo_ASCOT_full_orbit(output_data,filepath,**properties):
             weight=np.zeros(len(output_data['E']))+beam_power/energies_sum
 
         i=0 #counter for particle identifier
-        for phi,R,Z,V_tor,V_R,V_Z,W in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_tor'],output_data['V_R'],output_data['V_Z'],weight): 
+        for phi,R,Z,V_phi,V_R,V_Z,W in zip(output_data['phi'],output_data['R'],output_data['Z'],output_data['V_phi'],output_data['V_R'],output_data['V_Z'],weight): 
             
             line=''
             line+=processing.utils.fortran_string(2,6,0,False) #mass and charge
@@ -970,7 +970,7 @@ def dump_beam_depo_ASCOT_full_orbit(output_data,filepath,**properties):
             line+=processing.utils.fortran_string(R,18,9)
             line+=processing.utils.fortran_string(Z,18,9)
 
-            line+=processing.utils.fortran_string(V_tor,18,9) #velocity
+            line+=processing.utils.fortran_string(V_phi,18,9) #velocity
             line+=processing.utils.fortran_string(V_R,18,9)
             line+=processing.utils.fortran_string(V_Z,18,9)
 
@@ -1037,7 +1037,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*constants.species_mass*(output_data['V_R']**2+output_data['V_tor']**2+output_data['V_Z']**2)/constants.species_charge
+            output_data['E']=0.5*constants.species_mass*(output_data['V_R']**2+output_data['V_phi']**2+output_data['V_Z']**2)/constants.species_charge
 
         #interpolate B field to particle locations with supplied equilibrium
         if not np.all([component in equilibrium.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]):
@@ -1052,7 +1052,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
 
         if 'V_pitch' not in output_data:
             print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
-            output_data['V_pitch']=processing.utils.pitch_calc_2D(output_data=output_data,some_equilibrium=equilibrium)
+            output_data['V_pitch']=processing.utils.pitch_calc_2D(particle_list=output_data,equilibrium=equilibrium)
 
         if 'weight' in output_data:
             weight=output_data['weight']
@@ -1077,7 +1077,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
             line+=processing.utils.fortran_string(R,18,9)
             line+=processing.utils.fortran_string(Z,18,9)
 
-            #line+=processing.utils.fortran_string(V_tor,18,9) #velocity
+            #line+=processing.utils.fortran_string(V_phi,18,9) #velocity
             #line+=processing.utils.fortran_string(V_R,18,9)
             #line+=processing.utils.fortran_string(V_Z,18,9)
 
@@ -1123,7 +1123,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
     notes:
         data is stored such that the coordinate 'R' for all particles is stored in my_beam_deposition['R']
         therefore the phase space position of particle p is:
-            (my_beam_deposition['R'][p], my_beam_deposition['phi'][p], my_beam_deposition['Z'][p], my_beam_deposition['V_R'][p], my_beam_deposition['V_tor'][p], my_beam_deposition['V_Z'][p])
+            (my_beam_deposition['R'][p], my_beam_deposition['phi'][p], my_beam_deposition['Z'][p], my_beam_deposition['V_R'][p], my_beam_deposition['V_phi'][p], my_beam_deposition['V_Z'][p])
     """
  
     LOCUST_input_type='beam_deposition'
@@ -1302,7 +1302,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/ASCOT_FO/ASCOT_GC)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),fill=True,label='',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',weight=True,number_bins=20,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),fill=True,quivers=False,label='',ax=False,fig=False):
         """
         plots beam deposition
 
@@ -1318,8 +1318,9 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             fill - toggle contour fill on 2D plots
-            ax - take input axes (can be used to stack plots)
+            quivers - toggle whether to add velocity vectors
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -1347,10 +1348,22 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            polar=True if axes==['X','Y'] else False
+            polar=True if axes==['phi','R'] else False
             ax = fig.add_subplot(111,polar=polar)
-
+            
+        quiver_velocity_axes=['V_X','V_Y'] if ax.name is 'polar' else [f'V_{axes[0]}',f'V_{axes[0]}']
         ax.set_title(self.ID)
+
+        if ('X' in axes and 'X' not in self.data) or ('Y' in axes and 'Y' not in self.data):
+            try:
+                self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
+            except:
+                pass
+        if ((('X' in axes) or (('V_X' in axes) or ('V_X' in quiver_velocity_axes))) and 'V_X' not in self.data) or (('Y' in axes) or (('V_Y' in axes) or ('V_Y' in quiver_velocity_axes)) and 'V_Y' not in self.data):
+            try:
+                self['V_X'],self['V_Y']=processing.utils.V_RphiZ_to_V_XYZ(self['phi'],self['V_R'],self['V_phi'])
+            except:
+                pass
 
         ndim=len(axes) #infer how many dimensions user wants to plot
         if ndim==1: #plot 1D histograms
@@ -1378,12 +1391,6 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.set_aspect('equal')
                 else:
                     ax.set_aspect('auto')
-
-                if 'X' not in self.data or 'Y' not in self.data:
-                    try:
-                        self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
-                    except:
-                        pass
 
             if style=='histogram':
                 if grid is not False: #bin according to pre-defined grid
@@ -1413,6 +1420,10 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
             elif style=='scatter':
+                if quivers:
+                    V_mag=np.sqrt(self['V_R']**2+self['V_phi']**2+self['V_Z']**2)
+                    #ax.quiver(self[axes[0]],self[axes[1]],-1.*self[f'V_{quiver_velocity_axes[0]}']/V_mag,-1.*self[f'V_{quiver_velocity_axes[1]}']/V_mag,color=colmap(colmap_val),scale=0.000001,headwidth=0.000001,headlength=0.000001) #tail
+                    ax.quiver(self[axes[0]],self[axes[1]],self[quiver_velocity_axes[0]]/V_mag,self[quiver_velocity_axes[1]]/V_mag,color=colmap(colmap_val))
                 mesh=ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:

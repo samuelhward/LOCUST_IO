@@ -115,7 +115,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['phi']=np.array([])
             input_data['Z']=np.array([])
             input_data['V_R']=np.array([])
-            input_data['V_tor']=np.array([])
+            input_data['V_phi']=np.array([])
             input_data['V_Z']=np.array([])
             input_data['time']=np.array([])
             input_data['status_flag']=np.array([])
@@ -123,7 +123,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['PFC_intercept']=np.array([])
             input_data['psi']=np.array([])
             input_data['V_R_final']=np.array([])
-            input_data['V_tor_final']=np.array([])
+            input_data['V_phi_final']=np.array([])
             input_data['V_Z_final']=np.array([])
             input_data['additional_flag7']=np.array([])
             input_data['additional_flag8']=np.array([])
@@ -153,7 +153,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
                 input_data['phi']=np.append(input_data['phi'],file_buffer[1,0,:])
                 input_data['Z']=np.append(input_data['Z'],file_buffer[2,0,:])
                 input_data['V_R']=np.append(input_data['V_R'],file_buffer[3,0,:])
-                input_data['V_tor']=np.append(input_data['V_tor'],file_buffer[4,0,:])
+                input_data['V_phi']=np.append(input_data['V_phi'],file_buffer[4,0,:])
                 input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[5,0,:])
                 input_data['time']=np.append(input_data['time'],file_buffer[6,0,:])
                 input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[7,0,:])
@@ -161,7 +161,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
                 input_data['PFC_intercept']=np.append(input_data['PFC_intercept'],file_buffer[9,0,:])
                 input_data['psi']=np.append(input_data['psi'],file_buffer[10,0,:])
                 input_data['V_R_final']=np.append(input_data['V_R_final'],file_buffer[11,0,:])
-                input_data['V_tor_final']=np.append(input_data['V_tor_final'],file_buffer[12,0,:])
+                input_data['V_phi_final']=np.append(input_data['V_phi_final'],file_buffer[12,0,:])
                 input_data['V_Z_final']=np.append(input_data['V_Z_final'],file_buffer[13,0,:])
                 input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[14,0,:])
                 input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[15,0,:])
@@ -195,7 +195,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
             input_data['status_flags']['generic_fail_hard']=-99999.0
 
             #calculate some additional things
-            input_data['E']=.5*constants.species_charge*(input_data['V_R']**2+input_data['V_tor']**2+input_data['V_Z']**2)/constants.species_mass
+            input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
             input_data['weight']=np.full(len(input_data['R']),1.)
 
         print("finished reading final particle list from LOCUST")
@@ -324,7 +324,7 @@ def read_final_particle_list_ASCOT(filepath,**properties):
         input_data['phi']=file['endstate/phi'].value
         input_data['Z']=file['endstate/z'].value
         input_data['V_R']=file['endstate/vR'].value
-        input_data['V_tor']=file['endstate/vphi'].value
+        input_data['V_phi']=file['endstate/vphi'].value
         input_data['V_Z']=file['endstate/vz'].value
         input_data['E']=file['endstate/energy'].value
         input_data['V_pitch']=file['endstate/pitch'].value
@@ -467,8 +467,8 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag, where the numerical value of the status_flag will dictate the colour)
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -496,7 +496,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            polar=True if axes==['X','Y'] else False
+            polar=True if axes==['phi','R'] else False
             ax = fig.add_subplot(111,polar=polar)
         ax.set_title(self.ID)
 

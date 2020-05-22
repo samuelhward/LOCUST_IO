@@ -436,10 +436,12 @@ def read_number_density_excel_1(filepath,**properties):
         if properties['species']==available_species_name_long:
             desired_field=available_species_name 
     if desired_field is None:
-        print("ERROR: cannot read_number_density_excel_1 - properties['species'] must be set to one of the following: {}".format([species for species in available_species_names_long]))
+        print("ERROR: cannot read_number_density_excel_1 - properties['species'] currently set to {species_current} but must be set to one of the following: {available_species_names_long}".format(species_current=properties['species'],available_species_names_long=[species for species in available_species_names_long]))
 
     input_data={}
     input_data['flux_pol_norm'],input_data['n']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y=desired_field,sheet_name=properties['sheet_name'])
+    input_data['flux_tor_norm_sqrt'],input_data['r_1D']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='x',y='a',sheet_name=properties['sheet_name'])
+    input_data['flux_tor_norm']=input_data['flux_tor_norm_sqrt']**2.
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['n']*=1.e19 #convert units
 
@@ -533,8 +535,12 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].density=output_data['n']
         
     #write out the axes
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
-
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']*2.*np.pi
+    try:
+        output_IDS.core_profiles.profiles_1d[0].grid.rho_tor=output_data['flux_tor_coord']
+    except:
+        pass
+        
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
@@ -682,7 +688,7 @@ class Number_Density(classes.base_input.LOCUST_input):
                 dump_number_density_LOCUST(self.data,filepath,**properties)
          
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,self.properties):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,properties['species']):
                 dump_number_density_IDS(self.ID,self.data,shot,run,**properties)
 
         elif data_format=='MARSF':
@@ -701,8 +707,8 @@ class Number_Density(classes.base_input.LOCUST_input):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 

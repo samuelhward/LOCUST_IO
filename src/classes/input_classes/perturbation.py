@@ -230,7 +230,7 @@ def read_perturbation_IDS_mhd_linear(shot,run,mode_number,**properties):
 
     args:
         shot - IDS shot number
-        run -  IDS run number
+        run - IDS run number
         mode_number - toroidal mode number of perturbation to read
 
     notes:
@@ -784,7 +784,7 @@ def dump_perturbation_IDS_mhd_linear(ID,output_data,shot,run,mode_number,**prope
 
     args:
         shot - IDS shot number
-        run -  IDS run number
+        run - IDS run number
         mode_number - toroidal mode number of perturbation to write
 
     notes:
@@ -1016,8 +1016,8 @@ class Perturbation(classes.base_input.LOCUST_input):
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             gridlines - toggle gridlines on plot
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -1044,7 +1044,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         #0D data
         if key in self.data.keys():
             if self[key].ndim==0:
-                print([key])
+                print(self[key])
                 return
         
         #>0D data is plottable
@@ -1052,7 +1052,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            polar=True if axes==['X','Y'] else False
+            polar=True if axes==['phi','R'] else False
             ax = fig.add_subplot(111,polar=polar)
         
         ax.grid(False) if gridlines is False else ax.grid(True)
@@ -1073,7 +1073,35 @@ class Perturbation(classes.base_input.LOCUST_input):
                 R=self['R_1D'] #make a mesh
                 Z=self['Z_1D'] 
                 Z,R=np.meshgrid(Z,R) #swap since things are defined r,z 
-                values=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+
+                if key not in self.data.keys():
+
+                    R_poloidal_dim=len(self['R_1D'])
+                    Z_poloidal_dim=len(self['Z_1D'])
+                    R_poloidal=np.linspace(np.min(self['R_1D']),np.max(self['R_1D']),R_poloidal_dim) #these are the points to evaluate the field at when we look at a single plane
+                    Z_poloidal=np.linspace(np.min(self['Z_1D']),np.max(self['Z_1D']),Z_poloidal_dim)
+                    R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
+                    R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
+                    phi_poloidal=np.full(len(R_poloidal),0.) #XXX this zero should be phi parameter for tomographic slices
+
+                    dB_R,dB_tor,dB_Z=self.evaluate(R=R_poloidal,phi=phi_poloidal,Z=Z_poloidal,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate poloidally
+
+                    if key=='dB_field_R':
+                        values=dB_R
+                    elif key=='dB_field_tor':
+                        values=dB_tor
+                    elif key=='dB_field_Z':
+                        values=dB_Z
+                    elif key=='dB_field_mag':
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    else:
+                        key='dB_field_mag'
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                
+                    values=values.reshape(Z_poloidal_dim,R_poloidal_dim).T
+
+                else:
+                    values=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
      
                 if vminmax:
                     vmin=vminmax[0]
@@ -1099,8 +1127,6 @@ class Perturbation(classes.base_input.LOCUST_input):
                 #ax.view_init(elev=90, azim=None) #rotate the camera
                 #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
                 
-                if fig_flag is False:    
-                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
                 ax.set_aspect('equal')
                 ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
                 ax.set_ylim(np.min(self['Z_1D']),np.max(self['Z_1D']))
@@ -1112,10 +1138,10 @@ class Perturbation(classes.base_input.LOCUST_input):
                 if limiters: #add boundaries if desired
                     ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall') 
 
-            elif axes==['X','Y']:
+            elif axes==['phi','R']:
 
                 R=self['R_1D'] #make a mesh
-                phi=np.linspace(0.,2.*np.pi*self.mode_number,100) 
+                phi=np.linspace(0.,2.*np.pi,100) 
                 nR,nphi=len(R),len(phi)
                 phi,R=np.meshgrid(phi,R)
                 R_flat,phi_flat=R.flatten(),phi.flatten()
@@ -1129,10 +1155,10 @@ class Perturbation(classes.base_input.LOCUST_input):
                     values=dB_tor
                 elif key=='dB_field_Z':
                     values=dB_Z
-                elif key=='dB_field':
+                elif key=='dB_field_mag':
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 else:
-                    key='dB_field'
+                    key='dB_field_mag'
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
                 values=values.reshape(nR,nphi)
@@ -1153,9 +1179,6 @@ class Perturbation(classes.base_input.LOCUST_input):
                     mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
-                    
-                if fig_flag is False:    
-                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
                 if LCFS: #plot plasma boundary
                     plasma_max_R=np.max(LCFS['lcfs_r'])
@@ -1170,8 +1193,54 @@ class Perturbation(classes.base_input.LOCUST_input):
                     ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_max_R,100),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
                     ax.plot(np.linspace(0,2.0*constants.pi,100),np.full(limiters_min_R,100),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
                     ax.set_rmax(1.1*limiters_max_R)
-
+                    
                 ax.set_rmin(0.0)
+
+            elif axes==['X','Y']:
+
+                R=self['R_1D'] #make a mesh
+                phi=np.linspace(0.,2.*np.pi,100) 
+                nR,nphi=len(R),len(phi)
+                phi,R=np.meshgrid(phi,R)
+                X,Y=processing.utils.RphiZ_to_XYZ(R,phi,RH=True)
+                R_flat,phi_flat=R.flatten(),phi.flatten()
+                Z_flat=np.zeros(len(phi_flat))
+
+                dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
+
+                if key=='dB_field_R':
+                    values=dB_R
+                elif key=='dB_field_tor':
+                    values=dB_tor
+                elif key=='dB_field_Z':
+                    values=dB_Z
+                elif key=='dB_field_mag':
+                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                else:
+                    key='dB_field_mag'
+                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                
+                values=values.reshape(nR,nphi)
+
+                if vminmax:
+                    vmin=vminmax[0]
+                    vmax=vminmax[1]
+                else:
+                    vmin=np.amin(values)
+                    vmax=np.amax(values)
+
+                #2D plot
+                if fill is True:
+                    mesh=ax.contourf(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    for c in mesh.collections: #for use in contourf
+                        c.set_edgecolor("face")
+                else:
+                    mesh=ax.contour(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    if settings.plot_contour_labels:
+                        ax.clabel(mesh,inline=1,fontsize=10)
+
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
             if ax_flag is True or fig_flag is True: #return the plot object
                 return mesh
@@ -1190,7 +1259,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             Z - list of Z coordinates
             mode_number - mode number of this toroidal harmonic
             i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
-            phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
+            phase - perturbation mode where dB~sin(n*phi-phase) (of field origin with respect to locust origin) (radians, anti-clockwise)
         notes:
 
         usage:
@@ -1322,6 +1391,8 @@ class Perturbation(classes.base_input.LOCUST_input):
 
             if limiters:
                 ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall') #add a LCFS
+
+        ax4.plot(phi_toroidal,np.sqrt(np.sum([component_toroidal**2 for component_toroidal in dB_toroidal])),'m-')
 
         legend=['dB_field_R','dB_field_tor','dB_field_Z']
         if absolute:

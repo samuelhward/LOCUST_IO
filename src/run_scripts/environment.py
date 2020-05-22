@@ -69,9 +69,9 @@ class Environment:
                                 'pgf/18.3',
                                 'hdf5/1.8.19-mpich3.2-pgf18.3',
                                 'cuda/9.0',
-                                'gcc7/default'  ]
+                                'gcc7/default' ]
     environments['GA']['module unload']=[
-                                'gcc7/default'  ]
+                                'gcc7/default' ]
     environments['GA']['module switch']=[]
     environments['GA']['misc']={}
     environments['GA']['misc']['ulimit']="-s 2000000"
@@ -85,38 +85,31 @@ class Environment:
     environments['TITAN']['export']['OMP_STACKSIZE']=102400
     environments['TITAN']['export']['CUDA_CACHE_DISABLE']=1
     environments['TITAN']['module load']=[
-                                'IMAS/3.23.3-4.1.3',
-                                'CUDA/10.1.105'  ]
-    environments['TITAN']['module unload']=[]
+                                'IMAS/3.27.0-4.7.1',
+                                'CUDA/10.1.105']
+    environments['TITAN']['module unload']=['matplotlib'
+                                            ]
     environments['TITAN']['module switch']=[
                                 'PGI/19.4-GCC-6.4.0-2.28',
-                                'HDF5/1.10.5-PGI-19.4-GCC-6.4.0-2.28'  ]
+                                'HDF5/1.10.5-PGI-19.4-GCC-6.4.0-2.28']
     environments['TITAN']['misc']={}
     environments['TITAN']['misc']['ulimit']="-s 2000000"
     ################################# NEMO TITAN
     environments['TITAN_NEMO']={}
-    environments['TITAN_NEMO']['module load']=['IMAS/3.25.0-4.4.0',
-                                           'Kepler',
-                                           'FC2K/4.6.5-PyAL',
-                                           'PyUAL/1.0.0-foss-2018a-Python-3.6.4',
-                                           'sh/1.12.14-intel-2018a-Python-3.6.4',
-                                           'lxml/4.2.0-intel-2018a-Python-3.6.4',
-                                           'FRUIT/3.4.3-intel-2018a-Ruby-2.5.1',
-                                           'FRUIT_processor/3.4.3-intel-2018a-Ruby-2.5.1',
-                                           'interpos/8.2.1-ifort',
-                                           'XMLlib/3.2.0-intel-2018a',
-                                           'PSPLINE/20181008-intel-2018a',
-                                           'PyAL/1.1.1-intel-2018a-Python-3.6.4',
-                                           'NAG/26-intel-2018a']
-    environments['TITAN_NEMO']['module unload']=['Anaconda3']
+    environments['TITAN_NEMO']['module load']=['IMAS',
+                                                'FC2K',
+                                                'FRUIT/3.4.3-intel-2018a-Ruby-2.5.1',
+                                                'FRUIT_processor/3.4.3-intel-2018a-Ruby-2.5.1',
+                                                'INTERPOS/9.0.2-intel-2018a',
+                                                'XMLlib/3.2.0-intel-2018a',
+                                                'PyAL/1.3.1-intel-2018a-Python-3.6.4']
+    environments['TITAN_NEMO']['module unload']=[
+                                                'matplotlib']
     environments['TITAN_NEMO']['module switch']=[]
     environments['TITAN_NEMO']['export']={}
-    environments['TITAN_NEMO']['export']['ACTOR_POOL']=str(support.dir_nemo / 'actor_install' / 'actors')
-    environments['TITAN_NEMO']['export']['DIAG_INFO']='-DNO_DIAG_INFO'
-    environments['TITAN_NEMO']['export']['KEPLER']=str(support.dir_nemo / 'actor_install' / 'actors')
     environments['TITAN_NEMO']['misc']={}
     environments['TITAN_NEMO']['misc']['ulimit']='-Ss unlimited'
-    environments['TITAN_NEMO']['misc']['imasdb']=settings.imasdb
+    environments['TITAN_NEMO']['misc']['imasdb']=f'{settings.imasdb}'
     ################################# MARFE
     environments['MARFE']={}
     environments['MARFE']['export']={}

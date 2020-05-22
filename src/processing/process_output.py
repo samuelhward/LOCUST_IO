@@ -281,7 +281,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     indices_coordinate['phi']=1
     indices_coordinate['Z']=2
     indices_coordinate['V_R']=3
-    indices_coordinate['V_tor']=4
+    indices_coordinate['V_phi']=4
     indices_coordinate['V_Z']=5
     indices_coordinate['time']=6
     indices_coordinate['status_flag']=7
@@ -289,7 +289,7 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     indices_coordinate['PFC_intercept']=9
     indices_coordinate['psi']=10
     indices_coordinate['V_R_final']=11
-    indices_coordinate['V_tor_final']=12
+    indices_coordinate['V_phi_final']=12
     indices_coordinate['V_Z_final']=13
     indices_coordinate['additional_flag7']=14
     indices_coordinate['additional_flag8']=15
@@ -386,7 +386,7 @@ def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None
     V_pitch=processing.utils.pitch_calc_2D(some_particle_list,some_equilibrium)
     dummy_gyrophase=np.zeros(len(some_particle_list['R'])) #if uniform in gyrophase
     if 'V' not in some_particle_list.data:
-        some_particle_list['V']=np.array(np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_tor']**2+some_particle_list['V_Z']**2))
+        some_particle_list['V']=np.array(np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_phi']**2+some_particle_list['V_Z']**2))
 
     if some_bins:
         dfn=np.histogramdd((dummy_gyrophase,some_particle_list['V'],some_particle_list['V_pitch'],some_particle_list['R'],some_particle_list['Z']))        

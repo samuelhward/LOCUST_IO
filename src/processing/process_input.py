@@ -166,12 +166,12 @@ def transform_marker_velocities(r=None,phi=None,z=None,pitch=None,speed=None,R_1
             v_perp_z=rand_3
 
             v_r=v_par_r+v_perp_r
-            v_tor=v_par_tor+v_perp_tor
+            V_phi=v_par_tor+v_perp_tor
             v_z=v_par_z+v_perp_z
 
             print("transform_marker_velocities - finished transforming marker velocities")
 
-            return r_trim,phi_trim,z_trim,v_r,v_tor,v_z
+            return r_trim,phi_trim,z_trim,v_r,V_phi,v_z
 
         else:
             print("ERROR: insufficient data supplied to transform_marker_velocities for {} conversion".format(conversion))

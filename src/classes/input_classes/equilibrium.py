@@ -186,13 +186,16 @@ def read_equilibrium_GEQDSK(filepath,**properties):
      
         input_data['lcfs_r'],input_data['lcfs_z'],input_data['rlim'],input_data['zlim'] = read_bndy(input_data['lcfs_n'],input_data['limitr'])
 
+        GEQDSKFIX_factor=1.
         if 'GEQDSKFIX1' in properties and properties['GEQDSKFIX1'] is True: #apply LOCUST flag transformations
             input_data['psirz']*=-1.
             input_data['sibry']*=-1.
             input_data['simag']*=-1.
-            input_data['current']*=-1.
+            input_data['current']*=-1. #not done in LOCUST
+            GEQDSKFIX_factor*=-1.
         if 'GEQDSKFIX2' in properties and properties['GEQDSKFIX2'] is True: 
             input_data['fpol']*=-1.
+            input_data['bcentr']*=-1. #not done in LOCUST
         PSI_sclh=1./(input_data['sibry']-input_data['simag'])
         IPDIRh=-1. if PSI_sclh > 0. else 1. 
         if 'BPFLIP' in properties and properties['BPFLIP'] is True:
@@ -205,7 +208,7 @@ def read_equilibrium_GEQDSK(filepath,**properties):
         input_data['R_1D']=np.linspace(input_data['rleft'],input_data['rleft']+input_data['rdim'],num=input_data['nR_1D'])     
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nZ_1D']) 
         input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #all 1D profiles are defined against a flux grid, so use any 1D profile's length
-        input_data['flux_tor']=processing.process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])
+        input_data['flux_tor']=processing.process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])*GEQDSKFIX_factor #if we flipped poloidal flux this will also flip toroidal flux since we assume Q sign always +ve by convention
 
         print("finished reading equilibrium from GEQDSK")
 
@@ -259,6 +262,7 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['lcfs_z']=np.asarray(input_IDS.equilibrium.time_slice[0].boundary.outline.z)
     input_data['flux_pol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.0*constants.pi)) #convert to Wb/rad
     input_data['flux_tor']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.phi/(2.0*constants.pi)) #convert to Wb/rad
+    input_data['flux_tor_coord']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor)
     R_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim1 #dim1=R values,dim2=Z values
     Z_1D=input_IDS.equilibrium.time_slice[0].profiles_2d[0].grid.dim2
     input_data['R_1D']=np.asarray(R_1D)
@@ -266,6 +270,7 @@ def read_equilibrium_IDS(shot,run,**properties):
 
     #2D data    
     input_data['psirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].psi)/(2.0*constants.pi) #convert to Wb/rad
+    input_data['phirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].phi)/(2.0*constants.pi) #convert to Wb/rad
  
     #harder bits (values derived from grids and profiles)
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
@@ -715,8 +720,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             vminmax - set mesh Vmin/Vmax values
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -742,7 +747,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #0D data
         if self[key].ndim==0:
-            print([key])
+            print(self[key])
             return
         
         #>0D data is plottable
@@ -827,8 +832,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             start_coord - optional choose [R,phi,Z] starting position 
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -1008,8 +1013,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             LCFS - toggles plasma boundary on/off in 2D plots
             limiters - toggles limiters on/off in 2D plots
             colmap - set the colour map (use get_cmap names)
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:
             take transpose due to streamplot index convention
@@ -1122,31 +1127,32 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         print("B_calc - finished calculating 2D magnetic field")
 
-    def mag_axis_calc(self,index=False):
+    def mag_axis_calc(self,threshold=1.e-7):
         """
-        returns psirz index of magnetic axis 
-        
         args:
-            index - if True, returns index of axis otherwise return location in metres 
+            threshold - final result is accurate to threshold*grid_spacing
+        usage:
+            eq['rmaxis'],eq['zmaxis'],eq['simag']=eq.mag_axis_calc()
         notes:
-            works by calculating a contour at 10% poloidal flux and averaging the position of the contour
-            XXX does not work well
         """
 
-        Z_2D,R_2D=np.meshgrid(self['Z_1D'],self['R_1D'])
-        contour=plt.contour(R_2D,Z_2D,np.abs(self['psirz']),levels=[0.0,np.amin(np.abs(self['psirz']))+0.1*np.amax(np.abs(self['psirz']))])  
-        contour=contour.collections[1].get_paths()[0]
-        contour=contour.vertices
-        r=contour[:,0]
-        z=contour[:,1]
-        r_av=np.mean(r)
-        z_av=np.mean(z)
+        interpolator=processing.utils.interpolate_2D(        
+                                        self['R_1D'],
+                                        self['Z_1D'],
+                                        self['psirz'])
 
-        if index is True: #convert to psirz indicesself
-            r_av=(np.abs(self['R_1D']-r_av)).argmin()
-            z_av=(np.abs(self['Z_1D']-z_av)).argmin()
+        psirz_norm=np.abs((self['psirz']-self['simag'])/(self['sibry']-self['simag']))
         
-        return r_av,z_av
+        rmaxis,zmaxis,simag_norm=processing.utils.local_minimum_2D(
+                                                    self['rmaxis'],
+                                                    self['zmaxis'],
+                                                    self['R_1D'],
+                                                    self['Z_1D'],
+                                                    psirz_norm,
+                                                    threshold=threshold)
+        simag=interpolator(self['rmaxis'],self['zmaxis'])[0][0]
+
+        return rmaxis,zmaxis,simag
 
     def B_calc_point(self,R,Z):
         """

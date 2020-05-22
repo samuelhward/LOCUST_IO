@@ -37,8 +37,10 @@ Since this package aims to bridge the gap between various file formats for diffe
         Z_1D                                                            #Z dimension [m]
         flux_pol                                                        #poloidal flux from magnetic axis up to the plasma boundary [Weber / rad]
         flux_tor                                                        #toroidal flux from magnetic axis up to the plasma boundary [Weber / rad]
+        flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
     2D data
         psirz                                                           #poloidal flux at coordinate [r,z] in [Weber / rad] 
+        phirz                                                           #toroidal flux at coordinate [r,z] in [Weber / rad] 
         fpolrz                                                          #poloidal current function at coordinate [r,z] [m T] calculated by fpolrz_calc
         B_field_R                                                       #magnetic field Rcomponent at position [r,z] [T] calculate by B_calc
         B_field_tor                                                     #magnetic field phi component at position [r,z] [T] calculate by B_calc
@@ -51,7 +53,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         phi                                                             #toroidal angle of particle p [rad]
         Z                                                               #Z coordinates of particle p
         V_R                                                             #R component of v of particle p
-        V_tor                                                           #toroidal component of v of particle p
+        V_phi                                                           #toroidal component of v of particle p
         V_Z                                                             #Z component of v of particle p
         V_pitch                                                         #v_parallel/v
         E                                                               #energy of particle [eV]
@@ -68,9 +70,10 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         T                                                               #ion temperature [eV]
         T                                                               #electron temperature [eV]
-        flux_tor_coord                                                  #toroidal flux coordinate
+        flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
         flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
+        r_1d                                                            #minor radius [metres]
 
 #### Number Density:
 
@@ -79,9 +82,10 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         n                                                               #ion or electron number density [#/m^3]
-        flux_tor_coord                                                  #toroidal flux coordinate
+        flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
         flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
+        r_1d                                                            #minor radius [metres]
 
 #### Rotation
 
@@ -90,7 +94,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
         rotation_ang                                                    #rotation profile [rad/s]
-        rmaj                                                            #major radius where corresponding rotation_vel is measured [m]
+        R_1D                                                            #major radius where corresponding rotation_vel is measured [m]
         rotation_vel                                                    #rotation profile [m/s]
 
 ##### Perturbation
@@ -154,7 +158,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         phi                                                             #phi coordinate of particle [rad]
         Z                                                               #z coordinate of particle
         V_R                                                             #v_r coordinate of particle
-        V_tor                                                           #v_tor coordinate of particle
+        V_phi                                                           #V_phi coordinate of particle
         V_Z                                                             #v_z coordinate of particle
         V_pitch                                                         #v_parallel/v
         energy                                                          #energy of particle
@@ -175,7 +179,7 @@ Since this package aims to bridge the gap between various file formats for diffe
         dR                                                              #R bin width
         nZ                                                              #number of Z points on Dfn grid
         dZ                                                              #Z bin width
-        nV_pitch                                                        #number of points in V_tor/V dimension
+        nV_pitch                                                        #number of points in V_phi/V dimension
         dV_pitch                                                        #pitch bin width
         nP                                                              #poloidal gyro-phase cell boundaries
         dP                                                              #special dimension bin width - simulation specific (e.g. gyrophase bin width)

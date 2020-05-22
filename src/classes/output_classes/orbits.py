@@ -291,8 +291,8 @@ class Orbits(classes.base_output.LOCUST_output):
             start_mark - include marker to show birth point
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
 
@@ -321,7 +321,7 @@ class Orbits(classes.base_output.LOCUST_output):
             fig = plt.figure() #if user has not externally supplied figure, generate
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            polar=True if axes==['X','Y'] else False
+            polar=True if axes==['phi','R'] else False
             ax = fig.add_subplot(111,polar=polar)
         ax.set_title(self.ID)
 

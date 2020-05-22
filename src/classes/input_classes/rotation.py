@@ -203,12 +203,14 @@ def read_rotation_excel_1(filepath,**properties):
     input_data={}
     input_data['flux_pol_norm'],radius_minor=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='Fp',y='a',sheet_name=properties['sheet_name'])
     input_data['rotation_vel']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,y=properties['rotation_name'],sheet_name=properties['sheet_name_rotation'])
+    input_data['flux_tor_norm_sqrt'],input_data['r_1D']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='x',y='a',sheet_name=properties['sheet_name'])
+    input_data['flux_tor_norm']=input_data['flux_tor_norm_sqrt']**2.
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['rotation_vel']*=1000. #convert from km/s
 
     R_axis=6.2 #XXX warning this is hardcoded
-    input_data['rmaj']=radius_minor+R_axis 
-    input_data['rotation_ang']=input_data['rotation_vel']/input_data['rmaj']
+    input_data['R_1D']=radius_minor+R_axis 
+    input_data['rotation_ang']=input_data['rotation_vel']/input_data['R_1D']
 
     return input_data
 
@@ -380,8 +382,12 @@ def dump_rotation_IDS(ID,output_data,shot,run,**properties):
         output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].rotation_frequency_tor=output_data['rotation_ang']
             
     #write out the axes
-    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']
-
+    output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']*2.*np.pi
+    try:
+        output_IDS.core_profiles.profiles_1d[0].grid.rho_tor=output_data['flux_tor_coord']
+    except:
+        pass
+        
     #'put' all the output_data into the file and close
     output_IDS.core_profiles.put()
     output_IDS.close()
@@ -469,7 +475,7 @@ class Rotation(classes.base_input.LOCUST_input):
                 dump_rotation_MARSF(self.data,filepath)
 
         elif data_format=='IDS':
-            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,self.properties):
+            if not processing.utils.none_check(self.ID,self.LOCUST_input_type,"ERROR: {} cannot dump_data() to core_profiles IDS - shot, run and ion species property required\n".format(self.ID),shot,run,properties['species']):
                 dump_rotation_IDS(self.ID,self.data,shot,run,**properties)
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/MARSF/IDS)\n".format(self.ID))
@@ -482,8 +488,8 @@ class Rotation(classes.base_input.LOCUST_input):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
-            ax - take input axes (can be used to stack plots)
             label - plot label for legends
+            ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         """
         
