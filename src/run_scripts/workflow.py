@@ -92,7 +92,9 @@ class Workflow:
         else:
             try:
                 print("{workflow_name} running {command_name}".format(workflow_name=self.workflow_name,command_name=self.commands_dispatch[command].__name__))
+                self.command_running_name=self.commands_dispatch[command].__name__
                 self.commands_dispatch[command](*args,**kwargs)
+                self.command_running_name=None
                 print("{workflow_name} completed {command_name}".format(workflow_name=self.workflow_name,command_name=self.commands_dispatch[command].__name__))
             except:
                 print("ERROR: {workflow_name}.run_command() could not execute '{command}'".format(workflow_name=self.workflow_name,command=command))
