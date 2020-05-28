@@ -1095,6 +1095,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                     elif key=='dB_field_mag':
                         values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                     else:
+                        print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
                         key='dB_field_mag'
                         values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
@@ -1158,6 +1159,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 elif key=='dB_field_mag':
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 else:
+                    print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
                     key='dB_field_mag'
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
@@ -1217,6 +1219,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 elif key=='dB_field_mag':
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 else:
+                    print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
                     key='dB_field_mag'
                     values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
@@ -1310,7 +1313,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             R - R coordinate at which 3D field is expanded toroidally
             Z - R coordinate at which 3D field is expanded toroidally
             phi - toroidal point at which to display components 
-            phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
+            phase - global field phase shift (of field origin with respect to locust origin) (degrees, anti-clockwise)
             i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
             LCFS - toggles plasma boundary on/off in 2D plots
             limiters - toggles limiters on/off in 2D plots
@@ -1327,6 +1330,8 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         #do some preliminary parsing of variables in case supplied as strings from command line etc.
         R,Z,phi,phase,i3dr,number_bins,vminmax,colmap_val=run_scripts.utils.literal_eval(R,Z,phi,phase,i3dr,number_bins,vminmax,colmap_val)
+
+        phase*=2.*np.pi/360.
 
         import matplotlib
         import matplotlib.pyplot as plt
@@ -1392,9 +1397,9 @@ class Perturbation(classes.base_input.LOCUST_input):
             if limiters:
                 ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall') #add a LCFS
 
-        ax4.plot(phi_toroidal,np.sqrt(np.sum([component_toroidal**2 for component_toroidal in dB_toroidal])),'m-')
+        ax4.plot(phi_toroidal,np.sqrt(np.sum(np.array([component_toroidal**2 for component_toroidal in dB_toroidal]),axis=0)),'m-')
 
-        legend=['dB_field_R','dB_field_tor','dB_field_Z']
+        legend=['dB_field_R','dB_field_tor','dB_field_Z','dB_field_mag']
         if absolute:
             legend=['abs( ' + leg + ' )' for leg in legend]
         ax4.legend(legend)
