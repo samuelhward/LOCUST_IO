@@ -677,7 +677,7 @@ program mars_read
                                                           1.0_gpu] 
   #endif
 
-!     MARS-F data already contains the n*30 and n*26.7 phase shifts:
+!     MARS-F data does not necessarily already contain the n*30 and n*26.7 phase shifts:
 
   #if (TOKAMAK==1)
 
@@ -691,9 +691,15 @@ program mars_read
                                                            30.0_gpu]
     #endif
 
+      real( gpu ),    parameter, dimension(3) :: dPH   = [ 29.4_gpu,          &
+                                                           20.9_gpu,          &
+                                                           30.5_gpu]
   #else
       real( gpu ),    parameter, dimension(2) :: PH0   = [ 0.0_gpu,           &
                                                            0.0_gpu]
+
+      real( gpu ),    parameter, dimension(3) :: dPH   = [ 0.0_gpu,          &
+                                                           0.0_gpu]          &
   #endif
 
   #if (TOKAMAK==1)
@@ -747,8 +753,15 @@ program mars_read
   #endif
       real( gpu ),    parameter, dimension(1) :: PH0   = [ 0.0_gpu]
       real( gpu ),    parameter, dimension(1) :: PH1   = [ 0.0_gpu]
-      real( gpu ),               dimension(1) :: IMUL  = [ 1.0_gpu]
+      real( gpu ),    parameter, dimension(1) :: dPh   = [ 0.0_gpu]
+      real( gpu ),               dimension(1) :: IMUL  = [ 1.0_gpu]    
 #endif
+
+#if (TOKAMAK==1)
+      integer,        parameter               :: N_coils = 9
+#else
+      integer,        parameter               :: N_coils = 8
+#endif       
 
 #ifndef RESSCAN
 #if defined (FINE)
@@ -1054,6 +1067,26 @@ program mars_read
       ICOIL = idat(7)
       ICURR = ddat(1)
       IN_IC = ddat(2)
+
+#if (TOKAMAK==1)
+      if (IN_IC==1.0)then ! MARSF data does not contain coil scaling - calculate here:
+          
+          write(io(1),*) ':mars_read : WARNING : IN_IC=1 in MARS-F file --> no harmonic scaling due to finite coil width!'
+          write(io(1),*) ':mars_read : WARNING : recalculating IN_IC to re-enable scaling!'
+          IN_IC=N_coils*sin(NC*dPH(j)*pi/(2.0*180.0_gpu))/(NC*pi)
+
+      !checks:
+        !ITER IN_IC=
+                    !n   Upper   Middle  Lower
+                    !3   0.6645  0.4968  0.6840
+                    !4   0.6126  0.4774  0.6264
+                    !5   0.5494  0.4530  0.5565
+                    !6   0.4772  0.4243  0.4773
+                    !12  0.0150  0.1946 -0.0125
+                    !15 -0.1240  0.0754 -0.1436
+                    !21 -0.1065 -0.0867 -0.0872
+      endif
+#endif
 
       NT    = NR+NV
       
