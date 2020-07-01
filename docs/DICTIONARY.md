@@ -254,17 +254,26 @@ There are many moments of the distribution function which are provided by variou
     1D data
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
-        dVOL                                                            #
-        beam_source                                                     #
-        density                                                         #
-        energy_para                                                     #
-        energy_perp                                                     #
-        energy                                                          #
-        J(NBCD)-raw                                                     #
-        NBI-heating-power(TOT)                                          #
-        NBI-heating-power(e-)                                           #
-        NBI-heating-power(i1)                                           #
+        dVOL                                                            #volume element size [m**3]
+        beam_source                                                     #beam deposition density
+        density                                                         #total beam density
+        energy_para                                                     #parallel kinetic beam energy
+        energy_perp                                                     #perpendicular kinetic beam energy
+        energy                                                          #total beam energy
+        J(NBCD)-raw                                                     #neutral beam current drive
+        NBI-heating-power(TOT)                                          #total neutral beam heating power
+        NBI-heating-power(e-)                                           #total neutral beam heating power to electrons
+        NBI-heating-power(i1)                                           #total neutral beam heating power to ion species 1
         residual-angular-momentum-density                               #
-        torque-density(JxB-inst)                                        #
-        torque-density(JxB-sweep)                                       #
-        torque-density(coll)                                            #
+        torque-density(JxB-inst)                                        #instantaneous JxB torque density
+        torque-density(JxB-sweep)                                       #orbit-averaged JxB torque density
+        torque-density(coll)                                            #collision torque density
+
+##### Rundata
+
+    0D data
+        PFC_power                                                       
+            component                                                   #PFC loss power resolved by component [W]
+            total                                                       #total PFC loss power [W]
+        time_total                                                      #kernel end time
+
