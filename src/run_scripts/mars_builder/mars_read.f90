@@ -1,6 +1,9 @@
 #ifndef NC
 # define NC 3
 #endif
+#ifndef N0
+# define N0 3
+#endif
 #ifndef TOKAMAK
 # define TOKAMAK 1
 #endif
@@ -682,9 +685,9 @@ program mars_read
   #if (TOKAMAK==1)
 
     #if( NC==3 )
-      real( gpu ),    parameter, dimension(3) :: PH0   = [ 0.0_gpu,           &
-                                                           0.0_gpu,           &
-                                                           0.0_gpu]
+      real( gpu ),    parameter, dimension(3) :: PH0   = [ 30.0_gpu,           &
+                                                           26.7_gpu,           &
+                                                           30.0_gpu]
     #else
       real( gpu ),    parameter, dimension(3) :: PH0   = [ 30.0_gpu,          &
                                                            26.7_gpu,          &
@@ -856,6 +859,8 @@ program mars_read
       real( gpu ),      parameter :: dROFF=1.0e-04_gpu
       real( gpu ),      parameter :: dZOFF=1.0e-04_gpu
       real( double ),   external  :: omp_get_wtime
+      integer                     :: N_fundamental
+      real( gpu )                 :: dPH_MARS(3)
 
       write(io(1),*) ':mars_read : Request toroidal mode |n| = ', NC
       write(io(1),*) ':mars_read : R resolution [m]          = ', dXR
@@ -1202,20 +1207,26 @@ program mars_read
 !     the data in the ITER coordinate sustem for a +|n| mode require a
 !     [+86,0,+34]*|n| phase rotation. -nmde = +ve.
 
+N_fundamental = real(N0,gpu)
+dPH_MARS(j) = N_fundamental * PH1(j)
+
 #if (TOKAMAK==1)
 
 if( NC == 3 )then
-      cp = +cos( -3.0_gpu*PH1(j)*pi/180.0_gpu )
-      sp =  sin( -3.0_gpu*PH1(j)*pi/180.0_gpu )
+      cp = +cos( -dPH_MARS(j)*pi/180.0_gpu )
+      sp =  sin( -dPH_MARS(j)*pi/180.0_gpu )
 elseif( NC==6 )then
-      cp = +cos( (-9.0_gpu*PH0(j) + 3.0_gpu*PH1(j) )*pi/180.0_gpu )
-      sp =  sin( (-9.0_gpu*PH0(j) + 3.0_gpu*PH1(j) )*pi/180.0_gpu )
+      cp = +cos( (-9.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
+      sp =  sin( (-9.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
 elseif( NC==12 )then
-      cp = +cos( (-9.0_gpu*PH0(j) - 3.0_gpu*PH1(j) )*pi/180.0_gpu )
-      sp =  sin( (-9.0_gpu*PH0(j) - 3.0_gpu*PH1(j) )*pi/180.0_gpu )
+      cp = +cos( (-9.0_gpu*PH0(j) - dPH_MARS(j) )*pi/180.0_gpu )
+      sp =  sin( (-9.0_gpu*PH0(j) - dPH_MARS(j) )*pi/180.0_gpu )
 elseif( NC==15 )then
-      cp = +cos( (-18.0_gpu*PH0(j) + 3.0_gpu*PH1(j) )*pi/180.0_gpu )
-      sp =  sin( (-18.0_gpu*PH0(j) + 3.0_gpu*PH1(j) )*pi/180.0_gpu )
+      cp = +cos( (-18.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
+      sp =  sin( (-18.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
+elseif( NC==21 )then
+      cp = +cos( (-18.0_gpu*PH0(j) - dPH_MARS(j) )*pi/180.0_gpu )
+      sp =  sin( (-18.0_gpu*PH0(j) - dPH_MARS(j) )*pi/180.0_gpu )
 endif
 
 #else
