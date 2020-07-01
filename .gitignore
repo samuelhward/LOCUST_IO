@@ -49,5 +49,8 @@ tempCodeRunnerFile.python
 #gifs
 *.gif
 
+#MATLAB files
+*.m
+
 #note - to begin to ignore existing files, must use
 #git rm --cached FILENAME
