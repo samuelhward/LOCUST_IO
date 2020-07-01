@@ -85,7 +85,7 @@ class Environment:
     environments['TITAN']['export']['OMP_STACKSIZE']=102400
     environments['TITAN']['export']['CUDA_CACHE_DISABLE']=1
     environments['TITAN']['module load']=[
-                                'IMAS/3.27.0-4.7.1',
+                                'IMAS/3.28.1-4.7.2',
                                 'CUDA/10.1.105']
     environments['TITAN']['module unload']=['matplotlib'
                                             ]
@@ -96,7 +96,7 @@ class Environment:
     environments['TITAN']['misc']['ulimit']="-s 2000000"
     ################################# NEMO TITAN
     environments['TITAN_NEMO']={}
-    environments['TITAN_NEMO']['module load']=['IMAS',
+    environments['TITAN_NEMO']['module load']=['IMAS/3.28.1-4.7.2',
                                                 'FC2K',
                                                 'FRUIT/3.4.3-intel-2018a-Ruby-2.5.1',
                                                 'FRUIT_processor/3.4.3-intel-2018a-Ruby-2.5.1',
@@ -138,7 +138,7 @@ class Environment:
     environments['GPU5']['module load']=[
                             'python/3.7',
                             'cuda/9.1',
-                            'pgi/18.1',
+                            'pgi/20.1',
                             'hdf5/1.8.20',
                             'hdf5-devel/1.8.20']
     environments['GPU5']['module unload']=[]
@@ -182,7 +182,7 @@ class Environment:
     ################################# GPU8
     environments['GPU8']={}
     environments['GPU8']['export']={}
-    environments['GPU8']['export']['OMP_NUM_THREADS']=8
+    environments['GPU8']['export']['OMP_NUM_THREADS']=16
     environments['GPU8']['export']['OMP_STACKSIZE']=102400
     environments['GPU8']['export']['NO_AT_BRIDGE']=1
     environments['GPU8']['export']['CUDA_CACHE_DISABLE']=1
@@ -235,12 +235,14 @@ class Environment:
     environments['CUMULUS']['export']={}
     environments['CUMULUS']['export']['OMP_NUM_THREADS']=8
     environments['CUMULUS']['export']['OMP_STACKSIZE']=102400
+    environments['CUMULUS']['export']['CUDA_CACHE_DISABLE']=1
     environments['CUMULUS']['export']['NO_AT_BRIDGE']=1
     environments['CUMULUS']['module load']=[
                             'cuda/9.1',
                             'pgi/18.1',
                             'hdf5/1.8.20',
-                            'hdf5-devel/1.8.20'
+                            'hdf5-devel/1.8.20',
+                            'python/3.6.4'
                             ]
     environments['CUMULUS']['module unload']=[]
     environments['CUMULUS']['module switch']=[]
