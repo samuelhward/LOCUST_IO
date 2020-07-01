@@ -56,11 +56,16 @@ except:
 
 ################################################################## Orbits functions
 
-def read_rundata_LOCUST(filepath):
+def read_rundata_LOCUST(filepath,**properties):
     """
     reads generic rundata file output from LOCUST
 
     notes:
+        first parses all rundata file into rundata dict 
+            which is nested as such: 
+            rundata[name of calling locust function][first message][remaining messages/values][message_value0,message_value1,message_value2]
+            since rundata output looks similar to "loss_chk: number_in_out : 10 : 23" or "loss_check: some_message"
+        rundat dict is then parsed on a case-by-case basis into input_data dict to be returned 
     """
 
     print("reading rundata from LOCUST")
@@ -105,37 +110,54 @@ def read_rundata_LOCUST(filepath):
 
     input_data={} #initialise data dictionary
 
-    #extract power flux data
-    input_data['PFC_power']={}
-    input_data['PFC_power']['component']={}
+    #see whether run finished
+    input_data['run_status']='unknown'
+    if 'LOCUST' in rundata:
+        for message in rundata['LOCUST']:
+            if 'Premature termination' in rundata['LOCUST'][message]: 
+                input_data['run_status']='failed'
+            elif message=='Tidy up and close down....':
+                input_data['run_status']='completed'
+            
+    if input_data['run_status'] is 'completed':
 
-    for message in rundata['write_vtk']:
+        #extract power flux data
+        input_data['PFC_power']={}
+        input_data['PFC_power']['component']={}
+        if 'write_vtk' in rundata:
+            for message in rundata['write_vtk']:
+                if 'Integrated power' in message:
+                    if 'to component' in message:
+                        for component_power in rundata['write_vtk'][message]:
+                            input_data['PFC_power']['component'][str(component_power[0])]=float(component_power[1][:-2])*1.e6
+                    elif 'power to PFCs' in message:
+                        #print(message)
+                        #print(rundata['write_vtk'][message])
 
-        if 'Integrated power' in message:
-            if 'to component' in message:
-                for component_power in rundata['write_vtk'][message]:
-                    input_data['PFC_power']['component'][str(component_power[0])]=float(component_power[1][:-2])*1.e6
-            elif 'to PFCs' in message:
-                #print(message)
-                #print(rundata['write_vtk'][message])
-                input_data['PFC_power']['total']=float(rundata['write_vtk'][message][0][:-2])*1.e6
+                        if len(rundata['write_vtk'][message])==1: #sometimes multiple of these messages are printed
+                            input_data['PFC_power']['total']=float(rundata['write_vtk'][message][0][:-2])*1.e6
+                        else:
+                            input_data['PFC_power']['total']=float(rundata['write_vtk'][message][0][0][:-2])*1.e6
 
-    #extract loss channel data
-    input_data['loss_channels']={}
 
-    for message in rundata['loss_chk']:
+        #extract loss channel data
+        input_data['loss_channels']={}
+        if 'loss_chk' in rundata:
+            for message in rundata['loss_chk']:
+                try:
+                    input_data['loss_channels'][message]=rundata['loss_chk'][message][0].replace(' ','').replace('MW','')
+                    if '%' in input_data['loss_channels'][message]:
+                        input_data['loss_channels'][message]=input_data['loss_channels'][message].replace('%','')
+                    else:
+                        input_data['loss_channels'][message]=float(input_data['loss_channels'][message])*1.e6
+                except:
+                    pass
+
+        #look for kernel end time
         try:
-            input_data['loss_channels'][message]=rundata['loss_chk'][message][0].replace(' ','').replace('MW','')
-            if '%' in input_data['loss_channels'][message]:
-                input_data['loss_channels'][message]=input_data['loss_channels'][message].replace('%','')
-            else:
-                input_data['loss_channels'][message]=float(input_data['loss_channels'][message])*1.e6
+            input_data['time_total']=float(rundata['ctrk']['End of Kernel wrapper'][0])
         except:
-            pass
-
-    #look for kernel end time
-    input_data['time_total']=None
-    input_data['time_total']=float(rundata['ctrk']['End of Kernel wrapper'][0])
+            input_data['time_total']=None
 
     print("finished reading rundata from LOCUST")
 
@@ -166,7 +188,7 @@ class Rundata(classes.base_output.LOCUST_output):
 
     LOCUST_output_type='rundata'
 
-    def read_data(self,data_format=None,filename=None,**properties):
+    def read_data(self,data_format=None,filename=None,shot=None,run=None,**properties):
         """
         read rundata from file 
 
