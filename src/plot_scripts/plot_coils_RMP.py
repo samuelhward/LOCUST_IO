@@ -55,7 +55,7 @@ except:
 ###################################################################################################
 #Main
 
-def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokamak='ITER'):
+def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokamak='ITER',waveform='cos'):
     """
     plot generic RMP coils as well as associated theoretical harmonics
 
@@ -66,13 +66,23 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
         coil_current - coil current [kAt] 
         coil_rows - list of coil rows to plot (1=uppermost) [int]
         tokamak - tokamak name [-]
+        waveform - waveform type [str]
     notes:
     """
+
 
     for ax in axes: ax.cla() #clear axes
 
     rad_to_deg=360./2.*np.pi
     deg_to_rad=2.*np.pi/360.
+
+    #define coil waveform table
+    def current_waveform_cosine(n_0,phi,phase_shift):
+        return coil_current*np.cos(n_0*(phi-phase_shift)*deg_to_rad) 
+
+    waveforms={}
+    waveforms['cos']=current_waveform_cosine
+    waveform=waveforms[waveform]
 
     #define tokamak settings
     coil_data_options={} 
@@ -80,13 +90,15 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
     coil_data_options['ITER']['number_coils_per_row']=9
     coil_data_options['ITER']['number_rows']=3
     coil_data_options['ITER']['coil_offset']=np.array([30.,26.7,30.]) #Phi0 mapping from MARS-F origin to coil centres
-    #XXXcoil_data_options['ITER']['coil_offset']=np.array([30.,26.7,0]) #XXX see effect of changing Phi0 (just look at top and bottom coil rows)
+    #coil_data_options['ITER']['coil_offset']=np.array([0.,0.,0]) #XXX see effect of changing Phi0 (just look at top and bottom coil rows)
     #XXXcoil_data_options['ITER']['coil_offset']=np.array([phase_shift,phase_shift,phase_shift]) #XXX scan Phi0
     coil_data_options['ITER']['coil_coverage']=np.array([29.4,20.9,30.5]) #toroidal coverage DELTAPhij between coils for each row - assuming equal coil spacing for a given row (DELTAPhij=DELTAPhi)
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([0.,0.,0.])
-    coil_data_options['ITER']['phase_shift_coils']=np.array([phase_shift,phase_shift,phase_shift])
-    #coil_data_options['ITER']['phase_shift_coils']=-1.*np.array([30.,26.7,30.])
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([84.,0.,36.]) #XXX
+    coil_data_options['ITER']['phase_shift_coils']=np.array([0.,0.,0.])
+    #coil_data_options['ITER']['phase_shift_coils']=np.array([phase_shift,phase_shift,phase_shift]) #XXX
+    #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,30.,30.]) #XXX
+    #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,26.7,30.]) #XXX
+    #coil_data_options['ITER']['phase_shift_coils']=np.array([86.,0.,34.])+30. #XXX
+    #coil_data_options['ITER']['phase_shift_coils']=-1.*np.array([10.,10.,10.]) #XXX
 
     #derive extra information for settings dispatch
     for tokamak in coil_data_options.keys():
@@ -95,20 +107,19 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
         coil_data_options[tokamak]['coil_locations']=np.array([phi_0+(j)*coil_spacing for coil_spacing,phi_0 in zip(coil_data_options[tokamak]['coil_spacing'],coil_data_options[tokamak]['coil_offset']) for j in np.arange(coil_data_options[tokamak]['number_coils_per_row'])]).reshape(coil_data_options[tokamak]['number_rows'],coil_data_options[tokamak]['number_coils_per_row']) #locations of coil centres phij
         coil_data_options[tokamak]['coil_index']=np.arange(coil_data_options[tokamak]['coil_locations'].size).reshape(coil_data_options[tokamak]['coil_locations'].shape)+1
 
-    #define coil waveform I(j)
-    I_j=coil_current*np.cos(n_0*(coil_data_options[tokamak]['coil_locations']+coil_data_options[tokamak]['phase_shift_coils'][:,None])*deg_to_rad) 
+    I_j=waveform(n_0=n_0,phi=coil_data_options[tokamak]['coil_locations'],phase_shift=coil_data_options[tokamak]['phase_shift_coils'][:,None])
 
     #manually fourier transform to n space
     n_axis=np.linspace(1,n_range,n_range,dtype=int)
     I_n_cos=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))
     I_n_sin=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))
 
-    for n in n_axis: #calculate complex amplitude for each harmonic in each row
-        for coil_row in np.arange(coil_data_options[tokamak]['number_rows']):
+    for coil_row in np.arange(coil_data_options[tokamak]['number_rows']):
+        for n in n_axis: #calculate complex amplitude for each harmonic in each row
             I_n_cos[coil_row,n-1]=(2./(n*np.pi))*np.sin(n*coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad/2.)*np.sum(I_j[coil_row]*np.cos(n*coil_data_options[tokamak]['coil_locations'][coil_row]*deg_to_rad))
             I_n_sin[coil_row,n-1]=(2./(n*np.pi))*np.sin(n*coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad/2.)*np.sum(I_j[coil_row]*np.sin(n*coil_data_options[tokamak]['coil_locations'][coil_row]*deg_to_rad))
 
-    I_n=np.array([complex(coil_current,I_s) for coil_row in np.arange(coil_data_options[tokamak]['number_rows']) for coil_current,I_s in zip(I_n_cos[coil_row],I_n_sin[coil_row])]).reshape(coil_data_options[tokamak]['number_rows'],n_range)
+    I_n=np.array([complex(I_c,I_s) for coil_row in np.arange(coil_data_options[tokamak]['number_rows']) for I_c,I_s in zip(I_n_cos[coil_row],I_n_sin[coil_row])]).reshape(coil_data_options[tokamak]['number_rows'],n_range)
 
     #plotting options
     plot_fft_yueqiang=True
@@ -125,7 +136,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
 
         if plot_perturbation_fundamental:
             phi=np.linspace(0.,360.,100)
-            I_j_fundamental=coil_current*np.cos(n_0*(phi+coil_data_options[tokamak]['phase_shift_coils'][coil_row])*deg_to_rad) #plot theoretical waveform
+            I_j_fundamental=waveform(n_0=n_0,phi=phi,phase_shift=coil_data_options[tokamak]['phase_shift_coils'][coil_row]) #plot theoretical waveform
             axes[1].plot(phi*deg_to_rad,I_j_fundamental,color='magenta',linestyle='--',label='current profile')
         if plot_fft_yueqiang:
             axes[0].plot(n_axis,abs(I_n[coil_row]),label=f'coil row = {coil_row}',color=colour,marker='.',linestyle='-')
@@ -135,12 +146,17 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
         if plot_fft_reconstruction:
             phi=np.linspace(0.,3.*360.,360)
             waveform_reconstruction=np.zeros(len(phi))
-            for n in n_axis:
-                #the following are two equivalent ways of thinking about/calculating this
-                #amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
-                amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
-                plt.plot(phi*deg_to_rad,amplitude_this_n,color=settings.cmap_default(.3*n/n_axis[-1]+.4),label=f'n={n}')
-                waveform_reconstruction+=amplitude_this_n
+
+            reconstruction_type='analytical'
+            if reconstruction_type=='analytical':
+                for n in n_axis:
+                    #the following are two equivalent ways of thinking about/calculating this
+                    amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
+                    #amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
+                    plt.plot(phi*deg_to_rad,amplitude_this_n,color=settings.cmap_default(.3*n/n_axis[-1]+.4),label=f'n={n}')
+                    waveform_reconstruction+=amplitude_this_n
+            elif reconstruction_type=='individual':
+                    pass 
             plt.plot(phi*deg_to_rad,waveform_reconstruction,'g-',label='sum')
 
         #for n_highlight in n_highlights:
