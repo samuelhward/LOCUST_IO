@@ -1305,7 +1305,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         return dB_R,dB_tor,dB_Z
 
-    def plot_components(self,R,Z,phi,phase=0,i3dr=1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
+    def plot_components(self,R,Z,phi,phase=0,i3dr=-1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
         """
         generates plot of perturbation components for field checking
 
