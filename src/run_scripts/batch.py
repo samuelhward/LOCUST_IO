@@ -20,6 +20,7 @@ try:
     import subprocess
     import pathlib
     import shlex
+    import numpy as np
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -71,7 +72,7 @@ class Batch:
     batch_system['TITAN']['flags']['partition']='gpu_p100_titan'
     batch_system['TITAN']['flags']['cpus-per-task']=1
     batch_system['TITAN']['flags']['exclusive']=True
-    batch_system['TITAN']['flags']['mail-user']='samuel.ward@iter.org'
+    batch_system['TITAN']['flags']['mail-user']='samuel.ward@york.ac.uk'
     batch_system['TITAN']['flags']['mail-type']='END,FAIL,TIME_LIMIT'
     batch_system['TITAN']['flags']['o']='LOCUST_SLURM.out'
     batch_system['TITAN']['flags']['e']='LOCUST_SLURM.err'
@@ -83,9 +84,11 @@ class Batch:
     batch_system['CUMULUS']['flag_command']='#PBS'
     batch_system['CUMULUS']['flags']={}
     batch_system['CUMULUS']['flags']['V']=True
-    batch_system['CUMULUS']['flags']['l']='select=1:ncpus=8:ngpus=8:place=excl:walltime=2400:00:00'
+    batch_system['CUMULUS']['flags']['l']='select=1:ncpus=8:ngpus=8,place=excl,walltime=240:00:00'
     batch_system['CUMULUS']['flags']['q']='gpu'
     batch_system['CUMULUS']['flags']['N']='LOCUST'
+    batch_system['CUMULUS']['flags']['m']='ae'
+    batch_system['CUMULUS']['flags']['M']='samuel.ward@york.ac.uk'
     batch_system['CUMULUS']['flags']['o']='LOCUST_PBS.out'
     batch_system['CUMULUS']['flags']['e']='LOCUST_PBS.err'
 
@@ -124,15 +127,14 @@ class Batch:
     def __init__(self,**batch_settings):
         """
         notes:
-            every list MUST be the same length
             args containing multiple settings should be set using list of dicts e.g. flags=[{'TOKAMAK':1,'STDOUT':True}] or settings_prec_mod=[{'root':"'some/file/path'"}] - this equates to a single workflow run with --flags TOKAMAK=1 STDOUT  
+            lists in batch_settings can be different lengths but will be ignored if they reach their end e.g. arg1=[val1,val2],arg2=[val3] will launch once with --arg1=val1 --arg2=val3 and once with --arg1=val2 
         args:
             batch_settings - kwargs storing lists which describe command line args for chosen workflow e.g. filepaths_in=[/some/path/1,some/path/2] if you want to launch a workflow twice, once with --filepaths_in=/some/path/1 and once with --filepaths_in=/some/path/2 
         """
 
         self.batch_settings=batch_settings
-        for setting in self.batch_settings:
-            self.number_runs=len(batch_settings[setting]) #infer how many runs the user wants to launch by the lenght of the lists stored in batch_settings
+        self.number_runs=np.max(np.array([len(batch_values) for _,batch_values in self.batch_settings.items()])) 
 
     def launch(self,workflow_filepath,environment_name_batch=None,environment_name_workflow='TITAN',interactive=False):
         """
