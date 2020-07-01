@@ -110,7 +110,7 @@ def LOCUST_edit_var(filepath_in='prec_mod.f90',filepath_out='prec_mod_edited.f90
         for spilled_line in sorted(spilled_lines,reverse=True): #go back and delete spilled lines where we replaced variables
             while (True):
                 if not lines[spilled_line].split(): #if line is blank then ignore
-                    pass
+                    spilled_line-=1
                 elif ('::' in lines[spilled_line] #delete lines until one of these characters is found - denoting a comment line, pragma line etc.
                 or '#'==lines[spilled_line].split()[0][0] 
                 or '!'==lines[spilled_line].split()[0][0]
