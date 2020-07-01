@@ -111,6 +111,9 @@ branch_default_LOCUST_IO='develop'
 repo_URL_NEMO='ssh://git@git.iter.org/heat/nemo.git'
 branch_default_NEMO='develop'
 
+
+commit_hash_default_LOCUST=None
+commit_hash_default_LOCUST_IO=None
 try: #get default commit hash
     git_ls_remote=subprocess.run(['git', 'ls-remote','-q',repo_URL_LOCUST],stdout=subprocess.PIPE).stdout.decode('utf-8').split()
     for counter,entry in enumerate(git_ls_remote):
