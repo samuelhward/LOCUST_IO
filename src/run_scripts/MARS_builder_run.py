@@ -135,8 +135,8 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         """
 
         #create output and MARS_builder directories if do not exist
-        if not self.dir_output.is_dir(): self.dir_output.mkdir()
-        if not self.dir_MARS_builder.is_dir(): self.dir_MARS_builder.mkdir()
+        if not self.dir_output.is_dir(): self.dir_output.mkdir(parents=True)
+        if not self.dir_MARS_builder.is_dir(): self.dir_MARS_builder.mkdir(parents=True)
 
     def get_code(self,*args,**kwargs):
         """
