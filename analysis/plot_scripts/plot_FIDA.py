@@ -57,6 +57,7 @@ import pathlib
 import settings
 import numpy as np
 import matplotlib.pyplot as plt
+from classes.input_classes.equilibrium import Equilibrium as equi
 
 #define some colourmaps
 cmap_r=settings.colour_custom([194,24,91,1])
@@ -71,28 +72,27 @@ filepath_FIDASIM=support.dir_output_files / 'FIDASIM' / f'F_05-11-2019_23-14-13_
 data_FIDASIM=get_FIDA(filepath_FIDASIM)
 data_measured=get_FIDA(filepath_measured)
 
-fig,ax=plt.subplots(1)
+fig,axes=plt.subplots(1,2)
 sum_signals=np.zeros(len(data_FIDASIM['Wavelength [nm]']))
 for key,value in data_FIDASIM.items():
     if value.ndim>=1 and 'Wavelength' not in key:
-        ax.plot(data_FIDASIM['Wavelength [nm]'],value,label=f'{key}',linewidth=settings.plot_linewidth,zorder=0)
+        axes[0].plot(data_FIDASIM['Wavelength [nm]'],value,label=f'{key}',linewidth=settings.plot_linewidth,zorder=0)
         sum_signals+=value
         print(key)
-ax.plot(data_FIDASIM['Wavelength [nm]'],sum_signals,linestyle='--',label='sum',linewidth=settings.plot_linewidth,zorder=0)
-ax.errorbar(data_measured['Wavelength [nm]'],data_measured['Radiance [photons/(s nm m^2 sr)]'],data_measured['Uncertainty [photons/(s nm m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0.0),linewidth=settings.plot_linewidth,zorder=10)
-ax.set_xlim([657,663])
-ax.set_ylim([1.e15,1.e19])
-ax.set_xlabel('Wavelength [nm]',fontsize=25)
-ax.set_ylabel('Radiance [photons/(s nm m^2 sr)]',fontsize=25)
-ax.set_title('')
-ax.axvline(660.7,color=cmap_grey(0.0))
-ax.axvline(661.5,color=cmap_grey(0.0))
-plt.yscale('log')
-ax.legend(fontsize=20)
-plt.show()
+axes[0].plot(data_FIDASIM['Wavelength [nm]'],sum_signals,linestyle='--',label='sum',linewidth=settings.plot_linewidth,zorder=0)
+axes[0].errorbar(data_measured['Wavelength [nm]'],data_measured['Radiance [photons/(s nm m^2 sr)]'],data_measured['Uncertainty [photons/(s nm m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0.0),linewidth=settings.plot_linewidth,zorder=10)
+axes[0].set_xlim([657,663])
+axes[0].set_ylim([1.e15,1.e19])
+axes[0].set_xlabel('Wavelength [nm]',fontsize=25)
+axes[0].set_ylabel('Radiance [photons/(s nm m^2 sr)]',fontsize=25)
+axes[0].set_title('')
+axes[0].axvline(660.7,color=cmap_grey(0.0))
+axes[0].axvline(661.5,color=cmap_grey(0.0))
+axes[0].set_yscale('log')
+axes[0].legend(fontsize=20)
 
-
-
+file_eq=pathlib.Path('TRANSP') / '29034W04' / 'g29034' #grab the wall and equilibrium used in these simulations
+eq=equi('',data_format='GEQDSK',filename=file_eq)
 
 filepath_radial_profile_TRANSP=support.dir_output_files / 'FIDASIM' / '29034_W04_fi_10_radial_profile.dat'
 filepath_radial_profile_LOCUST=support.dir_output_files / 'FIDASIM' / '29034_F_05-11-2019_23-14-13_radial_profile.dat'
@@ -100,16 +100,17 @@ filepath_radial_profile_LOCUST=support.dir_output_files / 'FIDASIM' / '29034_F_0
 data_radial_TRANSP=get_FIDA(filepath_radial_profile_TRANSP)
 data_radial_LOCUST=get_FIDA(filepath_radial_profile_LOCUST)
 
-fig,ax=plt.subplots(1)
-ax.plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP',color=cmap_r(0),linewidth=settings.plot_linewidth,zorder=0)
-ax.plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST',color=cmap_g(0),linewidth=settings.plot_linewidth,zorder=0)
-ax.errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0),linewidth=settings.plot_linewidth,zorder=10)
-ax.set_xlim([0.8,1.5])
-ax.set_ylim([0,2.e16])
-ax.set_xlabel('Radius [m]',fontsize=25)
-ax.set_ylabel('Integrated intensity [photons/(s m^2 sr)]',fontsize=25)
-ax.set_title('')
-ax.legend(fontsize=20)
+axes[1].plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP',color=cmap_r(0),linewidth=settings.plot_linewidth,zorder=0)
+axes[1].plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST',color=cmap_g(0),linewidth=settings.plot_linewidth,zorder=0)
+axes[1].errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0),linewidth=settings.plot_linewidth,zorder=10)
+axes[1].set_xlim([0.8,1.5])
+axes[1].set_ylim([0,2.e16])
+axes[1].set_xlabel('Radius [m]',fontsize=25)
+axes[1].set_ylabel('Integrated intensity [photons/(s m^2 sr)]',fontsize=25)
+axes[1].set_title('')
+axes[1].legend(fontsize=20)
+axes[1].axvline(np.max(eq['lcfs_r']),linewidth=settings.plot_linewidth,color=settings.plot_colour_LCFS)
+
 plt.show()
 
 #################################

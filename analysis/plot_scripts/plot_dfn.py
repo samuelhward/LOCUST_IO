@@ -102,7 +102,7 @@ for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_asco
     LCFS=False
     vminmax=[1.2e8,1.2e10]
     LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_LOCUST,number_bins=number_bins)
-    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
+    TRANSP_mesh=dfn_TRANSP.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
     ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax1,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_ASCOT,number_bins=number_bins)
 
     axes=['R']
@@ -120,21 +120,21 @@ for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_asco
     LCFS=eq
     vminmax=[3e11,3e15]
     LOCUST_mesh=dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_LOCUST,number_bins=number_bins)
-    TRANSP_mesh=dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
+    TRANSP_mesh=dfn_TRANSP.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_TRANSP,number_bins=number_bins)
     ASCOT_mesh=dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax4,LCFS=LCFS,limiters=limiters,real_scale=real_scale,vminmax=vminmax,fill=fill,colmap=cmap_ASCOT,number_bins=number_bins)
     #'''
 
     #'''
     axes=['V_pitch']
     dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax5,colmap=cmap_LOCUST)
-    dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax5,colmap=cmap_TRANSP)
+    dfn_TRANSP.plot(axes=axes,fig=fig,ax=ax5,colmap=cmap_TRANSP)
     dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax5,colmap=cmap_ASCOT)
     #'''
    
     #'''
     axes=['E']
     dfn_LOCUST.plot(axes=axes,fig=fig,ax=ax6,colmap=cmap_LOCUST)
-    dfn_TRANSP.dfn_plot(axes=axes,fig=fig,ax=ax6,colmap=cmap_TRANSP)
+    dfn_TRANSP.plot(axes=axes,fig=fig,ax=ax6,colmap=cmap_TRANSP)
     dfn_ASCOT.plot(axes=axes,fig=fig,ax=ax6,colmap=cmap_ASCOT)
     #'''
 

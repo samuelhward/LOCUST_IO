@@ -51,12 +51,18 @@ def get_filepaths_single(shot='29034',run='W03',dimension='2D',extra_info='NUBEA
 
             #get the filename of the distribution function in this directory
             if code == 'LOCUST':
-                files.append(list(dir_.glob('*.dfn'))[0])
+                try:
+                    files.append(list(dir_.glob('*.dfn'))[0])
+                except:
+                    files.append(None)
             elif code == 'ASCOT':
-                files.append(list(dir_.glob('*.h5'))[0])
+                try:
+                    files.append(list(dir_.glob('*.h5'))[0])
+                except:
+                    files.append(None)
 
         time_slices,files=processing.utils.sort_arrays(np.asarray(time_slices),np.asarray(files))
-        files=[str(file).split('output_files')[1][1:] for file in files] #remove initial directories before output_files, [1:] to get rid of '/' at start of path
+        files=[str(file).split('output_files')[1][1:] if file else None for file in files] #remove initial directories before output_files, [1:] to get rid of '/' at start of path
 
     return files
 
