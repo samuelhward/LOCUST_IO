@@ -33,8 +33,8 @@ wall_files='input.wall_2d_'
 radii=['1.05','1.10','1.20','1.30','1.40','1.50'] #radii for limiter profiles
 run_IDs=['U69','U70','U71','U72','U73','U74']
 shot_number='157418'
-
 colours=['r-','g-','b-','m-','k-','c-']
+ascot_coulog=True
 
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
@@ -57,11 +57,18 @@ LOCUST_beam_depo_tail='_ptcles.dat'
 LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
 LOCUST_moments=['LOCUST_04-12-2018_16-11-28.285.h5','LOCUST_03-12-2018_22-55-59.961.h5','LOCUST_03-12-2018_22-58-49.281.h5','LOCUST_03-12-2018_22-57-37.348.h5','LOCUST_04-12-2018_00-13-14.371.h5','LOCUST_04-12-2018_14-11-36.625.h5']
 LOCUST_run='locust/run_1/'
+if ascot_coulog:
+    LOCUST_files[0]='F_28-04-2020_23-59-02.590_TOTL.dfn'
+    LOCUST_moments[0]='LOCUST_28-04-2020_23-59-02.590.h5'
+    LOCUST_run='locust/U69_ascot_coulog/noSOLCOL/'
 
 LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
 LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
 LOCUST_run='locust/run_2/' #added -DSOLCOL
-
+#if ascot_coulog:
+#    LOCUST_files[0]='F_28-04-2020_18-10-55.938_TOTL.dfn'
+#    LOCUST_moments[0]='LOCUST_28-04-2020_18-10-55.938.h5'
+#    LOCUST_run='locust/U69_ascot_coulog/SOLCOL/'
 
 #plot just one radius (still need to comment out desired files where necessary)
 rad=0
@@ -164,7 +171,7 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
     DFN_diff['dfn']=np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])
     #DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False,vminmax=[-5,2.5])
     cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
     ax1.set_xlabel('E [keV]')
     ax1.set_ylabel('$V_{||}\slash V$')
@@ -188,7 +195,7 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     DFN_diff.ID='LOCUST dfn - ASCOT dfn'
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
     DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False)
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax1,axes=axes,transform=False,vminmax=[-5,2.5])
     cbar=fig.colorbar(DFN_diff_mesh,orientation='vertical')
     ax1.set_xlabel('E [keV]',fontsize=25)
     ax1.set_ylabel('$V_{||}\slash V$',fontsize=25)

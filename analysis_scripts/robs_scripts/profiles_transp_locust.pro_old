@@ -1,0 +1,168 @@
+pro profiles_transp_locust
+
+file_hdf5  = 'LOCUST_16-07-2018_18-21-33.283.h5'
+file_hdf5  = 'LOCUST_17-07-2018_19-17-46.139.h5'
+;file_hdf5  = 'LOCUST_18-07-2018_13-51-49.854.h5'
+;file_hdf5  = 'LOCUST_18-07-2018_15-14-45.849.h5'
+;file_hdf5  = 'LOCUST_18-07-2018_16-46-27.383.h5'
+;file_hdf5  = 'LOCUST_18-07-2018_17-08-02.920.h5'
+;file_hdf5  = 'LOCUST_18-07-2018_20-01-49.802.h5' ;- sqrt(PSI)
+;file_hdf5 = 'LOCUST_18-07-2018_20-17-11.658.h5' ;- PSI
+;file_hdf5 = 'LOCUST_18-07-2018_21-38-41.651.h5'
+;file_hdf5 = 'LOCUST_18-07-2018_22-00-54.558.h5'
+;file_hdf5 = 'LOCUST_19-07-2018_08-14-25.098.h5'
+;file_hdf5 = 'LOCUST_19-07-2018_08-35-38.949.h5' ;- PSI
+;file_hdf5 = 'LOCUST_18-07-2018_18-04-23.023.h5'
+file_hdf5 = 'LOCUST_19-07-2018_09-07-03.223.h5' ;- C1
+file_hdf5 = 'LOCUST_19-07-2018_09-21-53.641.h5' ;- C2
+;file_hdf5 = 'LOCUST_19-07-2018_09-40-41.671.h5' ;- C2 + sep dEp_
+;file_hdf5 = 'LOCUST_19-07-2018_09-53-12.787.h5' ;- PINSEP - issue at sep
+;file_hdf5 = 'LOCUST_19-07-2018_10-09-44.356.h5' ;- GC, UNBUR=10, FG=100.0
+;file_hdf5 = 'LOCUST_19-07-2018_10-24-18.080.h5' ;- Rem PSIn>sep
+file_hdf5 = 'LOCUST_19-07-2018_10-36-39.967.h5' ;- Rem g.c. >sep - no help.
+file_hdf5 = 'LOCUST_19-07-2018_10-53-16.755.h5' ;- iterm=1 - doesn't work.
+file_hdf5 = 'LOCUST_19-07-2018_11-16-42.395.h5'
+file_hdf5 = 'LOCUST_19-07-2018_11-30-19.080.h5' ;- NOPFC, CT C2 dEp = dEp_(1)+dEp_(2)
+file_hdf5 = 'LOCUST_19-07-2018_11-39-34.479.h5'
+file_hdf5 = 'LOCUST_19-07-2018_11-46-57.682.h5' ;- No CONLY - terrible....
+file_hdf5 = 'LOCUST_19-07-2018_12-09-52.049.h5'
+file_hdf5 = 'LOCUST_19-07-2018_13-28-36.228.h5'
+;file_hdf5 = 'LOCUST_19-07-2018_13-35-40.635.h5'
+file_hdf5 = 'LOCUST_19-07-2018_13-50-00.257.h5' ;- No E0, no B in LnL
+file_hdf5 = 'LOCUST_19-07-2018_13-56-47.770.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-03-20.310.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-11-52.968.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-21-00.893.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-32-10.341.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-40-00.984.h5'
+file_hdf5 = 'LOCUST_19-07-2018_14-47-42.473.h5'
+file_hdf5 = 'LOCUST_19-07-2018_15-02-27.032.h5'
+file_hdf5 = 'LOCUST_19-07-2018_15-15-54.953.h5'
+;file_hdf5 = 'LOCUST_19-07-2018_15-23-50.808.h5'
+file_hdf5 = 'LOCUST_19-07-2018_15-31-55.524.h5'
+file_hdf5 = 'LOCUST_19-07-2018_16-47-43.678.h5'
+file_hdf5 = 'LOCUST_27-07-2018_08-48-57.970.h5'
+file_hdf5 = 'LOCUST_27-07-2018_09-51-43.548.h5'
+file_hdf5 = 'LOCUST_27-07-2018_13-08-34.357.h5'
+file_hdf5 = 'LOCUST_27-07-2018_14-34-41.663.h5'
+file_hdf5 = 'LOCUST_27-07-2018_16-47-51.328.h5'
+file_hdf5 = 'LOCUST_27-07-2018_17-12-42.580.h5'
+file_hdf5 = 'LOCUST_30-07-2018_16-50-19.354.h5'
+file_hdf5 = 'LOCUST_31-07-2018_11-29-41.850.h5'
+file_hdf5 = 'LOCUST_31-07-2018_11-55-18.767.h5'
+file_hdf5 = 'LOCUST_31-07-2018_12-11-24.785.h5'
+file_hdf5 = 'LOCUST_31-07-2018_12-38-05.244.h5'
+file_hdf5 = 'LOCUST_31-07-2018_12-52-59.755.h5'
+file_hdf5 = 'LOCUST_31-07-2018_15-07-16.303.h5'
+file_hdf5 = 'LOCUST_31-07-2018_15-20-50.979.h5'
+file_hdf5 = 'LOCUST_31-07-2018_15-33-41.925.h5'
+file_hdf5 = 'LOCUST_31-07-2018_15-46-28.940.h5'
+file_hdf5 = 'LOCUST_31-07-2018_16-00-22.627.h5'
+;file_hdf5 = 'LOCUST_31-07-2018_16-31-29.578.h5'
+file_hdf5 = 'LOCUST_31-07-2018_16-43-34.073.h5'
+file_hdf5 = 'LOCUST_31-07-2018_17-00-59.572.h5' ;- FULL
+file_hdf5 = 'LOCUST_31-07-2018_20-07-02.078.h5' ;- BLIP
+file_hdf5 = 'LOCUST_01-08-2018_17-24-20.847.h5'
+;file_hdf5 = 'LOCUST_01-08-2018_20-18-40.387.h5'
+file_hdf5 = 'LOCUST_02-08-2018_20-33-45.398.h5'
+file_hdf5 = 'LOCUST_08-08-2018_12-37-39.033.h5'
+file_hdf5 = 'LOCUST_10-08-2018_09-44-36.778.h5'
+file_hdf5 = 'LOCUST_10-08-2018_20-32-10.878.h5'
+file_hdf5 = 'LOCUST_10-08-2018_22-07-27.619.h5'
+file_hdf5 = 'LOCUST_11-08-2018_09-29-52.749.h5'
+file_hdf5 = 'LOCUST_11-08-2018_11-34-57.867.h5'
+file_hdf5 = 'LOCUST_13-08-2018_12-19-31.295.h5'
+file_hdf5 = 'LOCUST_13-08-2018_12-55-15.527.h5'
+file_hdf5 = 'LOCUST_13-08-2018_13-04-33.761.h5'
+file_hdf5 = 'LOCUST_13-08-2018_13-11-21.857.h5'
+file_hdf5 = 'LOCUST_13-08-2018_15-45-29.959.h5'
+;file_hdf5 = 'LOCUST_13-08-2018_16-08-06.078.h5'
+file_hdf5 = 'LOCUST_14-08-2018_17-59-21.401.h5'
+file_hdf5 = 'LOCUST_14-08-2018_21-32-44.692.h5'
+file_hdf5 = 'LOCUST_15-08-2018_11-34-23.512.h5'
+;file_hdf5 = 'LOCUST_15-08-2018_14-00-12.612.h5'
+file_hdf5 = 'LOCUST_15-08-2018_15-33-48.322.h5'
+
+;f7 = fltarr(40)
+;openr, 1, 'fort.7_sqrt'
+;readf, 1, f7
+;close, 1
+
+!P.multi=[0,2,2,0,0]
+
+
+file_ncdf4 = '157418U23.CDF'
+;file_ncdf4 = '157418U37.CDF'
+file_ncdf4 = '157418U43.CDF'
+
+read_hdf5, file_hdf5, '/Input Data/Kinetic Data/Profiles (1D)/Te/data', Te_L
+read_hdf5, file_hdf5, '/Input Data/Kinetic Data/Profiles (1D)/ne/data', ne_L
+read_hdf5, file_hdf5, '/Input Data/Kinetic Data/Profiles (1D)/Ti/data', Ti_L
+
+read_hdf5, file_hdf5, '/Input Data/Kinetic Data/Profiles (1D)/PSIn', psin_l_
+read_hdf5, file_hdf5, '/Output Data/Fast Ions/Profiles (1D)/Density/data', bdens_L
+read_hdf5, file_hdf5, '/Output Data/Fast Ions/Profiles (1D)/NBI Heating Power (i1)/data', iheat_L
+read_hdf5, file_hdf5, '/Output Data/Fast Ions/Profiles (1D)/NBI Heating Power (e-)/data', eheat_L
+read_hdf5, file_hdf5, '/Output Data/Fast Ions/Profiles (1D)/Beam Source/data', bdepd_L
+read_hdf5, file_hdf5, '/Output Data/Fast Ions/Profiles (1D)/sqrt(PSIn)', psin_L
+
+;psin_L = sqrt(psin_L)
+
+bdens_T = read_transp(file_ncdf4,"BDENS",/psinorm)
+iheat_T = read_transp(file_ncdf4,"PBI",/psinorm)
+eheat_T = read_transp(file_ncdf4,"PBE",/psinorm)
+bdepd_T = read_transp(file_ncdf4,"BDEP_D",/psinorm)
+Te_T    = read_transp(file_ncdf4,"TE",/psinorm)
+ne_T    = read_transp(file_ncdf4,"NE",/psinorm)
+Ti_T    = read_transp(file_ncdf4,"TI",/psinorm)
+dVOL_T  = read_transp(file_ncdf4,"DVOL",/psinorm)
+EPOTNC  = read_transp(file_ncdf4,"EPOTNC",/psinorm)
+BPLIM  = getData("BPLIM",'NETCDF::'+file_ncdf4)
+BSORB  = getData("BSORB",'NETCDF::'+file_ncdf4)
+
+
+
+i = n_elements(Te_T.T)-1
+i = 123
+
+!P.multi=[0,2,2,0,0]
+device, decompose=0
+!P.charsize=2
+loadct, 5
+plot, Te_T.psi[*,i], Te_t.data[*,i]
+oplot, psin_l_, Te_l, color=7*16-1
+plot, ne_T.psi[*,i], ne_t.data[*,i]*1.0e6
+oplot, psin_l_, ne_l, color=7*16-1
+plot, Ti_T.psi[*,i], Ti_t.data[*,i]
+oplot, psin_l_, Ti_l, color=7*16-1
+
+;plot, findgen(41)/40.0, f7, psym=-1                            
+;oplot, sqrt(dvol_t.psi[*,i]), dvol_t.data[*,i]/1.0e6, psym=-1
+;stop
+
+iflag   = getData('BPCAP',   'NETCDF::'+file_ncdf4) & if(iflag.ERC ne 0)then return
+BPCAP   = iflag.data
+
+!P.multi=[0,2,2,0,0]
+
+device, decompose=0
+loadct, 5
+
+plot, sqrt(bdens_T.PSI[*,i]), bdens_T.data[*,i]*5.0e6*1.0e6/BPCAP[n_elements(BPCAP)-1], charsize=2.0, psym=-1, xtitle='sqrt(PSIn)', ytitle='Fast ion density [/m!e3!n]'
+oplot, psin_L, bdens_L, color=7*16-1, thick=2
+
+plot, sqrt(iheat_T.PSI[*,i]), iheat_T.data[*,i]*5.0e6*1.0e6/BPCAP[n_elements(BPCAP)-1], charsize=2.0, psym=-1, xtitle='sqrt(PSIn)', ytitle='Ion heating [W/m!e3!n]'
+oplot, psin_L, iheat_L, color=7*16-1, thick=2
+
+plot, sqrt(eheat_T.PSI[*,i]), eheat_T.data[*,i]*5.0e6*1.0e6/BPCAP[n_elements(BPCAP)-1], charsize=2.0, psym=-1, xtitle='sqrt(PSIn)', ytitle='e!e-!n heating [W/m!e3!n]'
+oplot, psin_L, eheat_L, color=7*16-1, thick=2
+
+plot, sqrt(bdepd_T.PSI[*,i]), bdepd_T.data[*,i]*5.0e6*1.0e6/BPCAP[n_elements(BPCAP)-1], charsize=2.0, xtitle='sqrt(PSIn)', ytitle='Beam deposition [/m!e3!n/s]'
+for j=0,i do oplot, sqrt(bdepd_T.PSI[*,j]), bdepd_t.data[*,j]*5.0e6*1.0e6/BPCAP[i]
+oplot, psin_L, bdepd_L, color=7*16-1, thick=2, psym=-1
+
+echg  = 1.6021892e-19
+PCAP = total(bdepd_T.data*dVOL_T.data)*80.0e3*echg
+
+stop
+end

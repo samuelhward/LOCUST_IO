@@ -1,6 +1,7 @@
 #something to compare moments through time
 
 import context
+import constants
 from classes.output_classes.moments import Moments as mom 
 from classes.output_classes.particle_list import Final_Particle_List
 import scipy
@@ -42,7 +43,7 @@ for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP
     for key in ['density','NBI-heating-power(i1)','NBI-heating-power(e-)','beam_source']:
         mom_transp[key]*=locust_beam_power/mom_transp['beam_source_captured']
 
-    beam_depo=Final_Particle_List(ID=run_ID,data_format='ASCOT',filename=ASCOT_run+ASCOT_moment) #likewise we need to do the same for ASCOT too
+    beam_depo=Final_Particle_List(ID='',data_format='ASCOT',filename=ASCOT_run+ASCOT_moment) #likewise we need to do the same for ASCOT too
     beam_power=1. #1 Watt beam power
     beam_energy=80000
     k=np.where(beam_depo['status_flag']>0)[0] #scale by all markers which actually contributed to the simulation

@@ -13,6 +13,13 @@ import matplotlib.pyplot as plt
 from matplotlib import cm #get colourmaps
 from mpl_toolkits import mplot3d #import 3D plotting axes
 from mpl_toolkits.mplot3d import Axes3D
+import settings
+
+#define some colourmaps
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+
 
 TRANSP_moments=['157418U69.CDF','157418U70.CDF','157418U71.CDF','157418U72.CDF','157418U73.CDF','157418U74.CDF']
 
@@ -30,7 +37,17 @@ LOCUST_FINT='FINT.dat_'
 LOCUST_run='locust/run_3/' #FINT runs with -DSOLCOL
 #LOCUST_run='locust/run_4/' #FINT runs without -DSOLCOL
 
-from U6974_files_ASCOT import * #import all the ASCOT filenames
+ASCOT_files=['ascot_freia_1470025.h5','ascot_freia_1470029.h5','ascot_freia_1470032.h5','ascot_freia_1470036.h5','ascot_freia_1470040.h5','ascot_freia_1470044.h5']
+ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrapolated, ORBITMETHOD=1
+
+ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
+ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+
+ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
+ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
 radii=['1.05','1.10','1.20','1.30','1.40','1.50'] #radii for limiter profiles
 
@@ -85,6 +102,10 @@ for LOCUST_moment,TRANSP_moment,ASCOT_file,radius,colour in zip(LOCUST_moments,T
     beam_source_loss_locust.append(mom_locust['PFC_power'][time_index_locust])
     beam_source_loss_ascot.append(mom_ascot['PFC_power'][time_index_locust])
 
+beam_source_loss_transp=np.asarray(beam_source_loss_transp)    
+beam_source_loss_locust=np.asarray(beam_source_loss_locust)    
+beam_source_loss_ascot=np.asarray(beam_source_loss_ascot)    
+
 #plot PFC loss power vs radii for each code
 
 ax4.plot([1.05,1.1,1.2,1.3,1.4,1.5],beam_source_loss_locust,'g')
@@ -109,4 +130,16 @@ ax4.legend(['LOCUST','TRANSP','ASCOT'])
 #ax4.set_xlabel('time [s]')
 #ax4.set_ylabel('beam source capture fraction')
 
+plt.show()
+
+
+
+fig,ax=plt.subplots(1)
+ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_locust/beam_power,color=cmap_g(0.0),linewidth=3)
+ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_transp/beam_power,color=cmap_r(0.0),linewidth=3)
+ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_ascot/beam_power,color=cmap_b(0.0),linewidth=3)
+ax.set_xlabel('radius',fontsize=20)
+ax.set_ylabel('% prompt loss power',fontsize=20)
+#ax.set_title('at time={}s'.format(time),fontsize=20)
+ax.legend(['LOCUST','TRANSP','ASCOT'],fontsize=20)
 plt.show()
