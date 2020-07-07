@@ -681,7 +681,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
+            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
         #plot distribution function
@@ -726,21 +726,19 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 ax.set_xticks(X) #set axes ticks
                 ax.set_yticks(Y)
-                for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                    if index % settings.tick_frequency==0:
-                        label.set_visible(True)
-                    else:
-                        label.set_visible(False)
+                for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                    for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
                 Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
 
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
                     mesh=ax.pcolormesh(X,Y,dfn_copy[key],cmap=colmap,vmin=vmin,vmax=vmax)
-                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    #mesh=ax.contourf(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
-                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 

@@ -1410,18 +1410,16 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]
                 ax.set_xticks(self_binned_x) #set axes ticks
                 ax.set_yticks(self_binned_y)
-                for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                    if index % settings.tick_frequency==0:
-                        label.set_visible(True)
-                    else:
-                        label.set_visible(False)
+                for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                    for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
                 self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
                 
                 if fill:
                     ax.set_facecolor(colmap(np.amin(self_binned)))
                     mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                 else:
-                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
+                    mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 

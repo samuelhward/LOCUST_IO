@@ -336,7 +336,7 @@ class Orbits(classes.base_output.LOCUST_output):
                         pass
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)
                 if start_mark:
                     ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,markersize=settings.markersize_start_mark)
 
@@ -390,7 +390,7 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)
                 if start_mark:
                     ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='start')
 
