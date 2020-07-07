@@ -10,6 +10,12 @@ usage:
  
 notes:         
     can plot arbitrary number of DFNs using this script
+
+    rules for line_styles:
+        FO = solid cmap_G
+        add GC --> add dashes
+        lnLA --> make cmap_G_
+        trunc --> add dots
 ---
 """
 
@@ -70,7 +76,7 @@ def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,resi
     for time_slice in [time_slices[time_slice_index]]: #XXX hack to plot final time slice
         
         #for this time slice, iterate over each code - for each code we need to pick out the simulation corresponding to the current time slice
-        for counter_code,(time_slices_for_this_run,code,data_format,ID,cmap) in enumerate(zip(files,codes,data_formats,IDs,cmaps)):
+        for counter_code,(time_slices_for_this_run,code,data_format,ID,line_style,cmap) in enumerate(zip(files,codes,data_formats,IDs,line_styles,cmaps)):
             file_this_time_slice=time_slices_for_this_run[time_slice_index]
             if file_this_time_slice is None: continue
 
@@ -133,7 +139,7 @@ def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,resi
                 transform=False
         
             DFN['E']/=1000. #get axes in keV - .plot integrates the DFNs using .transform with 'dE' so should not affect plotting
-            mesh=DFN.plot(axes=axes,fig=fig,ax=ax,LCFS=LCFS,limiters=limiters,real_scale=real_scale,fill=fill,colmap=cmap,number_bins=number_bins,vminmax=vminmax,transform=transform,label=DFN.ID)
+            mesh=DFN.plot(axes=axes,fig=fig,ax=ax,LCFS=LCFS,limiters=limiters,real_scale=real_scale,fill=fill,colmap=cmap,number_bins=number_bins,vminmax=vminmax,transform=transform,label=DFN.ID,line_style=line_style)
 
             if True and len(axes)>1:
                 cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
@@ -169,7 +175,7 @@ def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=
 
             #read DFNs
             if code=='TRANSP':
-                DFN=dfn_t(ID=ID,time_string='TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_this_time_slice)
+                DFN=dfn_t(ID=ID,filename=file_this_time_slice)
                 #scale DFNs to match 1W beam deposited power
                 file_transp_output=pathlib.Path(file_this_time_slice).parents[0] / (shot+run+'.CDF')
                 output_TRANSP=output_T('',filename=file_transp_output)
@@ -242,6 +248,7 @@ cmaps=[]
 ASCOT_beam_depo_data_formats=[]
 ASCOT_beam_depo_filenames=[]
 IDs=[] #some more information to put as plot legend or misc
+line_styles=[]
 time_slices=np.linspace(0.37,0.46,10)
 shot='29034'
 run='W03'
@@ -257,6 +264,7 @@ cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_FO') #if this is an ASCOT run, append the beam deposition data format so we can rescale according to true power deposited
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
 IDs.append('ASCOT FO')
+line_styles.append('solid')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
@@ -266,6 +274,7 @@ cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append('ASCOT_FO')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
 IDs.append('ASCOT GC')
+line_styles.append('dashed')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
@@ -275,6 +284,7 @@ cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC')
+line_styles.append('dashed')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
@@ -284,24 +294,27 @@ cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC trunc')
+line_styles.append('dashdot')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('BBNBI_birth_GC_ASCOTlnL')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g)
+cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC ASCOTlnL')
+line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('BBNBI_birth_GC_ASCOTlnL_trunc')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g)
+cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC ASCOTlnL trunc')
+line_styles.append('dashdot')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
@@ -311,15 +324,17 @@ cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST FO')
+line_styles.append('solid')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('BBNBI_birth_FO_trunc')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g_)
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST FO truncated')
+line_styles.append('dotted')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
@@ -329,6 +344,7 @@ cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST FO ASCOT lnL')
+line_styles.append('solid')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
@@ -338,6 +354,7 @@ cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST FO truncated ASCOT lnL')
+line_styles.append('dotted')
 
 #'''
 
@@ -351,6 +368,7 @@ cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_GC')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_NUBEAM_birth_GC')
 IDs.append('ASCOT GC')
+line_styles.append('dashed')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('TRANSP')
@@ -359,16 +377,18 @@ data_formats.append(None) #TRANSP distribution functions are unique here
 cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('TRANSP GC')
+IDs.append('TRANSP GC truncated')
+line_styles.append('dashdot')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
-extra_infos.append('NUBEAM_birth_GC')
+extra_infos.append('NUBEAM_birth_GC_trunc')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g_)
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC truncated') 
+line_styles.append('dashdot')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
@@ -378,6 +398,7 @@ cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC')
+line_styles.append('dashed')
 '''
 
 file_eq=pathlib.Path('TRANSP') / (shot+run) / ('g'+shot) #grab the wall and equilibrium used in these simulations
@@ -421,6 +442,7 @@ cmaps.append(cmap_b)
 ASCOT_beam_depo_data_formats.append('ASCOT_GC')
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_NUBEAM_birth_GC')
 IDs.append('ASCOT GC')
+line_styles.append('dashed')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('TRANSP')
@@ -430,24 +452,27 @@ cmaps.append(cmap_r)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('TRANSP GC')
+line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('NUBEAM_birth_GC')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g_)
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC')
+line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
 extra_infos.append('NUBEAM_birth_GC_trunc')
 data_formats.append('LOCUST')
-cmaps.append(cmap_g_)
+cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC truncated') 
+line_styles.append('dashdot')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
@@ -457,6 +482,7 @@ cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC ASCOT lnL')
+line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
 codes.append('LOCUST')
@@ -466,6 +492,7 @@ cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
 IDs.append('LOCUST GC truncated ASCOT lnL')
+line_styles.append('dashdot')
 
 #'''
 
@@ -497,6 +524,7 @@ cmaps.append()
 ASCOT_beam_depo_data_formats.append()
 ASCOT_beam_depo_filenames.append()
 IDs.append()
+line_styles.append()
 '''
 
 
