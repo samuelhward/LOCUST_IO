@@ -1064,7 +1064,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         #1D data
         if key in self.data.keys():
             if self[key].ndim==1:
-                ax.plot(self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
+                ax.plot(self[key],color=colmap(colmap_val),label=label)
                 ax.set_ylabel(key)
 
         #2D data
@@ -1076,11 +1076,9 @@ class Perturbation(classes.base_input.LOCUST_input):
                 dr,dz=R[1]-R[0],Z[1]-Z[0]
                 ax.set_xticks(R) #set axes ticks
                 ax.set_yticks(Z)
-                for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                    if index % settings.tick_frequency==0:
-                        label.set_visible(True)
-                    else:
-                        label.set_visible(False)
+                for index,xlabel,ylabel,xtick,ytick in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                    for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
                 Z,R=np.meshgrid(Z-dz/2.,R-dr/2.) #offset ticks onto bin centres
 
                 if key not in self.data.keys():
@@ -1122,20 +1120,20 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 #2D plot
                 if fill is True:
-                    mesh=ax.contourf(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contourf(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")
                 else:
-                    mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(R,Z,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
                     
-                #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
+                #mesh=ax.pcolormesh(R,Z,values,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
 
                 #3D plot
                 #ax=ax.axes(projection='3d')
                 #ax.view_init(elev=90, azim=None) #rotate the camera
-                #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
+                #ax.plot_surface(R,Z,values,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(values),vmax=np.amax(values))
                 
                 ax.set_aspect('equal')
                 ax.set_xlim(np.min(self['R_1D']),np.max(self['R_1D']))
@@ -1183,11 +1181,11 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 #2D plot
                 if fill is True:
-                    mesh=ax.contourf(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contourf(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")
                 else:
-                    mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(phi,R,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 
@@ -1243,11 +1241,11 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 #2D plot
                 if fill is True:
-                    mesh=ax.contourf(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contourf(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")
                 else:
-                    mesh=ax.contour(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(X,Y,values,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 
@@ -1377,11 +1375,9 @@ class Perturbation(classes.base_input.LOCUST_input):
         dr,dz=R_poloidal[1]-R_poloidal[0],Z_poloidal[1]-Z_poloidal[0]
         ax.set_xticks(R_poloidal) #set axes ticks
         ax.set_yticks(Z_poloidal)
-        for index,label in enumerate(ax.xaxis.get_ticklabels()):
-            if index % settings.tick_frequency==0:
-                label.set_visible(True)
-            else:
-                label.set_visible(False)
+        for index,xlabel,ylabel,xtick,ytick in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+            for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
         R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
         R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
         phi_poloidal=np.full(len(R_poloidal),phi)

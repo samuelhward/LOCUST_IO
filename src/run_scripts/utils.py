@@ -463,11 +463,9 @@ class TRANSP_output_FI(TRANSP_output):
             dr,dz=R[1]-R[0],Z[1]-Z[0]
             ax.set_xticks(R) #set axes ticks
             ax.set_yticks(Z)
-            for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                if index % settings.tick_frequency==0:
-                    label.set_visible(True)
-                else:
-                    label.set_visible(False)
+            for index,xlabel,ylabel,xtick,ytick in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
             R,Z=np.meshgrid(R-dr/2.,Z-dz/2.)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Z,R)
@@ -483,7 +481,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
                 mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=vmin,vmax=vmax)
             else:
-                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('R [m]')
@@ -520,11 +518,8 @@ class TRANSP_output_FI(TRANSP_output):
             dE,dV_pitch=dfn_copy['E'][1]-dfn_copy['E'][0],dfn_copy['V_pitch'][1]-dfn_copy['V_pitch'][0]
             ax.set_xticks(dfn_copy['E']) #set axes ticks
             ax.set_yticks(dfn_copy['V_pitch'])
-            for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                if index % settings.tick_frequency==0:
-                    label.set_visible(True)
-                else:
-                    label.set_visible(False)
+            for index,xlabel,ylabel,xtick,ytick in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
             E,V_pitch=np.meshgrid(dfn_copy['E']-dE/2.,dfn_copy['V_pitch']-dV_pitch/2.) #X,Y this way because dfn dimension ordering
 
@@ -532,7 +527,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=vmin,vmax=vmax)            
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -573,7 +568,7 @@ class TRANSP_output_FI(TRANSP_output):
                     ax.set_facecolor(colmap(np.amin(dfn_int_all)))
                     mesh=ax.pcolormesh(time,E,dfn_int_all,cmap=colmap,vmin=vmin,vmax=vmax)           
                 else:
-                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(time,E,dfn_int_all,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=vmin,vmax=vmax)
                     #ax.clabel(mesh,inline=1,fontsize=10)
 
                 ax.set_xlabel('energy [eV]')                
@@ -629,7 +624,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy)))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=vmin,vmax=vmax)         
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -1564,7 +1559,7 @@ class FINT_LOCUST:
             ax.set_facecolor(colmap(np.amin(self['dfn'])))
             mesh=ax.pcolormesh(time,E,self['dfn'],cmap=colmap,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
         else:
-            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
+            mesh=ax.contour(time,E,self['dfn'],levels=np.linspace(np.amin(self['dfn']),np.amax(self['dfn']),num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(self['dfn']),vmax=np.amax(self['dfn']))
             #ax.clabel(mesh,inline=1,fontsize=10)
 
         ax.set_xlabel('time [s]')

@@ -761,7 +761,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
+            ax.plot(self[key],color=colmap(colmap_val),linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
         #2D data
@@ -772,11 +772,9 @@ class Equilibrium(classes.base_input.LOCUST_input):
             dx,dy=X[1]-X[0],Y[1]-Y[0]
             ax.set_xticks(X) #set axes ticks
             ax.set_yticks(Y)
-            for index,label in enumerate(ax.xaxis.get_ticklabels()):
-                if index % settings.tick_frequency==0:
-                    label.set_visible(True)
-                else:
-                    label.set_visible(False)
+            for index,xlabel,ylabel,xtick,ytick in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+
             Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
 
@@ -789,20 +787,20 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 if settings.plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
-            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
 
             #3D plot
             #ax=ax.axes(projection='3d')
             #ax.view_init(elev=90, azim=None) #rotate the camera
-            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
             
             if fig_flag is False:    
                 fig.colorbar(mesh,ax=ax,orientation='horizontal')
