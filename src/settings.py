@@ -80,15 +80,20 @@ plot_colour_limiters=cmap_k(0.)
 plot_line_style_limiters='-' 
 plot_colour_gridlines=cmap_w(0.) 
 plot_line_style_gridlines='-'
-plot_linewidth=0.5 #set plot line width
+plot_linewidth=0.5 #set default plot line width
+plot_line_style='-' #set default plot line style
 plot_contour_labels=False #toggle level labels for contour plots
 font = {'family' : 'normal', #set figure font
         'weight' : 'bold',
         'size'   :  10}
 matplotlib.rc('font', **font)
+font_size_title=25
+font_size_xlabel=25
+font_size_ylabel=25
 colour_start_mark='red' #set plot starting markers default
 marker_start_mark='o' 
 markersize_start_mark=1
+tick_frequency=5 #plot every Nth tick
 
 #system environment
 try:

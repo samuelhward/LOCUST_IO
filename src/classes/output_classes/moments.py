@@ -158,11 +158,12 @@ def read_moments_TRANSP(filepath,**properties):
     input_data['NBI-heating-power(i1)']=np.array(file.variables['PBI'].data)*1.e6 #convert to [m^-3]
     input_data['NBI-heating-power(e-)']=np.array(file.variables['PBE'].data)*1.e6 #convert to [m^-3]
 
-    #input_data['torque-density(JxB-inst)']=np.array(file.variables['TQJJXBT'].data)*1.e6 #convert to [m^-3]
-    input_data['torque-density(JxB-inst)_deposited']=np.array(file.variables['TQJBD'].data)*1.e6 #convert to [m^-3]
+    input_data['torque-density(JxB-sweep)']=np.array(file.variables['TQJXBT'].data)*1.e6 #convert to [m^-3]
+    #input_data['torque-density(JxB-inst)_deposited']=np.array(file.variables['TQJBD'].data)*1.e6 #convert to [m^-3]
+    input_data['torque-density(coll)']=np.array(file.variables['TQCOL14'].data)*1.e6 #or JXBC
 
-    input_data['torque-density(coll)']=np.array(file.variables['BPHCL'].data)
-
+    input_data['J(NBCD)-raw']=np.array(file.variables['UCURB'].data)*1.0e4 #*1.0e4 to get [A/m^2]
+    
     input_data['residual-angular-momentum-density']=np.array(file.variables['BPHI'].data)
 
     input_data['beam_source']=np.array(file.variables['BDEP_D'].data)*1.e6 #convert to [m^-3]
@@ -176,6 +177,7 @@ def read_moments_TRANSP(filepath,**properties):
     input_data['flux_pol']=np.array(file.variables['PLFLX'].data) #Wb/rad
     input_data['flux_pol_norm']=(input_data['flux_pol']-input_data['flux_pol'][0,0])/(input_data['flux_pol'][0,-1]-input_data['flux_pol'][0,0])
     input_data['flux_pol_norm_sqrt']=np.sqrt(np.array(input_data['flux_pol_norm']))
+
 
     '''out of date or not needed for now
     input_data['torque-density(coll)']=file.variables['TQCOLNB'].data
@@ -398,7 +400,7 @@ class Moments(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
+    def plot(self,key,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plots moments
 
@@ -407,6 +409,7 @@ class Moments(classes.base_output.LOCUST_output):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -433,7 +436,7 @@ class Moments(classes.base_output.LOCUST_output):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
        
-        ax.plot(self[axis],self[key],color=colmap(colmap_val),label=label)
+        ax.plot(self[axis],self[key],color=colmap(colmap_val),linestyle=line_style,label=label)
         ax.set_xlabel(axis)
         ax.set_ylabel(key)
 

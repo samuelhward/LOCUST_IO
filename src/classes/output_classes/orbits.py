@@ -278,7 +278,7 @@ class Orbits(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
+    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         simple orbits plot in the R,Z/X,Y planes
          
@@ -291,6 +291,7 @@ class Orbits(classes.base_output.LOCUST_output):
             start_mark - include marker to show birth point
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -335,7 +336,7 @@ class Orbits(classes.base_output.LOCUST_output):
                         pass
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
                 if start_mark:
                     ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,markersize=settings.markersize_start_mark)
 
@@ -389,7 +390,7 @@ class Orbits(classes.base_output.LOCUST_output):
                     ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
                 if start_mark:
                     ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='start')
 

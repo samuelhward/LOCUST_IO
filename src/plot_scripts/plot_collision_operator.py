@@ -57,7 +57,7 @@ except:
 
 ##################################################################
 
-def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -80,6 +80,7 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=s
         type - toggle various representations from different codes
         colmap - plotted line colour
         colmap_val - optional numerical value for defining single colour plots 
+        line_style - set 1D line style
         ax - ax object to add plot to
         fig - take input fig (can be used to add colourbars etc)
     """
@@ -168,7 +169,7 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=s
         
     for counter,(drag,Ti_) in enumerate(zip(dE_dt,Ti/echg)):
         a_colour=colmap(colmap_val)
-        ax.plot(E/(1000.*echg),(drag/1.0e-13),color=a_colour)#(counter/len(dE_dt))) #cycle through colours
+        ax.plot(E/(1000.*echg),(drag/1.0e-13),color=a_colour,linestyle=line_style)#(counter/len(dE_dt))) #cycle through colours
         ax.scatter(Ti_/1000.,0.,color=a_colour)
         ax.set_xlabel('Energy [KeV]')
         ax.set_ylabel('Energy drift [10e-13 J/s]')

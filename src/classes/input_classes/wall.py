@@ -544,7 +544,7 @@ class Wall(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST_2D/ASCOT_2D_input/IDS_2D)\n".format(self.ID))
 
-    def plot(self,LCFS=False,real_scale=False,colmap=settings.plot_line_style_limiters,label='',ax=False,fig=False): 
+    def plot(self,LCFS=False,real_scale=False,colmap=settings.plot_line_style_limiters,line_style=settings.plot_line_style,label='',ax=False,fig=False): 
         """
         notes:
         args:
@@ -552,6 +552,7 @@ class Wall(classes.base_input.LOCUST_input):
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -584,7 +585,7 @@ class Wall(classes.base_input.LOCUST_input):
         if LCFS: #plot plasma boundary
             ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
         
-        ax.plot(self['rlim'],self['zlim'],colmap,label=label)
+        ax.plot(self['rlim'],self['zlim'],colmap,linestyle=line_style,label=label)
 
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_aspect('equal')

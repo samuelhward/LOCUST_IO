@@ -404,7 +404,7 @@ class TRANSP_output_FI(TRANSP_output):
 
         return dfn_copy
 
-    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),number_bins=20,fill=True,vminmax=None,label='',ax=False,fig=False,**kwargs):
+    def plot(self,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,transform=True,number_bins=20,fill=True,vminmax=None,label='',ax=False,fig=False,**kwargs):
         """
         plot the distribution function
 
@@ -420,6 +420,8 @@ class TRANSP_output_FI(TRANSP_output):
             real_scale - plot to Tokamak scale
             colmap - select desired colourmap
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
+            transform - set to False if supplied dfn has already been cut down to correct dimensions
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
             vminmax - set mesh Vmin/Vmax values
@@ -451,11 +453,22 @@ class TRANSP_output_FI(TRANSP_output):
         #add specific options for plotting here
         if axes==['R','Z']:
 
-            dfn_copy=self.dfn_integrate(space=False)
+            if transform:
+                dfn_copy=self.dfn_integrate(space=False)
+            else:
+                dfn_copy=copy.deepcopy(self)
 
             R=np.linspace(np.min(dfn_copy['R2D']),np.max(dfn_copy['R2D']),int(np.sqrt(len(dfn_copy['R2D'])))) #need to interpolate since irregular grid
             Z=np.linspace(np.min(dfn_copy['Z2D']),np.max(dfn_copy['Z2D']),int(np.sqrt(len(dfn_copy['Z2D']))))
-            R,Z=np.meshgrid(R,Z)
+            dr,dz=R[1]-R[0],Z[1]-Z[0]
+            ax.set_xticks(R) #set axes ticks
+            ax.set_yticks(Z)
+            for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                if index % settings.tick_frequency==0:
+                    label.set_visible(True)
+                else:
+                    label.set_visible(False)
+            R,Z=np.meshgrid(R-dr/2.,Z-dz/2.)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
             new_dfn=interpolator(Z,R)
 
@@ -470,7 +483,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(new_dfn)))
                 mesh=ax.pcolormesh(R,Z,new_dfn,cmap=colmap,vmin=vmin,vmax=vmax)
             else:
-                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(R,Z,new_dfn,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('R [m]')
@@ -492,7 +505,10 @@ class TRANSP_output_FI(TRANSP_output):
 
         elif axes==['E','V_pitch']: 
 
-            dfn_copy=self.dfn_integrate(pitch=False,energy=False)
+            if transform:
+                dfn_copy=self.dfn_integrate(pitch=False,energy=False)
+            else:
+                dfn_copy=copy.deepcopy(self)
 
             if vminmax:
                 vmin=vminmax[0]
@@ -501,13 +517,22 @@ class TRANSP_output_FI(TRANSP_output):
                 vmin=np.amin(dfn_copy['dfn'])
                 vmax=np.amax(dfn_copy['dfn'])
 
-            E,V_pitch=np.meshgrid(dfn_copy['E'],dfn_copy['V_pitch']) #X,Y this way because dfn dimension ordering
+            dE,dV_pitch=dfn_copy['E'][1]-dfn_copy['E'][0],dfn_copy['V_pitch'][1]-dfn_copy['V_pitch'][0]
+            ax.set_xticks(dfn_copy['E']) #set axes ticks
+            ax.set_yticks(dfn_copy['V_pitch'])
+            for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                if index % settings.tick_frequency==0:
+                    label.set_visible(True)
+                else:
+                    label.set_visible(False)
+
+            E,V_pitch=np.meshgrid(dfn_copy['E']-dE/2.,dfn_copy['V_pitch']-dV_pitch/2.) #X,Y this way because dfn dimension ordering
 
             if fill:
                 ax.set_facecolor(colmap(np.amin(dfn_copy['dfn'])))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy['dfn'],cmap=colmap,vmin=vmin,vmax=vmax)            
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy['dfn'],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')
@@ -520,7 +545,10 @@ class TRANSP_output_FI(TRANSP_output):
 
         elif axes==['E','time']: #use the kwargs to accept TRANSP_output_FI_list, a list of other integrated TRANSP_output_FI objects to plot in a single mesh plot
             
-            dfn_copy=self.dfn_integrate(energy=False)
+            if transform:
+                dfn_copy=self.dfn_integrate(energy=False)
+            else:
+                dfn_copy=copy.deepcopy(self)
 
             if 'TRANSP_output_FI_list' in kwargs.keys():
 
@@ -561,21 +589,33 @@ class TRANSP_output_FI(TRANSP_output):
 
         elif axes==['E']: #integrate over all volume and plot as a function of energy in #/eV
 
-            dfn_copy=self.dfn_integrate(energy=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val),label=label)
+            if transform:
+                dfn_copy=self.dfn_integrate(energy=False)
+            else:
+                dfn_copy=copy.deepcopy(self)
+
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val),label=label,linestyle=line_style)
             ax.set_xlabel('energy [eV]')
             ax.set_ylabel('density [#/eV]')
 
         elif axes==['V_pitch']:
 
-            dfn_copy=self.dfn_integrate(pitch=False)
-            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val),label=label)
+            if transform:
+                dfn_copy=self.dfn_integrate(pitch=False)
+            else:
+                dfn_copy=copy.deepcopy(self)
+
+            ax.plot(dfn_copy[axes[0]],dfn_copy['dfn'],color=colmap(colmap_val),label=label,linestyle=line_style)
             ax.set_xlabel('pitch [V||/V]')
             ax.set_ylabel('density [#/dPitch]')
 
         elif len(axes)==self['dfn'].ndim: #assume user wants to plot energy pitch at point in real space
 
-            dfn_copy=self['dfn'][tuple(axes)]
+            if transform:
+                dfn_copy=self['dfn'][tuple(axes)]
+            else:
+                dfn_copy=copy.deepcopy(self)
+
             E,V_pitch=np.meshgrid(self['E'],self['V_pitch']) #X,Y this way because dfn dimension ordering
 
             if vminmax:
@@ -589,7 +629,7 @@ class TRANSP_output_FI(TRANSP_output):
                 ax.set_facecolor(colmap(np.amin(dfn_copy)))
                 mesh=ax.pcolormesh(E,V_pitch,dfn_copy,cmap=colmap,vmin=vmin,vmax=vmax)         
             else:
-                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(E,V_pitch,dfn_copy,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 #ax.clabel(mesh,inline=1,fontsize=10)
 
             ax.set_xlabel('energy [eV]')

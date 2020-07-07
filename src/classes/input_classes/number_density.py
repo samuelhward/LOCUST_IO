@@ -699,7 +699,7 @@ class Number_Density(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/IDS/MARSF)\n".format(self.ID))
 
-    def plot(self,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
+    def plot(self,axis='flux_pol_norm',colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plots number density
          
@@ -707,6 +707,7 @@ class Number_Density(classes.base_input.LOCUST_input):
             axis - selects x axis of plot
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -736,7 +737,7 @@ class Number_Density(classes.base_input.LOCUST_input):
             ax = fig.add_subplot(111)
         ax.set_title(self.ID)
 
-        ax.plot(self[axis],self['n'],color=colmap(colmap_val),label=label)
+        ax.plot(self[axis],self['n'],color=colmap(colmap_val),linestyle=line_style,label=label)
         ax.set_xlabel(axis)
         ax.set_ylabel('number density [m^-3]')
         

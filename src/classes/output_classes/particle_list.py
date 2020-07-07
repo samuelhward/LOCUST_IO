@@ -448,7 +448,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',label='',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -467,6 +467,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
             colfield - set the quantity which is associated with colmap e.g. time (defaults to status_flag, where the numerical value of the status_flag will dictate the colour)
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -510,7 +511,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                 else:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins)
                 self_binned_centres=(self_binned_edges[:-1]+self_binned_edges[1:])*0.5
-                ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val),label=label)
+                ax.plot(self_binned_centres,self_binned,color=colmap(colmap_val),label=label,linestyle=line_style)
                 ax.set_xlabel(axes[0])
 
         elif ndim==2: #plot 2D histograms
@@ -534,7 +535,16 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     #self_binned_x and self_binned_x are first edges then converted to centres
                     self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
                     self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
-                    self_binned_y,self_binned_x=np.meshgrid(self_binned_y,self_binned_x)
+
+                    dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]
+                    ax.set_xticks(self_binned_x) #set axes ticks
+                    ax.set_yticks(self_binned_y)
+                    for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                        if index % settings.tick_frequency==0:
+                            label.set_visible(True)
+                        else:
+                            label.set_visible(False)
+                    self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
 
                     if vminmax:
                         vmin=vminmax[0]
@@ -548,7 +558,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                         mesh=ax.pcolormesh(self_binned_x,self_binned_y,self_binned,cmap=colmap,vmin=vmin,vmax=vmax)
                         #ax.contourf(self_binned_x,self_binned_y,self_binned,levels=np.linspace(np.amin(self_binned),np.amax(self_binned),num=20),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=np.amin(self_binned),vmax=np.amax(self_binned))
                     else:
-                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                        mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                         if settings.plot_contour_labels:
                             ax.clabel(mesh,inline=1,fontsize=10)
                         

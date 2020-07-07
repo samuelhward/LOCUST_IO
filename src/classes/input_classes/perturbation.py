@@ -1015,6 +1015,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             phase - global field phase shift (of field origin with respect to locust origin) (radians, anti-clockwise)
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             gridlines - toggle gridlines on plot
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
@@ -1072,7 +1073,15 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 R=self['R_1D'] #make a mesh
                 Z=self['Z_1D'] 
-                Z,R=np.meshgrid(Z,R) #swap since things are defined r,z 
+                dr,dz=R[1]-R[0],Z[1]-Z[0]
+                ax.set_xticks(R) #set axes ticks
+                ax.set_yticks(Z)
+                for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                    if index % settings.tick_frequency==0:
+                        label.set_visible(True)
+                    else:
+                        label.set_visible(False)
+                Z,R=np.meshgrid(Z-dz/2.,R-dr/2.) #offset ticks onto bin centres
 
                 if key not in self.data.keys():
 
@@ -1305,7 +1314,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
         return dB_R,dB_tor,dB_Z
 
-    def plot_components(self,R,Z,phi,phase=0,i3dr=-1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax_array=False,fig=False):
+    def plot_components(self,R,Z,phi,phase=0,i3dr=-1,LCFS=False,limiters=False,number_bins=50,vminmax=None,absolute=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,ax_array=False,fig=False):
         """
         generates plot of perturbation components for field checking
 
@@ -1322,6 +1331,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             absolute - plot absolute value of perturbation
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             ax_array - take input array of axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
         notes:
@@ -1363,6 +1373,15 @@ class Perturbation(classes.base_input.LOCUST_input):
         Z_poloidal_dim=len(self['Z_1D'])
         R_poloidal=np.linspace(np.min(self['R_1D']),np.max(self['R_1D']),R_poloidal_dim) #these are the points to evaluate the field at when we look at a single plane
         Z_poloidal=np.linspace(np.min(self['Z_1D']),np.max(self['Z_1D']),Z_poloidal_dim)
+        
+        dr,dz=R_poloidal[1]-R_poloidal[0],Z_poloidal[1]-Z_poloidal[0]
+        ax.set_xticks(R_poloidal) #set axes ticks
+        ax.set_yticks(Z_poloidal)
+        for index,label in enumerate(ax.xaxis.get_ticklabels()):
+            if index % settings.tick_frequency==0:
+                label.set_visible(True)
+            else:
+                label.set_visible(False)
         R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
         R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
         phi_poloidal=np.full(len(R_poloidal),phi)
@@ -1380,7 +1399,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             Z_poloidal,R_poloidal=Z_poloidal.reshape(Z_poloidal_dim,R_poloidal_dim),R_poloidal.reshape(Z_poloidal_dim,R_poloidal_dim)
             if not vminmax:
                 vminmax=[np.amin(component_poloidal),np.amax(component_poloidal)]
-            mesh=ax.pcolormesh(R_poloidal,Z_poloidal,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax))
+            mesh=ax.pcolormesh(R_poloidal-dr/2.,Z_poloidal-dz/2.,component_poloidal,cmap=colmap,vmin=np.amin(vminmax),vmax=np.amax(vminmax)) #offset ticks onto bin centres
             #fig.colorbar(mesh,ax=ax,orientation='vertical')
             
             if absolute: #if plotting absolute value, add tag to axis labels
@@ -1389,7 +1408,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             ax.set_title(component_name)
             ax.set_aspect('equal')
 
-            ax4.plot(phi_toroidal,component_toroidal,colour) #plot the toroidal variation
+            ax4.plot(phi_toroidal,component_toroidal,colour,linestyle=line_style) #plot the toroidal variation
 
             if LCFS:
                 ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') #add a LCFS
@@ -1397,7 +1416,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             if limiters:
                 ax.plot(limiters['lcfs_r'],limiters['lcfs_z'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall') #add a LCFS
 
-        ax4.plot(phi_toroidal,np.sqrt(np.sum(np.array([component_toroidal**2 for component_toroidal in dB_toroidal]),axis=0)),'m-')
+        ax4.plot(phi_toroidal,np.sqrt(np.sum(np.array([component_toroidal**2 for component_toroidal in dB_toroidal]),axis=0)),'m-') #plot magnitude
 
         legend=['dB_field_R','dB_field_tor','dB_field_Z','dB_field_mag']
         if absolute:

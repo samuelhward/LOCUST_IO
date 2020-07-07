@@ -608,7 +608,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),transform=True,number_bins=20,fill=True,vminmax=None,label='',ax=False,fig=False):
+    def plot(self,key='dfn',axes=['R','Z'],LCFS=False,limiters=False,gridlines=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,transform=True,number_bins=20,fill=True,vminmax=None,label='',ax=False,fig=False):
         """
         plot the distribution function
 
@@ -623,6 +623,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             real_scale - plot to Tokamak scale
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             transform - set to False if supplied dfn has already been cut down to correct dimensions
             number_bins - set number of bins or levels
             fill - toggle contour fill on 2D plots
@@ -680,7 +681,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
+            ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
         #plot distribution function
@@ -703,7 +704,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             if dfn_copy['dfn'].ndim==0: #user has given 0D dfn
                 pass #XXX incomplete - should add scatter point
             elif dfn_copy['dfn'].ndim==1: #user chosen to plot 1D
-                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(colmap_val),label=label)
+                ax.plot(dfn_copy[axes[0]],dfn_copy[key],color=colmap(colmap_val),linestyle=line_style,label=label)
                 ax.set_xlabel(axes[0])
                 ax.set_ylabel(key)
             elif dfn_copy['dfn'].ndim==2: #user chosen to plot 2D
@@ -721,7 +722,16 @@ class Distribution_Function(classes.base_output.LOCUST_output):
 
                 X=dfn_copy[axes[0]] #make a mesh
                 Y=dfn_copy[axes[1]]
-                Y,X=np.meshgrid(Y,X) #dfn is r,z so need to swap order here
+                dx,dy=X[1]-X[0],Y[1]-Y[0]
+
+                ax.set_xticks(X) #set axes ticks
+                ax.set_yticks(Y)
+                for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                    if index % settings.tick_frequency==0:
+                        label.set_visible(True)
+                    else:
+                        label.set_visible(False)
+                Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
 
                 if fill:
                     ax.set_facecolor(colmap(np.amin(dfn_copy[key])))
@@ -730,7 +740,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                     '''for c in mesh.collections: #for use in contourf
                         c.set_edgecolor("face")'''
                 else:
-                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                    mesh=ax.contour(X,Y,dfn_copy[key],levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                     if settings.plot_contour_labels:
                         ax.clabel(mesh,inline=1,fontsize=10)
 

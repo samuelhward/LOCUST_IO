@@ -56,7 +56,7 @@ except:
 
 ##################################################################
 
-def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -78,6 +78,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap
         code - use coulomb logarithm from designated code (options=LOCUST,TRANSP,ASCOT)
         colmap - plotted line colour
         colmap_val - optional numerical value for defining single colour plots 
+        line_style - set 1D line style
         ax - ax object to add plot to
         fig - take input fig (can be used to add colourbars etc)
     """
@@ -118,7 +119,7 @@ def plot_coulomb_logarithm(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,code='LOCUST',colmap
     E=E.T[0]
 
     for counter,lnL_ in enumerate(lnL):
-        ax.plot(E/(1000.*echg),lnL_,color=colmap(colmap_val))#(counter/len(lnL))) #cycle through colours
+        ax.plot(E/(1000.*echg),lnL_,color=colmap(colmap_val),linestyle=line_style)#(counter/len(lnL))) #cycle through colours
         ax.set_ylabel('Coulomb Logarithm')
         ax.set_xlabel('Energy [KeV]')
     ax.legend(tuple(['mass = {mass} [amu] temperature = {temp} [keV]'.format(mass=str(mass),temp=str((temp)/echg/1000)) for mass,temp in zip(Ai,Ti)]))

@@ -720,6 +720,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             vminmax - set mesh Vmin/Vmax values
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots 
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -760,15 +761,23 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         #1D data
         if self[key].ndim==1:
-            ax.plot(self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,label=label)
+            ax.plot(self[key],color=colmap(colmap_val),linewidth=settings.plot_linewidth,linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
         #2D data
         elif self[key].ndim==2:
 
             X=self['R_1D'] #make a mesh
-            Y=self['Z_1D'] 
-            Y,X=np.meshgrid(Y,X) #swap since things are defined r,z 
+            Y=self['Z_1D']
+            dx,dy=X[1]-X[0],Y[1]-Y[0]
+            ax.set_xticks(X) #set axes ticks
+            ax.set_yticks(Y)
+            for index,label in enumerate(ax.xaxis.get_ticklabels()):
+                if index % settings.tick_frequency==0:
+                    label.set_visible(True)
+                else:
+                    label.set_visible(False)
+            Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
 
             if vminmax:
@@ -780,11 +789,11 @@ class Equilibrium(classes.base_input.LOCUST_input):
             
             #2D plot
             if fill is True:
-                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:
-                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,antialiased=True,vmin=vmin,vmax=vmax)
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linewidth=settings.plot_linewidth,linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                 if settings.plot_contour_labels:
                     ax.clabel(mesh,inline=1,fontsize=10)
                 
@@ -832,6 +841,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             start_coord - optional choose [R,phi,Z] starting position 
             colmap - set the colour map (use get_cmap names)
             colmap_val - optional numerical value for defining single colour plots
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)
@@ -1005,7 +1015,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_stream(self,LCFS=True,limiters=True,colmap=settings.cmap_default,label='',ax=False,fig=False):
+    def plot_field_stream(self,LCFS=True,limiters=True,colmap=settings.cmap_default,line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         stream plot of magnetic field in R,Z plane
 
@@ -1013,6 +1023,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             LCFS - toggles plasma boundary on/off in 2D plots
             limiters - toggles limiters on/off in 2D plots
             colmap - set the colour map (use get_cmap names)
+            line_style - set 1D line style
             label - plot label for legends
             ax - take input axes (can be used to stack plots)
             fig - take input fig (can be used to add colourbars etc)

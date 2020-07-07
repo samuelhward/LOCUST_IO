@@ -63,7 +63,7 @@ except:
 
 ##################################################################
 
-def plot_coils_RMP_ITER(axes=['R','Z'],shot=1180,run=17,username='public',imasdb='ITER_MD',imas_version='3',imas_entry=0,plot_centres=True,colmap=settings.cmap_default,colmap_val=np.random.uniform(),ax=False,fig=False):
+def plot_coils_RMP_ITER(axes=['R','Z'],shot=1180,run=17,username='public',imasdb='ITER_MD',imas_version='3',imas_entry=0,plot_centres=True,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,ax=False,fig=False):
     """
     plot the ITER RMP coils
 
@@ -79,6 +79,7 @@ def plot_coils_RMP_ITER(axes=['R','Z'],shot=1180,run=17,username='public',imasdb
         plot_centres - toggle plotting coil centres
         colmap - plotted line colour
         colmap_val - optional numerical value for defining single colour plots 
+        line_style - set 1D line style
         ax - ax object to add plot to
         fig - take input fig (can be used to add colourbars etc)
     """
@@ -155,7 +156,7 @@ def plot_coils_RMP_ITER(axes=['R','Z'],shot=1180,run=17,username='public',imasdb
         for key,value in coil_data.items(): coil_data[key]=np.delete(coil_data[key],items_to_delete)
 
         if plot_centres: ax.scatter(*[np.mean(coil_data[variable]) for variable in axes],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='coil centres')
-        ax.plot(*[coil_data[variable] for variable in axes],color=colmap(colmap_val),label='ITER RMP coils')
+        ax.plot(*[coil_data[variable] for variable in axes],color=colmap(colmap_val),label='ITER RMP coils',linestyle=line_style)
 
     if ax_flag is False and fig_flag is False:
         plt.show() 
