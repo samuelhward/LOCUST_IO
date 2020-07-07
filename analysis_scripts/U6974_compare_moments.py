@@ -59,13 +59,13 @@ TRANSP_moment_array=[]
 LOCUST_moment_array=[]
 ASCOT_moment_array=[]
 
-quantities=['density','NBI-heating-power(i1)','NBI-heating-power(e-)','beam_source','energy','energy_para','energy_perp','beam_source','torque-density(JxB-sweep)'] #shared by TRANSP and LOCUST
-
+quantities=['density','NBI-heating-power(i1)','NBI-heating-power(e-)','beam_source','torque-density(JxB-sweep)','J(NBCD)-raw'] #shared by TRANSP and LOCUST
 #quantities=['NBI-heating-power(i1)','NBI-heating-power(e-)','energy','torque-density(JxB-sweep)'] #shared by ASCOT, TRANSP and LOCUST
-
 #quantities=['NBI-heating-power(i1)','NBI-heating-power(e-)','energy','torque-density(JxB-sweep)'] #custom
 
-fig,axes=plt.subplots(1,len(quantities)) 
+fig,axes=plt.subplots(2,int(len(quantities)/2)) 
+axes=list(axes)
+axes=[_ for axis in axes for _ in axis]
 
 for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP_moments,ASCOT_moments,radii):
 
@@ -103,8 +103,8 @@ for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP
             pass
         try:
             mom_ascot[quantity]*=beam_power/(BPCAP_ascot) #XXX this needs sorting
-            ax.plot(mom_ascot['flux_pol_norm'],mom_ascot[quantity],'b')
-            legend.append('ASCOT')
+            #ax.plot(mom_ascot['flux_pol_norm'],mom_ascot[quantity],'b')
+            #legend.append('ASCOT')
         except:
             pass
 

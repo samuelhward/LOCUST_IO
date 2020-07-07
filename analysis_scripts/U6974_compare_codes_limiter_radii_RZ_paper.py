@@ -5,6 +5,8 @@ import numpy as np
 import context
 import copy
 import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import cm
 from classes.input_classes.equilibrium import Equilibrium
 from classes.input_classes.beam_deposition import Beam_Deposition
 from classes.input_classes.wall import Wall
@@ -16,10 +18,12 @@ import run_scripts.utils
 import constants
 import settings
 
+
 #define some colourmaps
 cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
+cmap_default=matplotlib.cm.get_cmap('inferno_r')
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -104,25 +108,32 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
 
 
     fig,ax=plt.subplots(ncols=2,sharex=True)
-
     axes=['R','Z']
 
-    number_bins=5
-    vminmax=[1.e11,6.e11]
-
-    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,limiters=wall,LCFS=equi,ax=ax[0],fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_r,label='TRANSP')
-    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_b,label='ASCOT')
-    LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap_g,label='LOCUST')
-
+    number_bins=8
+    vminmax=[5.e10,1.e12]
+    lines=[]
+    line_labels=[]
+    for dfn,label,cmap in zip([TRANSP_dfn,ASCOT_dfn,LOCUST_dfn],['TRANSP','ASCOT','LOCUST'],[cmap_r,cmap_b,cmap_g]):
+        mesh=dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,real_scale=True,fill=False,number_bins=number_bins,colmap=cmap,label=label)
+        contours,_ = mesh.legend_elements()    
+        lines.append(contours[0])
+        line_labels.append(label)
+    line,=ax[0].plot(equi['lcfs_r'],equi['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS) 
+    lines.append(line)
+    line_labels.append('LCFS')
+    line,=ax[0].plot(equi['rlim'],equi['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters) 
+    lines.append(line)
+    line_labels.append('true wall')
+    line,=ax[0].plot(wall['rlim'],wall['zlim'],color=settings.plot_colour_limiters,linestyle='--')
+    lines.append(line)
+    line_labels.append('wall')
+    ax[0].legend(lines,line_labels)
     #ax.set_title('limiter radius = {}'.format(radii[0]))
-    ax[0].set_title('Fast ion density',fontsize=25)
+    ax[0].set_title('Fast ion density $f$',fontsize=25)
     ax[0].set_xlabel('R [m]',fontsize=25)  
     ax[0].set_ylabel('Z [m]',fontsize=25)  
-    #ax.set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
-    #ax.set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
-    handles, labels = ax[0].get_legend_handles_labels()
     #ax[0].legend(handles[0:2], ['TRANSP','ASCOT','LOCUST'],fontsize=25)
-    ax[0].legend(['TRANSP','ASCOT','LOCUST'])
 
     ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
     LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
@@ -130,15 +141,22 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     DFN_diff.ID='LOCUST dfn - ASCOT dfn'
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
     DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,limiters=wall,LCFS=equi,real_scale=True,vminmax=[-5,3])
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,real_scale=True,vminmax=[-5,3],colmap=cmap_default)
     ax[1].set_xlabel('R [m]',fontsize=25)  
     ax[1].set_ylabel('Z [m]',fontsize=25)  
-    ax[1].set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$',fontsize=25)
-    ax[1].set_facecolor(settings.cmap_default(0.0))
+    ax[1].set_title('log$_{10}(|f_{LOCUST}-f_{ASCOT}|\slash f_{LOCUST})$',fontsize=25)
+    ax[1].set_facecolor(cmap_default(0.0))
+    ax[1].plot(wall['rlim'],wall['zlim'],color=settings.plot_colour_limiters,linestyle='--',label='wall')
+
+    for ax_ in ax:
+        dr,dz=[np.abs(np.max(equi[lim])-np.min(equi[lim])) for lim in ['rlim','zlim']]
+        ax_.set_xlim([np.min(equi['rlim']-dr*0.1),np.max(equi['rlim'])+dr*0.1])
+        ax_.set_ylim([np.min(equi['zlim'])-dz*0.1,np.max(equi['zlim'])+dz*0.1])
 
     if colourbars:
         for axis,mesh in zip([ax[1]],[DFN_diff_mesh]):
             cbar=fig.colorbar(mesh,ax=axis,orientation='vertical')
             colourbar_array.append(cbar)
 
-    plt.show()  
+    fig.set_tight_layout(True)  
+    plt.show()

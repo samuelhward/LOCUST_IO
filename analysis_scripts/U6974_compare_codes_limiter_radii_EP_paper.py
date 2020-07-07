@@ -5,22 +5,24 @@ import numpy as np
 import context
 import copy
 import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import cm
 from classes.input_classes.equilibrium import Equilibrium
 from classes.input_classes.beam_deposition import Beam_Deposition
 from classes.input_classes.wall import Wall
 from classes.output_classes.distribution_function import Distribution_Function
 from classes.output_classes.particle_list import Final_Particle_List
-from processing import process_input
-from processing import process_output
-import processing.utils
+import processing.utils 
 import run_scripts.utils
 import constants
 import settings
+
 
 #define some colourmaps
 cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
+cmap_default=matplotlib.cm.get_cmap('inferno_r')
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -30,7 +32,7 @@ radii=['1.05','1.10','1.20','1.30','1.40','1.50'] #radii for limiter profiles
 run_IDs=['U69','U70','U71','U72','U73','U74']
 shot_number='157418'
 colours=['r-','g-','b-','m-','k-','c-']
-ascot_coulog=False
+ascot_coulog=True
 
 TRANSP_files_tail_FI='_fi_1_gc.cdf'
 TRANSP_files_tail_CDF='.CDF'
@@ -103,25 +105,28 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     BPCAP_ascot=np.sum(beam_energy*constants.species_charge*beam_depo['weight'][k])
     ASCOT_dfn['dfn']*=beam_power/(BPCAP_ascot)
 
-    LOCUST_dfn['E']/=1000 #so the axes are in KeV (does not affect integration since uses dE quantity)
-    TRANSP_dfn['E']/=1000
-    ASCOT_dfn['E']/=1000
 
-    fig,ax=plt.subplots(ncols=2,sharex=True) 
-
+    fig,ax=plt.subplots(ncols=2,sharex=True)
     axes=['E','V_pitch']
 
-    vminmax=[1.e7,6.e7]
     number_bins=5
-
-    TRANSP_mesh=TRANSP_dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_r)
-    ASCOT_mesh=ASCOT_dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_b)
-    LOCUST_mesh=LOCUST_dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,fill=False,number_bins=number_bins,colmap=cmap_g)
+    vminmax=[1.e7,6.e7]
+    lines=[]
+    line_labels=[]
+    for dfn,label,cmap in zip([TRANSP_dfn,ASCOT_dfn,LOCUST_dfn],['TRANSP','ASCOT','LOCUST'],[cmap_r,cmap_b,cmap_g]):
+        dfn['E']/=1000. #get axes in keV - .plot integrates the DFNs using .transform with 'dE' so should not affect plotting
+        mesh=dfn.plot(axes=axes,ax=ax[0],fig=fig,vminmax=vminmax,real_scale=False,fill=False,number_bins=number_bins,colmap=cmap,label=label)
+        contours,_ = mesh.legend_elements()    
+        lines.append(contours[0])
+        line_labels.append(label)
+    ax[0].legend(lines,line_labels)
+    #ax.set_title('limiter radius = {}'.format(radii[0]))
+    ax[0].set_title('Fast ion density $f$',fontsize=25)
 
     ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
     LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
     #interpolate ASCOT grid onto LOCUST grid
-    interpolator=processing.utils.interpolate_2D(ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch'],ASCOT_dfn_['dfn'],type='RBF')
+    interpolator=processing.utils.interpolate_2D(ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch'],ASCOT_dfn_['dfn'],type='RBF',function='linear')
     V_pitch,E=np.meshgrid(LOCUST_dfn_['V_pitch'],LOCUST_dfn_['E'])
     ASCOT_dfn_['dfn']=interpolator(E,V_pitch)
     ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
@@ -130,16 +135,17 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
     DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
     DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,vminmax=[-5,2.5])
-    ax[1].set_xlabel('Energy [keV]',fontsize=25)
-    ax[1].set_ylabel('$V_{||}\slash V$',fontsize=25)
     ax[1].set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$',fontsize=25)
-    #ax[1].set_xlim([np.min(equi['R_1D']),np.max(equi['R_1D'])])
-    #ax[1].set_ylim([1.1*np.min(equi['lcfs_z']),1.1*np.max(equi['lcfs_z'])])
     ax[1].set_facecolor(settings.cmap_default(0.0))
 
+    for ax_ in ax:
+        ax_.set_xlabel('E [KeV]',fontsize=25)  
+        ax_.set_ylabel('$\lambda$',fontsize=25)  
+        ax_.set_xlim([np.min(DFN_diff['E']),np.max(DFN_diff['E'])])
+        ax_.set_ylim([np.min(DFN_diff['V_pitch']),np.max(DFN_diff['V_pitch'])])
     if colourbars is True:
         for ax,mesh in zip([ax[1]],[DFN_diff_mesh]):
-            cbar=fig.colorbar(mesh,ax=ax,orientation='horizontal')
+            cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
             colourbar_array.append(cbar)
 
     plt.show()
