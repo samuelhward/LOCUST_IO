@@ -4,7 +4,7 @@
 Samuel Ward
 18/04/2019
 ----
-script to plot time slices for MAST V and V - single plot
+script to plot single time slice for MAST V and V
 ---
 usage:
  
@@ -29,6 +29,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import matplotlib
 from get_filepaths_single import get_filepaths_single #use external script for globbing all the filenames
+import processing.utils
 
 #define some colourmaps
 cmap_r=settings.colour_custom([194,24,91,1])
@@ -50,20 +51,33 @@ linewidth=3
 title='_'
 xlabel='_'
 ylabel='_'
+residual=True #toggle plotting f(E) or f(E)-mean{f(E)}
+normalise=True
 
-def plot_dfns(normalise=False,E_inject=62000,time_slice_index=-1):
+def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,residual=False):
+    """
+    plots the dfns but uses lots of global variables as free variables e.g. figs,ax etc. defined outside this function scope
+
+    args:
+        normalise - toggle whether to normalise all dfns to injection energy
+        E_inject - specify injection energy
+        time_slice_index - index of time slice to plot
+        residual - toggle plotting DFNs as residuals of average
+    notes:
+    """
+
     #plot single time slice in top level
     for time_slice in [time_slices[time_slice_index]]: #XXX hack to plot final time slice
+        
         #for this time slice, iterate over each code - for each code we need to pick out the simulation corresponding to the current time slice
-        for counter_code,(time_slices_for_this_run,code,data_format,cmap) in enumerate(zip(files,codes,data_formats,cmaps)):
+        for counter_code,(time_slices_for_this_run,code,data_format,ID,cmap) in enumerate(zip(files,codes,data_formats,IDs,cmaps)):
             file_this_time_slice=time_slices_for_this_run[time_slice_index]
-
             if file_this_time_slice is None: continue
 
             #read DFNs
             if code=='TRANSP':
-                DFN=dfn_t('TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_this_time_slice)
-                N=DFN.dfn_integrate()['dfn']
+                DFN=dfn_t(ID=ID,filename=file_this_time_slice)
+                #N=DFN.dfn_integrate()['dfn']
                 #scale DFNs to match 1W beam deposited power
                 file_transp_output=pathlib.Path(file_this_time_slice).parents[0] / (shot+run+'.CDF')
                 output_TRANSP=output_T('',filename=file_transp_output)
@@ -73,10 +87,10 @@ def plot_dfns(normalise=False,E_inject=62000,time_slice_index=-1):
 
                 if normalise:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
-                    DFN['dfn']/=DFN.dfn_integrate(energy=False)['dfn'][inject_index]/4.e7
+                    DFN['dfn']/=DFN.dfn_integrate(energy=False)['dfn'][inject_index]
             else:
-                DFN=dfn('time = {}ms'.format(int(1000*(time_slice-tinit))),data_format=data_format,filename=file_this_time_slice)
-                N=DFN.transform(axes=['N'])['dfn']
+                DFN=dfn(ID=ID,time_string='time = {}ms'.format(int(1000*(time_slice-tinit))),data_format=data_format,filename=file_this_time_slice)
+                #N=DFN.transform(axes=['N'])['dfn']
                 
                 if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise the ASCOT dfn to the correct power deposition
 
@@ -85,7 +99,7 @@ def plot_dfns(normalise=False,E_inject=62000,time_slice_index=-1):
                     ASCOT_beam_depo_filename=ASCOT_beam_depo_filenames[counter_code]
                     ASCOT_beam_depo=bd(ID='ASCOT beam depo',data_format=ASCOT_beam_depo_data_format,filename=ASCOT_beam_depo_filename)
                     if 'E' not in ASCOT_beam_depo.data: 
-                        ASCOT_beam_depo['E']=0.5*constants.mass_deuteron*(ASCOT_beam_depo['V_R']**2+ASCOT_beam_depo['V_tor']**2+ASCOT_beam_depo['V_Z']**2)/constants.species_charge
+                        ASCOT_beam_depo['E']=0.5*constants.mass_deuteron*(ASCOT_beam_depo['V_R']**2+ASCOT_beam_depo['V_phi']**2+ASCOT_beam_depo['V_Z']**2)/constants.species_charge
                     Pdep_ASCOT=np.sum(ASCOT_beam_depo['E']*constants.species_charge*ASCOT_beam_depo['weight'])
                     DFN['dfn']*=beam_power/Pdep_ASCOT 
                     DFN['V_pitch']*=-1
@@ -97,19 +111,42 @@ def plot_dfns(normalise=False,E_inject=62000,time_slice_index=-1):
 
                 if normalise:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
-                    DFN['dfn']/=DFN.transform(axes=['E'])['dfn'][inject_index]/4.e7
+                    DFN['dfn']/=DFN.transform(axes=['E'])['dfn'][inject_index]
 
-            DFN['E']/=1000. #get things in KeV
-            DFN['dE']*=1000.
+            transform=True #have we pre-integrated the distribution function? not yet
             #ax.set_xlim(0,100)
             #ax.set_ylim(-1.1,1.1)
-            mesh=DFN.plot(axes=axes,fig=fig,ax=ax,LCFS=LCFS,limiters=limiters,real_scale=real_scale,fill=fill,colmap=cmap,number_bins=number_bins,vminmax=vminmax)
+
+            if residual: 
+                if code=='TRANSP':
+                    DFN=DFN.dfn_integrate(energy=False)
+                else: 
+                    DFN=DFN.transform(axes=axes)
+                if len(axes)==1: interpolator=processing.utils.interpolate_1D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
+                elif len(axes)==2: interpolator=processing.utils.interpolate_2D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
+                else:
+                    print("ERROR: axes must be 1D or 2D!\nreturning\n")
+                    return
+                DFN['dfn']=interpolator(*average_axes)
+
+                DFN['dfn']=DFN['dfn']-average_DFN
+                transform=False
+        
+            DFN['E']/=1000. #get axes in keV - .plot integrates the DFNs using .transform with 'dE' so should not affect plotting
+            mesh=DFN.plot(axes=axes,fig=fig,ax=ax,LCFS=LCFS,limiters=limiters,real_scale=real_scale,fill=fill,colmap=cmap,number_bins=number_bins,vminmax=vminmax,transform=transform,label=DFN.ID)
 
             if True and len(axes)>1:
                 cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
         
-        if legend:
-            plt.legend(([ID for ID in IDs]),fontsize=20)
+        if residual and len(axes)==1: #plot 0 mark and dfn average
+            ax.axhline(0.)
+            ax_av=ax.twinx()
+            ax_av.plot(*[np.array(average_ax)/1000 for average_ax in average_axes],average_DFN,'k--',label='average $f$')
+            ax_av.tick_params(axis='y', labelcolor='k')
+            ax_av.set_ylabel('f',color='k') 
+            ax_av.spines['right'].set_position(('outward', 0))
+
+        ax.legend(fontsize=20)
         
         if title:
             ax.set_title(title,fontsize=25)
@@ -117,6 +154,83 @@ def plot_dfns(normalise=False,E_inject=62000,time_slice_index=-1):
             ax.set_xlabel(xlabel,fontsize=25)
         if ylabel:
             ax.set_ylabel(ylabel,fontsize=25)
+
+def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1):
+    
+    DFNs=[]
+    DFNs_axes=[]
+
+    for time_slice in [time_slices[time_slice_index]]: #XXX hack to plot final time slice
+
+        #for this time slice, iterate over each code - for each code we need to pick out the simulation corresponding to the current time slice
+        for counter_code,(time_slices_for_this_run,code,data_format,ID,cmap) in enumerate(zip(files,codes,data_formats,IDs,cmaps)):
+            file_this_time_slice=time_slices_for_this_run[time_slice_index]
+            if file_this_time_slice is None: continue
+
+            #read DFNs
+            if code=='TRANSP':
+                DFN=dfn_t(ID=ID,time_string='TRANSP time = {}ms'.format(int(1000*(time_slice-tinit))),filename=file_this_time_slice)
+                #scale DFNs to match 1W beam deposited power
+                file_transp_output=pathlib.Path(file_this_time_slice).parents[0] / (shot+run+'.CDF')
+                output_TRANSP=output_T('',filename=file_transp_output)
+                BPCAP_index=np.abs(output_TRANSP['TIME']-time_slice).argmin()
+                BPCAP=output_TRANSP['BPCAP'][BPCAP_index]
+                DFN['dfn']/=BPCAP
+
+                if normalise:
+                    inject_index=np.abs(DFN['E']-E_inject).argmin()
+                    DFN['dfn']/=DFN.dfn_integrate(energy=False)['dfn'][inject_index]
+                
+                DFN=DFN.dfn_integrate(energy=False)
+
+            else:
+                DFN=dfn(ID=ID,time_string='time = {}ms'.format(int(1000*(time_slice-tinit))),data_format=data_format,filename=file_this_time_slice)
+                
+                if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise the ASCOT dfn to the correct power deposition
+
+                    beam_power=1. #desired beam power
+                    ASCOT_beam_depo_data_format=ASCOT_beam_depo_data_formats[counter_code]
+                    ASCOT_beam_depo_filename=ASCOT_beam_depo_filenames[counter_code]
+                    ASCOT_beam_depo=bd(ID='ASCOT beam depo',data_format=ASCOT_beam_depo_data_format,filename=ASCOT_beam_depo_filename)
+                    if 'E' not in ASCOT_beam_depo.data: 
+                        ASCOT_beam_depo['E']=0.5*constants.mass_deuteron*(ASCOT_beam_depo['V_R']**2+ASCOT_beam_depo['V_phi']**2+ASCOT_beam_depo['V_Z']**2)/constants.species_charge
+                    Pdep_ASCOT=np.sum(ASCOT_beam_depo['E']*constants.species_charge*ASCOT_beam_depo['weight'])
+                    DFN['dfn']*=beam_power/Pdep_ASCOT 
+                    DFN['V_pitch']*=-1
+
+                if normalise:
+                    inject_index=np.abs(DFN['E']-E_inject).argmin()
+                    DFN['dfn']/=DFN.transform(axes=['E'])['dfn'][inject_index]
+
+                DFN=DFN.transform(axes=axes)
+
+            DFNs.append(DFN)
+            DFNs_axes.append([DFN[axis] for axis in axes])
+ 
+        #find narrowest range to interpolate over out of all axes
+        axes_maxes=[]
+        axes_mins=[]
+        for DFNs_axis in DFNs_axes:
+            axes_maxes.append([np.max(axis) for axis in DFNs_axis])
+            axes_mins.append([np.min(axis) for axis in DFNs_axis])
+        maxes=np.min(np.array(axes_maxes,ndmin=len(axes)),axis=0)
+        mins=np.max(np.array(axes_mins,ndmin=len(axes)),axis=0)
+        number_bins=100
+        average_axes=[np.linspace(min_,max_,number_bins) for min_,max_ in zip(mins,maxes)]
+        DFN_average=np.zeros(shape=[number_bins]*len(axes)) #store n-dimensional dfn average
+
+        for DFN in DFNs:
+            if len(axes)==1:
+                DFN_interpolator=processing.utils.interpolate_1D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
+                DFN_average+=DFN_interpolator(*[average_axis for average_axis in average_axes])/len(DFNs)   
+            elif len(axes)==2: 
+                DFN_interpolator=processing.utils.interpolate_2D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
+                DFN_average+=DFN_interpolator(np.meshgrid(*[average_axis for average_axis in average_axes]))/len(DFNs)   
+            else:
+                print("ERROR: axes must be 1D or 2D!\nreturning\n")
+                return
+    
+    return DFN_average,average_axes
 
 ################################################################## W03
 
@@ -273,7 +387,6 @@ MAST_wall=wall('',data_format='UFILE',filename=file_wall)
 
 files=[] #list of lists, each list is a set of timeslices for a given run
 for dimension,extra_info,code in zip(dimensions,extra_infos,codes):
-    print(extra_info)
     files.append(get_filepaths_single(shot=shot,run=run,dimension=dimension,extra_info=extra_info,code=code))
 
 
@@ -281,8 +394,8 @@ fig,(ax)=plt.subplots(1)
 title=f'1W BBNBI injection F(E) at 100ms - MAST #{shot}{run}'
 xlabel='Energy [keV]'
 ylabel='Density [#/eV]'
-plot_dfns(normalise=True)
-plot_dfns(normalise=False)
+if residual: average_DFN,average_axes=dfn_find_average(axes=axes,normalise=normalise)
+plot_dfns(axes=axes,normalise=normalise,residual=residual)
 plt.show()
 
 ################################################################## W04
@@ -369,7 +482,8 @@ fig,(ax)=plt.subplots(1)
 title=f'1W NUBEAM injection F(E) at 100ms - MAST #{shot}{run}'
 xlabel='Energy [keV]'
 ylabel='Density [#/eV]'
-plot_dfns()
+if residual: average_DFN,average_axes=dfn_find_average(axes=axes,normalise=normalise)
+plot_dfns(axes=axes,normalise=normalise,residual=residual)
 plt.show()
 
 ##################################################################
