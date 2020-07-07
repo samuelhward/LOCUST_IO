@@ -1076,6 +1076,7 @@ class Perturbation(classes.base_input.LOCUST_input):
                 dr,dz=R[1]-R[0],Z[1]-Z[0]
                 ax.set_xticks(R) #set axes ticks
                 ax.set_yticks(Z)
+
                 for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
                     for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
@@ -1375,6 +1376,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         dr,dz=R_poloidal[1]-R_poloidal[0],Z_poloidal[1]-Z_poloidal[0]
         ax.set_xticks(R_poloidal) #set axes ticks
         ax.set_yticks(Z_poloidal)
+
         for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
             for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 

@@ -463,6 +463,7 @@ class TRANSP_output_FI(TRANSP_output):
             dr,dz=R[1]-R[0],Z[1]-Z[0]
             ax.set_xticks(R) #set axes ticks
             ax.set_yticks(Z)
+
             for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
                 for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
@@ -518,6 +519,7 @@ class TRANSP_output_FI(TRANSP_output):
             dE,dV_pitch=dfn_copy['E'][1]-dfn_copy['E'][0],dfn_copy['V_pitch'][1]-dfn_copy['V_pitch'][0]
             ax.set_xticks(dfn_copy['E']) #set axes ticks
             ax.set_yticks(dfn_copy['V_pitch'])
+
             for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
                 for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 

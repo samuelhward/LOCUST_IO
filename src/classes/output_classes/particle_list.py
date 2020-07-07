@@ -539,6 +539,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]
                     ax.set_xticks(self_binned_x) #set axes ticks
                     ax.set_yticks(self_binned_y)
+
                     for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
                         for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
