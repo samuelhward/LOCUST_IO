@@ -60,10 +60,32 @@ def colour_custom(rgba,N=256):
     from matplotlib.colors import ListedColormap
     return ListedColormap(np.array(rgba)/np.array([N,N,N,1]))
 
+def discrete_colmap(colmap_name,face_colour='white',number_bins=10):
+    """
+    return discretised version of matplotlib colour map
+
+    args:
+        colmap_name - name string of matplotlib colour map
+        face_colour - name string of face colour
+        number_bins - set number of bins or levels
+    notes:
+    """
+
+    colmap=matplotlib.cm.get_cmap(colmap_name,number_bins)
+    colmap.set_under(face_colour)
+    colmap=list(colmap(np.arange(number_bins)))
+    colmap[0]=face_colour
+    colmap=matplotlib.colors.ListedColormap(colmap[:-1], "")
+    return colmap
+
 cmap_plasma=matplotlib.cm.get_cmap('plasma')
+cmap_plasma_r=matplotlib.cm.get_cmap('plasma_r')
 cmap_jet=matplotlib.cm.get_cmap('jet')
+cmap_jet_r=matplotlib.cm.get_cmap('jet_r')
 cmap_viridis=matplotlib.cm.get_cmap('viridis')
+cmap_viridis_r=matplotlib.cm.get_cmap('viridis_r')
 cmap_inferno=matplotlib.cm.get_cmap('inferno')
+cmap_inferno_r=matplotlib.cm.get_cmap('inferno_r')
 cmap_r=cmap_custom([1,0,0],[1,0,0]) #red
 cmap_g=cmap_custom([0,1,0],[0,1,0]) #green
 cmap_b=cmap_custom([0,0,1],[0,0,1]) #blue
@@ -72,7 +94,7 @@ cmap_m=cmap_custom([1,0,1],[1,0,1]) #magenta
 cmap_c=cmap_custom([0,1,1],[0,1,1]) #cyan
 cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
 cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
-cmap_default=cmap_inferno #set default colourmap
+cmap_default=discrete_colmap(colmap_name='inferno_r',face_colour='white',number_bins=10) #create default colourmap
 
 plot_colour_LCFS=cmap_m(0.)
 plot_line_style_LCFS='-' 
