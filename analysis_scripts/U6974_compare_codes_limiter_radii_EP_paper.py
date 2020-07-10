@@ -22,7 +22,10 @@ import settings
 cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
-cmap_default=matplotlib.cm.get_cmap('inferno_r')
+cmap_default=settings.discrete_colmap(colmap_name='inferno_r',face_colour='white',number_bins=9) #create default colourmap
+settings.matplotlib_rc['axes']['labelsize']=15 #edit matplotlib rc settings
+for setting_type,settings in settings.matplotlib_rc.items(): matplotlib.rc(setting_type, **settings) #enable settings
+
 
 filename_eq='g157418.03000'
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
@@ -119,9 +122,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
         contours,_ = mesh.legend_elements()    
         lines.append(contours[0])
         line_labels.append(label)
-    ax[0].legend(lines,line_labels)
+    ax[0].legend(lines,line_labels,fontsize=10)
     #ax.set_title('limiter radius = {}'.format(radii[0]))
-    ax[0].set_title('Fast ion density $f$',fontsize=25)
+    ax[0].set_title('a) Fast ion density $f$',fontsize=25)
 
     ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
     LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
@@ -134,8 +137,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     DFN_diff.ID='LOCUST dfn - ASCOT dfn'
     DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
     DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,vminmax=[-5,2.5])
-    ax[1].set_title('$log_{10}(f_{LOCUST}-f_{ASCOT})\slash f_{LOCUST}$',fontsize=25)
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,vminmax=[-5,3.],colmap=cmap_default)
+    ax[1].set_title(r'b) $\mathrm{log}_{10}(|f_{\mathrm{LOCUST}}-f_{\mathrm{ASCOT}}|\slash f_{\mathrm{LOCUST}})$',fontsize=25,pad=20)
     ax[1].set_facecolor(settings.cmap_default(0.0))
 
     for ax_ in ax:
@@ -143,6 +146,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
         ax_.set_ylabel('$\lambda$',fontsize=25)  
         ax_.set_xlim([np.min(DFN_diff['E']),np.max(DFN_diff['E'])])
         ax_.set_ylim([np.min(DFN_diff['V_pitch']),np.max(DFN_diff['V_pitch'])])
+        ax_.set_xticks(DFN_diff['E'][::10])
+        ax_.set_yticks(DFN_diff['V_pitch'][::10])
+
     if colourbars is True:
         for ax,mesh in zip([ax[1]],[DFN_diff_mesh]):
             cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')

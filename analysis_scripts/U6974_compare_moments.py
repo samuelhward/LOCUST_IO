@@ -108,7 +108,7 @@ for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP
         except:
             pass
 
-        ax.legend(legend)
+        ax.legend(legend,fontsize=10)
         ax.set_title(quantity)
 
     axes[0].set_ylabel('radius={}'.format(radius))
