@@ -14,8 +14,13 @@ import matplotlib.pyplot as plt
 from matplotlib import cm #get colourmaps
 from mpl_toolkits import mplot3d #import 3D plotting axes
 from mpl_toolkits.mplot3d import Axes3D
+import settings
 
 ascot_coulog=False
+
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
 
 TRANSP_moments=['157418U69.CDF','157418U70.CDF','157418U71.CDF','157418U72.CDF','157418U73.CDF','157418U74.CDF']
 
@@ -48,6 +53,7 @@ ASCOT_moments=ASCOT_files #rename this variable just because it's called somethi
 
 radii=['1.05','1.10','1.20','1.30','1.40','1.50'] #radii for limiter profiles
 time=3.1 #time at which LOCUST and ASCOT moments are written out
+normalise=True
 
 rad=0 #XXX
 radii=[radii[rad]]
@@ -60,6 +66,8 @@ LOCUST_moment_array=[]
 ASCOT_moment_array=[]
 
 quantities=['density','NBI-heating-power(i1)','NBI-heating-power(e-)','beam_source','torque-density(JxB-sweep)','J(NBCD)-raw'] #shared by TRANSP and LOCUST
+titles=['Density [a.u.]','Ion heating power [a.u.]','Electron heating power [a.u.]','Beam deposition [a.u.]',r'$J\times B$ Torque [a.u.]',r'$J$ (NBCD) [a.u.]']
+
 #quantities=['NBI-heating-power(i1)','NBI-heating-power(e-)','energy','torque-density(JxB-sweep)'] #shared by ASCOT, TRANSP and LOCUST
 #quantities=['NBI-heating-power(i1)','NBI-heating-power(e-)','energy','torque-density(JxB-sweep)'] #custom
 
@@ -86,18 +94,23 @@ for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP
     k=np.where(beam_depo['status_flag']>0)[0] #scale by all markers which actually contributed to the simulation
     BPCAP_ascot=np.sum(beam_energy*constants.species_charge*beam_depo['weight'][k])
 
-    for quantity,ax in zip(quantities,axes):
+
+    for quantity,ax,title in zip(quantities,axes,titles):
 
         legend=[]
 
+        if normalise:
+            mom_transp[quantity]/=np.max(np.abs(mom_locust[quantity]))
+            mom_locust[quantity]/=np.max(np.abs(mom_locust[quantity]))
+
         try:
             mom_transp[quantity][time_index_transp]*=locust_beam_power/mom_transp['beam_source_captured'][time_index_transp] #normalise the TRANSP quantities according to 100% captured beam power
-            ax.plot(mom_transp['flux_pol_norm'][time_index_transp],mom_transp[quantity][time_index_transp],'r')
+            ax.plot(mom_transp['flux_pol_norm'][time_index_transp],mom_transp[quantity][time_index_transp],color=cmap_r(0.))
             legend.append('TRANSP')
         except:
             pass
         try:
-            ax.plot(mom_locust['flux_pol_norm'],mom_locust[quantity],'g')
+            ax.plot(mom_locust['flux_pol_norm'],mom_locust[quantity],color=cmap_g(0.))
             legend.append('LOCUST')
         except:
             pass
@@ -108,14 +121,13 @@ for LOCUST_moment,TRANSP_moment,ASCOT_moment,radius in zip(LOCUST_moments,TRANSP
         except:
             pass
 
-        ax.legend(legend,fontsize=10)
-        ax.set_title(quantity)
+        ax.legend(legend,fontsize=15)
+        ax.set_title(title,pad=10,fontsize=15)
+        ax.set_xlabel(r'$\rho_{\mathrm{poloidal}}$',fontsize=15)
 
-    axes[0].set_ylabel('radius={}'.format(radius))
     plt.show() #XXX
     #plt.draw()
     #plt.pause(5)
-    plt.title('radius = {radius}, time = {time}'.format(radius=radius,time=mom_transp['time'][time_index_transp]))
 
     for ax in axes:
         ax.cla()
