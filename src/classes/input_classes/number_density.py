@@ -513,6 +513,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
     #write out number density depending on species
     if properties['species']=='electrons':
         output_IDS.core_profiles.profiles_1d[0].electrons.density=output_data['n']
+        output_IDS.core_profiles.profiles_1d[0].electrons.density_thermal=output_data['n']
     else:
 
         if 'A' not in properties or 'Z' not in properties:
@@ -533,6 +534,7 @@ def dump_number_density_IDS(ID,output_data,shot,run,**properties):
                 output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].element[0].z_n=properties['Z']
 
             output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].density=output_data['n']
+            output_IDS.core_profiles.profiles_1d[0].ion[species_number[0]].density_thermal=output_data['n']
         
     #write out the axes
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']*2.*np.pi
