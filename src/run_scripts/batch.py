@@ -72,7 +72,7 @@ class Batch:
     batch_system['TITAN']['flags']['partition']='gpu_p100_titan'
     batch_system['TITAN']['flags']['cpus-per-task']=1
     batch_system['TITAN']['flags']['exclusive']=True
-    batch_system['TITAN']['flags']['mail-user']='samuel.ward@york.ac.uk'
+    batch_system['TITAN']['flags']['mail-user']='samuel.ward@iter.org'
     batch_system['TITAN']['flags']['mail-type']='END,FAIL,TIME_LIMIT'
     batch_system['TITAN']['flags']['o']='LOCUST_SLURM.out'
     batch_system['TITAN']['flags']['e']='LOCUST_SLURM.err'
@@ -88,7 +88,7 @@ class Batch:
     batch_system['CUMULUS']['flags']['q']='gpu'
     batch_system['CUMULUS']['flags']['N']='LOCUST'
     batch_system['CUMULUS']['flags']['m']='ae'
-    batch_system['CUMULUS']['flags']['M']='samuel.ward@york.ac.uk'
+    batch_system['CUMULUS']['flags']['M']='sam.ward@ukaea.uk'
     batch_system['CUMULUS']['flags']['o']='LOCUST_PBS.out'
     batch_system['CUMULUS']['flags']['e']='LOCUST_PBS.err'
 
