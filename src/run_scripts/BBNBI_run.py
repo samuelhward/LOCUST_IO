@@ -176,6 +176,22 @@ class BBNBI_run(run_scripts.workflow.Workflow):
         run_ascot      = False
         ascot_parallel = False
 
+        # DISPLAY SIMULATION INFORMATION
+        print('---------------------------------')
+        print('shot                = ',self.shot_in)
+        print('run_in              = ',self.run_in)
+        print('run_out             = ',self.run_out)
+        print('input_user_or_path  = ',self.username)
+        print('input_database      = ',self.imasdb)
+        print('output_user_or_path = ',self.username)
+        print('output_database     = ',self.imasdb)
+        print('time_slice          = ',time_slice)
+        print('ntimes              = ',ntimes)
+        print('dt_required         = ',dt_required,' s')
+        print('nparticles          = ',self.number_particles)
+        print('nprocessors         = ',self.number_processors)
+        print('---------------------------------')
+
         def find_nearest(a, a0):
             "Element in nd array `a` closest to the scalar value `a0`"
             idx = np.abs(a - a0).argmin()
