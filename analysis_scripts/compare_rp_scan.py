@@ -16,37 +16,6 @@ cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_g_=settings.colour_custom([205,220,57,1])
 
-def cmap_custom(from_rgb,to_rgb):
-    """
-    generate custom colormaps
-    args:
-        from_rgb - list of starting r g b values  
-        to_rgb - list of final r g b values
-    notes:
-    """
-    from matplotlib.colors import LinearSegmentedColormap
-    r1,g1,b1=from_rgb
-    r2,g2,b2=to_rgb
-    cdict={'red':((0,r1,r1),(1,r2,r2)),
-            'green':((0,g1,g1),(1,g1,g1)),
-            'blue':((0,b1,b1),(1,b1,b1))}
-    cmap=LinearSegmentedColormap('custom cmap - {from_rgb}/{to_rgb}'.format(from_rgb=str(from_rgb),to_rgb=str(to_rgb)),cdict)
-    return cmap
-cmap_plasma=matplotlib.cm.get_cmap('plasma')
-cmap_jet=matplotlib.cm.get_cmap('jet')
-cmap_viridis=matplotlib.cm.get_cmap('viridis')
-cmap_r=cmap_custom([1,0,0],[1,0,0]) #red
-cmap_g=cmap_custom([0,1,0],[0,1,0]) #green
-cmap_b=cmap_custom([0,0,1],[0,0,1]) #blue
-cmap_y=cmap_custom([1,1,0],[1,1,0]) #yellow
-cmap_m=cmap_custom([1,0,1],[1,0,1]) #magenta
-cmap_c=cmap_custom([0,1,1],[0,1,1]) #cyan
-cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
-cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
-cmap_default=cmap_plasma #set default colourmap
-
-
-
 filename_sav='compare_rp.sav'
 filepath_sav=str(support.dir_output_files/filename_sav)
 sav=readsav(filepath_sav)
