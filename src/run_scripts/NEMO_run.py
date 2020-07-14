@@ -161,6 +161,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
         notes:
             assumes you have already cloned and compiled the nemo source and actor into dir_NEMO 
+            assumes target IDS already created
         """
 
         try:
@@ -229,11 +230,11 @@ class NEMO_run(run_scripts.workflow.Workflow):
 
     def call_NEMO_actor_command_line(self):
         """
-        function for calling NEMO python wrapper from command line
+        helper function for calling NEMO python wrapper from command line - calls this file
 
         notes:
+            this stage is NOT intended for use in workflows via add_command - otherwise recursion will occur
             motivation for this function is to be able to define runtime environment whilst calling NEMO python actor from command line
-            NOT intended for use in workflows via add_command - otherwise recursion will occur
         """
 
         NEMO_run_args={}
@@ -267,7 +268,7 @@ if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser(description='run NEMO from command line in Python!')
 
-    parser.add_argument('--dir_NEMO',type=str,action='store',dest='dir_NEMO',help="directory where NEMO source is stored",required=True)
+    parser.add_argument('--dir_NEMO',type=str,action='store',default=support.dir_nemo,dest='dir_NEMO',help="directory where NEMO source is stored",required=False)
     parser.add_argument('--shot_in',type=int,action='store',dest='shot_in',help="input IDS shot number",required=True)
     parser.add_argument('--shot_out',type=int,action='store',dest='shot_out',help="output IDS shot number",required=True)
     parser.add_argument('--run_in',type=int,action='store',dest='run_in',help="input IDS run number",required=True)
