@@ -110,6 +110,14 @@ class Environment:
     environments['TITAN_NEMO']['misc']={}
     environments['TITAN_NEMO']['misc']['ulimit']='-Ss unlimited'
     environments['TITAN_NEMO']['misc']['imasdb']=f'{settings.imasdb}'
+    ################################# BBNBI TITAN
+    environments['TITAN_BBNBI']={}
+    environments['TITAN_BBNBI']['module load']=['ASCOT']
+    environments['TITAN_BBNBI']['module unload']=[
+                                                'matplotlib']
+    environments['TITAN_BBNBI']['module switch']=[]
+    environments['TITAN_BBNBI']['export']={}
+    environments['TITAN_BBNBI']['misc']={}
     ################################# MARFE
     environments['MARFE']={}
     environments['MARFE']['export']={}

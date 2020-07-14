@@ -156,6 +156,9 @@ branch_default_LOCUST_IO='develop'
 repo_URL_NEMO='ssh://git@git.iter.org/heat/nemo.git'
 branch_default_NEMO='develop'
 
+#BBNBI git
+repo_URL_BBNBI'ssh://git@git.iter.org/traj/ascot.git'
+branch_default_BBNBI='develop'
 
 commit_hash_default_LOCUST=None
 commit_hash_default_LOCUST_IO=None
