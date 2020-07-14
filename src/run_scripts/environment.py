@@ -118,6 +118,7 @@ class Environment:
     environments['TITAN_BBNBI']['module switch']=[]
     environments['TITAN_BBNBI']['export']={}
     environments['TITAN_BBNBI']['misc']={}
+    environments['TITAN_BBNBI']['misc']['ulimit']="-s 2000000"
     ################################# MARFE
     environments['MARFE']={}
     environments['MARFE']['export']={}
