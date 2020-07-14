@@ -342,7 +342,7 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
         equilibrium - equilibrium object with 2D psi grid
     """
 
-    interpolator=interpolate_1D(psi,quantity)
+    interpolator=interpolate_1D(psi,quantity,type='RBF')
     Z_2D,R_2D=np.meshgrid(equilibrium['Z_1D'],equilibrium['R_1D']) #this way around to order dimensions as [r,z]
     quantity_2D=copy.deepcopy(R_2D)
 
