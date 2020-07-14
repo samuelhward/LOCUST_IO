@@ -88,13 +88,13 @@ ax1=plt.subplot(axgrid[0,:])
 scatter=True
 if scatter:
     ax1.scatter(sav['b'].rpzi[0][:,0],sav['b'].pitches[0][:,0],color='k',marker='.',s=5) #start
-    ax1.scatter(sav['b'].rpzi[0][sav['wlo'],0],sav['b'].pitches[0][sav['wlo'],0],color='r',marker='.',s=35) #orb
-    ax1.scatter(sav['b'].rpzi[0][sav['wloc'],0],sav['b'].pitches[0][sav['wloc'],0],color='g',marker='.',s=35) #locust
-    fpl_locust_2D.plot(axes=['R_start','V_pitch_start'],status_flags=['PFC_intercept_2D'],colmap=settings.cmap_m,ax=ax1,fig=fig,style='scatter')
+    ax1.scatter(sav['b'].rpzi[0][sav['wlo'],0],sav['b'].pitches[0][sav['wlo'],0],color=cmap_r(0.),marker='.',s=35) #orb
+    ax1.scatter(sav['b'].rpzi[0][sav['wloc'],0],sav['b'].pitches[0][sav['wloc'],0],color=cmap_g(0.),marker='.',s=35) #locust
+    fpl_locust_2D.plot(axes=['R_start','V_pitch_start'],status_flags=['PFC_intercept_2D'],colmap=cmap_g_,ax=ax1,fig=fig,style='scatter')
     ax1.set_facecolor('w')
 else: #XXX this code is sketchy since perimeter hull is concave
     ax1.scatter(sav['b'].rpzi[0][:,0],sav['b'].pitches[0][:,0],color='k',marker='.',s=5) #start
-    fpl_locust_2D.plot(axes=['R_start','V_pitch_start'],status_flags=['PFC_intercept_2D'],colmap=settings.cmap_g,fill=True,number_bins=4)
+    fpl_locust_2D.plot(axes=['R_start','V_pitch_start'],status_flags=['PFC_intercept_2D'],colmap=cmap_g_,fill=True,number_bins=4)
     for particle_list,color in zip([fpl_orb,fpl_locust_2D,fpl_locust_3D],[settings.cmap_r,settings.cmap_g,settings.cmap_m]):
         hull=ConvexHull([[R,pitch] for R,pitch in zip(particle_list['R_start'],particle_list['V_pitch_start'])])
         ax1.plot(particle_list['R_start'][hull.vertices],particle_list['V_pitch_start'][hull.vertices],color=color(0.5))
@@ -105,9 +105,9 @@ else: #XXX this code is sketchy since perimeter hull is concave
 ax2=plt.subplot(axgrid[1,:])
 ax2.set_xlim([-np.pi,np.pi])
 ax2.set_ylim([-np.pi,np.pi])
-ax2.scatter(sav['phiw'][sav['wlo']],sav['thetw'][sav['wlo']],color=cmap_r(0.),s=5,label='ORB')
-ax2.scatter(sav['phiw_loc'],sav['thetw_loc'],color=cmap_g(0.),s=5,label='LOCUST 3D')
-fpl_locust_2D.plot(axes=['phi','theta'],status_flags=['PFC_intercept_2D'],style='scatter',colmap=cmap_g_(0.),ax=ax2,fig=fig,label='LOCUST 2D')
+ax2.scatter(sav['phiw'][sav['wlo']],sav['thetw'][sav['wlo']],color=cmap_r(0.),s=5)
+ax2.scatter(sav['phiw_loc'],sav['thetw_loc'],color=cmap_g(0.),s=5)
+fpl_locust_2D.plot(axes=['phi','theta'],status_flags=['PFC_intercept_2D'],style='scatter',colmap=cmap_g_,ax=ax2,fig=fig)
 
 
 
@@ -116,7 +116,7 @@ ax1.set_xlabel('R [m]')
 ax1.set_ylabel('$V_{||} \slash |V|$')
 ax2.set_xlabel('Toroidal angle [rad]')
 ax2.set_ylabel('Poloidal angle [rad]')
-ax2.legend()
+ax2.legend(['ORB','LOCUST 3D','LOCUST 2D'])
 plt.show()
 
 
