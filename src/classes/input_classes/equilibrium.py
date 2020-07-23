@@ -705,7 +705,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (GEQDSK/IDS/ASCOT)\n".format(self.ID))
 
-    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
+    def plot(self,key='psirz',LCFS=True,limiters=False,number_bins=20,fill=True,vminmax=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plots equilibrium
         
@@ -826,7 +826,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=True,start_coord=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),label='',ax=False,fig=False):
+    def plot_field_line(self,axes=['X','Y','Z'],LCFS=False,limiters=False,number_field_lines=1,angle=2.0*constants.pi,plot_full=False,start_mark=True,start_coord=None,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plots random field lines for 'angle' radians around the tokamak
 
@@ -1203,6 +1203,32 @@ class Equilibrium(classes.base_input.LOCUST_input):
             component=np.asarray(component)
 
         return B_R,B_tor,B_Z
+
+    def calc_r_LCFS(self):
+        """
+        calculate the minor radius at the outboard LCFS
+        
+        notes:
+
+        """
+
+        #first thing to do is accurately determine the magnetic axis location
+        rmaxis_equilibrium,zmaxis_equilibrium,simag=self.mag_axis_calc(threshold=1.e-7)
+
+        #create data along outboard midplane for interpolation 
+        midplane_radius_major=np.linspace(rmaxis_equilibrium,self['R_1D'][-1],100)
+        midplane_poloidal_flux=processing.utils.value_at_RZ(
+        R=midplane_radius_major,
+        Z=np.full(len(midplane_radius_major),
+            zmaxis_equilibrium),
+        quantity=self['psirz'],
+        grid=self)
+    
+        interpolator_r_min_of_psi=processing.utils.interpolate_1D(midplane_poloidal_flux,midplane_radius_major-rmaxis_equilibrium,function='linear',type='interp1d') #create r_minor(psi) interpolator
+        
+        r_min_sibry=interpolator_r_min_of_psi(self['sibry'])
+
+        return r_min_sibry
 
 #################################
  

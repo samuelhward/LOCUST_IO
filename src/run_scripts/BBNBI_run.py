@@ -261,9 +261,9 @@ class BBNBI_run(run_scripts.workflow.Workflow):
             if run_ascot:
                 print('=> Execute ASCOT')
                 if ascot_parallel:
-                    output.distributions = ascot4parallel(input.core_profiles,input.equilibrium,input.wall,output.distribution_sources,work.distributions,self.dir_BBNBI / 'actors' / 'ascot4parallel_codeparam.xml','mpi_local',mpi_processes=self.number_processors)
+                    output.distributions = ascot4parallel(input.core_profiles,input.equilibrium,input.wall,output.distribution_sources,work.distributions,self.dir_BBNBI / 'actors' / 'actors' / 'ascot4parallel_codeparam.xml','mpi_local',mpi_processes=self.number_processors)
                 else:
-                    output.distributions = ascot4serial(input.core_profiles,input.equilibrium,input.wall,output.distribution_sources,work.distributions,self.dir_BBNBI / 'actors' / 'ascot4serial_codeparam.xml')
+                    output.distributions = ascot4serial(input.core_profiles,input.equilibrium,input.wall,output.distribution_sources,work.distributions,self.dir_BBNBI / 'actors' / 'actors' / 'ascot4serial_codeparam.xml')
 
             output.distributions.setPulseCtx(idx_out)
             output.distribution_sources.setPulseCtx(idx_out)
@@ -310,6 +310,8 @@ class BBNBI_run(run_scripts.workflow.Workflow):
         BBNBI_run_args['imasdb']=[self.imasdb]
         BBNBI_run_args['imas_version']=[self.imas_version]
         BBNBI_run_args['xml_settings']=[self.xml_settings]
+        BBNBI_run_args['number_particles']=[self.number_particles]
+        BBNBI_run_args['number_processors']=[self.number_processors]
 
         BBNBI_run_environment=run_scripts.environment.Environment('TITAN_BBNBI')
         command=' '.join([BBNBI_run_environment.create_command_string(),
@@ -317,8 +319,7 @@ class BBNBI_run(run_scripts.workflow.Workflow):
                                 run_scripts.utils.command_line_arg_parse_generate_string(**BBNBI_run_args)])
 
         try:
-            pass
-            subprocess.call(command,shell=True,cwd=str(self.dir_BBNBI))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+            subprocess.call(command,shell=True)# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
 
         except subprocess.CalledProcessError as err:
             print("ERROR: {workflow_name}.call_BBNBI_actor_command_line() failed to run BBNBI!\nreturning\n".format(workflow_name=self.workflow_name))

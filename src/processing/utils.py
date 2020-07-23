@@ -320,7 +320,7 @@ def value_at_RZ(R,Z,quantity,grid):
     notes:
     """
 
-    interpolator=interpolate_2D(grid['R_1D'],grid['Z_1D'],quantity)
+    interpolator=interpolate_2D(grid['R_1D'],grid['Z_1D'],quantity,function='linear')
     value_at_coordinate=[]
 
     for r,z in zip(R,Z): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
@@ -745,8 +745,8 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
     args:
         kinetic_profiles - kinetic_profile objects e.g. temperatures, densities or rotations
         axis - extrapolate profile according to this independent variable
-        start - value of normalised poloidal flux to extrapolate from (deletes current values outside this)
-        end - max value of normalise poloidal flux to extrapolate to [axis units]
+        start - value of axis to extrapolate from (deletes current values outside this)
+        end - max value of axis to extrapolate to [axis units]
         decay_length - sets scale length of exponential decay from start [axis units]
         floor_distance - maintain constant profile once axis=start+floor_distance is reached [axis units]
         floor_value - maintain constant profile once kinetic_profile=floor_value is reached [kinetic_profile units]
@@ -757,6 +757,7 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
     notes:
         must supply either floor_distance or floor_value
         this routine may begin extrapolating before start if start lies between grid points - use return_indices argument for help 
+        this routine may return profiles that do not extend exactly up to end value
     """
 
     axis=kwargs.get('axis','flux_pol_norm')
@@ -765,7 +766,7 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
     decay_length=kwargs.get('decay_length',.01)
     floor_distance=kwargs.get('floor_distance',None)
     floor_value=kwargs.get('floor_value',None)
-    uniform_grid=kwargs.get('uniform_grid',False)
+    uniform_grid=kwargs.get('uniform_grid',True)
     return_indices=kwargs.get('return_indices',False)
 
     if sum([arg is not None for arg in [floor_distance,floor_value]])!=1:
@@ -803,7 +804,7 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
         quantity_extrapolated=np.array([])
         
         #first stage is to smoothly transition to exponential decay via parabola 
-        step_length=decay_length*0.001 #arbitrarily assign 1000 steps per parabolic decay length
+        step_length=decay_length*0.01 #arbitrarily assign 100 steps per parabolic decay length
         smoothing_rate=1./(decay_length) #set parabola acceleration
         step_counter=0.
         starting_profile_value=kinetic_profile[quantity_to_extrapolate][-1]
@@ -846,7 +847,7 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
         if current_axis_value>=end:
             pass
         else:
-            distance_to_end=np.linspace(current_axis_value+step_length,end,4)
+            distance_to_end=np.linspace(current_axis_value+step_length,end,100) #use largeish number here because cutting off just inside end later
             quantity_to_end=np.full(len(distance_to_end),floor_value)
             axis_extrapolated=np.concatenate((axis_extrapolated,distance_to_end))
             quantity_extrapolated=np.concatenate((quantity_extrapolated,quantity_to_end))
@@ -854,6 +855,12 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
         #add flat section of profile
         kinetic_profile[axis]=np.concatenate((kinetic_profile[axis],axis_extrapolated))
         kinetic_profile[quantity_to_extrapolate]=np.concatenate((kinetic_profile[quantity_to_extrapolate],quantity_extrapolated))
+
+        #cut off any data outside end
+        inside_end=np.where(kinetic_profile[axis]<end)[0]
+        last_index_before_end=inside_end[-1]
+        kinetic_profile[axis]=kinetic_profile[axis][inside_end]
+        kinetic_profile[quantity_to_extrapolate]=kinetic_profile[quantity_to_extrapolate][inside_end]
                 
         #if requested, do some interpolation to sit all profiles on same grid outside of start
         if uniform_grid and len(quantity_extrapolated)>0:
@@ -867,7 +874,7 @@ def extrapolate_kinetic_profiles(*kinetic_profiles,**kwargs):
             axis_value_after_extrap=kinetic_profile[axis][index_after_extrap]
             kinetic_profile[axis]=np.concatenate((
                 kinetic_profile[axis][indices_not_extrapolated],
-                np.linspace(axis_value_before_extrap,end,10000)[1:])) #use axis_value_before_extrap in linspace since axis_value_after_extrap will vary for different profiles
+                np.linspace(axis_value_before_extrap,kinetic_profile[axis][last_index_before_end],10000)[1:])) #use axis_value_before_extrap in linspace since axis_value_after_extrap will vary for different profiles
             indices_extrapolated=list(set(indices_not_extrapolated) ^ set(range(len(kinetic_profile[axis])))) #find indices of values within extrapolation zone
             kinetic_profile[quantity_to_extrapolate]=np.concatenate((
                 kinetic_profile[quantity_to_extrapolate][indices_not_extrapolated],
@@ -939,17 +946,27 @@ def extrapolate_kinetic_profiles_ITER(equilibrium,*kinetic_profiles,**kwargs):
     quantity=equilibrium['psirz'],
     grid=equilibrium)
     midplane_poloidal_flux_norm=(midplane_poloidal_flux-simag)/(equilibrium['sibry']-simag)
-    midplane_toroidal_flux=value_at_RZ(
+    midplane_toroidal_flux=value_at_RZ( #XXX REMOVE THIS IF NOW NOT NEEDED
     R=midplane_radius_major,
     Z=np.full(len(midplane_radius_major),
         zmaxis_equilibrium),
     quantity=equilibrium['phirz'],
     grid=equilibrium)
 
-    interpolator_r_min_of_psi_norm=interpolate_1D(midplane_poloidal_flux_norm,midplane_radius_major-rmaxis_equilibrium,function='linear',type='interp1d') #create psi(r) interpolator for later
+    interpolator_r_min_of_psi_norm=interpolate_1D(midplane_poloidal_flux_norm,midplane_radius_major-rmaxis_equilibrium,function='linear',type='interp1d') #create r_minor(psi_norm) interpolator for later
     interpolator_psi_of_r_maj=interpolate_1D(midplane_radius_major,midplane_poloidal_flux,function='linear',type='interp1d') #create psi(r) interpolator for later
-    interpolator_phi_of_r_maj=interpolate_1D(midplane_radius_major,midplane_toroidal_flux,function='linear',type='interp1d') #create phi(r) interpolator for later
+    interpolator_phi_of_r_maj=interpolate_1D(midplane_radius_major,midplane_toroidal_flux,function='linear',type='interp1d') #create phi(r) interpolator for later (just use equilibrium grid line closest to mag axis since edge is prone to getting noise)
     
+    #XXX switching to just taking the closest grid line - delete above if keeping this 
+    interpolator_phi_of_r_maj=interpolate_1D(equilibrium['R_1D'],equilibrium['phirz'][:,np.abs(equilibrium['Z_1D']-zmaxis_equilibrium).argmin()],function='linear',type='interp1d') #create phi(r) interpolator for later (just use equilibrium slice closest to mag axis since edge is prone to noise)
+
+    '''#XXX
+    import matplotlib.pyplot as plt #XXX
+    plt.plot(midplane_radius_major,midplane_toroidal_flux)
+    plt.plot(equilibrium['R_1D'],equilibrium['phirz'][:,np.abs(equilibrium['Z_1D']-zmaxis_equilibrium).argmin()],color='red')
+    plt.show()
+    '''#XXX
+
     #take flux_pol_norm stored in kinetic profiles as gospel and recalculate minor radius grid according to supplied equilibrium
     for kinetic_profile in kinetic_profiles: 
         if 'r_1D' in kinetic_profile.data: kinetic_profile.set(r_1D=np.asarray(interpolator_r_min_of_psi_norm(kinetic_profile['flux_pol_norm'])))
@@ -965,25 +982,43 @@ def extrapolate_kinetic_profiles_ITER(equilibrium,*kinetic_profiles,**kwargs):
     return_indices=True,
     uniform_grid=True)
 
+    r_LCFS=equilibrium.calc_r_LCFS() #find minor radius at outboard LCFS for normalisation later
     #determine toroidal and poloidal flux only at the new extrapolated positions
     for extrapolated_kinetic_profile,extrapolated_index in zip(extrapolated_kinetic_profiles,extrapolated_indices):
 
         index_not_extrapolated=list(set(extrapolated_index) ^ set(range(len(extrapolated_kinetic_profile['r_1D'])))) #find indices of values that were left alone
         
-        flux_pol=np.concatenate((extrapolated_kinetic_profile['flux_pol_norm'][index_not_extrapolated]*(equilibrium['sibry']-simag)+simag,
-            interpolator_psi_of_r_maj(extrapolated_kinetic_profile['r_1D'][extrapolated_index]+rmaxis_equilibrium)
-            )) #for poloidal flux I can recalculate within the LCFS using the simag sibry values
+        #recalculate poloidal and toroidal flux axes        
+        flux_pol=interpolator_psi_of_r_maj(extrapolated_kinetic_profile['r_1D']+rmaxis_equilibrium)
         flux_pol_norm=(flux_pol-simag)/(equilibrium['sibry']-simag)
 
-        #for toroidal flux just interpolate        
         flux_tor=interpolator_phi_of_r_maj(extrapolated_kinetic_profile['r_1D']+rmaxis_equilibrium)
-        flux_tor_coord=np.sqrt(np.abs((flux_tor*2.*np.pi)/(np.pi*equilibrium['bcentr']))) #same as rho_tor
+        flux_tor_LCFS=interpolator_phi_of_r_maj(r_LCFS+rmaxis_equilibrium)
+        flux_tor_axis=interpolator_phi_of_r_maj(rmaxis_equilibrium)
+
+        #calculate toroidal flux coordinate - rho_tor in IDS
+        flux_tor_coord=np.sqrt(np.abs((flux_tor*2.*np.pi)/(np.pi*equilibrium['bcentr']))) 
+        flux_tor_coord_LCFS=np.sqrt(np.abs((flux_tor_LCFS*2.*np.pi)/(np.pi*equilibrium['bcentr'])))
+        flux_tor_coord_axis=np.sqrt(np.abs((flux_tor_axis*2.*np.pi)/(np.pi*equilibrium['bcentr'])))
+        flux_tor_coord_norm=(flux_tor_coord-flux_tor_coord_axis)/(flux_tor_coord_LCFS-flux_tor_coord_axis)
 
         extrapolated_kinetic_profile.set(
         flux_pol=flux_pol,
         flux_pol_norm=flux_pol_norm,
         flux_tor=flux_tor,
-        flux_tor_coord=flux_tor_coord)
+        flux_tor_coord=flux_tor_coord,
+        flux_tor_coord_norm=flux_tor_coord_norm)
+
+        '''#XXX
+        if extrapolated_kinetic_profile.properties['species']=='electrons' and 'n' in extrapolated_kinetic_profile.data:
+            import matplotlib.pyplot as plt
+            plt.plot(extrapolated_kinetic_profile['flux_tor'],extrapolated_kinetic_profile['n'])
+            plt.plot(extrapolated_kinetic_profile['flux_tor'][extrapolated_index],extrapolated_kinetic_profile['n'][extrapolated_index],color='red')
+            plt.show()
+            plt.plot(extrapolated_kinetic_profile['r_1D'],extrapolated_kinetic_profile['flux_tor']) #XXX THIS SHOULD NOT BE FLAT EVER 
+            plt.plot(extrapolated_kinetic_profile['r_1D'][extrapolated_index],extrapolated_kinetic_profile['flux_tor'][extrapolated_index],color='red')
+            plt.show()
+        '''#XXX
 
     return extrapolated_kinetic_profiles
 

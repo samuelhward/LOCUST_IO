@@ -65,12 +65,12 @@ Since this package aims to bridge the gap between various file formats for diffe
 #### Temperature:
 
     1D data
+        T                                                               #temperature [eV]
         flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
-        T                                                               #ion temperature [eV]
-        T                                                               #electron temperature [eV]
         flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
+        flux_tor_coord_norm                                             #normalised toroidal flux coordinate
         flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
         r_1d                                                            #minor radius [metres]
@@ -78,11 +78,12 @@ Since this package aims to bridge the gap between various file formats for diffe
 #### Number Density:
 
     1D data
+        n                                                               #number density [#/m^3]
         flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
-        n                                                               #ion or electron number density [#/m^3]
         flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
+        flux_tor_coord_norm                                             #normalised toroidal flux coordinate
         flux_tor                                                        #toroidal flux [Weber / rad]
         q                                                               #safety factor
         r_1d                                                            #minor radius [metres]
@@ -90,12 +91,14 @@ Since this package aims to bridge the gap between various file formats for diffe
 #### Rotation
 
     1D data
+        rotation_ang                                                    #rotation profile [rad/s]
+        rotation_vel                                                    #rotation profile [m/s]
         flux_pol                                                        #poloidal flux [Weber / rad]
         flux_pol_norm                                                   #normalised poloidal flux
         flux_pol_norm_sqrt                                              #sqrt(flux_pol_norm) 
-        rotation_ang                                                    #rotation profile [rad/s]
+        flux_tor_coord                                                  #toroidal flux coordinate sqrt(b_flux_tor/(pi*b0)) ~ sqrt(pi*r^2*b0/(pi*b0)) ~ r [m]
+        flux_tor_coord_norm                                             #normalised toroidal flux coordinate
         R_1D                                                            #major radius where corresponding rotation_vel is measured [m]
-        rotation_vel                                                    #rotation profile [m/s]
 
 ##### Perturbation
 

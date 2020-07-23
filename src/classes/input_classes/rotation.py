@@ -385,6 +385,7 @@ def dump_rotation_IDS(ID,output_data,shot,run,**properties):
     output_IDS.core_profiles.profiles_1d[0].grid.psi=output_data['flux_pol']*2.*np.pi
     try:
         output_IDS.core_profiles.profiles_1d[0].grid.rho_tor=output_data['flux_tor_coord']
+        output_IDS.core_profiles.profiles_1d[0].grid.rho_tor_norm=output_data['flux_tor_coord_norm']
     except:
         pass
         

@@ -997,7 +997,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),gridlines=False,label='',ax=False,fig=False):
+    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,gridlines=False,label='',ax=False,fig=False):
         """
         plots a perturbation
         

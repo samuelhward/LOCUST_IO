@@ -279,12 +279,21 @@ def read_beam_depo_IDS(shot,run,**properties):
 
     #check for common field names to convert to LOCUST_IO variable names
 
-    locust_io_names=['E','rho_tor','V_phi','V_pitch'] #LOCUST_IO fields that we want to retain
-    nemo_names=['Energy','Rhotor','V_PHI','Pitch angle'] #first check possible matching NEMO field names
-    for nemo_name,locust_io_name in zip(nemo_names,locust_io_names):
-        if nemo_name in input_data.keys():
-            input_data[locust_io_name]=input_data.pop(nemo_name)
- 
+    #possible field names for different codes
+    nemo_names=['Energy','Rhotor','V_PHI','Pitch angle'] 
+    bbnbi_names=['z','vx','vy','vz','energy','pitch']
+
+    #matching LOCUST_IO fields that we want to have instead
+    locust_io_names=[
+    ['E','rho_tor','V_phi','V_pitch'],
+    ['Z','V_X','V_Y','V_Z','E','V_pitch']
+    ]
+
+    for code_counter,code_names in enumerate([nemo_names,bbnbi_names]):
+        for code_name,locust_io_name in zip(code_names,locust_io_names[code_counter]):
+            if code_name in input_data.keys():
+                input_data[locust_io_name]=input_data.pop(code_name)
+     
     input_IDS.close()
 
     print("finished reading beam deposition from IDS")
@@ -1258,6 +1267,19 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST_FO/LOCUST_FO_weighted/LOCUST_GC_weighted/IDS/TRANSP_fbm/TRANSP_fbm_gc/TRANSP_birth/TRANSP_birth_gc/ASCOT_FO/ASCOT_GC/ASCOT_FO_h5_ini/ASCOT_GC_h5_ini/SPIRAL_FO)\n".format(self.ID))
  
+        #populate any missing data if possible
+        if any([quantity not in self.data for quantity in ['X','Y']]) and all([quantity in self.data for quantity in ['R','phi']]):
+            self.data['X'],self.data['Y']=processing.utils.RphiZ_to_XYZ(self.data['R'],self.data['phi'],RH=True)
+
+        if any([quantity not in self.data for quantity in ['R','phi']]) and all([quantity in self.data for quantity in ['X','Y']]):
+            self.data['R'],self.data['phi']=processing.utils.XYZ_to_RphiZ(self.data['X'],self.data['Y'])
+
+        if any([quantity not in self.data for quantity in ['V_R','V_Z','V_phi']]) and all([quantity in self.data for quantity in ['X','Y','V_X','V_Y']]):
+            self.data['V_R'],self.data['V_phi']=processing.utils.V_XYZ_to_V_RphiZ(self.data['X'],self.data['Y'],self.data['V_X'],self.data['V_Y'])
+
+        if any([quantity not in self.data for quantity in ['V_X','V_Y']]) and all([quantity in self.data for quantity in ['phi','V_R','V_phi']]):
+            self.data['V_X'],self.data['V_Y']=processing.utils.V_RphiZ_to_V_XYZ(self.data['phi'],self.data['V_R'],self.data['V_phi'])
+
     def dump_data(self,data_format=None,filename=None,shot=None,run=None,equilibrium=None,**properties):
         """
         write beam_deposition to file

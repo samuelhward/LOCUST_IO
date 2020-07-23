@@ -86,7 +86,7 @@
 | `GCFIX`       | Force G.C. to conserve CoM (2D B only) by spatially moving particle                                                                          |
 | `CLM`         | Use OLD (incorrect) G.C. equations                                                                                                           |
 | `NOGCCOR`     | Don't adjust ptcl. V to exactly match G.C. position                                                                                          |
-| `GCCOL`       | Set to force scattering at G.C. (standard                                                                                                    |
+| `GCCOL`       | Set to force scattering at G.C. (standard)                                                                                                    |
 | `GCFG`        | If scattering at ptcl., set to force permanent switch to gyro tracking after V/V > 0.9, else G.C. <-> full gyro will toggle dependent on V/V |
 | `G3IPFC0`     | In SPLIT mode, witch to full gyro for STAGE 2.                                                                                               |
 | `ECUT`        | Energy termination cut [keV] (set = 10.0 to match ASCOT)                                                                                     |

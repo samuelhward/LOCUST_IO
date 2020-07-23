@@ -254,8 +254,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
                                 run_scripts.utils.command_line_arg_parse_generate_string(**NEMO_run_args)])
 
         try:
-            pass
-            subprocess.call(command,shell=True,cwd=str(self.dir_NEMO))# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
+            subprocess.call(command,shell=True)# as proc: #stdin=PIPE, stdout=PIPE, stderr=STDOUT
 
         except subprocess.CalledProcessError as err:
             print("ERROR: {workflow_name}.call_NEMO_actor_command_line() failed to run NEMO!\nreturning\n".format(workflow_name=self.workflow_name))
