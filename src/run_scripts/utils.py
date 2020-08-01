@@ -1951,6 +1951,7 @@ def generate_NBI_geometry(machine='ITER',**properties):
             data['number_beamlets_per_segment']=data['number_beamlet_columns_per_beamletgroup']
             data['number_beamlets_per_column']=data['number_beamlet_segments_per_beamletgroup']
             data['number_beamlets_per_beamletgroup']=data['number_beamlet_segments_per_beamletgroup']*data['number_beamlet_columns_per_beamletgroup']
+            data['number_beamlets_per_unit']=data['number_beamlets_per_beamletgroup']*data['number_beamletgroups_per_unit']
             #since IDSs are flat arrays representing 2D grids, assign index values
             data['beamletgroup_indices']=np.arange(data['number_beamletgroups_per_unit']).reshape(data['number_beamletgroups_per_segment'],data['number_beamletgroups_per_column'])
             data['beamlet_indices']=np.arange(data['number_beamlets_per_beamletgroup']).reshape(data['number_beamlets_per_segment'],data['number_beamlets_per_column'])
@@ -2007,15 +2008,17 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
             #main geometry calculations
 
-            #allocate arrays
+            #allocate arrays (XXX for now just those quantities written to IDS)
             for quantity in ['beamlet_centres_x',
                             'beamlet_centres_y',
                             'R_tangency_beamlet',
                             'phi_tangency_beamlet',
                             'Z_tangency_beamlet',
                             'X_tangency_beamlet',
-                            'Y_tangency_beamlet']:
-                data[quantity]=np.empty(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
+                            'Y_tangency_beamlet',
+                            'beamlet_vertical_angle',
+                            'power_fraction_beamlet']:
+                data[quantity]=np.zeros(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
 
             #first determine position of beamlet relative to unit centre
             for beamletgroup_column in range(data['number_columns_per_unit']):
@@ -2041,7 +2044,6 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
             #find angle of inclination of beamlet with horizontal plane
             #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
-            data['beamlet_vertical_angle']=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical']
 
             #find coordinates of beamlet tangency point
             for beamletgroup_column in range(data['number_columns_per_unit']):
@@ -2050,6 +2052,7 @@ def generate_NBI_geometry(machine='ITER',**properties):
                     data['R_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.cos(np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])
                     data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.
                     data['Z_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_Z_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.sin(data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])*np.tan(data['beamlet_vertical_angle'][beamletgroup_column,beamletgroup_segment])
+                    data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:]+=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]
             data['X_tangency_beamlet']=data['R_tangency_beamlet']*np.cos(data['phi_tangency_beamlet'])
             data['Y_tangency_beamlet']=data['R_tangency_beamlet']*np.sin(data['phi_tangency_beamlet'])
 
@@ -2062,6 +2065,8 @@ def generate_NBI_geometry(machine='ITER',**properties):
             data['z']=1
             data['beam_current_fraction']=[1,0,0]
             data['beam_power_fraction']=[1,0,0]
+            data['power_fraction_beamlet']+=1./data['number_beamlets_per_unit'] #assume all beamlets have same power
+            data['direction']=1
 
     return data
 
@@ -2102,7 +2107,7 @@ def plot_NBI_geometry(axes=['R','Z'],real_scale=True,colmap=settings.cmap_defaul
         if ndim==3:
             ax=fig.add_subplot(111,projection='3d')
 
-    geometry_data=generate_NBI_geometry(machine='ITER',**properties)
+    nbi_data=generate_NBI_geometry(machine='ITER',**properties)
 
     #just hack this to work with generate_NBI_geometry
 
@@ -2113,7 +2118,7 @@ def plot_NBI_geometry(axes=['R','Z'],real_scale=True,colmap=settings.cmap_defaul
         beamlet_start_coordinate_names.append(f'beamlet_centres_{axes[dim]}_machine')
         beamlet_end_coordinate_names.append(f'{axes[dim]}_tangency_beamlet')
 
-    XYZ_to_plot=np.array([[geometry_data[start].flatten(),geometry_data[end].flatten()] for start,end in zip(beamlet_start_coordinate_names,beamlet_end_coordinate_names)]).T
+    XYZ_to_plot=np.array([[nbi_data[start].flatten(),nbi_data[end].flatten()] for start,end in zip(beamlet_start_coordinate_names,beamlet_end_coordinate_names)]).T
 
     for beamlet in XYZ_to_plot:
         plt.plot(*beamlet.T,color=colmap(colmap_val),label=label,linewidth=.1) #XXX
@@ -2149,31 +2154,33 @@ def create_IDS_NBI(shot,run,**properties):
     axis=properties.get("axis", 'on')
 
     #create beam data
-    geometry_data=generate_NBI_geometry(machine=machine,beam_name=beam_name,axis=axis)
+    nbi_data=generate_NBI_geometry(machine=machine,beam_name=beam_name,axis=axis)
 
     IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     IDS.create_env(username,imasdb,imas_version)
     IDS.nbi.get() #open the file and get all the data from it
         
     #allocate structure
-    IDS.nbi.unit.resize(geometry_data['number_units'])
-    for unit in range(geometry_data['number_units']):
-        IDS.nbi.unit[unit].beamlets_group.resize(geometry_data['number_beamletgroups_per_unit'])
-        for beamletgroup in range(geometry_data['number_beamletgroups_per_unit']):
+    IDS.nbi.unit.resize(nbi_data['number_units'])
+    for unit in range(nbi_data['number_units']):
+        IDS.nbi.unit[unit].beamlets_group.resize(nbi_data['number_beamletgroups_per_unit'])
+        for beamletgroup in range(nbi_data['number_beamletgroups_per_unit']):
             IDS.nbi.unit[unit].beamlets_group[beamletgroup].divergence_component.resize(2) #0.85 and 0.15 fraction components
 
     #main loop for filling IDS with geometry data
-    for unit in range(geometry_data['number_units']):
-        for beamletgroup_column in range(geometry_data['number_columns_per_unit']):
-            for beamletgroup_segment in range(geometry_data['number_beamletgroups_per_column']):
+    for unit in range(nbi_data['number_units']):
+        for beamletgroup_column in range(nbi_data['number_columns_per_unit']):
+            for beamletgroup_segment in range(nbi_data['number_beamletgroups_per_column']):
     
-                beamletgroup_index=beamletgroup_indices[beamletgroup_column,beamletgroup_segment]
+                beamletgroup_index=nbi_data['beamletgroup_indices'][beamletgroup_column,beamletgroup_segment]
 
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.r=geometry_data['beamlet_centres_R_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.z=geometry_data['beamlet_centres_Z_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.phi=geometry_data['beamlet_centres_phi_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.angles=np.zeros(shape=(number_beamletgroups_per_segment,number_segments_per_unit))+geometry_data['beamlet_vertical_angle'][beamletgroup_column,beamletgroup_segment]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.tangency_radii=geometry_data['R_tangency_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.r=nbi_data['beamlet_centres_R_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.z=nbi_data['beamlet_centres_Z_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.phi=nbi_data['beamlet_centres_phi_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.angles=nbi_data['beamlet_vertical_angle'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.tangency_radii=nbi_data['R_tangency_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.power_fractions=nbi_data['power_fraction_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].direction=nbi_data['direction']
 
                 #define the divergence components for this beamlet group
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[0].particles_fraction=0.85
@@ -2184,10 +2191,10 @@ def create_IDS_NBI(shot,run,**properties):
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].horizontal=0.015
 
         #add operating data for this unit
-        IDS.nbi.unit[unit].power_launched.data=np.array([geometry_data['power']]) 
-        IDS.nbi.unit[unit].energy.data=np.array([geometry_data['energy_full']])
-        IDS.nbi.unit[unit].species.a=geometry_data['a']
-        IDS.nbi.unit[unit].species.z_n=geometry_data['z'] 
+        IDS.nbi.unit[unit].power_launched.data=np.array([nbi_data['power']]) 
+        IDS.nbi.unit[unit].energy.data=np.array([nbi_data['energy_full']])
+        IDS.nbi.unit[unit].species.a=nbi_data['a']
+        IDS.nbi.unit[unit].species.z_n=nbi_data['z'] 
         IDS.nbi.unit[unit].beam_current_fraction.data=np.array([[fraction] for fraction in data['beam_current_fraction']],ndmin=2) #extra dim over timeslices
         IDS.nbi.unit[unit].beam_power_fraction.data=np.array([[fraction] for fraction in data['beam_power_fraction']],ndmin=2) #extra dim over timeslices
 
