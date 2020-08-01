@@ -104,7 +104,7 @@ def plot_coils_RMP_ITER(axes=['R','Z'],shot=1180,run=17,username='public',imasdb
         polar=True if axes==['phi','R'] else False
         ax = fig.add_subplot(111,polar=polar)
 
-    if len(axes)==3: ax = fig.add_subplot(111,projection='3d')
+        if len(axes)==3: ax = fig.add_subplot(111,projection='3d')
 
     try:
         import imas 

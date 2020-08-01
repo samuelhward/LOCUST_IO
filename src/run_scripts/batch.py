@@ -120,7 +120,7 @@ class Batch:
     batch_system['VIKING']['flags']['output']='LOCUST_SLURM.out'
     batch_system['VIKING']['flags']['error']='LOCUST_SLURM.err'
     batch_system['VIKING']['flags']['ntasks']=1
-    batch_system['VIKING']['flags']['mem']='12gb'
+    batch_system['VIKING']['flags']['mem']='32gb'
     batch_system['VIKING']['flags']['time']='02:00:00'
 
 

@@ -27,6 +27,7 @@ try:
     from matplotlib import cm
     import matplotlib.pyplot as plt
     import ast
+    import scipy
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning")
     sys.exit(1)
@@ -117,7 +118,7 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
         output_filename_gc='{}{}{}{}'.format(ID,'_fi_',file_ID,'_gc.cdf')
 
         if guiding_centre:
-            fbm_input = """
+            fbm_input="""
                         {ID}
                         {path}
                         {file_ID}
@@ -128,8 +129,8 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
                         """.format(ID=ID,path='q',file_ID=file_ID,device=device)
 
             print("writing TRANSP FI netCDF file {}".format(output_filename_gc))
-            proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-            out, err = proc.communicate(input=fbm_input.encode('utf-8'))
+            proc=subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+            out, err=proc.communicate(input=fbm_input.encode('utf-8'))
             try:
                 os.rename(output_filename,output_filename_gc) #add '_gc' label onto file
             except:
@@ -138,7 +139,7 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
             print("finished writing TRANSP FI netCDF file {}".format(output_filename_gc))
 
         if particle_position:
-            fbm_input = """
+            fbm_input="""
                         {ID}
                         {path}
                         {file_ID}
@@ -149,8 +150,8 @@ def TRANSP_get_fbm_FI_CDF(run_ID,shot_number,number_files,particle_position=True
                         """.format(ID=ID,path='q',file_ID=file_ID,device=device)
 
             print("writing TRANSP FI netCDF file {}".format(output_filename))
-            proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-            out, err = proc.communicate(input=fbm_input.encode('utf-8'))
+            proc=subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+            out, err=proc.communicate(input=fbm_input.encode('utf-8'))
             print("finished writing TRANSP FI netCDF file {}".format(output_filename))
 
     os.chdir(project_dir) #change back to original working directory    
@@ -165,8 +166,8 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,path_TRAN
             dumping at particle location
             dumping in x y z space
             uses Akima Hermite spline interpolation
-            random seed = 1
-            sample size = 1,000,000
+            random seed=1
+            sample size=1,000,000
     args:
         run_ID - TRANSP run_ID e.g. W01
         shot_number - TRANSP shot number e.g. 29034
@@ -185,7 +186,7 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,path_TRAN
         file_ID+=1
         output_filename='{}{}{}{}'.format(ID,'_fdep_nb_en_',file_ID,'.out') #current output file
 
-        fbm_input = """
+        fbm_input="""
                     {ID}
                     {path}
                     {file_ID}
@@ -206,8 +207,8 @@ def TRANSP_get_fbm_FI_birth_deposition(run_ID,shot_number,number_files,path_TRAN
                     """.format(ID=ID,path='q',file_ID=file_ID,device=device,output_filename=output_filename)
 
         print("writing TRANSP FI random sample birth deposition {}".format(output_filename))
-        proc = subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-        out, err = proc.communicate(input=fbm_input.encode('utf-8'))
+        proc=subprocess.Popen(['get_fbm'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        out, err=proc.communicate(input=fbm_input.encode('utf-8'))
         print("finished writing TRANSP FI random sample birth deposition {}".format(output_filename))
 
     os.chdir(project_dir) #change back to original working directory  
@@ -445,9 +446,9 @@ class TRANSP_output_FI(TRANSP_output):
         else:
             fig_flag=True
         if fig_flag is False:
-            fig = plt.figure() #if user has not externally supplied figure, generate
+            fig=plt.figure() #if user has not externally supplied figure, generate
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)
+            ax=fig.add_subplot(111)
         ax.set_title(self.ID)   
         
         #add specific options for plotting here
@@ -755,15 +756,15 @@ def dump_run_file_ASCOT(run_file='ascot4.cmd',initialdir=None,output_file='ascot
         initialdir=support.dir_input_files / input_path #use write location as default
     
     with open(filepath,'w') as file:
-        file.write('# @ input = dev/null/\n')
-        file.write('# @ initialdir = {initialdir}\n'.format(initialdir=initialdir))
-        file.write('# @ output = {output_file}\n'.format(output_file=output_file))
-        file.write('# @ error = {error_file}\n'.format(error_file=error_file))
-        file.write('# @ jobtype = openmpi\n')
-        file.write('# @ max_processors = {max_proc}\n'.format(max_proc=max_proc))
-        file.write('# @ min_processors = {min_proc}\n'.format(min_proc=min_proc))
-        file.write('# @ notify_user = {user}\n'.format(user=user))
-        file.write('# @ notification = complete\n')
+        file.write('# @ input=dev/null/\n')
+        file.write('# @ initialdir={initialdir}\n'.format(initialdir=initialdir))
+        file.write('# @ output={output_file}\n'.format(output_file=output_file))
+        file.write('# @ error={error_file}\n'.format(error_file=error_file))
+        file.write('# @ jobtype=openmpi\n')
+        file.write('# @ max_processors={max_proc}\n'.format(max_proc=max_proc))
+        file.write('# @ min_processors={min_proc}\n'.format(min_proc=min_proc))
+        file.write('# @ notify_user={user}\n'.format(user=user))
+        file.write('# @ notification=complete\n')
         file.write('# @ queue\n\n')
         file.write('date\n')
         file.write('mpirun -np $NSLOTS {executable} -output ascot_freia_$JOB_ID\n'.format(executable=executable))
@@ -847,7 +848,7 @@ def dump_input_options_ASCOT(filename='input.options'):
  !    - restricts the length of the time step. The default value is 1.0
  !   integer :: ORB%LEAPFROGSTEPDIVIDOR:
  !    - the leap-frog (and runge-kutta) time step is defined as
- !      dt = m /( B * q * leapFrogStepDividor )
+ !      dt=m /( B * q * leapFrogStepDividor )
  !      when fixedTimeStep is negative
  !   integer :: ORB%ORBITMETHOD:
  !    - 1 == pure guiding-center runge-kutta integration
@@ -860,7 +861,7 @@ def dump_input_options_ASCOT(filename='input.options'):
  !    - 1 == read Erad profile from file/cpo
  !   real(kind=params_wp) :: ORB%ALD_FORCE:
  !    - radiation reaction force. Relevant only for (runaway) electrons.
- !    - defines the strength of the force: <0 = off (default), 1 = physical.
+ !    - defines the strength of the force: <0=off (default), 1=physical.
  !    - the force is proportional to B^2 so adjusting this parameter shows
  !      what happens if the field strength is altered.
  !   real(kind=params_wp) :: ORB%FIXEDTIMESTEP:
@@ -906,7 +907,7 @@ def dump_input_options_ASCOT(filename='input.options'):
  !    - 0 == no acceleration
  !    - 1 == adaptive acceleration, NOTE: set ENERGYCOLLSTEPLIM to a
  !           reasonable value, each time step will try to reach it.
- !           Reasonable = probably much lower than the default value.
+ !           Reasonable=probably much lower than the default value.
  !    ->1 == max acceleration factor is user defined (this parameter)
  !   integer :: INTERACT%ICRH:
  !    - ICRH heating (In development stages)
@@ -1192,13 +1193,13 @@ def dump_input_options_ASCOT(filename='input.options'):
  !   integer :: PARTICLESOURCE%NMAX:
  !    - number of test particles to aim at when using dynamic source
 &PARTICLESOURCE_OPTIONS
- PARTICLESOURCE%READ = 1,
- PARTICLESOURCE%DISTRIBUTION = 0,
- PARTICLESOURCE%DYNAMNBI = 1,
- PARTICLESOURCE%REWEIGHTING = 1,
- PARTICLESOURCE%REMLOWWGT = 1,
- PARTICLESOURCE%NRHOBINS = 10,
- PARTICLESOURCE%NMAX = 1000,
+ PARTICLESOURCE%READ=1,
+ PARTICLESOURCE%DISTRIBUTION=0,
+ PARTICLESOURCE%DYNAMNBI=1,
+ PARTICLESOURCE%REWEIGHTING=1,
+ PARTICLESOURCE%REMLOWWGT=1,
+ PARTICLESOURCE%NRHOBINS=10,
+ PARTICLESOURCE%NMAX=1000,
  /"""
 
         file.write(file_contents)
@@ -1292,14 +1293,14 @@ def dump_inputs_ASCOT(temperature_i,temperature_e,density_i,density_e,rotation_t
         uses default ASCOT filenames
         some inputs from list below are missing and must be generated by hand for now
         ASCOT run requires:
-            - ascot4.cmd = freia batch submission file
-            - input.magn_bkg = B field (currently generated with matlab scripts)
-            - input.magn_header = B field (currently generated with matlab scripts)
-            - input.options = run options namelist
-            - input.particles = particle birth list
-            - input.plasma_1d = kinetic profile inputs
-            - input.wall_2d = limiter contour outline
-            - binary = executable
+            - ascot4.cmd=freia batch submission file
+            - input.magn_bkg=B field (currently generated with matlab scripts)
+            - input.magn_header=B field (currently generated with matlab scripts)
+            - input.options=run options namelist
+            - input.particles=particle birth list
+            - input.plasma_1d=kinetic profile inputs
+            - input.wall_2d=limiter contour outline
+            - binary=executable
     args:
         temperature_i - ion temperature object (eV)
         temperature_e - electron temperature object (eV)
@@ -1550,9 +1551,9 @@ class FINT_LOCUST:
         else:
             fig_flag=True
         if fig_flag is False:
-            fig = plt.figure() #if user has not externally supplied figure, generate
+            fig=plt.figure() #if user has not externally supplied figure, generate
         if ax_flag is False: #if user has not externally supplied axes, generate them
-            ax = fig.add_subplot(111)
+            ax=fig.add_subplot(111)
         ax.set_title(self.ID)
 
         E,time=np.meshgrid(self['E'],self['time'])
@@ -1632,16 +1633,16 @@ def dump_inputs_LOCUST(temperature_i=None,temperature_e=None,density_e=None,equi
         uses default LOCUST filenames
         some inputs from list below are missing and must be generated by hand for now
         LOCUST run requires:
-            - collisions.dat = cross-section data (needs to be retrieved externally)
-            - ptcles.dat = particle birth list
-            - profile_ne.dat = electron density profile
-            - profile_Te.dat = electron temperature profile
-            - profile_Ti.dat = ion temperature profile
-            - GEQDSK = B field
-            - wall = 2D (supported) or 3D wall (not supported) - optional
-            - point_data.inp = B field sample points for use with -DBCHECK mode - optional
-            - dB_map.dat = perturbation input - optional
-            - BPLASMA_n = perturbation input - optional
+            - collisions.dat=cross-section data (needs to be retrieved externally)
+            - ptcles.dat=particle birth list
+            - profile_ne.dat=electron density profile
+            - profile_Te.dat=electron temperature profile
+            - profile_Ti.dat=ion temperature profile
+            - GEQDSK=B field
+            - wall=2D (supported) or 3D wall (not supported) - optional
+            - point_data.inp=B field sample points for use with -DBCHECK mode - optional
+            - dB_map.dat=perturbation input - optional
+            - BPLASMA_n=perturbation input - optional
     args:
         temperature_i - ion temperature object (eV)
         temperature_e - electron temperature object (eV)
@@ -1756,21 +1757,21 @@ def calc_coulomb_logarithm(Et,n,T,Ai,At,Z,Zt,Bmod,code='LOCUST'):
     Z=np.asarray(Z)
 
     if code=='LOCUST' or code =='TRANSP':
-        omega2 = 1.74*Z**2/Ai*n + 9.18e15*Z**2/Ai**2*Bmod**2
-        vrel2  = 9.58e10*(T/Ai + 2.0*Et/At)
-        rminqu = 1.9121e-08*(Ai+At)/Ai/At/np.sqrt(vrel2)
+        omega2=1.74*Z**2/Ai*n + 9.18e15*Z**2/Ai**2*Bmod**2
+        vrel2 =9.58e10*(T/Ai + 2.0*Et/At)
+        rminqu=1.9121e-08*(Ai+At)/Ai/At/np.sqrt(vrel2)
     elif code=='ASCOT':
-        omega2 = 1.74*Z**2/Ai*n
-        vrel2  = 9.58e10*(T/Ai)
-        rminqu = np.exp(0.5)*1.9121e-08*(Ai+At)/(Ai*At*np.sqrt(vrel2))
+        omega2=1.74*Z**2/Ai*n
+        vrel2 =9.58e10*(T/Ai)
+        rminqu=np.exp(0.5)*1.9121e-08*(Ai+At)/(Ai*At*np.sqrt(vrel2))
     else:
         print("ERROR: calc_coulomb_logarithm() requires code to be LOCUST, TRANSP or ASCOT\nreturning!\n")
         return
 
-    rmx    = np.sqrt(1.0/np.sum(omega2/vrel2))
+    rmx   =np.sqrt(1.0/np.sum(omega2/vrel2))
 
-    vrel2  = 9.58e10*(3.0*T/Ai+2.0*Et/At)
-    rmincl = 0.13793*np.abs(Z*Zt)*(Ai+At)/Ai/At/vrel2
+    vrel2 =9.58e10*(3.0*T/Ai+2.0*Et/At)
+    rmincl=0.13793*np.abs(Z*Zt)*(Ai+At)/Ai/At/vrel2
 
     rmn=[]
     for rmincl_,rminqu_ in zip(rmincl,rminqu): 
@@ -1793,41 +1794,41 @@ def calc_chandrasekhar_function(x,mi,mt):
         Irene A. Stegun, Dover Publications, Inc., New York, 1965.
         Error function and Fresnel Integrals, EQN. 7.1.26.
         Valid to |E(x)| <= 1.5e-7. Calculation in gpu precision
-        f1 - = ERF(x) - (1+mi/Mb).x.d{ERF(x)}/dx
-        f2 - = ERF(x) - G(x)
+        f1 -=ERF(x) - (1+mi/Mb).x.d{ERF(x)}/dx
+        f2 -=ERF(x) - G(x)
     args:
         x - X
         mi - background particle mass [kg]
         mt - test particle mass [kg]
     """
 
-    a1 = 0.254829592
+    a1=0.254829592
     a2 =-0.284496736
-    a3 = 1.421413741
+    a3=1.421413741
     a4 =-1.453152027
-    a5 = 1.061405429
-    p  = 0.327591100
+    a5=1.061405429
+    p =0.327591100
           
-    i  = np.where(x<0.0)[0]
+    i =np.where(x<0.0)[0]
     if len(i)>0:
         print("ERROR: calc_chandrasekhar_function invalid for x<0!\nreturning!\n")
         return
 
-    t     = 1.0/(1.0+p*x)          
-    exp_  = np.exp(-x**2)
-    erf_s = 1.0 - ((((a5*t + a4)*t + a3)*t + a2)*t + a1)*t*exp_
-    G     = ( erf_s - x*2.0*exp_/np.sqrt(constants.pi) )/( 2.0*x**2)
+    t    =1.0/(1.0+p*x)          
+    exp_ =np.exp(-x**2)
+    erf_s=1.0 - ((((a5*t + a4)*t + a3)*t + a2)*t + a1)*t*exp_
+    G    =( erf_s - x*2.0*exp_/np.sqrt(constants.pi) )/( 2.0*x**2)
 
-    f1    = erf_s - (1.0+(mi/mt))*x*2.0*exp_/np.sqrt(constants.pi)
-    f2    = erf_s - G
+    f1   =erf_s - (1.0+(mi/mt))*x*2.0*exp_/np.sqrt(constants.pi)
+    f2   =erf_s - G
 
-    i     = np.where( x<0.005)[0]
+    i    =np.where( x<0.005)[0]
     if len(i)!=0:     
         #eqn. for G breaks down at low x - revert to analytic approximation:
-        x     = x[i]
-        G[i]  = 2.0*x/(3.0*np.sqrt(constants.pi))
-        f1[i] = (2.0/np.sqrt(constants.pi))*( ( (2.0/3.0) + (mi/mt) )*x**3 - x*(mi/mt) ) 
-        f2[i] = (2.0/(3.0*np.sqrt(constants.pi)))*(2.0-x**2)*x
+        x    =x[i]
+        G[i] =2.0*x/(3.0*np.sqrt(constants.pi))
+        f1[i]=(2.0/np.sqrt(constants.pi))*( ( (2.0/3.0) + (mi/mt) )*x**3 - x*(mi/mt) ) 
+        f2[i]=(2.0/(3.0*np.sqrt(constants.pi)))*(2.0-x**2)*x
 
     return G,f1,f2
 
@@ -1924,6 +1925,275 @@ def read_inputs_IMAS(shot,run,GEQDSKFIX=0):
 
     return temperature_array,density_array,perturbation_array,temperature_e,density_e,beam_deposition,wall,equilibrium
 
+def generate_NBI_geometry(machine='ITER',**properties):
+    """
+    notes
+    """
+
+    data={}
+
+    if machine is 'ITER':
+
+        beam_name=properties.get("beam_name", 'diagnostic')
+        axis=properties.get("axis", 'on')
+
+        if beam_name is 'diagnostic':
+
+            #describe injector face
+            data['number_units']=1
+            data['number_segments_per_unit']=4
+            data['number_columns_per_unit']=4
+            data['number_beamletgroups_per_segment']=data['number_columns_per_unit']
+            data['number_beamletgroups_per_column']=data['number_segments_per_unit']
+            data['number_beamletgroups_per_unit']=data['number_beamletgroups_per_segment']*data['number_beamletgroups_per_column']
+            data['number_beamlet_segments_per_beamletgroup']=16
+            data['number_beamlet_columns_per_beamletgroup']=5
+            data['number_beamlets_per_segment']=data['number_beamlet_columns_per_beamletgroup']
+            data['number_beamlets_per_column']=data['number_beamlet_segments_per_beamletgroup']
+            data['number_beamlets_per_beamletgroup']=data['number_beamlet_segments_per_beamletgroup']*data['number_beamlet_columns_per_beamletgroup']
+            #since IDSs are flat arrays representing 2D grids, assign index values
+            data['beamletgroup_indices']=np.arange(data['number_beamletgroups_per_unit']).reshape(data['number_beamletgroups_per_segment'],data['number_beamletgroups_per_column'])
+            data['beamlet_indices']=np.arange(data['number_beamlets_per_beamletgroup']).reshape(data['number_beamlets_per_segment'],data['number_beamlets_per_column'])
+
+            #dimensions data - x,y are horizontal,vertical coordinates looking at face of NBI unit
+
+            #position of centre of NBI grid where beamline is drawn from
+            data['grid_origin_phi']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1412.9,28296.)) #[rad]
+            data['grid_origin_R']=28.926 #[metres]
+            data['grid_origin_Z']=0.90915 #[metres] XXX? unsure about this one
+            data['grid_origin_X']=data['grid_origin_R']*np.cos(data['grid_origin_phi'])
+            data['grid_origin_Y']=data['grid_origin_R']*np.sin(data['grid_origin_phi'])
+
+            #beamlet and group dimensions
+            data['beamlet_duct_width']=20.*1.e-3 #[metres]
+            data['beamlet_duct_height']=22.*1.e-3 #[metres]
+            data['beamletgroup_width']=80.*1.e-3 #[metres] distance between centres of leftmost/rightmost beamlets - the whole beamlet face width=160
+            data['beamletgroup_height']=330.*1.e-3 #[metres] distance between centres of top/bottom beamlets - the whole beamlet face height=396
+
+            #beamline angles
+            data['beamline_angle_vertical']=np.arctan2(320.,20665.) #XXX? taken from engineering drawing not sure if this is needed
+            data['beamline_tangency_radius']=1.4129    
+            data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
+
+            #beamlet group positions and aiming angles alpha
+            data['beamletgroup_centres_x']=np.linspace(-240,240,data['number_beamletgroups_per_segment'])*1.e-3 #with respect to unit centre [metres]
+            data['beamletgroup_centres_y']=np.linspace(-594,594,data['number_beamletgroups_per_column'])*1.e-3 #with respect to unit centre [metres]
+            data['beamletgroup_centres_y'],data['beamletgroup_centres_x']=np.meshgrid(data['beamletgroup_centres_y'],data['beamletgroup_centres_x'])
+            data['beamletgroup_angle_vertical']=np.arctan2(data['beamletgroup_centres_y'],25.4) #[rad] angle between beamlet group unit normal and machine horizontal plane (alpha_y in drawings)
+            data['beamletgroup_angle_horizontal']=np.arctan2(data['beamletgroup_centres_x'],25.4) #angle between beamletgroup and beamline projected in horizontal plane [rad] (alpha_x in drawings)
+            #calculate positions of beamletgroups for plotting
+            data['beamletgroup_centres_machine_x']=data['grid_origin_X']+data['beamletgroup_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
+            data['beamletgroup_centres_machine_y']=data['grid_origin_Y']+data['beamletgroup_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
+            data['beamletgroup_centres_machine_z']=data['grid_origin_Z']+data['beamletgroup_centres_y']
+
+            data['beamletgroup_focal_length']=25.4 #[metres]
+            data['beamletgroup_focal_point_X']=data['grid_origin_X']-data['beamletgroup_focal_length'] *np.sin(np.pi/2-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal'])
+            data['beamletgroup_focal_point_Y']=data['grid_origin_Y']-data['beamletgroup_focal_length'] *np.cos(np.pi/2-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal'])
+            data['beamletgroup_focal_point_Z']=data['grid_origin_Z']
+            data['beamletgroup_focal_point_phi']=np.arctan2(data['beamletgroup_focal_point_Y'],data['beamletgroup_focal_point_X'])
+            data['beamletgroup_focal_point_R']=data['beamletgroup_focal_point_X'] *np.cos(data['beamletgroup_focal_point_phi'])+data['beamletgroup_focal_point_Y']*np.sin(data['beamletgroup_focal_point_phi'])
+
+            #beamlet positions and aiming angles beta
+            data['beamlet_focal_length']=7.2 #[metres]
+            beamlet_centres_x=np.linspace(-data['beamletgroup_width']/2.,data['beamletgroup_width']/2.,data['number_beamlet_columns_per_beamletgroup']) #with respect to beamletgroup centre
+            beamlet_centres_y=np.linspace(-data['beamletgroup_height']/2.,data['beamletgroup_height']/2.,data['number_beamlet_segments_per_beamletgroup']) #with respect to beamletgroup centre
+            beamlet_centres_y,beamlet_centres_x=np.meshgrid(beamlet_centres_y,beamlet_centres_x)
+            data['beamlet_angle_vertical']=49.2*1.e-3 #beamlet vertical tilt - same for all beamlets [rad] (beta_y in drawings)
+            data['beamlet_angle_horizontal']=np.arctan2(beamlet_centres_x,data['beamlet_focal_length']) #angle between beamlet and beamletgroup surface normal projected in horizontal plane [rad] (beta_x in drawings)
+
+            #on-off axis settings
+            data['beamlet_tilt']=10.*1.e-3 if axis is 'off' else -10.*1.e-3 #[rad]
+
+
+            #main geometry calculations
+
+            #allocate arrays
+            for quantity in ['beamlet_centres_x',
+                            'beamlet_centres_y',
+                            'R_tangency_beamlet',
+                            'phi_tangency_beamlet',
+                            'Z_tangency_beamlet',
+                            'X_tangency_beamlet',
+                            'Y_tangency_beamlet']:
+                data[quantity]=np.empty(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
+
+            #first determine position of beamlet relative to unit centre
+            for beamletgroup_column in range(data['number_columns_per_unit']):
+                for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
+                        data['beamlet_centres_x'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_x+data['beamletgroup_centres_x'][beamletgroup_column,beamletgroup_segment]
+                        data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_y+data['beamletgroup_centres_y'][beamletgroup_column,beamletgroup_segment]
+
+            #next map to tokamak R,phi,Z coordinates
+            #XXX for sake of simplicity, assume that entire NBI grid is a planar surface
+            #XXX in reality it looks like multiple planar surfaces (one for each beamlet group) oriented to focus surface normal vectors at beamlet group focal point 
+
+            #first translate vector to beamlet from grid face centre to machine cartesian coordinates 
+            beamlet_dx_machine=data['beamlet_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
+            beamlet_dy_machine=data['beamlet_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
+            beamlet_dz_machine=data['beamlet_centres_y'] #XXX assuming just a planar face
+
+            #calculate position of beamlet in machine coordinates
+            data['beamlet_centres_X_machine']=data['grid_origin_X']+beamlet_dx_machine
+            data['beamlet_centres_Y_machine']=data['grid_origin_Y']+beamlet_dy_machine
+            data['beamlet_centres_Z_machine']=data['grid_origin_Z']+beamlet_dz_machine
+            data['beamlet_centres_phi_machine']=np.arctan2(data['beamlet_centres_Y_machine'],data['beamlet_centres_X_machine'])
+            data['beamlet_centres_R_machine']=data['beamlet_centres_X_machine']*np.cos(data['beamlet_centres_phi_machine'])+data['beamlet_centres_Y_machine']*np.sin(data['beamlet_centres_phi_machine'])
+
+            #find angle of inclination of beamlet with horizontal plane
+            #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
+            data['beamlet_vertical_angle']=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical']
+
+            #find coordinates of beamlet tangency point
+            for beamletgroup_column in range(data['number_columns_per_unit']):
+                for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
+                    #find tangency radius (and other coordinates) of the beamline - can do this analytically in the machine horizontal plane
+                    data['R_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.cos(np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])
+                    data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.
+                    data['Z_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_Z_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.sin(data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])*np.tan(data['beamlet_vertical_angle'][beamletgroup_column,beamletgroup_segment])
+            data['X_tangency_beamlet']=data['R_tangency_beamlet']*np.cos(data['phi_tangency_beamlet'])
+            data['Y_tangency_beamlet']=data['R_tangency_beamlet']*np.sin(data['phi_tangency_beamlet'])
+
+            #operating parameters 
+
+            data['power']=2.*1.e6 #0.1s pulse every 1.4 seconds [W]
+            data['power average']=0.13*1.e6 #[W]
+            data['energy_full']=100.*1.e3 #[eV]
+            data['a']=2 #this needs to be in amu
+            data['z']=1
+            data['beam_current_fraction']=[1,0,0]
+            data['beam_power_fraction']=[1,0,0]
+
+    return data
+
+def plot_NBI_geometry(axes=['R','Z'],real_scale=True,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False,machine='ITER',**properties):
+    """
+    notes
+    """
+
+    beam_name=properties.get('beam_name','diagnostic')
+    axis=properties.get('axis','on')
+   
+    #do some preliminary parsing of variables in case supplied as strings from command line etc.
+    axes,colmap_val=run_scripts.utils.literal_eval(axes,colmap_val)
+
+    import matplotlib
+    from matplotlib import cm
+    import matplotlib.pyplot as plt
+    from mpl_toolkits import mplot3d #import 3D plotting axes
+    from mpl_toolkits.mplot3d import Axes3D
+
+    if ax is False:
+        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+    else:
+        ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+
+    if fig_flag is False:
+        fig=plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        polar=True if axes==['phi','R'] else False
+        ax=fig.add_subplot(111,polar=polar)
+
+        if ndim==3:
+            ax=fig.add_subplot(111,projection='3d')
+
+    geometry_data=generate_NBI_geometry(machine='ITER',**properties)
+
+    #just hack this to work with generate_NBI_geometry
+
+    ndim=len(axes) #infer how many dimensions user wants to plot
+    beamlet_start_coordinate_names=[]
+    beamlet_end_coordinate_names=[]
+    for dim in range(ndim):
+        beamlet_start_coordinate_names.append(f'beamlet_centres_{axes[dim]}_machine')
+        beamlet_end_coordinate_names.append(f'{axes[dim]}_tangency_beamlet')
+
+    XYZ_to_plot=np.array([[geometry_data[start].flatten(),geometry_data[end].flatten()] for start,end in zip(beamlet_start_coordinate_names,beamlet_end_coordinate_names)]).T
+
+    for beamlet in XYZ_to_plot:
+        plt.plot(*beamlet.T,color=colmap(colmap_val),label=label,linewidth=.1) #XXX
+
+    if real_scale is True:
+        ax.set_aspect('equal')
+        
+    if ax_flag is False and fig_flag is False:
+        plt.show() 
+
+def create_IDS_NBI(shot,run,**properties):
+    """
+    args:
+        shot - IDS shot number 
+        run - IDS run number
+    notes: 
+        creates target IDS
+        defaults to ITER diagnostic NBI 
+    """ 
+
+    try:
+        import imas 
+    except:
+        raise ImportError("ERROR: create_IDS_NBI could not import IMAS module!\nreturning\n")
+        return
+
+    username=properties.get("username", settings.username)
+    imasdb=properties.get("imasdb", settings.imasdb)
+    imas_version=properties.get("imas_version", settings.imas_version)
+
+    machine=properties.get("machine", 'ITER')
+    beam_name=properties.get("beam_name", 'diagnostic')
+    axis=properties.get("axis", 'on')
+
+    #create beam data
+    geometry_data=generate_NBI_geometry(machine=machine,beam_name=beam_name,axis=axis)
+
+    IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
+    IDS.create_env(username,imasdb,imas_version)
+    IDS.nbi.get() #open the file and get all the data from it
+        
+    #allocate structure
+    IDS.nbi.unit.resize(geometry_data['number_units'])
+    for unit in range(geometry_data['number_units']):
+        IDS.nbi.unit[unit].beamlets_group.resize(geometry_data['number_beamletgroups_per_unit'])
+        IDS.nbi.unit[unit].energy.data.resize(1)
+        for beamletgroup in range(geometry_data['number_beamletgroups_per_unit']):
+            IDS.nbi.unit[unit].beamlets_group[beamletgroup].divergence_component.resize(2) #0.85 and 0.15 fraction components
+
+    #main loop for filling IDS with geometry data
+    for unit in range(geometry_data['number_units']):
+        for beamletgroup_column in range(geometry_data['number_columns_per_unit']):
+            for beamletgroup_segment in range(geometry_data['number_beamletgroups_per_column']):
+    
+                beamletgroup_index=beamletgroup_indices[beamletgroup_column,beamletgroup_segment]
+
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.r=geometry_data['beamlet_centres_R_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.z=geometry_data['beamlet_centres_Z_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.phi=geometry_data['beamlet_centres_phi_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.angles=np.zeros(shape=(number_beamletgroups_per_segment,number_segments_per_unit))+geometry_data['beamlet_vertical_angle'][beamletgroup_column,beamletgroup_segment]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.tangency_radii=geometry_data['R_tangency_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
+
+                #define the divergence components for this beamlet group
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[0].particles_fraction=0.85
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].particles_fraction=0.15
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[0].vertical=0.005
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].vertical=0.015
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[0].horizontal=0.005
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].horizontal=0.015
+
+        #add operating data for this unit
+        IDS.nbi.unit[unit].power_launched.data=[geometry_data['power']] 
+        IDS.nbi.unit[unit].energy.data[0]=[geometry_data['energy_full']]
+        IDS.nbi.unit[unit].species.a=geometry_data['a']
+        IDS.nbi.unit[unit].species.z_n=geometry_data['z'] 
+        IDS.nbi.unit[unit].beam_current_fraction.data=[[fraction] for fraction in data['beam_current_fraction']] #extra [] since over timeslices
+        IDS.nbi.unit[unit].beam_power_fraction.data=[[fraction] for fraction in data['beam_power_fraction']] #extra [] since over timeslices
+
+    IDS.nbi.put()
+    IDS.close()
 
 ################################################################################################### misc functions
 
