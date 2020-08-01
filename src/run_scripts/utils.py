@@ -2159,7 +2159,6 @@ def create_IDS_NBI(shot,run,**properties):
     IDS.nbi.unit.resize(geometry_data['number_units'])
     for unit in range(geometry_data['number_units']):
         IDS.nbi.unit[unit].beamlets_group.resize(geometry_data['number_beamletgroups_per_unit'])
-        IDS.nbi.unit[unit].energy.data.resize(1)
         for beamletgroup in range(geometry_data['number_beamletgroups_per_unit']):
             IDS.nbi.unit[unit].beamlets_group[beamletgroup].divergence_component.resize(2) #0.85 and 0.15 fraction components
 
@@ -2185,12 +2184,12 @@ def create_IDS_NBI(shot,run,**properties):
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].horizontal=0.015
 
         #add operating data for this unit
-        IDS.nbi.unit[unit].power_launched.data=[geometry_data['power']] 
-        IDS.nbi.unit[unit].energy.data[0]=[geometry_data['energy_full']]
+        IDS.nbi.unit[unit].power_launched.data=np.array([geometry_data['power']]) 
+        IDS.nbi.unit[unit].energy.data=np.array([geometry_data['energy_full']])
         IDS.nbi.unit[unit].species.a=geometry_data['a']
         IDS.nbi.unit[unit].species.z_n=geometry_data['z'] 
-        IDS.nbi.unit[unit].beam_current_fraction.data=[[fraction] for fraction in data['beam_current_fraction']] #extra [] since over timeslices
-        IDS.nbi.unit[unit].beam_power_fraction.data=[[fraction] for fraction in data['beam_power_fraction']] #extra [] since over timeslices
+        IDS.nbi.unit[unit].beam_current_fraction.data=np.array([[fraction] for fraction in data['beam_current_fraction']],ndmin=2) #extra dim over timeslices
+        IDS.nbi.unit[unit].beam_power_fraction.data=np.array([[fraction] for fraction in data['beam_power_fraction']],ndmin=2) #extra dim over timeslices
 
     IDS.nbi.put()
     IDS.close()
