@@ -83,124 +83,98 @@ def read_final_particle_list_LOCUST(filepath,**properties):
 
     print("reading final particle list from LOCUST")
 
-    if 'compression' in properties and properties['compression'] is True: #for now just revert to the efficient compression version
-        if 'coordinates' in properties: 
-            input_data=processing.process_output.particle_list_compression(filepath,coordinates=properties['coordinates'])
-        else:
-            input_data=processing.process_output.particle_list_compression(filepath)
-        print("finished reading compressed final particle list from LOCUST with compression")
-        return input_data
+    with open(filepath) as file:
+        
+        try:
+            lines=file.readlines() #return lines as list            
+        except:
+            raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+str(filepath))
 
-    else: #otherwise we can read the whole file - WARNING this can be huge
+        #initialise particle_list and data dictionary
+        input_data={}
 
-        with open(filepath) as file:
-            
+        #read in headerlines
+        header=lines[0].split()
+        n=int(header[0]) 
+        ngpu=int(header[1]) #n*ngpu=number of particles
+        niter=int(header[2]) #time iterations
+        npt_=int(header[3]) #info slots
+        nphc=int(header[4]) #levels in -DSPLIT split cache (always use the first)
+        ntri=int(header[5]) #triangle grid "dimension" 
+        input_data['n']=np.array(n)
+        input_data['ngpu']=np.array(ngpu)
+        input_data['niter']=np.array(niter)
+        input_data['npt_']=np.array(npt_)
+        input_data['nphc']=np.array(nphc)
+        input_data['ntri']=np.array(ntri)
+        input_data['number_particles']=np.array(n*ngpu*niter)
+
+        input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
+        input_data['status_flags'][0.0]='undefined'
+        input_data['status_flags'][-1.0]='left_space_grid'
+        input_data['status_flags'][-1000.0]='not_poss_on_1st_call '
+        input_data['status_flags'][-2000.0]='track_failure'
+        input_data['status_flags'][-3.0]='unresolved_hit'
+        input_data['status_flags'][-3000.0]='left_mesh'
+        input_data['status_flags'][-4000.0]='track_problem'
+        input_data['status_flags'][-4.0]='PFC_intercept_2D'
+        input_data['status_flags'][-5000.0]='ptcl_disconnect'
+        input_data['status_flags'][-5.0]='PFC_intercept_3D'
+        input_data['status_flags'][-6.0]='left_field_grid'
+        input_data['status_flags'][-7000.0]='goose_fail'
+        input_data['status_flags'][-8.0]='left_plasma'
+        input_data['status_flags'][-9.0]='thermalised'
+        input_data['status_flags'][-10000.0]='coll_op_fail'
+        input_data['status_flags'][-10.0]='GC_calc_fail '
+        input_data['status_flags'][-11.0]='CX_loss'
+        input_data['status_flags'][-11000.0]='gc_init_fail'
+        input_data['status_flags'][-12.0]='bin_fail_soft'
+        input_data['status_flags'][-13000.0]='bin_fail_hard_1'
+        input_data['status_flags'][-14.0]='time_limit_reached'
+        input_data['status_flags'][-15.0]='cross_open_face'
+        input_data['status_flags'][-16000.0]='bin_fail_hard_2'
+        input_data['status_flags'][-99999.]='generic_fail_hard'
+        def status_flags_dispatch(value):
             try:
-                lines=file.readlines() #return lines as list            
+                return input_data['status_flags'][value]
             except:
-                raise IOError("ERROR: read_final_particle_list_LOCUST() cannot read from "+str(filepath))
+                return 'ok'
 
-            #read in headerlines
-            header=lines[0].split()
-            n=int(header[0]) 
-            ngpu=int(header[1]) #n*ngpu=number of particles
-            niter=int(header[2]) #time iterations
-            npt_=int(header[3]) #info slots
-            nphc=int(header[4]) #levels in -DSPLIT split cache (always use the first)
-            ntri=int(header[5]) #triangle grid "dimension" 
+        #get rid of white space and completely flatten IDL/FORTRAN-style
+        lines=[[float(number) for number in line.split()] for line in lines]
+        lines=[number for line in lines for number in line]
+        del(lines[0:6])
+        input_data['f']=np.array(lines[-1]) #Pdep/Pabs
+            
+        #transfer chunk from lines to file_buffer and assimilate into dictionary
+        lines=np.array([lines[0:niter*npt_*nphc*(n*ngpu)]]).reshape(niter,npt_,nphc,(n*ngpu),order='F')
 
-            #initialise particle_list and data dictionary
-            input_data={}
-            input_data['R']=np.array([])
-            input_data['phi']=np.array([])
-            input_data['Z']=np.array([])
-            input_data['V_R']=np.array([])
-            input_data['V_phi']=np.array([])
-            input_data['V_Z']=np.array([])
-            input_data['time']=np.array([])
-            input_data['status_flag']=np.array([])
-            input_data['additional_flag1']=np.array([])
-            input_data['PFC_intercept']=np.array([])
-            input_data['psi']=np.array([])
-            input_data['V_R_final']=np.array([])
-            input_data['V_phi_final']=np.array([])
-            input_data['V_Z_final']=np.array([])
-            input_data['additional_flag7']=np.array([])
-            input_data['additional_flag8']=np.array([])
-            input_data['additional_flag9']=np.array([])
-            input_data['n']=np.array(n)
-            input_data['ngpu']=np.array(ngpu)
-            input_data['niter']=np.array(niter)
-            input_data['npt_']=np.array(npt_)
-            input_data['nphc']=np.array(nphc)
-            input_data['ntri']=np.array(ntri)
-            input_data['number_particles']=np.array(n*ngpu)
+        input_data['R']=lines[:,0,0,:].flatten()
+        input_data['phi']=lines[:,1,0,:].flatten()
+        input_data['Z']=lines[:,2,0,:].flatten()
+        input_data['V_R']=lines[:,3,0,:].flatten()
+        input_data['V_phi']=lines[:,4,0,:].flatten()
+        input_data['V_Z']=lines[:,5,0,:].flatten()
+        input_data['time']=lines[:,6,0,:].flatten()
+        input_data['dt']=lines[:,7,0,:].flatten()
+        input_data['FG']=lines[:,8,0,:].flatten()
+        input_data['tet']=lines[:,9,0,:].flatten()
+        input_data['psi']=lines[1:,0,0,:].flatten()
+        input_data['V_R_next']=lines[1:,1,0,:].flatten()
+        input_data['V_phi_next']=lines[1:,2,0,:].flatten()
+        input_data['V_Z_next']=lines[1:,3,0,:].flatten()
+        input_data['R_next']=lines[1:,4,0,:].flatten()
+        input_data['phi_next']=lines[1:,5,0,:].flatten()
+        input_data['Z_next']=lines[1:,6,0,:].flatten()
 
-            #get rid of white space and completely flatten IDL/FORTRAN-style
-            lines=[[float(number) for number in line.split()] for line in lines]
-            lines=[number for line in lines for number in line]
-            del(lines[0:6])
-            input_data['f']=np.array(lines[-1])
-            del(lines[-1])
+        #calculate some additional things
+        input_data['status_flag']=np.array([status_flags_dispatch(dt) for dt in input_data['dt']])
+        input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
+        input_data['weight']=np.full(len(input_data['R']),1.)
 
-            for i in range(niter):
-                
-                #transfer chunk from lines to file_buffer and assimilate into dictionary
-                file_buffer=np.array([lines[0:npt_*nphc*(n*ngpu)]]).reshape(npt_,nphc,(n*ngpu),order='F')
-                del(lines[0:npt_*nphc*(n*ngpu)])
-                
-                input_data['R']=np.append(input_data['R'],file_buffer[0,0,:])
-                input_data['phi']=np.append(input_data['phi'],file_buffer[1,0,:])
-                input_data['Z']=np.append(input_data['Z'],file_buffer[2,0,:])
-                input_data['V_R']=np.append(input_data['V_R'],file_buffer[3,0,:])
-                input_data['V_phi']=np.append(input_data['V_phi'],file_buffer[4,0,:])
-                input_data['V_Z']=np.append(input_data['V_Z'],file_buffer[5,0,:])
-                input_data['time']=np.append(input_data['time'],file_buffer[6,0,:])
-                input_data['status_flag']=np.append(input_data['status_flag'],file_buffer[7,0,:])
-                input_data['additional_flag1']=np.append(input_data['additional_flag1'],file_buffer[8,0,:])
-                input_data['PFC_intercept']=np.append(input_data['PFC_intercept'],file_buffer[9,0,:])
-                input_data['psi']=np.append(input_data['psi'],file_buffer[10,0,:])
-                input_data['V_R_final']=np.append(input_data['V_R_final'],file_buffer[11,0,:])
-                input_data['V_phi_final']=np.append(input_data['V_phi_final'],file_buffer[12,0,:])
-                input_data['V_Z_final']=np.append(input_data['V_Z_final'],file_buffer[13,0,:])
-                input_data['additional_flag7']=np.append(input_data['additional_flag7'],file_buffer[14,0,:])
-                input_data['additional_flag8']=np.append(input_data['additional_flag8'],file_buffer[15,0,:])
-                input_data['additional_flag9']=np.append(input_data['additional_flag9'],file_buffer[16,0,:])
+    print("finished reading final particle list from LOCUST")
 
-            input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
-            input_data['status_flags']['ok_if_greater']=0.0 
-            input_data['status_flags']['undefined']=0.0
-            input_data['status_flags']['left_space_grid']=-1.0
-            input_data['status_flags']['not_poss_on_1st_call']=-1000.0 
-            input_data['status_flags']['track_failure']=-2000.0
-            input_data['status_flags']['unresolved_hit']=-3.0
-            input_data['status_flags']['left_mesh']=-3000.0
-            input_data['status_flags']['track_problem']=-4000.0
-            input_data['status_flags']['PFC_intercept_2D']=-4.0
-            input_data['status_flags']['ptcl_disconnect']=-5000.0
-            input_data['status_flags']['PFC_intercept_3D']=-5.0
-            input_data['status_flags']['left_field_grid']=-6.0
-            input_data['status_flags']['goose_fail']=-7000.0
-            input_data['status_flags']['left_plasma']=-8.0
-            input_data['status_flags']['thermalised']=-9.0
-            input_data['status_flags']['coll_op_fail']=-10000.0
-            input_data['status_flags']['GC_calc_fail']=-10.0 
-            input_data['status_flags']['CX_loss']=-11.0
-            input_data['status_flags']['gc_init_fail']=-11000.0
-            input_data['status_flags']['bin_fail_soft']=-12.0
-            input_data['status_flags']['bin_fail_hard_1']=-13000.0
-            input_data['status_flags']['time_limit_reached']=-14.0
-            input_data['status_flags']['cross_open_face']=-15.0
-            input_data['status_flags']['bin_fail_hard_2']=-16000.0
-            input_data['status_flags']['generic_fail_hard']=-99999.0
-
-            #calculate some additional things
-            input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
-            input_data['weight']=np.full(len(input_data['R']),1.)
-
-        print("finished reading final particle list from LOCUST")
-
-        return input_data
+    return input_data
 
 '''
 def read_final_particle_list_TRANSP_FLOST(filepath,**properties):
@@ -448,7 +422,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/TRANSP)\n".format(self.ID))
 
-    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='status_flag',line_style=settings.plot_line_style,label='',ax=False,fig=False):
+    def plot(self,grid=False,style='histogram',number_bins=20,fill=True,vminmax=None,axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,status_flags=['PFC_intercept_3D'],weight=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),colfield='time',line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plot the final particle list
          
@@ -505,7 +479,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         if ndim==1: #plot 1D histograms
 
             for status in status_flags:
-                p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
+                p=np.where(self['status_flag']==status)[0] #find the particle indices which have the desired status_flag
                 if weight:
                     self_binned,self_binned_edges=np.histogram(self[axes[0]][p],bins=number_bins,weights=self['weight'][p])                
                 else:
@@ -517,7 +491,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
         elif ndim==2: #plot 2D histograms
 
             for status in status_flags: #XXX THIS MIGHT BE CAUSING THE BUG FOR PLOTTING MULTIPLE STATUS FLAGS, AS AXES COULD BE RESET BETWEEN EACH PLOT
-                p=np.where(self['status_flag']==self['status_flags'][status]) #find the particle indices which have the desired status_flag
+                p=np.where(self['status_flag']==status)[0] #find the particle indices which have the desired status_flag
                 
                 if style=='histogram':
 
@@ -540,8 +514,8 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     ax.set_xticks(self_binned_x) #set axes ticks
                     ax.set_yticks(self_binned_y)
 
-                    for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                        for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+                    #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                        #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
                     self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
 

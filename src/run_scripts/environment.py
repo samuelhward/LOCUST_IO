@@ -247,10 +247,10 @@ class Environment:
     environments['CUMULUS']['export']['CUDA_CACHE_DISABLE']=1
     environments['CUMULUS']['export']['NO_AT_BRIDGE']=1
     environments['CUMULUS']['module load']=[
-                            'cuda/9.1',
-                            'pgi/18.1',
-                            'hdf5/1.8.20',
-                            'hdf5-devel/1.8.20',
+                            'cuda/10.1',
+                            'pgi/20.1',
+                            'hdf5/1.12.0',
+                            'hdf5-devel/1.12.0',
                             'python/3.6.4'
                             ]
     environments['CUMULUS']['module unload']=[]
@@ -312,9 +312,7 @@ class Environment:
         for command in ['module purge','module load','module unload','module switch','misc','export']: #user can control order of execution of commands here
             things_to_command=self.environment[command]
 
-            if command=='export':
-                commands.extend([' '.join([command,''.join([thing_to_command,'=',str(value)])]) for thing_to_command,value in things_to_command.items()])
-            elif command=='module load':
+            if command=='module load':
                 commands.extend(['module load {}'.format(module) for module in things_to_command])
             elif command=='module switch':
                 commands.extend(['module switch {}'.format(module) for module in things_to_command])
@@ -322,6 +320,8 @@ class Environment:
                 commands.extend(['module unload {}'.format(module) for module in things_to_command])
             elif command=='module purge':
                 commands.extend(['module purge'])
+            elif command=='export':
+                commands.extend([' '.join([command,''.join([thing_to_command,'=',str(value)])]) for thing_to_command,value in things_to_command.items()])
             elif command=='misc':
                 commands.extend([' '.join([thing_to_command,str(self.environment[command][thing_to_command])]) for thing_to_command in things_to_command])
 

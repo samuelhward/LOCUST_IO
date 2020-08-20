@@ -37,7 +37,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)
-
+try:
+    import run_scripts.utils 
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
 
 try:
     import classes.input_classes.equilibrium
@@ -465,8 +469,8 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xticks(R) #set axes ticks
             ax.set_yticks(Z)
 
-            for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
             R,Z=np.meshgrid(R-dr/2.,Z-dz/2.)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
@@ -521,8 +525,8 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xticks(dfn_copy['E']) #set axes ticks
             ax.set_yticks(dfn_copy['V_pitch'])
 
-            for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
+                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
 
             E,V_pitch=np.meshgrid(dfn_copy['E']-dE/2.,dfn_copy['V_pitch']-dV_pitch/2.) #X,Y this way because dfn dimension ordering
 
@@ -1937,136 +1941,154 @@ def generate_NBI_geometry(machine='ITER',**properties):
         beam_name=properties.get("beam_name", 'diagnostic')
         axis=properties.get("axis", 'on')
 
+        #describe injector face
+        data['number_units']=1
+        data['number_segments_per_unit']=4
+        data['number_columns_per_unit']=4
+        data['number_beamletgroups_per_segment']=data['number_columns_per_unit']
+        data['number_beamletgroups_per_column']=data['number_segments_per_unit']
+        data['number_beamletgroups_per_unit']=data['number_beamletgroups_per_segment']*data['number_beamletgroups_per_column']
+        data['number_beamlet_segments_per_beamletgroup']=16
+        data['number_beamlet_columns_per_beamletgroup']=5
+        data['number_beamlets_per_segment']=data['number_beamlet_columns_per_beamletgroup']
+        data['number_beamlets_per_column']=data['number_beamlet_segments_per_beamletgroup']
+        data['number_beamlets_per_beamletgroup']=data['number_beamlet_segments_per_beamletgroup']*data['number_beamlet_columns_per_beamletgroup']
+        data['number_beamlets_per_unit']=data['number_beamlets_per_beamletgroup']*data['number_beamletgroups_per_unit']
+        #since IDSs are flat arrays representing 2D grids, assign index values
+        data['beamletgroup_indices']=np.arange(data['number_beamletgroups_per_unit']).reshape(data['number_beamletgroups_per_segment'],data['number_beamletgroups_per_column'])
+        data['beamlet_indices']=np.arange(data['number_beamlets_per_beamletgroup']).reshape(data['number_beamlets_per_segment'],data['number_beamlets_per_column'])
+
+        #dimensions data - x,y are horizontal,vertical coordinates looking at face of NBI unit
+
+        #position of centre of NBI grid where beamline is drawn from
         if beam_name is 'diagnostic':
+            data['grid_origin_phi_machine']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1412.9,28296.)) #[rad]
+            data['grid_origin_R_machine']=28.926 #[metres]
+            data['grid_origin_Z_machine']=0.90915 #[metres] XXX? unsure about this one
+            data['grid_origin_X_machine']=data['grid_origin_R_machine']*np.cos(data['grid_origin_phi_machine'])
+            data['grid_origin_Y_machine']=data['grid_origin_R_machine']*np.sin(data['grid_origin_phi_machine'])
 
-            #describe injector face
-            data['number_units']=1
-            data['number_segments_per_unit']=4
-            data['number_columns_per_unit']=4
-            data['number_beamletgroups_per_segment']=data['number_columns_per_unit']
-            data['number_beamletgroups_per_column']=data['number_segments_per_unit']
-            data['number_beamletgroups_per_unit']=data['number_beamletgroups_per_segment']*data['number_beamletgroups_per_column']
-            data['number_beamlet_segments_per_beamletgroup']=16
-            data['number_beamlet_columns_per_beamletgroup']=5
-            data['number_beamlets_per_segment']=data['number_beamlet_columns_per_beamletgroup']
-            data['number_beamlets_per_column']=data['number_beamlet_segments_per_beamletgroup']
-            data['number_beamlets_per_beamletgroup']=data['number_beamlet_segments_per_beamletgroup']*data['number_beamlet_columns_per_beamletgroup']
-            data['number_beamlets_per_unit']=data['number_beamlets_per_beamletgroup']*data['number_beamletgroups_per_unit']
-            #since IDSs are flat arrays representing 2D grids, assign index values
-            data['beamletgroup_indices']=np.arange(data['number_beamletgroups_per_unit']).reshape(data['number_beamletgroups_per_segment'],data['number_beamletgroups_per_column'])
-            data['beamlet_indices']=np.arange(data['number_beamlets_per_beamletgroup']).reshape(data['number_beamlets_per_segment'],data['number_beamlets_per_column'])
+        #beamlet and group dimensions
+        data['beamlet_duct_width']=20.*1.e-3 #[metres]
+        data['beamlet_duct_height']=22.*1.e-3 #[metres]
+        data['beamletgroup_width']=80.*1.e-3 #[metres] distance between centres of leftmost/rightmost beamlets - the whole beamlet face width=160
+        data['beamletgroup_height']=330.*1.e-3 #[metres] distance between centres of top/bottom beamlets - the whole beamlet face height=396
 
-            #dimensions data - x,y are horizontal,vertical coordinates looking at face of NBI unit
-
-            #position of centre of NBI grid where beamline is drawn from
-            data['grid_origin_phi']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1412.9,28296.)) #[rad]
-            data['grid_origin_R']=28.926 #[metres]
-            data['grid_origin_Z']=0.90915 #[metres] XXX? unsure about this one
-            data['grid_origin_X']=data['grid_origin_R']*np.cos(data['grid_origin_phi'])
-            data['grid_origin_Y']=data['grid_origin_R']*np.sin(data['grid_origin_phi'])
-
-            #beamlet and group dimensions
-            data['beamlet_duct_width']=20.*1.e-3 #[metres]
-            data['beamlet_duct_height']=22.*1.e-3 #[metres]
-            data['beamletgroup_width']=80.*1.e-3 #[metres] distance between centres of leftmost/rightmost beamlets - the whole beamlet face width=160
-            data['beamletgroup_height']=330.*1.e-3 #[metres] distance between centres of top/bottom beamlets - the whole beamlet face height=396
-
-            #beamline angles
+        #beamline angles
+        if beam_name is 'diagnostic':
             data['beamline_angle_vertical']=np.arctan2(320.,20665.) #XXX? taken from engineering drawing not sure if this is needed
             data['beamline_tangency_radius']=1.4129    
-            data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
+            data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R_machine']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
 
-            #beamlet group positions and aiming angles alpha
-            data['beamletgroup_centres_x']=np.linspace(-240,240,data['number_beamletgroups_per_segment'])*1.e-3 #with respect to unit centre [metres]
-            data['beamletgroup_centres_y']=np.linspace(-594,594,data['number_beamletgroups_per_column'])*1.e-3 #with respect to unit centre [metres]
-            data['beamletgroup_centres_y'],data['beamletgroup_centres_x']=np.meshgrid(data['beamletgroup_centres_y'],data['beamletgroup_centres_x'])
+        #beamlet group positions and aiming angles alpha
+        data['beamletgroup_centres_x']=np.linspace(-240,240,data['number_beamletgroups_per_segment'])*1.e-3 #with respect to unit centre [metres]
+        data['beamletgroup_centres_y']=np.linspace(-594,594,data['number_beamletgroups_per_column'])*1.e-3 #with respect to unit centre [metres]
+        data['beamletgroup_centres_y'],data['beamletgroup_centres_x']=np.meshgrid(data['beamletgroup_centres_y'],data['beamletgroup_centres_x'])
+        if beam_name is 'diagnostic':
+            pass
+        elif 'heating' in beam_name:
             data['beamletgroup_angle_vertical']=np.arctan2(data['beamletgroup_centres_y'],25.4) #[rad] angle between beamlet group unit normal and machine horizontal plane (alpha_y in drawings)
             data['beamletgroup_angle_horizontal']=np.arctan2(data['beamletgroup_centres_x'],25.4) #angle between beamletgroup and beamline projected in horizontal plane [rad] (alpha_x in drawings)
-            #calculate positions of beamletgroups for plotting
-            data['beamletgroup_centres_machine_x']=data['grid_origin_X']+data['beamletgroup_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
-            data['beamletgroup_centres_machine_y']=data['grid_origin_Y']+data['beamletgroup_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
-            data['beamletgroup_centres_machine_z']=data['grid_origin_Z']+data['beamletgroup_centres_y']
+        #calculate positions of beamletgroups for plotting
+        data['beamletgroup_centres_x_machine']=data['grid_origin_X_machine']+data['beamletgroup_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
+        data['beamletgroup_centres_y_machine']=data['grid_origin_Y_machine']+data['beamletgroup_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
+        data['beamletgroup_centres_z_machine']=data['grid_origin_Z_machine']+data['beamletgroup_centres_y']
+        data['beamletgroup_centres_phi_machine']=np.arctan2(data['beamletgroup_centres_y_machine'],data['beamletgroup_centres_x_machine'])
+        data['beamletgroup_centres_r_machine']=data['beamletgroup_centres_x_machine']*np.cos(data['beamletgroup_centres_phi_machine'])+data['beamletgroup_centres_y_machine']*np.sin(data['beamletgroup_centres_phi_machine'])
 
+        if beam_name is 'diagnostic':
+            pass
+        elif 'heating' in beam_name:
             data['beamletgroup_focal_length']=25.4 #[metres]
-            data['beamletgroup_focal_point_X']=data['grid_origin_X']-data['beamletgroup_focal_length'] *np.sin(np.pi/2-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal'])
-            data['beamletgroup_focal_point_Y']=data['grid_origin_Y']-data['beamletgroup_focal_length'] *np.cos(np.pi/2-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal'])
-            data['beamletgroup_focal_point_Z']=data['grid_origin_Z']
+            data['beamletgroup_focal_point_X']=data['grid_origin_X_machine']-data['beamletgroup_focal_length']*np.sin(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
+            data['beamletgroup_focal_point_Y']=data['grid_origin_Y_machine']-data['beamletgroup_focal_length']*np.cos(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
+            data['beamletgroup_focal_point_Z']=data['grid_origin_Z_machine']
             data['beamletgroup_focal_point_phi']=np.arctan2(data['beamletgroup_focal_point_Y'],data['beamletgroup_focal_point_X'])
-            data['beamletgroup_focal_point_R']=data['beamletgroup_focal_point_X'] *np.cos(data['beamletgroup_focal_point_phi'])+data['beamletgroup_focal_point_Y']*np.sin(data['beamletgroup_focal_point_phi'])
+            data['beamletgroup_focal_point_R']=data['beamletgroup_focal_point_X']*np.cos(data['beamletgroup_focal_point_phi'])+data['beamletgroup_focal_point_Y']*np.sin(data['beamletgroup_focal_point_phi'])
 
-            #beamlet positions and aiming angles beta
+        #beamlet positions and aiming angles beta
+        if beam_name is 'diagnostic':
+            pass
+        elif 'heating' in beam_name:
             data['beamlet_focal_length']=7.2 #[metres]
-            beamlet_centres_x=np.linspace(-data['beamletgroup_width']/2.,data['beamletgroup_width']/2.,data['number_beamlet_columns_per_beamletgroup']) #with respect to beamletgroup centre
-            beamlet_centres_y=np.linspace(-data['beamletgroup_height']/2.,data['beamletgroup_height']/2.,data['number_beamlet_segments_per_beamletgroup']) #with respect to beamletgroup centre
-            beamlet_centres_y,beamlet_centres_x=np.meshgrid(beamlet_centres_y,beamlet_centres_x)
+        beamlet_centres_x=np.linspace(-data['beamletgroup_width']/2.,data['beamletgroup_width']/2.,data['number_beamlet_columns_per_beamletgroup']) #with respect to beamletgroup centre
+        beamlet_centres_y=np.linspace(-data['beamletgroup_height']/2.,data['beamletgroup_height']/2.,data['number_beamlet_segments_per_beamletgroup']) #with respect to beamletgroup centre
+        beamlet_centres_y,beamlet_centres_x=np.meshgrid(beamlet_centres_y,beamlet_centres_x)
+        if beam_name is 'diagnostic':
+            pass
+        elif 'heating' in beam_name:
             data['beamlet_angle_vertical']=49.2*1.e-3 #beamlet vertical tilt - same for all beamlets [rad] (beta_y in drawings)
-            data['beamlet_angle_horizontal']=np.arctan2(beamlet_centres_x,data['beamlet_focal_length']) #angle between beamlet and beamletgroup surface normal projected in horizontal plane [rad] (beta_x in drawings)
-
             #on-off axis settings
             data['beamlet_tilt']=10.*1.e-3 if axis is 'off' else -10.*1.e-3 #[rad]
 
+        data['beamlet_angle_horizontal']=np.arctan2(beamlet_centres_x,data['beamlet_focal_length']) #angle between beamlet and beamletgroup surface normal projected in horizontal plane [rad] (beta_x in drawings)
 
-            #main geometry calculations
+        #main genreal geometry calculations
 
-            #allocate arrays (XXX for now just those quantities written to IDS)
-            for quantity in ['beamlet_centres_x',
-                            'beamlet_centres_y',
-                            'R_tangency_beamlet',
-                            'phi_tangency_beamlet',
-                            'Z_tangency_beamlet',
-                            'X_tangency_beamlet',
-                            'Y_tangency_beamlet',
-                            'beamlet_vertical_angle',
-                            'power_fraction_beamlet']:
-                data[quantity]=np.zeros(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
+        #allocate arrays (XXX for now just those quantities written to IDS)
+        for quantity in ['beamlet_centres_x',
+                        'beamlet_centres_y',
+                        'R_tangency_beamlet',
+                        'phi_tangency_beamlet',
+                        'Z_tangency_beamlet',
+                        'X_tangency_beamlet',
+                        'Y_tangency_beamlet',
+                        'beamlet_vertical_angle',
+                        'power_fraction_beamlet']:
+            data[quantity]=np.zeros(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
 
-            #first determine position of beamlet relative to unit centre
-            for beamletgroup_column in range(data['number_columns_per_unit']):
-                for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
-                        data['beamlet_centres_x'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_x+data['beamletgroup_centres_x'][beamletgroup_column,beamletgroup_segment]
-                        data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_y+data['beamletgroup_centres_y'][beamletgroup_column,beamletgroup_segment]
+        #first determine position of beamlet relative to unit centre
+        for beamletgroup_column in range(data['number_columns_per_unit']):
+            for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
+                    data['beamlet_centres_x'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_x+data['beamletgroup_centres_x'][beamletgroup_column,beamletgroup_segment]
+                    data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:]=beamlet_centres_y+data['beamletgroup_centres_y'][beamletgroup_column,beamletgroup_segment]
 
-            #next map to tokamak R,phi,Z coordinates
-            #XXX for sake of simplicity, assume that entire NBI grid is a planar surface
-            #XXX in reality it looks like multiple planar surfaces (one for each beamlet group) oriented to focus surface normal vectors at beamlet group focal point 
+        #next map to tokamak R,phi,Z coordinates
+        #XXX for sake of simplicity, assume that entire NBI grid is a planar surface
+        #XXX in reality it looks like multiple planar surfaces (one for each beamlet group) oriented to focus surface normal vectors at beamlet group focal point 
 
-            #first translate vector to beamlet from grid face centre to machine cartesian coordinates 
-            beamlet_dx_machine=data['beamlet_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
-            beamlet_dy_machine=data['beamlet_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi']+data['beamline_aiming_angle_horizontal']))
-            beamlet_dz_machine=data['beamlet_centres_y'] #XXX assuming just a planar face
+        #first translate vector to beamlet from grid face centre to machine cartesian coordinates 
+        beamlet_dx_machine=data['beamlet_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
+        beamlet_dy_machine=data['beamlet_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
+        beamlet_dz_machine=data['beamlet_centres_y'] #XXX assuming just a planar face
 
-            #calculate position of beamlet in machine coordinates
-            data['beamlet_centres_X_machine']=data['grid_origin_X']+beamlet_dx_machine
-            data['beamlet_centres_Y_machine']=data['grid_origin_Y']+beamlet_dy_machine
-            data['beamlet_centres_Z_machine']=data['grid_origin_Z']+beamlet_dz_machine
-            data['beamlet_centres_phi_machine']=np.arctan2(data['beamlet_centres_Y_machine'],data['beamlet_centres_X_machine'])
-            data['beamlet_centres_R_machine']=data['beamlet_centres_X_machine']*np.cos(data['beamlet_centres_phi_machine'])+data['beamlet_centres_Y_machine']*np.sin(data['beamlet_centres_phi_machine'])
+        #calculate position of beamlet in machine coordinates
+        data['beamlet_centres_X_machine']=data['grid_origin_X_machine']+beamlet_dx_machine
+        data['beamlet_centres_Y_machine']=data['grid_origin_Y_machine']+beamlet_dy_machine
+        data['beamlet_centres_Z_machine']=data['grid_origin_Z_machine']+beamlet_dz_machine
+        data['beamlet_centres_phi_machine']=np.arctan2(data['beamlet_centres_Y_machine'],data['beamlet_centres_X_machine'])
+        data['beamlet_centres_R_machine']=data['beamlet_centres_X_machine']*np.cos(data['beamlet_centres_phi_machine'])+data['beamlet_centres_Y_machine']*np.sin(data['beamlet_centres_phi_machine'])
 
-            #find angle of inclination of beamlet with horizontal plane
-            #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
+        #find angle of inclination of beamlet with horizontal plane
+        #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
 
-            #find coordinates of beamlet tangency point
-            for beamletgroup_column in range(data['number_columns_per_unit']):
-                for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
-                    #find tangency radius (and other coordinates) of the beamline - can do this analytically in the machine horizontal plane
-                    data['R_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.cos(np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])
-                    data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=np.arccos((data['grid_origin_X']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.
-                    data['Z_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_Z_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.sin(data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])*np.tan(data['beamlet_vertical_angle'][beamletgroup_column,beamletgroup_segment])
-                    data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:]+=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]
-            data['X_tangency_beamlet']=data['R_tangency_beamlet']*np.cos(data['phi_tangency_beamlet'])
-            data['Y_tangency_beamlet']=data['R_tangency_beamlet']*np.sin(data['phi_tangency_beamlet'])
+        #find coordinates of beamlet tangency point
+        for beamletgroup_column in range(data['number_columns_per_unit']):
+            for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
+                #find tangency radius (and other coordinates) of the beamline - can do this analytically in the machine horizontal plane
+                data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]-data['beamlet_tilt']
+                data['R_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.cos(np.arccos((data['grid_origin_X_machine']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])
+                data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=np.arccos((data['grid_origin_X_machine']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.
+                data['Z_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_Z_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.sin(data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])*np.tan(data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:])
+        data['X_tangency_beamlet']=data['R_tangency_beamlet']*np.cos(data['phi_tangency_beamlet'])
+        data['Y_tangency_beamlet']=data['R_tangency_beamlet']*np.sin(data['phi_tangency_beamlet'])
 
-            #operating parameters 
+        #operating parameters 
 
+        if beam_name is 'diagnostic':
             data['power']=2.*1.e6 #0.1s pulse every 1.4 seconds [W]
             data['power average']=0.13*1.e6 #[W]
             data['energy_full']=100.*1.e3 #[eV]
-            data['a']=2 #this needs to be in amu
-            data['z']=1
-            data['beam_current_fraction']=[1,0,0]
-            data['beam_power_fraction']=[1,0,0]
-            data['power_fraction_beamlet']+=1./data['number_beamlets_per_unit'] #assume all beamlets have same power
-            data['direction']=1
+        elif 'heating' in beam_name:
+            data['power']=33.*1.e6 #0.1s pulse every 1.4 seconds [W]
+            data['power average']=33.*1.e6 #[W]
+            data['energy_full']=1000.*1.e3 #[eV]
+        data['a']=2. #this needs to be in amu
+        data['z']=1.
+        data['beam_current_fraction']=[1,0,0]
+        data['beam_power_fraction']=[1,0,0]
+        data['power_fraction_beamlet']+=1./data['number_beamlets_per_unit'] #assume all beamlets have same power
+        data['direction']=1
 
     return data
 
@@ -2158,7 +2180,6 @@ def create_IDS_NBI(shot,run,**properties):
 
     IDS=imas.ids(int(shot),int(run)) #initialise new blank IDS
     IDS.create_env(username,imasdb,imas_version)
-    IDS.nbi.get() #open the file and get all the data from it
         
     #allocate structure
     IDS.nbi.unit.resize(nbi_data['number_units'])
@@ -2174,14 +2195,16 @@ def create_IDS_NBI(shot,run,**properties):
     
                 beamletgroup_index=nbi_data['beamletgroup_indices'][beamletgroup_column,beamletgroup_segment]
 
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.r=nbi_data['beamlet_centres_R_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.z=nbi_data['beamlet_centres_Z_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.phi=nbi_data['beamlet_centres_phi_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.angles=nbi_data['beamlet_vertical_angle'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.tangency_radii=nbi_data['R_tangency_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
-                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.power_fractions=nbi_data['power_fraction_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:]
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].direction=nbi_data['direction']
-
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].position.r=nbi_data['beamletgroup_centres_r_machine'][beamletgroup_column,beamletgroup_segment]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].position.z=nbi_data['beamletgroup_centres_z_machine'][beamletgroup_column,beamletgroup_segment]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].position.phi=nbi_data['beamletgroup_centres_phi_machine'][beamletgroup_column,beamletgroup_segment]
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.r=nbi_data['beamlet_centres_R_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten()
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.z=nbi_data['beamlet_centres_Z_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten()
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.positions.phi=nbi_data['beamlet_centres_phi_machine'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten()
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.angles=-nbi_data['beamlet_vertical_angle'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten() #flip sign as I define this differently
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.tangency_radii=nbi_data['R_tangency_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten()
+                IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].beamlets.power_fractions=nbi_data['power_fraction_beamlet'][unit,beamletgroup_column,beamletgroup_segment,:,:].flatten()
                 #define the divergence components for this beamlet group
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[0].particles_fraction=0.85
                 IDS.nbi.unit[unit].beamlets_group[beamletgroup_index].divergence_component[1].particles_fraction=0.15
@@ -2195,8 +2218,11 @@ def create_IDS_NBI(shot,run,**properties):
         IDS.nbi.unit[unit].energy.data=np.array([nbi_data['energy_full']])
         IDS.nbi.unit[unit].species.a=nbi_data['a']
         IDS.nbi.unit[unit].species.z_n=nbi_data['z'] 
-        IDS.nbi.unit[unit].beam_current_fraction.data=np.array([[fraction] for fraction in data['beam_current_fraction']],ndmin=2) #extra dim over timeslices
-        IDS.nbi.unit[unit].beam_power_fraction.data=np.array([[fraction] for fraction in data['beam_power_fraction']],ndmin=2) #extra dim over timeslices
+        IDS.nbi.unit[unit].beam_current_fraction.data=np.array([[fraction] for fraction in nbi_data['beam_current_fraction']],ndmin=2) #extra dim over timeslices
+        IDS.nbi.unit[unit].beam_power_fraction.data=np.array([[fraction] for fraction in nbi_data['beam_power_fraction']],ndmin=2) #extra dim over timeslices
+
+    IDS.nbi.ids_properties.homogeneous_time=1
+    IDS.nbi.time=np.array([0.0])
 
     IDS.nbi.put()
     IDS.close()

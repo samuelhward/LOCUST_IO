@@ -259,7 +259,13 @@ def dfn_crop(some_dfn,**kwargs):
 
     return dfn
 
-def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status_flag','PFC_intercept'],dump=False):
+'''
+
+XXX needs to be adapted to read in different nesting order I think - I think file is all particles' R value, THEN all particles' phi value and so on...
+XXX 99% certain this is true based on the reshaping in particle_list and the observed quantities for the compression toggle on and off (first value of each matches)
+XXX also nphc>1 usually...
+
+def particle_list_compression(filepath,coordinates=['R','phi','Z','time','dt','V_R','V_phi','V_Z'],dump=False):
     """
     reads selected data from particle lists in memory-efficient way
 
@@ -268,7 +274,6 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
         coordinates - the particle coordinates to read in
         dump - toggle to re-dump to ASCII afterwards (NOTE: NOT YET IMPLEMENTED)
     notes:
-        this code will break if the file line length > number of entries for each coordinate
         currently only reads the first phc values i.e. phc index = 0  
     """
 
@@ -284,49 +289,51 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
     indices_coordinate['V_phi']=4
     indices_coordinate['V_Z']=5
     indices_coordinate['time']=6
-    indices_coordinate['status_flag']=7
-    indices_coordinate['additional_flag1']=8
-    indices_coordinate['PFC_intercept']=9
+    indices_coordinate['dt']=7
+    indices_coordinate['FG']=8
+    indices_coordinate['tet']=9
     indices_coordinate['psi']=10
-    indices_coordinate['V_R_final']=11
-    indices_coordinate['V_phi_final']=12
-    indices_coordinate['V_Z_final']=13
-    indices_coordinate['additional_flag7']=14
-    indices_coordinate['additional_flag8']=15
-    indices_coordinate['additional_flag9']=16
-
-    particle_data_length=len(indices_coordinate.keys())
+    indices_coordinate['V_R_next']=11
+    indices_coordinate['V_phi_next']=12
+    indices_coordinate['V_Z_next']=13
+    indices_coordinate['R_next']=14
+    indices_coordinate['phi_next']=15
+    indices_coordinate['Z_next']=16
 
     input_data={} #need to initialise dictionary to hold data we read from file
 
     input_data['status_flags']={} #nested dictionary to hold possible status flags for the particle list
-    input_data['status_flags']['ok_if_greater']=0.0 
-    input_data['status_flags']['undefined']=0.0
-    input_data['status_flags']['left_space_grid']=-1.0
-    input_data['status_flags']['not_poss_on_1st_call']=-1000.0 
-    input_data['status_flags']['track_failure']=-2000.0
-    input_data['status_flags']['unresolved_hit']=-3.0
-    input_data['status_flags']['left_mesh']=-3000.0
-    input_data['status_flags']['track_problem']=-4000.0
-    input_data['status_flags']['PFC_intercept_2D']=-4.0
-    input_data['status_flags']['ptcl_disconnect']=-5000.0
-    input_data['status_flags']['PFC_intercept_3D']=-5.0
-    input_data['status_flags']['left_field_grid']=-6.0
-    input_data['status_flags']['goose_fail']=-7000.0
-    input_data['status_flags']['left_plasma']=-8.0
-    input_data['status_flags']['thermalised']=-9.0
-    input_data['status_flags']['coll_op_fail']=-10000.0
-    input_data['status_flags']['GC_calc_fail']=-10.0 
-    input_data['status_flags']['CX_loss']=-11.0
-    input_data['status_flags']['gc_init_fail']=-11000.0
-    input_data['status_flags']['bin_fail_soft']=-12.0
-    input_data['status_flags']['bin_fail_hard_1']=-13000.0
-    input_data['status_flags']['time_limit_reached']=-14.0
-    input_data['status_flags']['cross_open_face']=-15.0
-    input_data['status_flags']['bin_fail_hard_2']=-16000.0
-    input_data['status_flags']['generic_fail_hard']=-99999.
-            
-        
+    input_data['status_flags'][0.0]='undefined'
+    input_data['status_flags'][-1.0]='left_space_grid'
+    input_data['status_flags'][-1000.0]='not_poss_on_1st_call '
+    input_data['status_flags'][-2000.0]='track_failure'
+    input_data['status_flags'][-3.0]='unresolved_hit'
+    input_data['status_flags'][-3000.0]='left_mesh'
+    input_data['status_flags'][-4000.0]='track_problem'
+    input_data['status_flags'][-4.0]='PFC_intercept_2D'
+    input_data['status_flags'][-5000.0]='ptcl_disconnect'
+    input_data['status_flags'][-5.0]='PFC_intercept_3D'
+    input_data['status_flags'][-6.0]='left_field_grid'
+    input_data['status_flags'][-7000.0]='goose_fail'
+    input_data['status_flags'][-8.0]='left_plasma'
+    input_data['status_flags'][-9.0]='thermalised'
+    input_data['status_flags'][-10000.0]='coll_op_fail'
+    input_data['status_flags'][-10.0]='GC_calc_fail '
+    input_data['status_flags'][-11.0]='CX_loss'
+    input_data['status_flags'][-11000.0]='gc_init_fail'
+    input_data['status_flags'][-12.0]='bin_fail_soft'
+    input_data['status_flags'][-13000.0]='bin_fail_hard_1'
+    input_data['status_flags'][-14.0]='time_limit_reached'
+    input_data['status_flags'][-15.0]='cross_open_face'
+    input_data['status_flags'][-16000.0]='bin_fail_hard_2'
+    input_data['status_flags'][-99999.]='generic_fail_hard'
+
+    def status_flags_dispatch(value):
+        try:
+            return input_data['status_flags'][value]
+        except:
+            return 'ok'
+    
     with open(filepath) as file:
         
         file_buffer=[] #to hold 1D chunks of the file 
@@ -341,34 +348,50 @@ def particle_list_compression(filepath,coordinates=['R','phi','Z','time','status
         ntri=int(line[5]) #triangle grid "dimension" 
 
         for coordinate in coordinates: #set up arrays to hold the data
-            input_data[coordinate]=np.zeros(n*ngpu)
+            input_data[coordinate]=np.zeros(n*ngpu*niter)
+        input_data['status_flag']=[]
 
-        for line_number,line in enumerate(file): #read line-by-line for memory efficiency
+        line_number=0
+        line=True
+        while line:
+        
+            while len(file_buffer)<npt_: #always make sure buffer has at least one particle's worth of data in
+                line=file.readline() #read line-by-line for memory efficiency
+                line_number+=1        
+                file_buffer.extend([float(number) for number in line.split()]) #read a line and add to the file buffer 
             
-            line=line.split()        
-            file_buffer.extend([float(number) for number in line]) #read a line and add to the file buffer 
+            #we have read in all values for this particle and know the first N entries in file_buffer correspond to the particle coordinates
+            for coordinate in coordinates: #read the requested data from the buffer
+                input_data[coordinate][particle_number]=file_buffer[indices_coordinate[coordinate]]
+                if coordinate is 'dt': input_data['status_flag'].append(status_flags_dispatch(input_data['dt'][particle_number])) #determine status_flag of marker
+
+            del(file_buffer[0:npt_]) #delete this particle's data from the buffer
             
-            if len(file_buffer) > particle_data_length: #if we have read in all values for this particle
-                small_buffer=file_buffer[0:particle_data_length] #extract coordinates for one particle
-                del(file_buffer[0:len(small_buffer)])
+            particle_number+=1
 
-                for coordinate in coordinates: 
-                    input_data[coordinate][particle_number]=small_buffer[indices_coordinate[coordinate]]
+            if particle_number==n*ngpu*niter: #stop after we read the all the particles
 
-                particle_number+=1
-                if particle_number==n*ngpu: #stop after we read the all the particles
+                input_data['n']=np.array(n)
+                input_data['ngpu']=np.array(ngpu)
+                input_data['niter']=np.array(niter)
+                input_data['npt_']=np.array(npt_)
+                input_data['nphc']=np.array(nphc)
+                input_data['ntri']=np.array(ntri)
+                input_data['number_particles']=np.array(npt_)
+                input_data['status_flag']=np.array(input_data['status_flag'])
 
-                    input_data['n']=np.array(n)
-                    input_data['ngpu']=np.array(ngpu)
-                    input_data['niter']=np.array(niter)
-                    input_data['npt_']=np.array(npt_)
-                    input_data['nphc']=np.array(nphc)
-                    input_data['ntri']=np.array(ntri)
-                    input_data['number_particles']=np.array(npt_)
+                try:
+                    input_data['weight']=np.full(len(input_data['R']),1.)
+                except:
+                    pass
 
-                    print("finished compressing final particle list file: "+str(filepath))
+                if all([quant in input_data for quant in ['V_R','V_phi','V_Z']]):
+                    input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
 
-                    return input_data
+                print("finished compressing final particle list file: "+str(filepath))
+
+                return input_data
+'''
 
 '''
 def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None):

@@ -22,6 +22,7 @@ try:
     import numpy as np
     import pathlib
     import copy
+    import random
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1) 
@@ -1021,6 +1022,123 @@ def extrapolate_kinetic_profiles_ITER(equilibrium,*kinetic_profiles,**kwargs):
         '''#XXX
 
     return extrapolated_kinetic_profiles
+
+def sample_1D(x,y,method='rejection',size=1000):
+    """
+    args: 
+        x - x axis of pdf
+        y - pdf
+        method - rejection or inverse_transform (much quicker)
+        size - number of samples to draw
+    notes:
+    """
+
+
+    if method is 'rejection': 
+
+        x_min,x_max=np.min(x),np.max(x)
+        y_min,y_max=np.min(y),np.max(y)
+        y_of_x=interpolate_1D(x,y)
+        rng=np.random.default_rng()
+        N=0
+        samples=[]
+        while N<size:
+            rand_x=rng.uniform(x_min,x_max)
+            rand_y=rng.uniform(y_min,y_max)
+            if rand_y<=y_of_x(rand_x): #keep sample
+                samples.append(rand_x)
+                N+=1
+        samples=np.asarray(samples)
+
+    elif method is 'inverse_transform': 
+
+        cdf=np.cumsum(y)
+        cdf,x=sort_arrays(cdf,x)
+        cdf,x=np.asarray(cdf),np.asarray(x)
+        cdf_normalised=(cdf-np.min(cdf))/(np.max(cdf)-np.min(cdf))
+        cdf_inverse_normalised=interpolate_1D(cdf_normalised,x,function='linear')
+        rng=np.random.default_rng()
+        rands=rng.random(size=size)
+        samples=cdf_inverse_normalised(rands)
+
+    return samples
+
+def KS_test(n1,n2,data1,data2,alpha=None):
+    """
+    perform KS test on two empirical distribution functions data1 data2
+
+    args:
+        n1 - data1 sample size
+        n2 - data2 sample size
+        data1 - empirical distribution function 
+        data2 - empirical distribution function 
+        alpha - optional confidence interval for rejecting null hypothesis
+    notes:
+        data1, data2 assumed to be against same axis
+    """
+
+    #table of critical D coefficients given confidence interval alpha
+    c_of_alpha={}
+    c_of_alpha[0.1]=1.22
+    c_of_alpha[0.05]=1.36
+    c_of_alpha[0.025]=1.48
+    c_of_alpha[0.01]=1.63
+    c_of_alpha[0.005]=1.73
+    c_of_alpha[0.001]=1.95
+    c_of_alpha[None]=None
+
+    if not any([alpha==alph for alph in c_of_alpha.keys()]):
+        print(f"ERROR: KS_test given invalid alpha value - available options = {[a for a in c_of_alpha.keys()]}!\nreturning\n")
+        return
+
+    def normalise(array):
+        """
+        return normalised array
+        """
+        return (array-np.min(array))/(np.max(array)-np.min(array)) 
+
+    def D_crit(n1,n2,alpha):
+        """
+        args:
+            n1 - sample size
+            n2 - sample size
+            alpha - set probability of observing D>D_crit given null i.e. set confidence interval 
+        notes:
+            reject null if D>D_crit given alpha i.e. if D is in upper alpha% of D given null
+        """
+        return c_of_alpha[alpha]*np.sqrt((n1+n2)/(n1*n2))
+
+    def p(n1,n2,D):
+        """
+        return probability that we observe a KS statistic D given null
+        
+        args:
+            n1 - sample size
+            n2 - sample size
+            D - KS statistic
+        notes:
+            this parameter is irrespective of the shape of the empirical distribution functions
+        """
+
+        N=(n1*n2)/(n1+n2)
+        x=D*(np.sqrt(N)+0.12+0.11/np.sqrt(N))
+        result=0
+        for j in range(1000):
+            j+=1
+            result+=(-1)**(j-1)*np.exp(-2.*j**2*x**2)
+        return 2.*result
+
+    data1_cum,data2_cum=np.cumsum(data1),np.cumsum(data2)
+    data1_cum_norm=normalise(data1_cum)
+    data2_cum_norm=normalise(data2_cum)
+
+    D=np.max(np.abs(data1_cum_norm-data2_cum_norm))
+    P=p(n1,n2,D)
+
+    if alpha:
+        reject=True if D>D_crit(n1,n2,alpha) else False
+
+    return D,P,reject
 
 #################################
  

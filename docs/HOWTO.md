@@ -167,9 +167,9 @@ density_after,another_density_after=extrapolate_kinetic_profiles(density_before,
                                         uniform_grid=True) #ensures all points in extrapolation range are uniformly space - now profiles sit on the same grid 
 
 fig,(ax1)=plt.subplots(1)
-my_Ne.plot(ax=ax1,fig=fig,colmap=settings.cmap_r)
-my_Ne2.plot(ax=ax1,fig=fig,colmap=settings.cmap_g)
-my_Ne3.plot(ax=ax1,fig=fig,colmap=settings.cmap_b)
-my_Ne4.plot(ax=ax1,fig=fig,colmap=settings.cmap_m)
+density_before.plot(ax=ax1,fig=fig,colmap=settings.cmap_r)
+another_density_before.plot(ax=ax1,fig=fig,colmap=settings.cmap_g)
+density_after.plot(ax=ax1,fig=fig,colmap=settings.cmap_b)
+another_density_after.plot(ax=ax1,fig=fig,colmap=settings.cmap_m)
 plt.show()
 ```
