@@ -1076,23 +1076,16 @@ class Perturbation(classes.base_input.LOCUST_input):
                 dr,dz=R[1]-R[0],Z[1]-Z[0]
                 ax.set_xticks(R) #set axes ticks
                 ax.set_yticks(Z)
-
-                #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                    #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
-
+                
                 Z,R=np.meshgrid(Z-dz/2.,R-dr/2.) #offset ticks onto bin centres
 
                 if key not in self.data.keys():
 
-                    R_poloidal_dim=len(self['R_1D'])
-                    Z_poloidal_dim=len(self['Z_1D'])
-                    R_poloidal=np.linspace(np.min(self['R_1D']),np.max(self['R_1D']),R_poloidal_dim) #these are the points to evaluate the field at when we look at a single plane
-                    Z_poloidal=np.linspace(np.min(self['Z_1D']),np.max(self['Z_1D']),Z_poloidal_dim)
-                    R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
-                    R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
-                    phi_poloidal=np.full(len(R_poloidal),0.) #XXX this zero should be phi parameter for tomographic slices
+                    R_poloidal,Z_poloidal=np.meshgrid(perturbations[0]['R_1D'],perturbations[0]['Z_1D']) 
+                    R_flat,Z_flat=R_poloidal.flatten(),Z_poloidal.flatten()
+                    phi_flat=np.full(len(R_flat),0.) #XXX this zero should be phi parameter for tomographic slices
 
-                    dB_R,dB_tor,dB_Z=self.evaluate(R=R_poloidal,phi=phi_poloidal,Z=Z_poloidal,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate poloidally
+                    dB_R,dB_tor,dB_Z=self.evaluate(R=R_flat,phi=phi_flat,Z=Z_flat,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate poloidally
 
                     if key=='dB_field_R':
                         values=dB_R
@@ -1107,17 +1100,17 @@ class Perturbation(classes.base_input.LOCUST_input):
                         key='dB_field_mag'
                         values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
                 
-                    values=values.reshape(Z_poloidal_dim,R_poloidal_dim).T
+                    values=values.reshape(len(self['Z_1D']),len(self['R_1D'])).T
 
                 else:
-                    values=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+                    values=self[key] 
      
                 if vminmax:
                     vmin=vminmax[0]
                     vmax=vminmax[1]
                 else:
-                    vmin=np.amin(values)
-                    vmax=np.amax(values)
+                    vmin=np.min(values)
+                    vmax=np.max(values)
 
                 #2D plot
                 if fill is True:
@@ -1150,35 +1143,40 @@ class Perturbation(classes.base_input.LOCUST_input):
             elif axes==['phi','R']:
 
                 R=self['R_1D'] #make a mesh
-                phi=np.linspace(0.,2.*np.pi,100) 
+                phi = self['phi'] if self['phi'] else np.linspace(0.,2.*np.pi,100) 
                 nR,nphi=len(R),len(phi)
                 phi,R=np.meshgrid(phi,R)
                 R_flat,phi_flat=R.flatten(),phi.flatten()
-                Z_flat=np.zeros(len(phi_flat))
-
-                dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
-
-                if key=='dB_field_R':
-                    values=dB_R
-                elif key=='dB_field_tor':
-                    values=dB_tor
-                elif key=='dB_field_Z':
-                    values=dB_Z
-                elif key=='dB_field_mag':
-                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
-                else:
-                    print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
-                    key='dB_field_mag'
-                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                Z_flat=np.full(len(phi_flat),0.) #XXX this zero should be Z parameter for tomographic slices
                 
-                values=values.reshape(nR,nphi)
+                if key not in self.data.keys():
+
+                    dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
+
+                    if key=='dB_field_R':
+                        values=dB_R
+                    elif key=='dB_field_tor':
+                        values=dB_tor
+                    elif key=='dB_field_Z':
+                        values=dB_Z
+                    elif key=='dB_field_mag':
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    else:
+                        print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
+                        key='dB_field_mag'
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    
+                    values=values.reshape(nR,nphi)
+
+                else:
+                    values=self[key] 
 
                 if vminmax:
                     vmin=vminmax[0]
                     vmax=vminmax[1]
                 else:
-                    vmin=np.amin(values)
-                    vmax=np.amax(values)
+                    vmin=np.min(values)
+                    vmax=np.max(values)
 
                 #2D plot
                 if fill is True:
@@ -1216,29 +1214,34 @@ class Perturbation(classes.base_input.LOCUST_input):
                 R_flat,phi_flat=R.flatten(),phi.flatten()
                 Z_flat=np.zeros(len(phi_flat))
 
-                dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
+                if key not in self.data.keys():
 
-                if key=='dB_field_R':
-                    values=dB_R
-                elif key=='dB_field_tor':
-                    values=dB_tor
-                elif key=='dB_field_Z':
-                    values=dB_Z
-                elif key=='dB_field_mag':
-                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
-                else:
-                    print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
-                    key='dB_field_mag'
-                    values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    dB_R,dB_tor,dB_Z=self.evaluate(R_flat,phi_flat,Z_flat,mode_number=self.mode_number,i3dr=i3dr,phase=phase)
+
+                    if key=='dB_field_R':
+                        values=dB_R
+                    elif key=='dB_field_tor':
+                        values=dB_tor
+                    elif key=='dB_field_Z':
+                        values=dB_Z
+                    elif key=='dB_field_mag':
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    else:
+                        print(f"WARNING: perturbation.plot() could not plot key={key} in {self.ID} - plotting dB_field_mag!\n")
+                        key='dB_field_mag'
+                        values=np.sqrt(dB_R**2+dB_tor**2+dB_Z**2)
+                    
+                    values=values.reshape(nR,nphi)
                 
-                values=values.reshape(nR,nphi)
+                else:
+                    values=self[key] 
 
                 if vminmax:
                     vmin=vminmax[0]
                     vmax=vminmax[1]
                 else:
-                    vmin=np.amin(values)
-                    vmax=np.amax(values)
+                    vmin=np.min(values)
+                    vmax=np.max(values)
 
                 #2D plot
                 if fill is True:
@@ -1260,21 +1263,21 @@ class Perturbation(classes.base_input.LOCUST_input):
             plt.show()
 
 
-    def evaluate(self,R,phi,Z,mode_number=None,i3dr=1,phase=0):
+    def evaluate(self,R,phi,Z,mode_number=None,i3dr=-1,phase=0):
         """
         returns the three components of perturbation field at a point in the plasma 
         
         args:
-            R - list of R coordinates
-            phi - list of phi coordinates
-            Z - list of Z coordinates
+            R - array of R coordinates
+            phi - array of phi coordinates
+            Z - array of Z coordinates
             mode_number - mode number of this toroidal harmonic
             i3dr - flip definition of phi (+1 anti-clockwise, -1 clockwise)
             phase - perturbation mode where dB~sin(n*phi-phase) (of field origin with respect to locust origin) (radians, anti-clockwise)
         notes:
 
         usage:
-            dB_R,dB_tor,dB_Z=my_equilibrium.B_calc_point(R=[1,2,3],phi=[0,0,0],Z=[1,2,3])
+            dB_R,dB_tor,dB_Z=my_perturbation.evaluate(R=[1,2,3],phi=[0,0,0],Z=[1,2,3])
         """
 
         if not mode_number: mode_number=self.mode_number
@@ -1377,8 +1380,8 @@ class Perturbation(classes.base_input.LOCUST_input):
         ax.set_xticks(R_poloidal) #set axes ticks
         ax.set_yticks(Z_poloidal)
 
-        #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-            #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+        
+            
 
         R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
         R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()

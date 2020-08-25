@@ -764,8 +764,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.plot(self[key],color=colmap(colmap_val),linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
-            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            
+                
 
         #2D data
         elif self[key].ndim==2:
@@ -776,8 +776,8 @@ class Equilibrium(classes.base_input.LOCUST_input):
             ax.set_xticks(X) #set axes ticks
             ax.set_yticks(Y)
 
-            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            
+                
 
             Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
@@ -1167,28 +1167,28 @@ class Equilibrium(classes.base_input.LOCUST_input):
 
         return rmaxis,zmaxis,simag
 
-    def B_calc_point(self,R,Z):
+    def evaluate(self,R,Z):
         """
         returns the three components of magnetic field at a point in the plasma 
         
         args:
-            R - list of R coordinates to calculate magnetic field components at 
-            Z - list of Z coordinates to calculate magnetic field components at
+            R - array of R coordinates to calculate magnetic field components at 
+            Z - array of Z coordinates to calculate magnetic field components at
         notes:
 
         usage:
-            B_R,B_tor,B_Z=my_equilibrium.B_calc_point(R=[1,2,3],Z=[1,2,3])
+            B_R,B_tor,B_Z=my_equilibrium.evaluate(R=[1,2,3],Z=[1,2,3])
         """
         
         if not np.all([component in self.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
-            print("B_calc_point found no B_field in equilibrium - calculating!")
+            print("evaluate found no B_field in equilibrium - calculating!")
             self.B_calc()
 
-        print("B_calc_point generating B_field interpolators")
+        print("evaluate generating B_field interpolators")
         B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R']) #construct interpolators here
         B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
         B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
-        print("B_calc_point finished generating B_field interpolators")
+        print("evaluate finished generating B_field interpolators")
 
         B_R=[]
         B_tor=[]
@@ -1198,9 +1198,10 @@ class Equilibrium(classes.base_input.LOCUST_input):
             B_R.append(float(B_field_R_interpolator(R_point,Z_point)))
             B_tor.append(float(B_field_tor_interpolator(R_point,Z_point)))
             B_Z.append(float(B_field_Z_interpolator(R_point,Z_point)))
-
-        for component in [B_R,B_tor,B_Z]:
-            component=np.asarray(component)
+        
+        B_R=np.asarray(B_R)
+        B_tor=np.asarray(B_tor)
+        B_Z=np.asarray(B_Z)
 
         return B_R,B_tor,B_Z
 

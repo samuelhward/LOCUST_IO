@@ -266,8 +266,8 @@ def RphiZ_to_XYZ(R,phi,RH=True):
     if RH is not True:
         phi=2.*constants.pi-phi
 
-    X=R*np.cos(phi)
-    Y=R*np.sin(phi)
+    X=np.array(R*np.cos(phi))
+    Y=np.array(R*np.sin(phi))
 
     return X,Y
 
@@ -472,7 +472,7 @@ def dot_product(vec1,vec2):
 
     return dot_product
 
-def pitch_calc_2D(particle_list,equilibrium):
+def pitch_calc(particle_list,equilibria=None,perturbations=None,i3dr=-1,phase=0.):
     """
     calculates the pitch angles of a given set of particle positions for axisymmetric B_field 
 
@@ -483,42 +483,32 @@ def pitch_calc_2D(particle_list,equilibrium):
         assumes RHS=R Phi Z (positive toroidal direction is counter-clockwise) 
     """
 
-    print("pitch_calc_2D - start\n")
+    if not equilibria and not perturbations:
+        print("ERROR: pitch_calc needs equilibria or perturbations!\nreturning\n")
+        return
 
-    eq=copy.deepcopy(equilibrium)
+    print("pitch_calc - start\n")
 
-    if not np.all([component in eq.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]): #calculate B field if missing
-        eq.B_calc()
+    Br_at_particles=np.zeros(len(particle_list['R']))
+    Btor_at_particles=np.zeros(len(particle_list['R']))
+    Bz_at_particles=np.zeros(len(particle_list['R']))
 
-    B_field_R_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_R']) #generate interpolators for B
-    B_field_tor_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_tor'])
-    B_field_Z_interpolator=interpolate_2D(eq['R_1D'],eq['Z_1D'],eq['B_field_Z'])
+    if equilibria:
+        for equilibrium in equilibria:
+            B_r,B_tor,B_z=equilibrium.evaluate(particle_list['R'],particle_list['Z'])
+            Br_at_particles+=B_r
+            Btor_at_particles+=B_tor
+            Bz_at_particles+=B_z
 
-    print("pitch_calc_2D - interpolating B_field to particles\n")
-
-    #to stop memory errors, doing element-wise
-
-    Br_at_particles=[]
-    Btor_at_particles=[]
-    Bz_at_particles=[]
-    B_at_particles=[]
-
-    for R,Z in zip(particle_list['R'],particle_list['Z']):
-
-        Br=float(B_field_R_interpolator(R,Z))
-        Btor=float(B_field_tor_interpolator(R,Z))
-        Bz=float(B_field_Z_interpolator(R,Z))
-        Br_at_particles.extend([Br]) #interpolate B to particles
-        Btor_at_particles.extend([Btor])
-        Bz_at_particles.extend([Bz])
-        B_at_particles.extend([np.sqrt(Br**2+Btor**2+Bz**2)]) #calculate |B| at particles - quicker than interpolating
-
-    print("pitch_calc_2D - finished interpolating B_field to particles\n")
-
-    Br_at_particles=np.asarray(Br_at_particles)
-    Btor_at_particles=np.asarray(Btor_at_particles)
-    Bz_at_particles=np.asarray(Bz_at_particles)
-
+    if perturbations:
+        for perturbation in perturbations:
+            dB_r,dB_tor,dB_z=perturbation.evaluate(particle_list['R'],particle_list['phi'],particle_list['Z'],i3dr=i3dr,phase=phase)
+            Br_at_particles+=dB_r
+            Btor_at_particles+=dB_tor
+            Bz_at_particles+=dB_z
+    
+    B_at_particles=np.sqrt(Br_at_particles**2+Btor_at_particles**2+Bz_at_particles**2)              
+    
     Br_at_particles/=B_at_particles #calculate B_hat
     Btor_at_particles/=B_at_particles
     Bz_at_particles/=B_at_particles
@@ -528,7 +518,7 @@ def pitch_calc_2D(particle_list,equilibrium):
     V=np.sqrt(particle_list['V_R']**2+particle_list['V_phi']**2+particle_list['V_Z']**2)
     V_pitch=V_parallel/V
 
-    print("pitch_calc_2D - finished\n")
+    print("pitch_calc - finished\n")
 
     return V_pitch
 
@@ -1104,13 +1094,14 @@ def KS_test(n1,n2,data1,data2,alpha=None):
             n2 - sample size
             alpha - set probability of observing D>D_crit given null i.e. set confidence interval 
         notes:
+            this is an approximation - can use binary search to iteratively calculate this value using p() below
             reject null if D>D_crit given alpha i.e. if D is in upper alpha% of D given null
         """
         return c_of_alpha[alpha]*np.sqrt((n1+n2)/(n1*n2))
 
     def p(n1,n2,D):
         """
-        return probability that we observe a KS statistic D given null
+        return probability that D_crit(alpha)>D_observed for n1,n2 where D_crit is KS statistic in top alpha% given null i.e. p = probability we measure this conclusion result given Null
         
         args:
             n1 - sample size

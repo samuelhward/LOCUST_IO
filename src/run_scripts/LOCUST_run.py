@@ -273,6 +273,10 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             (self.root / settings.username).rmdir() 
         except:
             pass
+        try:
+            self.root.rmdir() 
+        except:
+            pass
 
         try: #now remove folder containing LOCUST repo
             subprocess.run(shlex.split('rm -rf {}'.format(str(self.dir_LOCUST / 'locust' / '.git'))),shell=False) #delete folder holding LOCUST git repo

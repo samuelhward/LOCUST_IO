@@ -280,3 +280,35 @@ There are many moments of the distribution function which are provided by variou
             total                                                       #total PFC loss power [W]
         time_total                                                      #kernel end time
 
+##### Poincare
+
+    0D data
+        EQBM_MD5                                                        #checksum ID of the equilibrium
+        nRP                                                             #number R zones
+        nZP                                                             #number Z zones
+        nTP                                                             #number toroidal zones
+        npln                                                            #binning planes
+        R0P                                                             #R domain minimum
+        R1P                                                             #R domain maximum
+        Z0P                                                             #Z domain minimum
+        Z1P                                                             #Z domain maximum
+        nEQ_R                                                           #number equilibrium R zones
+        nEQ_Z                                                           #number equilibrium Z zones
+        psi_equil_h                                                     #
+    1D data
+        R_equil_h                                                       #R equilibrium dimension [m]
+        Z_equil_h                                                       #Z equilibrium dimension [m]
+        R                                                               #R map dimension [m]
+        Z                                                               #Z map dimension [m]
+        phi                                                             #phi dimension [rad]
+    3D data
+        map                                                             #Poincare map [R,Z,phi]
+
+##### Output Mesh
+
+    1D data
+        X                                                               #X coordinate of node [m]
+        Y                                                               #Y coordinate of node [m]
+        Z                                                               #Z coordinate of node [m]
+        R                                                               #R coordinate of node [m]
+        phi                                                             #phi coordinate of node [rad]

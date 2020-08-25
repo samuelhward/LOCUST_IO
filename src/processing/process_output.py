@@ -406,7 +406,7 @@ def extract_DFN_particle_list(some_particle_list,some_equilibrium,some_bins=None
         some_bins - 
     """
 
-    V_pitch=processing.utils.pitch_calc_2D(some_particle_list,some_equilibrium)
+    V_pitch=processing.utils.pitch_calc(some_particle_list,[some_equilibrium])
     dummy_gyrophase=np.zeros(len(some_particle_list['R'])) #if uniform in gyrophase
     if 'V' not in some_particle_list.data:
         some_particle_list['V']=np.array(np.sqrt(some_particle_list['V_R']**2+some_particle_list['V_phi']**2+some_particle_list['V_Z']**2))

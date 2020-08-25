@@ -77,7 +77,9 @@
 | `BICUB`       | Use method 2 bi-cubic interpolation                                                                                                          |
 | `B3D`         | Enable 3D field                                                                                                                              |
 | `BILIN`       | Use bilinear interpolation of 3D data                                                                                                        |
-| `POINCARE`    | Generate Poincare map                                                                                                                        |
+| `POINCARE`=1  | Generate Poincare map - Fixed length mode                                                                                                    |
+| `POINCARE`=2  | Generate Poincare map - Fixed toroidal angle mode                                                                                            |
+| `POINCARE`=3  | Generate Poincare map - Low stats ISLAND mode                                                                                                |
 | `RKFIX`       | Use fixed step RK in Poincare map                                                                                                            |
 | `RKBS23`      | Use BS23 Runge Kutta in GUIDE3                                                                                                               |
 | `RKF45`       | Use Fehlberg Runge Kutta in GUIDE3                                                                                                           |

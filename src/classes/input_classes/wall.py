@@ -587,8 +587,8 @@ class Wall(classes.base_input.LOCUST_input):
         
         ax.plot(self['rlim'],self['zlim'],colmap,linestyle=line_style,label=label)
                 
-        #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-            #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+        
+            
 
         if real_scale is True: #set x and y plot limits to real scales
             ax.set_aspect('equal')

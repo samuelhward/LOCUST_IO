@@ -54,7 +54,7 @@ except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-################################################################## Orbits functions
+################################################################## Rundata functions
 
 def read_rundata_LOCUST(filepath,**properties):
     """
@@ -163,7 +163,7 @@ def read_rundata_LOCUST(filepath,**properties):
 
     return input_data
 
-################################################################## Orbits class
+################################################################## Rundata class
 
 class Rundata(classes.base_output.LOCUST_output):
     """

@@ -804,7 +804,7 @@ def dump_beam_depo_LOCUST_guiding_centre_weighted(output_data,filepath,equilibri
 
     if 'V_pitch' not in output_data:
         print("dump_beam_depo_LOCUST_weighted found no V_pitch in output_data - calculating!")
-        output_data['V_pitch']=processing.utils.pitch_calc_2D(particle_list=output_data,equilibrium=equilibrium)
+        output_data['V_pitch']=processing.utils.pitch_calc(particle_list=output_data,equilibria=[equilibrium])
 
     with open(filepath,'w') as file: #open file
  
@@ -1061,7 +1061,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
 
         if 'V_pitch' not in output_data:
             print("dump_beam_depo_ASCOT_gc found no V_pitch in output_data - calculating!")
-            output_data['V_pitch']=processing.utils.pitch_calc_2D(particle_list=output_data,equilibrium=equilibrium)
+            output_data['V_pitch']=processing.utils.pitch_calc(particle_list=output_data,equilibria=[equilibrium])
 
         if 'weight' in output_data:
             weight=output_data['weight']
@@ -1403,17 +1403,10 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
 
         elif ndim==2: #plot 2D histograms
 
-            if axes==['R','Z']: #check for commonly-used axes
-                if real_scale is True: #set x and y plot limits to real scales
-                    ax.set_aspect('equal')
-                else:
-                    ax.set_aspect('auto')
-
-            elif axes==['X','Y']:          
-                if real_scale is True: 
-                    ax.set_aspect('equal')
-                else:
-                    ax.set_aspect('auto')
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
 
             if style=='histogram':
                 if grid is not False: #bin according to pre-defined grid
@@ -1433,8 +1426,8 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 ax.set_xticks(self_binned_x) #set axes ticks
                 ax.set_yticks(self_binned_y)
 
-                #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                    #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+                
+                    
 
                 self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
                 
@@ -1454,7 +1447,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     V_mag=np.sqrt(self['V_R']**2+self['V_phi']**2+self['V_Z']**2)
                     #ax.quiver(self[axes[0]],self[axes[1]],-1.*self[f'V_{quiver_velocity_axes[0]}']/V_mag,-1.*self[f'V_{quiver_velocity_axes[1]}']/V_mag,color=colmap(colmap_val),scale=0.000001,headwidth=0.000001,headlength=0.000001) #tail
                     ax.quiver(self[axes[0]],self[axes[1]],self[quiver_velocity_axes[0]]/V_mag,self[quiver_velocity_axes[1]]/V_mag,color=colmap(colmap_val))
-                mesh=ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1,label=self.ID)
+                ax.scatter(self[axes[0]],self[axes[1]],color='red',marker='x',s=1,label=self.ID)
 
             if axes==['R','Z']:
                 if real_scale is True:                    
@@ -1493,7 +1486,7 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
         elif ndim==3: #plot 3D scatter - assume X,Y,Z
 
             if style!='scatter':
-                print("ERROR: plot_beam_deposition() can only plot scatter style in 3D!")
+                print("ERROR: beam_deposition.plot() can only plot scatter style in 3D!")
                 return
 
             if ax_flag is False and len(axes)==3:

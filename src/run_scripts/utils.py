@@ -469,8 +469,8 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xticks(R) #set axes ticks
             ax.set_yticks(Z)
 
-            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            
+                
 
             R,Z=np.meshgrid(R-dr/2.,Z-dz/2.)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
@@ -525,8 +525,8 @@ class TRANSP_output_FI(TRANSP_output):
             ax.set_xticks(dfn_copy['E']) #set axes ticks
             ax.set_yticks(dfn_copy['V_pitch'])
 
-            #for index,(xlabel,ylabel,xtick,ytick) in enumerate(zip(ax.xaxis.get_ticklabels(),ax.yaxis.get_ticklabels(),ax.xaxis.get_ticklines(),ax.yaxis.get_ticklines())):
-                #for label in [xlabel,ylabel,xtick,ytick]: label.set_visible(True) if (index % settings.tick_frequency==0) else label.set_visible(False)
+            
+                
 
             E,V_pitch=np.meshgrid(dfn_copy['E']-dE/2.,dfn_copy['V_pitch']-dV_pitch/2.) #X,Y this way because dfn dimension ordering
 
@@ -1962,8 +1962,8 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
         #position of centre of NBI grid where beamline is drawn from
         if beam_name is 'diagnostic':
-            data['grid_origin_phi_machine']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1412.9,28296.)) #[rad]
             data['grid_origin_R_machine']=28.926 #[metres]
+            data['grid_origin_phi_machine']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1.4129,data['grid_origin_R_machine'])) #[rad]
             data['grid_origin_Z_machine']=0.90915 #[metres] XXX? unsure about this one
             data['grid_origin_X_machine']=data['grid_origin_R_machine']*np.cos(data['grid_origin_phi_machine'])
             data['grid_origin_Y_machine']=data['grid_origin_R_machine']*np.sin(data['grid_origin_phi_machine'])
@@ -1976,7 +1976,7 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
         #beamline angles
         if beam_name is 'diagnostic':
-            data['beamline_angle_vertical']=np.arctan2(320.,20665.) #XXX? taken from engineering drawing not sure if this is needed
+            data['beamline_angle_vertical']=np.arctan2(0.320,20.665) #XXX think this is already taken into account by beamlet_tilt below
             data['beamline_tangency_radius']=1.4129    
             data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R_machine']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
 
@@ -1984,11 +1984,7 @@ def generate_NBI_geometry(machine='ITER',**properties):
         data['beamletgroup_centres_x']=np.linspace(-240,240,data['number_beamletgroups_per_segment'])*1.e-3 #with respect to unit centre [metres]
         data['beamletgroup_centres_y']=np.linspace(-594,594,data['number_beamletgroups_per_column'])*1.e-3 #with respect to unit centre [metres]
         data['beamletgroup_centres_y'],data['beamletgroup_centres_x']=np.meshgrid(data['beamletgroup_centres_y'],data['beamletgroup_centres_x'])
-        if beam_name is 'diagnostic':
-            pass
-        elif 'heating' in beam_name:
-            data['beamletgroup_angle_vertical']=np.arctan2(data['beamletgroup_centres_y'],25.4) #[rad] angle between beamlet group unit normal and machine horizontal plane (alpha_y in drawings)
-            data['beamletgroup_angle_horizontal']=np.arctan2(data['beamletgroup_centres_x'],25.4) #angle between beamletgroup and beamline projected in horizontal plane [rad] (alpha_x in drawings)
+
         #calculate positions of beamletgroups for plotting
         data['beamletgroup_centres_x_machine']=data['grid_origin_X_machine']+data['beamletgroup_centres_x']*np.cos(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
         data['beamletgroup_centres_y_machine']=data['grid_origin_Y_machine']+data['beamletgroup_centres_x']*np.sin(-(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal']))
@@ -1996,31 +1992,27 @@ def generate_NBI_geometry(machine='ITER',**properties):
         data['beamletgroup_centres_phi_machine']=np.arctan2(data['beamletgroup_centres_y_machine'],data['beamletgroup_centres_x_machine'])
         data['beamletgroup_centres_r_machine']=data['beamletgroup_centres_x_machine']*np.cos(data['beamletgroup_centres_phi_machine'])+data['beamletgroup_centres_y_machine']*np.sin(data['beamletgroup_centres_phi_machine'])
 
+        #focussing in XY/RZ plane - same for DNB and HNB
         if beam_name is 'diagnostic':
-            pass
+            data['beamletgroup_focal_length']=20.665 #[metres]
         elif 'heating' in beam_name:
             data['beamletgroup_focal_length']=25.4 #[metres]
-            data['beamletgroup_focal_point_X']=data['grid_origin_X_machine']-data['beamletgroup_focal_length']*np.sin(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
-            data['beamletgroup_focal_point_Y']=data['grid_origin_Y_machine']-data['beamletgroup_focal_length']*np.cos(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
-            data['beamletgroup_focal_point_Z']=data['grid_origin_Z_machine']
-            data['beamletgroup_focal_point_phi']=np.arctan2(data['beamletgroup_focal_point_Y'],data['beamletgroup_focal_point_X'])
-            data['beamletgroup_focal_point_R']=data['beamletgroup_focal_point_X']*np.cos(data['beamletgroup_focal_point_phi'])+data['beamletgroup_focal_point_Y']*np.sin(data['beamletgroup_focal_point_phi'])
+        data['beamletgroup_angle_vertical']=np.arctan2(data['beamletgroup_centres_y'],data['beamletgroup_focal_length']) #[rad] angle between beamlet group unit normal and machine horizontal plane (alpha_y in drawings)
+        data['beamletgroup_angle_horizontal']=np.arctan2(data['beamletgroup_centres_x'],data['beamletgroup_focal_length']) #angle between beamletgroup and beamline projected in horizontal plane [rad] (alpha_x in drawings)
+        data['beamletgroup_focal_point_X']=data['grid_origin_X_machine']-data['beamletgroup_focal_length']*np.sin(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
+        data['beamletgroup_focal_point_Y']=data['grid_origin_Y_machine']-data['beamletgroup_focal_length']*np.cos(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
+        data['beamletgroup_focal_point_Z']=data['grid_origin_Z_machine']
+        data['beamletgroup_focal_point_phi']=np.arctan2(data['beamletgroup_focal_point_Y'],data['beamletgroup_focal_point_X'])
+        data['beamletgroup_focal_point_R']=data['beamletgroup_focal_point_X']*np.cos(data['beamletgroup_focal_point_phi'])+data['beamletgroup_focal_point_Y']*np.sin(data['beamletgroup_focal_point_phi'])
 
         #beamlet positions and aiming angles beta
         if beam_name is 'diagnostic':
-            pass
+            data['beamlet_focal_length']=20.665 #[metres]
         elif 'heating' in beam_name:
             data['beamlet_focal_length']=7.2 #[metres]
         beamlet_centres_x=np.linspace(-data['beamletgroup_width']/2.,data['beamletgroup_width']/2.,data['number_beamlet_columns_per_beamletgroup']) #with respect to beamletgroup centre
         beamlet_centres_y=np.linspace(-data['beamletgroup_height']/2.,data['beamletgroup_height']/2.,data['number_beamlet_segments_per_beamletgroup']) #with respect to beamletgroup centre
         beamlet_centres_y,beamlet_centres_x=np.meshgrid(beamlet_centres_y,beamlet_centres_x)
-        if beam_name is 'diagnostic':
-            pass
-        elif 'heating' in beam_name:
-            data['beamlet_angle_vertical']=49.2*1.e-3 #beamlet vertical tilt - same for all beamlets [rad] (beta_y in drawings)
-            #on-off axis settings
-            data['beamlet_tilt']=10.*1.e-3 if axis is 'off' else -10.*1.e-3 #[rad]
-
         data['beamlet_angle_horizontal']=np.arctan2(beamlet_centres_x,data['beamlet_focal_length']) #angle between beamlet and beamletgroup surface normal projected in horizontal plane [rad] (beta_x in drawings)
 
         #main genreal geometry calculations
@@ -2034,7 +2026,8 @@ def generate_NBI_geometry(machine='ITER',**properties):
                         'X_tangency_beamlet',
                         'Y_tangency_beamlet',
                         'beamlet_vertical_angle',
-                        'power_fraction_beamlet']:
+                        'power_fraction_beamlet',
+                        'beamlet_angle_vertical']:
             data[quantity]=np.zeros(shape=(data['number_units'],data['number_columns_per_unit'],data['number_segments_per_unit'],data['number_beamlets_per_segment'],data['number_beamlets_per_column']))
 
         #first determine position of beamlet relative to unit centre
@@ -2061,12 +2054,24 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
         #find angle of inclination of beamlet with horizontal plane
         #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
+        if beam_name is 'diagnostic':
+            #since diagnostic beam focal length of beamlet=focal length of beamletgroup we can do something simple
+            for beamletgroup_column in range(data['number_columns_per_unit']):
+                for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
+                    data['beamlet_angle_vertical'][:,beamletgroup_column,beamletgroup_segment,:,:]+=np.arctan2(data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:],data['beamletgroup_focal_length']) - data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]
+            print(np.arctan2(data['beamlet_centres_Y_machine'][:,beamletgroup_column,beamletgroup_segment,:,:],data['beamletgroup_focal_length']))
+            print(data['beamletgroup_angle_vertical'])
+            data['beamlet_tilt']=49.2*1.e-3*1.e3 #[rad]
+        elif 'heating' in beam_name:
+            data['beamlet_angle_vertical']+=49.2*1.e-3 #beamlet downward vertical tilt - same for all beamlets [rad] (beta_y in drawings)
+            #on-off axis settings
+            data['beamlet_tilt']=10.*1.e-3 if axis is 'on' else -10.*1.e-3 #[rad]
 
         #find coordinates of beamlet tangency point
         for beamletgroup_column in range(data['number_columns_per_unit']):
             for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
                 #find tangency radius (and other coordinates) of the beamline - can do this analytically in the machine horizontal plane
-                data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_angle_vertical']+data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]-data['beamlet_tilt']
+                data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_angle_vertical'][:,beamletgroup_column,beamletgroup_segment,:,:]+data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]-data['beamlet_tilt']
                 data['R_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.cos(np.arccos((data['grid_origin_X_machine']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])
                 data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=np.arccos((data['grid_origin_X_machine']-data['beamletgroup_focal_point_X'])/data['beamletgroup_focal_length'])-data['beamletgroup_angle_horizontal'][beamletgroup_column,beamletgroup_segment]-data['beamlet_angle_horizontal']+np.pi/2.
                 data['Z_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]=data['beamlet_centres_Z_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_R_machine'][:,beamletgroup_column,beamletgroup_segment,:,:]*np.sin(data['phi_tangency_beamlet'][:,beamletgroup_column,beamletgroup_segment,:,:]-data['beamlet_centres_phi_machine'][:,beamletgroup_column,beamletgroup_segment,:,:])*np.tan(data['beamlet_vertical_angle'][:,beamletgroup_column,beamletgroup_segment,:,:])
@@ -2109,6 +2114,8 @@ def plot_NBI_geometry(axes=['R','Z'],real_scale=True,colmap=settings.cmap_defaul
     from mpl_toolkits import mplot3d #import 3D plotting axes
     from mpl_toolkits.mplot3d import Axes3D
 
+    ndim=len(axes) #infer how many dimensions user wants to plot
+
     if ax is False:
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
     else:
@@ -2133,7 +2140,6 @@ def plot_NBI_geometry(axes=['R','Z'],real_scale=True,colmap=settings.cmap_defaul
 
     #just hack this to work with generate_NBI_geometry
 
-    ndim=len(axes) #infer how many dimensions user wants to plot
     beamlet_start_coordinate_names=[]
     beamlet_end_coordinate_names=[]
     for dim in range(ndim):

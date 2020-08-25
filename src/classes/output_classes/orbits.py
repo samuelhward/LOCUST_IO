@@ -81,19 +81,25 @@ def read_orbits_LOCUST(filepath,**properties):
             raise IOError("ERROR: read_orbits_LOCUST() cannot read from "+str(filepath))
     
         number_particles=int(lines[0]) #extract number of particles
-        number_timesteps=int(lines[-1])-1 #extract number of time steps of each trajectory
-        number_coords=int(3)
+        number_timesteps=int(lines[-1]) #extract number of time steps of each trajectory
+        number_coords=3
 
-        del(lines[0])
         del(lines[-1])
+        del(lines[0])
 
         input_data = {} #initialise the dictionary to hold the dat
-        orbit_data=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps+1,number_coords,number_particles)) #read all data and reshape accordingly
+        try:
+            orbit_data=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps,number_coords,number_particles)) #read all data and reshape accordingly
+        except:
+            number_timesteps+=1
+            orbit_data=np.array([[float(value) for value in line.split()] for line in lines]).reshape((number_timesteps,number_coords,number_particles)) #read all data and reshape accordingly
         input_data['R']=orbit_data[:,0,:]
         input_data['phi']=orbit_data[:,1,:]
         input_data['Z']=orbit_data[:,2,:]
         input_data['number_particles']=np.asarray(number_particles)
         input_data['number_timesteps']=np.asarray(number_timesteps)
+        input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
+
    
     print("finished reading orbits from LOCUST")
 
@@ -278,7 +284,7 @@ class Orbits(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))
 
-    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
+    def plot(self,particles=[0],axes=['R','Z'],LCFS=False,limiters=False,real_scale=True,start_mark=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         simple orbits plot in the R,Z/X,Y planes
          
@@ -328,23 +334,13 @@ class Orbits(classes.base_output.LOCUST_output):
 
         if ndim==2: #2D plotting
 
-            if axes==['X','Y']: #plotting top-down
-                if 'X' not in self.data or 'Y' not in self.data:
-                    try:
-                        self['X'],self['Y']=processing.utils.RphiZ_to_XYZ(self['R'],self['phi'])
-                    except:
-                        pass
-
             for particle in particles:
                 ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)
                 if start_mark:
-                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,markersize=settings.markersize_start_mark)
+                    ax.scatter(self[axes[0]][0,particle],self[axes[1]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark)
 
             if axes==['R','Z']: #if we're plotting along poloidal projection, then give options to include full cross-section and plasma boundary
                
-                if real_scale is True:
-                    ax.set_aspect('equal')
-
                 if LCFS: #plot plasma boundary
                     ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
                 if limiters: #add boundaries if desired
@@ -352,9 +348,6 @@ class Orbits(classes.base_output.LOCUST_output):
 
             elif axes==['X','Y']: #plotting top-down
                 
-                if real_scale is True:
-                    ax.set_aspect('equal')
-
                 if LCFS: #plot concentric rings to show inboard/outboard plasma boundaries
                     plasma_max_R=np.max(LCFS['lcfs_r'])
                     plasma_min_R=np.min(LCFS['lcfs_r'])
@@ -371,28 +364,30 @@ class Orbits(classes.base_output.LOCUST_output):
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
 
+            if real_scale is True:
+                ax.set_aspect('equal')
+
         elif ndim==3: #3D plotting
 
             if ax_flag is False:
                 ax = fig.gca(projection='3d')
-
-            if real_scale:
-
-                ax.set_aspect('equal')
 
             if LCFS: #plot periodic poloidal cross-sections in 3D 
                 for angle in np.linspace(0.0,2.0*constants.pi,4,endpoint=False):
                     x_points=LCFS['lcfs_r']*np.cos(angle)
                     y_points=LCFS['lcfs_r']*np.sin(angle)
                     z_points=LCFS['lcfs_z']
-                    ax.plot(x_points,y_points,zs=z_points,color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
-                if limiters: #add boundaries if desired
-                    ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
+                    ax.plot(x_points,y_points,z_points,color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS')
+            if limiters: #add boundaries if desired
+                x_points=limiters['lcfs_r']*np.cos(angle)
+                y_points=limiters['lcfs_r']*np.sin(angle)
+                z_points=limiters['lcfs_z']
+                ax.plot(x_points,y_points,z_points,color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
 
             for particle in particles:
-                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],zs=self[axes[2]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)
+                ax.plot(self[axes[0]][:,particle],self[axes[1]][:,particle],self[axes[2]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)
                 if start_mark:
-                    ax.plot(self[axes[0]][0,particle],self[axes[1]][0,particle],zs=self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='start')
+                    ax.scatter(self[axes[0]][0,particle],self[axes[1]][0,particle],self[axes[2]][0,particle],color=settings.colour_start_mark,marker=settings.marker_start_mark,s=settings.markersize_start_mark,label='start')
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])
