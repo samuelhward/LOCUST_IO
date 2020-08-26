@@ -648,7 +648,7 @@ class TRANSP_output_FI(TRANSP_output):
         if ax_flag is False and fig_flag is False:
             plt.show()
 
-def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_GC=True,beam_depo_number=None,GEQDSKFIX=0):
+def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_GC=True,beam_depo_number=None,GEQDSKFIX1=0,GEQDSKFIX2=0):
     """
     reads full input_data from TRANSP run
 
@@ -664,7 +664,8 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
         input_path - path to target in input_files dir (input_files/path/)
         beam_depo_GC - toggle dumping birth list at guiding-centre or particle position
         beam_depo_number - integer number of beam depo file to read elif None then read all available beam depositions and combine into single object 
-        GEQDSKFIX - LOCUST-equivalent flag to optionally flip fields in GEQDSK
+        GEQDSKFIX1 - LOCUST-equivalent flag to optionally flip fields in GEQDSK
+        GEQDSKFIX2 - LOCUST-equivalent flag to optionally flip fields in GEQDSK
     """
     
     print("read_inputs_TRANSP()")
@@ -712,7 +713,7 @@ def read_inputs_TRANSP(run_ID,shot_number,input_path=pathlib.Path(''),beam_depo_
             print("WARNING: read_inputs_TRANSP() could not read electron density from LOCUST_IO/data/input_files/{} - returning None".format(str(filepath_number_density_e_1)+" or "+str(filepath_number_density_e_2)))
             density_e=None
     try:
-        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID=shot_number+run_ID,data_format='GEQDSK',filename=filepath_equilibrium,GEQDSKFIX=GEQDSKFIX)
+        equilibrium=classes.input_classes.equilibrium.Equilibrium(ID=shot_number+run_ID,data_format='GEQDSK',filename=filepath_equilibrium,GEQDSKFIX1=GEQDSKFIX1,GEQDSKFIX2=GEQDSKFIX2)
     except:
         print("WARNING: read_inputs_TRANSP() could not read equilibrium from LOCUST_IO/data/input_files/{} - returning None".format(filepath_equilibrium))
         equilibrium=None
