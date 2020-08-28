@@ -1087,17 +1087,22 @@ def KS_test(n1,n2,data1,data2,alpha=None):
         """
         return (array-np.min(array))/(np.max(array)-np.min(array)) 
 
-    def D_crit(n1,n2,alpha):
+    def D_crit(n_1,n_2,alpha,analytical=True):
         """
         args:
             n1 - sample size
             n2 - sample size
             alpha - set probability of observing D>D_crit given null i.e. set confidence interval 
+            analytical - toggle whether to return formulaic evaluation or table 
         notes:
             this is an approximation - can use binary search to iteratively calculate this value using p() below
             reject null if D>D_crit given alpha i.e. if D is in upper alpha% of D given null
         """
-        return c_of_alpha[alpha]*np.sqrt((n1+n2)/(n1*n2))
+
+        if analytical:
+            return np.sqrt(-.5*np.log(alpha/2.))*np.sqrt((n_1+n_2)/(n_1*n_2))
+        else:
+            return c_of_alpha[alpha]*np.sqrt((n_1+n_2)/(n_1*n_2))
 
     def p(n1,n2,D):
         """
