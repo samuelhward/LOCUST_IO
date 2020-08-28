@@ -56,7 +56,7 @@ wall_MAST=wall('',data_format='UFILE',filename=file_wall)
 beam_depo=bd(ID='ASCOT beam depo',data_format=ASCOT_beam_depo_data_format,filename=ASCOT_beam_depo_filename)
 beam_power=1. #desired beam power
 if 'E' not in beam_depo.data: 
-    beam_depo['E']=0.5*constants.mass_deuteron*(beam_depo['V_R']**2+beam_depo['V_tor']**2+beam_depo['V_Z']**2)/constants.species_charge
+    beam_depo['E']=0.5*constants.mass_deuteron*(beam_depo['V_R']**2+beam_depo['V_phi']**2+beam_depo['V_Z']**2)/constants.species_charge
 Pdep_ASCOT=np.sum(beam_depo['E']*constants.species_charge*beam_depo['weight'])
 
 for file_locust,file_ascot,file_transp,time_slice in zip(files_locust,files_ascot,files_transp,time_slices):

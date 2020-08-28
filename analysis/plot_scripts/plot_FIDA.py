@@ -56,6 +56,7 @@ import support
 import pathlib
 import settings
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from classes.input_classes.equilibrium import Equilibrium as equi
 
@@ -65,6 +66,12 @@ cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
 cmap_grey=settings.colour_custom([97,97,97,1])
 
+settings.matplotlib_rc['font']['size']=15 #edit matplotlib rc settings
+settings.matplotlib_rc['lines']['linewidth']=4 #edit matplotlib rc settings
+for setting_type,setting in settings.matplotlib_rc.items(): matplotlib.rc(setting_type, **setting) #enable settings
+
+normalise=True
+
 channel=5#5 #4567
 filepath_measured=support.dir_output_files / 'FIDASIM' / f'29034_chn_{channel}.dat'
 filepath_FIDASIM=support.dir_output_files / 'FIDASIM' / f'F_05-11-2019_23-14-13_chn_{channel}.dat'
@@ -72,19 +79,27 @@ filepath_FIDASIM=support.dir_output_files / 'FIDASIM' / f'F_05-11-2019_23-14-13_
 data_FIDASIM=get_FIDA(filepath_FIDASIM)
 data_measured=get_FIDA(filepath_measured)
 
+if normalise:
+    norm=0.
+    for key,value in {**data_FIDASIM,**data_measured}.items():
+        if 'Wavelength' not in key and value.ndim>0 and np.max(value)>norm: norm=np.max(np.array(value))
+else:
+    norm=1.
+
 fig,axes=plt.subplots(1,2)
 sum_signals=np.zeros(len(data_FIDASIM['Wavelength [nm]']))
 for key,value in data_FIDASIM.items():
     if value.ndim>=1 and 'Wavelength' not in key:
-        axes[0].plot(data_FIDASIM['Wavelength [nm]'],value,label=f'{key}',linewidth=settings.plot_linewidth,zorder=0)
+        axes[0].plot(data_FIDASIM['Wavelength [nm]'],value/norm,label=f'{key}',zorder=0)
         sum_signals+=value
         print(key)
-axes[0].plot(data_FIDASIM['Wavelength [nm]'],sum_signals,linestyle='--',label='sum',linewidth=settings.plot_linewidth,zorder=0)
-axes[0].errorbar(data_measured['Wavelength [nm]'],data_measured['Radiance [photons/(s nm m^2 sr)]'],data_measured['Uncertainty [photons/(s nm m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0.0),linewidth=settings.plot_linewidth,zorder=10)
+axes[0].plot(data_FIDASIM['Wavelength [nm]'],sum_signals/norm,linestyle='--',label='sum',zorder=0)
+axes[0].errorbar(data_measured['Wavelength [nm]'],data_measured['Radiance [photons/(s nm m^2 sr)]']/norm,data_measured['Uncertainty [photons/(s nm m^2 sr)]']/norm,label='measurements',fmt='.',color=cmap_grey(0.0),zorder=10)
 axes[0].set_xlim([657,663])
-axes[0].set_ylim([1.e15,1.e19])
+if not normalise: axes[0].set_ylim([1.e15,1.e19])
 axes[0].set_xlabel('Wavelength [nm]',fontsize=25)
 axes[0].set_ylabel('Radiance [photons/(s nm m^2 sr)]',fontsize=25)
+if normalise: axes[0].set_ylabel('Radiance [a.u.]',fontsize=25)
 axes[0].set_title('')
 axes[0].axvline(660.7,color=cmap_grey(0.0))
 axes[0].axvline(661.5,color=cmap_grey(0.0))
@@ -100,16 +115,24 @@ filepath_radial_profile_LOCUST=support.dir_output_files / 'FIDASIM' / '29034_F_0
 data_radial_TRANSP=get_FIDA(filepath_radial_profile_TRANSP)
 data_radial_LOCUST=get_FIDA(filepath_radial_profile_LOCUST)
 
-axes[1].plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='TRANSP',color=cmap_r(0),linewidth=settings.plot_linewidth,zorder=0)
-axes[1].plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],label='LOCUST',color=cmap_g(0),linewidth=settings.plot_linewidth,zorder=0)
-axes[1].errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]'],label='measurements',fmt='.',color=cmap_grey(0),linewidth=settings.plot_linewidth,zorder=10)
+if normalise:
+    norm=0.
+    for value in [data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]']]:
+        if np.max(value)>norm: norm=np.max(value)
+else:
+    norm=1.
+
+axes[1].plot(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['FIDASIM integrated intensity [photons/(s m^2 sr)]']/norm,label='TRANSP',color=cmap_r(0),zorder=0)
+axes[1].plot(data_radial_LOCUST['Radius [m]'],data_radial_LOCUST['FIDASIM integrated intensity [photons/(s m^2 sr)]']/norm,label='LOCUST',color=cmap_g(0),zorder=0)
+axes[1].errorbar(data_radial_TRANSP['Radius [m]'],data_radial_TRANSP['Integrated intensity [photons/(s m^2 sr)]']/norm,data_radial_TRANSP['Uncertainty [photons/(s m^2 sr)]']/norm,label='measurements',fmt='.',color=cmap_grey(0),zorder=10)
 axes[1].set_xlim([0.8,1.5])
-axes[1].set_ylim([0,2.e16])
+if not normalise: axes[1].set_ylim([0,2.e16])
 axes[1].set_xlabel('Radius [m]',fontsize=25)
 axes[1].set_ylabel('Integrated intensity [photons/(s m^2 sr)]',fontsize=25)
+if normalise: axes[1].set_ylabel('Integrated intensity [a.u.]',fontsize=25)
 axes[1].set_title('')
+axes[1].axvline(np.max(eq['lcfs_r']),color=settings.plot_colour_LCFS,label='LCFS')
 axes[1].legend(fontsize=20)
-axes[1].axvline(np.max(eq['lcfs_r']),linewidth=settings.plot_linewidth,color=settings.plot_colour_LCFS)
 
 plt.show()
 

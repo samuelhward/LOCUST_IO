@@ -21,6 +21,7 @@ notes:
 
 import numpy as np
 import context 
+import copy
 from classes.output_classes.distribution_function import Distribution_Function as dfn
 from classes.input_classes.equilibrium import Equilibrium as equi
 from classes.output_classes.particle_list import Final_Particle_List as fpl
@@ -53,24 +54,34 @@ fill=False
 number_bins=10
 vminmax=False#[0.1e15,6.e15]
 legend=True
+legend_fontsize=15
 linewidth=3
-title='_'
-xlabel='_'
-ylabel='_'
-residual=True #toggle plotting f(E) or f(E)-mean{f(E)}
-normalise=True
+title=''
+xlabel=''
+ylabel=''
+residual=False #toggle plotting f(E) or f(E)-mean{f(E)}
+normalise_inject=False
+normalise=False
 
-def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,residual=False):
+def plot_dfns(axes=['E'],normalise_inject=False,normalise=True,E_inject=62000,time_slice_index=-1,residual=False,return_dfns=True,same_base=True):
     """
     plots the dfns but uses lots of global variables as free variables e.g. figs,ax etc. defined outside this function scope
 
     args:
-        normalise - toggle whether to normalise all dfns to injection energy
+        axes - 
+        normalise_inject - toggle whether to normalise all dfns to injection energy
+        normalise - toggle whether to normalise all dfns compared to average
         E_inject - specify injection energy
         time_slice_index - index of time slice to plot
         residual - toggle plotting DFNs as residuals of average
+        return_dfns - toggle whether to return dict of integrated and plotted dfns
+        same_base - interpolate/plot DFNs on same axis
     notes:
     """
+
+    if residual or normalise or same_base: average_DFN,average_axes=dfn_find_average(axes=axes,normalise_inject=normalise_inject)
+
+    if return_dfns: DFNs={}
 
     #plot single time slice in top level
     for time_slice in [time_slices[time_slice_index]]: #XXX hack to plot final time slice
@@ -91,14 +102,14 @@ def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,resi
                 BPCAP=output_TRANSP['BPCAP'][BPCAP_index]
                 DFN['dfn']/=BPCAP
 
-                if normalise:
+                if normalise_inject:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
                     DFN['dfn']/=DFN.dfn_integrate(energy=False)['dfn'][inject_index]
             else:
                 DFN=dfn(ID=ID,time_string='time = {}ms'.format(int(1000*(time_slice-tinit))),data_format=data_format,filename=file_this_time_slice)
                 #N=DFN.transform(axes=['N'])['dfn']
                 
-                if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise the ASCOT dfn to the correct power deposition
+                if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise_inject the ASCOT dfn to the correct power deposition
 
                     beam_power=1. #desired beam power
                     ASCOT_beam_depo_data_format=ASCOT_beam_depo_data_formats[counter_code]
@@ -115,44 +126,54 @@ def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,resi
                     PFC_hits=np.where(ffppll['status_flag']==ffppll['status_flags']['wall_collision'])[0]
                     print(f"PFC flux {file_this_time_slice}={100.*np.sum(ffppll['E'][PFC_hits]*ffppll['weight'][PFC_hits])*constants.charge_e*beam_power/(Pdep_ASCOT*time_slice)}%")
 
-                if normalise:
+                if normalise_inject:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
                     DFN['dfn']/=DFN.transform(axes=['E'])['dfn'][inject_index]
 
             transform=True #have we pre-integrated the distribution function? not yet
-            #ax.set_xlim(0,100)
-            #ax.set_ylim(-1.1,1.1)
 
-            if residual: 
+            if residual or same_base: 
                 if code=='TRANSP':
                     DFN=DFN.dfn_integrate(energy=False)
                 else: 
                     DFN=DFN.transform(axes=axes)
+                transform=False
+    
                 if len(axes)==1: interpolator=processing.utils.interpolate_1D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
                 elif len(axes)==2: interpolator=processing.utils.interpolate_2D(*[DFN[axis] for axis in axes],DFN['dfn'],type='RBF',function='linear')
                 else:
                     print("ERROR: axes must be 1D or 2D!\nreturning\n")
                     return
                 DFN['dfn']=interpolator(*average_axes)
-
-                DFN['dfn']=DFN['dfn']-average_DFN
-                transform=False
+                for axis,average_axis in zip(axes,average_axes):
+                    DFN[axis]=copy.deepcopy(average_axis)
+                if residual:
+                    DFN['dfn']=DFN['dfn']-average_DFN
         
             DFN['E']/=1000. #get axes in keV - .plot integrates the DFNs using .transform with 'dE' so should not affect plotting
+            if normalise: DFN['dfn']/=average_DFN #measure DFN against un-normalised average
             mesh=DFN.plot(axes=axes,fig=fig,ax=ax,LCFS=LCFS,limiters=limiters,real_scale=real_scale,fill=fill,colmap=cmap,number_bins=number_bins,vminmax=vminmax,transform=transform,label=DFN.ID,line_style=line_style)
 
             if True and len(axes)>1:
                 cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
-        
-        if residual and len(axes)==1: #plot 0 mark and dfn average
-            ax.axhline(0.)
-            ax_av=ax.twinx()
-            ax_av.plot(*[np.array(average_ax)/1000 for average_ax in average_axes],average_DFN,'k--',label='average $f$')
-            ax_av.tick_params(axis='y', labelcolor='k')
-            ax_av.set_ylabel('f',color='k') 
-            ax_av.spines['right'].set_position(('outward', 0))
 
-        ax.legend(fontsize=20)
+            if return_dfns: DFNs[ID]=DFN['dfn']
+
+        if residual and len(axes)==1: #plot 0 mark and dfn average
+            ax.axhline(0.,color='k',linestyle='-',label='$f_{\mathrm{mean}}$')
+            ax_av=ax.twinx()
+            if normalise: average_DFN/=np.max(average_DFN)
+            ax_av.plot(*[average_ax/1000 for average_ax in average_axes],average_DFN,'k-',label='average $f$')
+            ax_av.tick_params(axis='y', labelcolor='k')
+
+            label_mean='$f_{\mathrm{mean}}$'
+            if normalise: label_mean+=' [a.u.]'
+            ax_av.set_ylabel(label_mean,color='k') 
+            ax_av.spines['right'].set_position(('outward', 0))
+            ax.set_ylim(-0.15,0.15)
+
+        ax.legend(fontsize=legend_fontsize,loc='lower center',ncol=2)
+        ax.set_xlim(0,67.)
         
         if title:
             ax.set_title(title,fontsize=25)
@@ -161,7 +182,9 @@ def plot_dfns(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1,resi
         if ylabel:
             ax.set_ylabel(ylabel,fontsize=25)
 
-def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=-1):
+    if return_dfns: return DFNs
+
+def dfn_find_average(axes=['E'],normalise_inject=False,E_inject=62000,time_slice_index=-1):
     
     DFNs=[]
     DFNs_axes=[]
@@ -183,7 +206,7 @@ def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=
                 BPCAP=output_TRANSP['BPCAP'][BPCAP_index]
                 DFN['dfn']/=BPCAP
 
-                if normalise:
+                if normalise_inject:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
                     DFN['dfn']/=DFN.dfn_integrate(energy=False)['dfn'][inject_index]
                 
@@ -192,7 +215,7 @@ def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=
             else:
                 DFN=dfn(ID=ID,time_string='time = {}ms'.format(int(1000*(time_slice-tinit))),data_format=data_format,filename=file_this_time_slice)
                 
-                if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise the ASCOT dfn to the correct power deposition
+                if code=='ASCOT': #grab the ASCOT beam deposition froom the inistate to renormalise_inject the ASCOT dfn to the correct power deposition
 
                     beam_power=1. #desired beam power
                     ASCOT_beam_depo_data_format=ASCOT_beam_depo_data_formats[counter_code]
@@ -204,7 +227,7 @@ def dfn_find_average(axes=['E'],normalise=False,E_inject=62000,time_slice_index=
                     DFN['dfn']*=beam_power/Pdep_ASCOT 
                     DFN['V_pitch']*=-1
 
-                if normalise:
+                if normalise_inject:
                     inject_index=np.abs(DFN['E']-E_inject).argmin()
                     DFN['dfn']/=DFN.transform(axes=['E'])['dfn'][inject_index]
 
@@ -256,6 +279,17 @@ run='W03'
 ################################# BBNBI depositions
 
 #'''
+
+dimensions.append('2D') #append a run's metadata
+codes.append('ASCOT')
+extra_infos.append('BBNBI_birth_GC')
+data_formats.append('ASCOT')
+cmaps.append(cmap_b)
+ASCOT_beam_depo_data_formats.append('ASCOT_FO')
+ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
+IDs.append('ASCOT GC')
+line_styles.append('dashed')
+
 dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
 extra_infos.append('BBNBI_birth_FO')
@@ -265,16 +299,6 @@ ASCOT_beam_depo_data_formats.append('ASCOT_FO') #if this is an ASCOT run, append
 ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
 IDs.append('ASCOT FO')
 line_styles.append('solid')
-
-dimensions.append('2D') #append a run's metadata
-codes.append('ASCOT')
-extra_infos.append('BBNBI_birth_GC')
-data_formats.append('ASCOT')
-cmaps.append(cmap_r)
-ASCOT_beam_depo_data_formats.append('ASCOT_FO')
-ASCOT_beam_depo_filenames.append(pathlib.Path('ASCOT') / (shot+run) / 'input.particles_BBNBI_FO_reduced')
-IDs.append('ASCOT GC')
-line_styles.append('dashed')
 
 dimensions.append('2D') #append a run's metadata
 codes.append('LOCUST')
@@ -293,7 +317,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST GC trunc')
+IDs.append('LOCUST GC truncated')
 line_styles.append('dashdot')
 
 dimensions.append('3D') #append a run's metadata
@@ -303,7 +327,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST GC ASCOTlnL')
+IDs.append('LOCUST GC ASCOT ln($\Lambda$)')
 line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
@@ -313,7 +337,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST GC ASCOTlnL trunc')
+IDs.append('LOCUST GC ASCOT ln($\Lambda$) truncated')
 line_styles.append('dashdot')
 
 dimensions.append('3D') #append a run's metadata
@@ -343,7 +367,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST FO ASCOT lnL')
+IDs.append('LOCUST FO ASCOT ln($\Lambda$)')
 line_styles.append('solid')
 
 dimensions.append('3D') #append a run's metadata
@@ -353,12 +377,12 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST FO truncated ASCOT lnL')
+IDs.append('LOCUST FO ASCOT ln($\Lambda$) truncated')
 line_styles.append('dotted')
 
 #'''
 
-################################# NUBEAM depositions
+################################# NUBEAM depositions (monoenergetic)
 '''
 dimensions.append('2D') #append a run's metadata
 codes.append('ASCOT')
@@ -410,13 +434,13 @@ files=[] #list of lists, each list is a set of timeslices for a given run
 for dimension,extra_info,code in zip(dimensions,extra_infos,codes):
     files.append(get_filepaths_single(shot=shot,run=run,dimension=dimension,extra_info=extra_info,code=code))
 
-
 fig,(ax)=plt.subplots(1)
-title=f'1W BBNBI injection F(E) at 100ms - MAST #{shot}{run}'
+title=f'BBNBI injection $f(E)$ at 100ms - MAST #{shot}{run}' if normalise else f'1W BBNBI injection $F(E)$ at 100ms - MAST #{shot}{run}'
 xlabel='Energy [keV]'
-ylabel='Density [#/eV]'
-if residual: average_DFN,average_axes=dfn_find_average(axes=axes,normalise=normalise)
-plot_dfns(axes=axes,normalise=normalise,residual=residual)
+if residual: ylabel+=' residual'
+if normalise: ylabel+= ' [a.u.]' 
+else: ylabel += ' [#/eV]'
+W03_DFNS=plot_dfns(axes=axes,normalise_inject=normalise_inject,normalise=normalise,residual=residual)
 plt.show()
 
 ################################################################## W04
@@ -430,6 +454,7 @@ cmaps=[]
 ASCOT_beam_depo_data_formats=[]
 ASCOT_beam_depo_filenames=[]
 IDs=[] #some more information to put as plot legend or misc
+line_styles=[]
 time_slices=np.array([1,2,3,4,5,10,20,40,70,100])
 shot='29034'
 run='W04'
@@ -481,7 +506,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST GC ASCOT lnL')
+IDs.append('LOCUST GC ASCOT ln($\Lambda$)')
 line_styles.append('dashed')
 
 dimensions.append('3D') #append a run's metadata
@@ -491,7 +516,7 @@ data_formats.append('LOCUST')
 cmaps.append(cmap_g_)
 ASCOT_beam_depo_data_formats.append(None)
 ASCOT_beam_depo_filenames.append(None)
-IDs.append('LOCUST GC truncated ASCOT lnL')
+IDs.append('LOCUST GC ASCOT ln($\Lambda$) truncated')
 line_styles.append('dashdot')
 
 #'''
@@ -506,11 +531,15 @@ for dimension,extra_info,code in zip(dimensions,extra_infos,codes):
     files.append(get_filepaths_single(shot=shot,run=run,dimension=dimension,extra_info=extra_info,code=code))
 
 fig,(ax)=plt.subplots(1)
-title=f'1W NUBEAM injection F(E) at 100ms - MAST #{shot}{run}'
+title=f'NUBEAM injection $F(E)$ at 100ms - MAST #{shot}{run}' if normalise else f'1W NUBEAM injection $F(E)$ at 100ms - MAST #{shot}{run}'
 xlabel='Energy [keV]'
-ylabel='Density [#/eV]'
-if residual: average_DFN,average_axes=dfn_find_average(axes=axes,normalise=normalise)
-plot_dfns(axes=axes,normalise=normalise,residual=residual)
+ylabel='Density'
+
+if residual: ylabel+=' residual'
+if normalise: ylabel+= ' [a.u.]' 
+else: ylabel += ' [#/eV]'
+
+W04_DFNS=plot_dfns(axes=axes,normalise_inject=normalise_inject,normalise=normalise,residual=residual)
 plt.show()
 
 ##################################################################
@@ -527,6 +556,69 @@ IDs.append()
 line_styles.append()
 '''
 
+##################################################################
+#perform KS tests
+
+#requires residual=False,normalise=False,normalise_inject=False
+
+KS_pairs_W03=[
+            ['LOCUST GC','LOCUST FO'],
+            ['LOCUST GC','ASCOT GC'],
+            ['LOCUST FO','ASCOT FO'],
+            ['LOCUST FO ASCOT ln($\Lambda$)','ASCOT FO'],
+            ['LOCUST GC ASCOT ln($\Lambda$)','ASCOT GC'],
+            ['LOCUST FO ASCOT ln($\Lambda$) truncated','ASCOT FO'], #check KS test with this
+            ['LOCUST GC ASCOT ln($\Lambda$) truncated','ASCOT GC'], #check KS test with this
+            ]
+
+KS_pairs_W04=[
+            ['LOCUST GC','ASCOT GC'],
+            ['LOCUST GC ASCOT ln($\Lambda$)','ASCOT GC'],
+            ['LOCUST GC','TRANSP GC'],
+            ['LOCUST GC ASCOT ln($\Lambda$) truncated','ASCOT GC'], #check KS test with this
+            ]
+
+'''
+number_markers={}
+number_markers['W03']={}
+number_markers['W04']={}
+number_markers['W03']['ASCOT']=20000    
+number_markers['W04']['ASCOT']=70507
+
+W03 
+
+#do not care about NUBEAM_birth* since single energy 
+BBNBI_birth_FO=32768 
+BBNBI_birth_FO_ASCOTlnL=32768 
+BBNBI_birth_FO_ASCOTlnL_trunc=65536 
+BBNBI_birth_FO_trunc=4194304 
+BBNBI_birth_GC=524288 
+BBNBI_birth_GC_ASCOTlnL=32768 
+BBNBI_birth_GC_ASCOTlnL_trunc=65536 
+BBNBI_birth_GC_trunc=1048576  
+
+W04
+
+NUBEAM_birth_GC=65536 
+NUBEAM_birth_GC_ASCOTlnL=32768 
+NUBEAM_birth_GC_ASCOTlnL_trunc=65536 
+NUBEAM_birth_GC_trunc=65536 
+'''
+
+for alpha in [0.1,0.05,0.01,0.001]:
+    
+    print(f'********alpha={alpha}********\n')
+    
+    for run_dfns,run_pairs,run_name, in zip([W03_DFNS,W04_DFNS],[KS_pairs_W03,KS_pairs_W04],['W03','W04']):
+    
+        print(f'****{run_name} KS tests****')
+        for pair in run_pairs:
+            print(pair)
+            D,P,reject=processing.utils.KS_test(70507,70507,run_dfns[pair[0]],run_dfns[pair[1]],alpha=alpha)
+            print(f'D={D}')
+            print(f'P={P}')
+            print(f'reject? = {reject}')
+            print('\n')
 
 #################################
 
