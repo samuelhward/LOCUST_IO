@@ -23,6 +23,7 @@ try:
     import pathlib
     import copy
     import random
+    import os
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1) 
@@ -163,7 +164,7 @@ def angle_pol(R_major,R,Z,Z_major=0.):
     """
 
     angle=np.arctan2(Z-Z_major,R-R_major)
-    if angle<0: angle+=2.*np.pi
+    angle=np.mod(2.*np.pi+angle,2.*np.pi)
     return angle 
 
 def minor_radius(R_major,R,Z,Z_major=0.):
@@ -1065,6 +1066,11 @@ def KS_test(n1,n2,data1,data2,alpha=None):
         alpha - optional confidence interval for rejecting null hypothesis
     notes:
         data1, data2 assumed to be against same axis
+        the P that is returned is probability that, for this data1,data2,n1,n2, you would ever observe a D_observe>D calculated here
+        i.e. what is the probability that you would ever observe a D at least as big as the one this test has calculated
+        so if P<alpha we reject (same as if D>D_crit) 
+    returns:
+        KS statistic D, P, reject bool
     """
 
     #table of critical D coefficients given confidence interval alpha
@@ -1089,6 +1095,8 @@ def KS_test(n1,n2,data1,data2,alpha=None):
 
     def D_crit(n_1,n_2,alpha,analytical=True):
         """
+        calculate critical D such that P(D_crit<D)=alpha
+
         args:
             n1 - sample size
             n2 - sample size
@@ -1096,7 +1104,7 @@ def KS_test(n1,n2,data1,data2,alpha=None):
             analytical - toggle whether to return formulaic evaluation or table 
         notes:
             this is an approximation - can use binary search to iteratively calculate this value using p() below
-            reject null if D>D_crit given alpha i.e. if D is in upper alpha% of D given null
+            reject null if D_crit < D given alpha i.e. if D that is observed is in upper alpha% of possible D given null
         """
 
         if analytical:
@@ -1106,14 +1114,16 @@ def KS_test(n1,n2,data1,data2,alpha=None):
 
     def p(n1,n2,D):
         """
-        return probability that D_crit(alpha)>D_observed for n1,n2 where D_crit is KS statistic in top alpha% given null i.e. p = probability we measure this conclusion result given Null
+        return probability P(D<D_observed) for n1,n2
         
         args:
             n1 - sample size
             n2 - sample size
             D - KS statistic
         notes:
+            essentially this calculates the chance you would ever observe a KS statistic greater than D
             this parameter is irrespective of the shape of the empirical distribution functions
+            ideally need n~>10000
         """
 
         N=(n1*n2)/(n1+n2)
@@ -1135,6 +1145,41 @@ def KS_test(n1,n2,data1,data2,alpha=None):
         reject=True if D>D_crit(n1,n2,alpha) else False
 
     return D,P,reject
+
+def reversed_fp_iter(fp, buf_size=8192):
+    """a generator that returns the lines of a file in reverse order
+    ref: https://stackoverflow.com/a/23646049/8776239
+    """
+    segment = None  # holds possible incomplete segment at the beginning of the buffer
+    offset = 0
+    fp.seek(0, os.SEEK_END)
+    file_size = remaining_size = fp.tell()
+    while remaining_size > 0:
+        offset = min(file_size, offset + buf_size)
+        fp.seek(file_size - offset)
+        buffer = fp.read(min(remaining_size, buf_size))
+        remaining_size -= buf_size
+        lines = buffer.splitlines(True)
+        # the first line of the buffer is probably not a complete line so
+        # we'll save it and append it to the last line of the next buffer
+        # we read
+        if segment is not None:
+            # if the previous chunk starts right from the beginning of line
+            # do not concat the segment to the last line of new chunk
+            # instead, yield the segment first
+            if buffer[-1] == '\n':
+                #print 'buffer ends with newline'
+                yield segment
+            else:
+                lines[-1] += segment
+                #print 'enlarged last line to >{}<, len {}'.format(lines[-1], len(lines))
+        segment = lines[0]
+        for index in range(len(lines) - 1, 0, -1):
+            if len(lines[index]):
+                yield lines[index]
+    # Don't yield None if the file was empty
+    if segment is not None:
+        yield segment
 
 #################################
  

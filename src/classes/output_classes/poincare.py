@@ -84,7 +84,6 @@ def read_poincare_LOCUST(filepath,**properties):
 
     for _ in range(6):
         file.read_record(dtype=np.byte)
-    input_data['phi']=np.linspace(0,2.*np.pi,input_data['nTP'])/input_data['npln']
 
     input_data['phi']=np.linspace(0,2.*np.pi,input_data['nTP'])/input_data['npln']
 
@@ -188,7 +187,7 @@ class Poincare(classes.base_output.LOCUST_output):
         
         if ax_flag is False: #if user has not externally supplied axes, generate them
             ax = fig.add_subplot(111)
-
+            
         ax.set_title(self.ID)
         X=self['R'] #make a mesh
         Y=self['Z']
@@ -231,9 +230,14 @@ class Poincare(classes.base_output.LOCUST_output):
             *args - positional args to pass to .plot()
         """
 
-        fig = plt.figure() #if user has not externally supplied figure, generate
-        phi=np.linspace(0.,2.*np.pi)
-        animation=FuncAnimation(fig,self.plot,frames=phi,fargs=[*args],repeat=True,interval=1)
+        fig=plt.figure() #if user has not externally supplied figure, generate
+        phi=self['phi']
+        
+        def plot_func(self,*args,**kwargs): #decorate plot method to clear supplied axes
+            if kwargs['ax']: kwargs['ax'].cla()            
+            return self.plot(*args,**kwargs)
+
+        animation=FuncAnimation(fig,plot_func,frames=phi,fargs=[*args],repeat=True,interval=1)
         plt.show()
         if save: animation.save('poincare_animation.gif',writer='pillow')
 

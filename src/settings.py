@@ -118,7 +118,7 @@ matplotlib_rc['font'] = {
                         'size'       :  20
                         }
 matplotlib_rc['lines'] = {
-                        'linewidth' : 2.5,
+                        'linewidth' : 2.,
                         'linestyle' : 'solid'
                         }
 matplotlib_rc['axes'] = {    
@@ -133,7 +133,7 @@ matplotlib_rc['figure'] = {
 matplotlib_rc['legend'] = {
                         'loc' : 'best'    
                         }
-for setting_type,settings in matplotlib_rc.items(): matplotlib.rc(setting_type, **settings) #enable settings
+for setting_type,setting in matplotlib_rc.items(): matplotlib.rc(setting_type, **setting) #enable settings
 
 #system environment
 try:

@@ -43,7 +43,10 @@
 | `RNGTYP`=1    | RNG generator = CURAND                                                                                                                       |
 | `RNGTYP`=1    | RNG generator = SDK Mersenne Twister                                                                                                         |
 | `RNGTYP`=1    | RNG generator = F90 intrinsic                                                                                                                |
-| `IDFTYP`      | Dfn. storage type.                                                                                                                           |
+| `IDFTYP=1`    | store DFN in phase,V,pitch,R,Z space (default)                                                                                               |
+| `IDFTYP=2`    | store DFN in V,P_phi,R,Z space                                                                                                               |
+| `IDFTYP=3`    | store DFN in direction,V,P_phi,mu, space                                                                                                     |
+| `IDFTYP=4`    | store DFN in phase,V,pitch,poloidal cell,psi                                                                                                 |
 | `FAVG`        | Used for checking orbit drift (~0.1)                                                                                                         |
 | `NO_FLOW`     | Disable toroidal flow                                                                                                                        |
 | `BP`          | Full double precision                                                                                                                        |

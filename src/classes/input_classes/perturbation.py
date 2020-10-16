@@ -997,7 +997,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field_R_real',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,gridlines=False,label='',ax=False,fig=False):
+    def plot(self,key='dB_field',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,gridlines=False,label='',ax=False,fig=False):
         """
         plots a perturbation
         
@@ -1081,7 +1081,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                 if key not in self.data.keys():
 
-                    R_poloidal,Z_poloidal=np.meshgrid(perturbations[0]['R_1D'],perturbations[0]['Z_1D']) 
+                    R_poloidal,Z_poloidal=np.meshgrid(self['R_1D'],self['Z_1D']) 
                     R_flat,Z_flat=R_poloidal.flatten(),Z_poloidal.flatten()
                     phi_flat=np.full(len(R_flat),0.) #XXX this zero should be phi parameter for tomographic slices
 
@@ -1143,7 +1143,7 @@ class Perturbation(classes.base_input.LOCUST_input):
             elif axes==['phi','R']:
 
                 R=self['R_1D'] #make a mesh
-                phi = self['phi'] if self['phi'] else np.linspace(0.,2.*np.pi,100) 
+                phi = self['phi'] if 'phi' in self.data.keys() else np.linspace(0.,2.*np.pi,100) 
                 nR,nphi=len(R),len(phi)
                 phi,R=np.meshgrid(phi,R)
                 R_flat,phi_flat=R.flatten(),phi.flatten()

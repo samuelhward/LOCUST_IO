@@ -184,6 +184,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         dZ                                                              #Z bin width
         nV_pitch                                                        #number of points in V_phi/V dimension
         dV_pitch                                                        #pitch bin width
+        dP_phi                                                          #toroidal canonical angular momentum bin width
+        dmu                                                             #magnetic moment bin width
         nP                                                              #poloidal gyro-phase cell boundaries
         dP                                                              #special dimension bin width - simulation specific (e.g. gyrophase bin width)
         nPP                                                             #number of points in Pphi dimension
@@ -226,6 +228,8 @@ Since this package aims to bridge the gap between various file formats for diffe
         R                                                               #R dimension of Dfn grid
         Z                                                               #Z dimension of Dfn grid
         V_pitch                                                         #pitch dimension of Dfn grid
+        P_phi                                                           #toroidal canonical angular momentum
+        dmu                                                             #magnetic moment
         P                                                               #special dimension - simulation specific (e.g. gyrophase)
         Ab                                                              #fast ion masses
         Zb                                                              #trace particle Z

@@ -123,9 +123,9 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['nV']=file.read_ints() #V
 
         #nPP-1
-        input_data['nPP']=file.read_ints() #PPh
-        #nMU-1
-        input_data['nMU']=file.read_ints() #MU
+        input_data['nP_phi']=file.read_ints() #PPh
+        #nmu-1
+        input_data['nmu']=file.read_ints() #MU
         
         if properties['EBASE']:
             #dEFh
@@ -135,9 +135,9 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['dV']=file.read_reals(dtype=np.float32) 
         
         #dPPh
-        input_data['dPPh']=file.read_reals(dtype=np.float32) #dPPh    = P_phi1h - P_phi0h
+        input_data['dP_phi']=file.read_reals(dtype=np.float32) #dPPh    = P_phi1h - P_phi0h
         #dMUh
-        input_data['dMUh']=file.read_reals(dtype=np.float32)
+        input_data['dmu']=file.read_reals(dtype=np.float32)
 
         if properties['EBASE']:
             #EF+dEF/2 (nV long)
@@ -147,38 +147,37 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['V']=file.read_reals(dtype=np.float32)
 
         #PP+dPP/2 (nPP long)
-        input_data['PP']=file.read_reals(dtype=np.float32) #PPhi
-        #MU+MU/2 (nMU long)
-        input_data['MU']=file.read_reals(dtype=np.float32)
+        input_data['P_phi']=file.read_reals(dtype=np.float32) #PPhi
+        #MU+MU/2 (nmu long)
+        input_data['mu']=file.read_reals(dtype=np.float32)
         
         #for now these blocks do the same thing, but useful to leave as separate for now
         if properties['wtot']: #cumulative energy inventory (total energy injected so far)
             if properties['EBASE']:
-                #Fh_norm (nEF by nPP by nMU)
+                #Fh_norm (nEF by nPP by nmu)
                 input_data['dfn']=file.read_reals(dtype=np.float32) #Final combined DFn. grid
             else:
-                #Fh_norm (nV by nPP by nMU)
+                #Fh_norm (nV by nPP by nmu)
                 input_data['dfn']=file.read_reals(dtype=np.float32) #Final combined DFn. grid
         else:
-            #Fh (NOTE check dimensions e.g. nV by nPP by nMU)
+            #Fh (NOTE check dimensions e.g. nV by nPP by nmu)
             input_data['dfn']=file.read_reals(dtype=np.float32) #Final combined DFn. grid
     
-        if Fh_s:
-            #Fh_s (nV by nPP by nMU) if Fh_s present
+        if True:#Fh_s:
+            #Fh_s (nV by nPP by nmu) if Fh_s present
             input_data['dfn_s']=file.read_reals(dtype=np.float32) #Dfn. M.C. error
-        if properties['Jh']:
+        if properties['J']:
             #Jh
-            input_data['Jh']=file.read_reals(dtype=np.float64) #Jacobian for IDFTYP=3 
-        if properties['Jh_s']:
+            input_data['J']=file.read_reals(dtype=np.float64) #Jacobian for IDFTYP=3 
+        if properties['J_s']:
             #Jh_s
-            input_data['Jh_s']=file.read_ints(dtype=np.float64) #Jacobian error for IDFTYP=3
+            input_data['J_s']=file.read_ints(dtype=np.float64) #Jacobian error for IDFTYP=3
             if properties['cpu_time']:
                 #cpuTime
                 input_data['cpu_time']=file.read_reals(dtype=np.float64) #this may not be present in the file
-    
 
-        #extra derived data
-        #input_data['dfn_index']=np.array(['E','V','P','MU']) #reference for names of each dfn dimension
+        input_data['ddir']=np.array([1.]) #first dimension is just sign, so jacobian is unity
+        input_data['dir']=np.array([-1,1.]) #first dimension is just sign, so jacobian is unity
 
     else:
 
@@ -189,9 +188,9 @@ def read_distribution_function_LOCUST(filepath,**properties):
 
         if IDFTYP==4:
             #nPSIF-1
-            input_data['nPSIF']=file.read_ints() #number of surface contours
+            input_data['npsi']=file.read_ints() #number of surface contours
             #nPOLF-1
-            input_data['nPOLF']=file.read_ints() #number of poloidal cells
+            input_data['npol']=file.read_ints() #number of poloidal cells
         else:
             #nF-1
             input_data['nR']=file.read_ints() #R and Z dimension of the distribution function grid (equal here)
@@ -202,7 +201,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['nV_pitch']=file.read_ints() #Vphi/V cell boundaries
         else:
             #nPP-1
-            input_data['nPP']=file.read_ints() #PPhi          
+            input_data['nP_phi']=file.read_ints() #PPhi          
 
         if properties['EBASE']:
             #nE-1
@@ -212,7 +211,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['nV']=file.read_ints() #V        
         
         #nP-1
-        input_data['nP']=file.read_ints() #poloidal gyro-phase cell boundaries
+        input_data['nphase']=file.read_ints() #poloidal gyro-phase cell boundaries
         
         if properties['ITER']: #NOTE these blocks essentially do the same thing right now
 
@@ -240,18 +239,11 @@ def read_distribution_function_LOCUST(filepath,**properties):
             for line in range(int(input_data['nP'])):
                 input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
-        if properties['EBASE']:
-            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
-            input_data['dfn']*=0.5 #convert from same pitch dimension as TRANSP (per dSolidAngle/4pi) to per unit pitch 
-            input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
-            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
-        else:
-            input_data['dfn']=np.array(input_data['dfn']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
-            input_data['dfn_s']=np.array(input_data['dfn_s']).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')
-            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
-    
-        input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z - means plotting functions can assume index order x,y
+        if input_data['IDFTYP']==2:
+            input_data['dfn']=np.swapaxes(input_data['dfn'],2,3) #swap final order to ...r,z - means plotting functions can assume index order x,y
+        
         nEQ=file.read_ints() 
+
         input_data['nR_1D']=np.array(nEQ[0]) #2D field grid R dimension
         input_data['nZ_1D']=np.array(nEQ[1]) #2D field grid Z dimension
    
@@ -298,7 +290,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
         else:
 
             #PP+dPP/2 (nPP long)
-            input_data['PP']=file.read_reals(dtype=np.float32)
+            input_data['P_phi']=file.read_reals(dtype=np.float32)
 
         if properties['EBASE']:
             #E+dE/2 (nE long)
@@ -360,17 +352,49 @@ def read_distribution_function_LOCUST(filepath,**properties):
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
             input_data['dP']=np.array(2.*constants.pi)
-                
+        
+    #some post processing
+    if input_data['IDFTYP']==1:
+        input_data['dfn']*=0.5 #convert from same pitch dimension as TRANSP (per dSolidAngle/4pi) to per unit pitch 
         if properties['EBASE']:
             input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
+            for key in ['dfn','dfn_s']:
+                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         else:
             input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
-   
+            for key in ['dfn','dfn_s']:
+                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
+        input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z - means plotting functions can assume index order x,y
+
         input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
         input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
         input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
         input_data['dV']=np.array(input_data['V'][1]-input_data['V'][0]) #velocity bin width
         input_data['dE']=np.array(np.abs(input_data['E'][1]-input_data['E'][0])) #energy bin width
+
+    elif input_data['IDFTYP']==2:
+        if properties['EBASE']:
+            input_data['dfn_index']=np.array(['E','P_phi','R','Z']) #reference for names of each dfn dimension
+        else:
+            input_data['dfn_index']=np.array(['V','P_phi','R','Z']) #reference for names of each dfn dimension
+
+    elif input_data['IDFTYP']==3:
+        if properties['EBASE']:            
+            for key in ['dfn','dfn_s','J','J_s']:
+                input_data[key]=np.array(input_data[key]).reshape(2,int(input_data['nE']),int(input_data['nP_phi']),int(input_data['nmu']),order='F')  
+            input_data['dfn_index']=np.array(['dir','E','P_phi','mu']) #reference for names of each dfn dimension
+        else:
+            input_data['dfn_index']=np.array(['dir','V','P_phi','mu']) #reference for names of each dfn dimension
+            for key in ['dfn','dfn_s','J','J_s']:
+                input_data[key]=np.array(input_data[key]).reshape(2,int(input_data['nV']),int(input_data['nP_phi']),int(input_data['nmu']),order='F')
+
+    elif input_data['IDFTYP']==4:
+        if properties['EBASE']:
+            input_data['dfn_index']=np.array(['P','E','V_pitch','pol','psi']) #reference for names of each dfn dimension
+        else:
+            input_data['dfn_index']=np.array(['P','V','V_pitch','pol','psi']) #reference for names of each dfn dimension
      
     file.close()
 
@@ -562,7 +586,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 self.data_format=data_format #add to the member data
                 self.filename=filename
                 self.filepath=support.dir_output_files / filename                
-                for variable, default_value in zip(['ITER','wtot','WIPE','TEST','EBASE','dfn_s','Jh','Jh_s','cpu_time'],[True,False,False,False,True,True,True,True,True]): #default properties settings
+                for variable, default_value in zip(['ITER','wtot','WIPE','TEST','EBASE','dfn_s','J','J_s','cpu_time'],[True,False,False,False,True,True,True,True,True]): #default properties settings
                     if variable not in properties:
                         properties[variable]=default_value
                 self.properties={**properties}
@@ -727,9 +751,6 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 ax.set_xticks(X) #set axes ticks
                 ax.set_yticks(Y)
 
-                
-                    
-
                 Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
 
                 if fill:
@@ -794,160 +815,182 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             dimension P is meaningless in EBASE mode 
 
         axes options:
-            R,Z - integrate over pitch, gyrophase and velocity [m]^-3
-            E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
-            E - [eV]^-1 
-            R - [m]^-3
-            Z - [m]^-3
-            V_pitch - [dPitch]^-1  
-            N - total # 
+            IDFTYP==1
+                R,Z - integrate over pitch, gyrophase and velocity [m]^-3
+                E,V_pitch - integrate over space and transform to [eV]^-1[dpitch]^-1 
+                E - [eV]^-1 
+                R - [m]^-3
+                Z - [m]^-3
+                V_pitch - [dPitch]^-1  
+                N - total # 
             list of indices and slices
         """
 
         dfn=copy.deepcopy(self) #make deep copy here since functions designed to repeatedly take fresh DFNs would otherwise permanently change it
 
-        #begin list of specific options
 
-        if dfn.properties['EBASE'] is True: #if LOCUST dfn is against energy
+        #general option
+        if len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+            dfn['dfn']=dfn['dfn'][tuple(axes)]
+            #XXX need to then reset dfn['nV'],dfn['R'],dfn['dfn_index'] etc data here?
 
-            if axes==['R','Z']:
-                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
-                for counter in range(3): #sum
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+        else:
 
-            elif axes==['E','V_pitch']:
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
-                #then need to integrate over the unwanted coordinates
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+            #begin list of specific options
 
-            elif axes==['E']:
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
-                dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
-                
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over R
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over V_pitch
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+            if dfn['IDFTYP']==1:
 
-            elif axes==['R']:
-                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
-                for counter in range(3): #sum over gyrophase, pitch and energy
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+                if dfn.properties['EBASE'] is True: #if LOCUST dfn is against energy
 
-            elif axes==['Z']:
-                dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
-                for counter in range(3): #sum over gyrophase, pitch and energy
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over R
+                    if axes==['R','Z']:
+                        dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                        for counter in range(3): #sum
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
 
-            elif axes==['V_pitch']:
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dE']
-                #then need to integrate over the unwanted coordinates
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over E
+                    elif axes==['E','V_pitch']:
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
+                        #then need to integrate over the unwanted coordinates
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
 
-            elif axes==['N']:
-                #applying full Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
-                for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
+                    elif axes==['E']:
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']
+                        dfn['dfn']*=dfn['dV_pitch'] #integrate over pitch
+                        
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over R
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over V_pitch
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
 
-            #general option
-            elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
-                dfn['dfn']=dfn['dfn'][tuple(axes)]
-                #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
-            else:
-                print("ERROR: dfn_transform given invalid axes argument: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
+                    elif axes==['R']:
+                        dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                        for counter in range(3): #sum over gyrophase, pitch and energy
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
-        else: #if LOCUST dfn is against velocity
+                    elif axes==['Z']:
+                        dfn['dfn']*=dfn['dE']*dfn['dV_pitch'] #integrate
+                        for counter in range(3): #sum over gyrophase, pitch and energy
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over R
 
-            if axes==['R','Z']:
-                #apply velocity space Jacobian
-                for v in range(len(dfn['V'])):
-                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+                    elif axes==['V_pitch']:
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dE']
+                        #then need to integrate over the unwanted coordinates
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over P
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over E
 
-                #then need to integrate over the first 3 dimensions which we do not need
-                for counter in range(3):
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+                    elif axes==['N']:
+                        #applying full Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.*constants.pi*dfn['dR']*dfn['dZ']*dfn['dV_pitch']*dfn['dE']
+                        for all_axes in range(dfn['dfn'].ndim): #sum over all dimensions
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0) 
 
-            elif axes==['E','V_pitch']:
-                #applying velocity space and gyrophase Jacobian
-                for v in range(len(dfn['V'])):
-                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-                dfn['dfn']*=dfn['dP']*constants.species_charge/(constants.species_mass)
+                    #general option
+                    elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
+                        dfn['dfn']=dfn['dfn'][tuple(axes)]
+                        #XXX need to then reset dfn['nV'],dfn['R'] etc data here?
+                    else:
+                        print("ERROR: dfn_transform given invalid axes argument: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
 
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
+                else: #if LOCUST dfn is against velocity
 
-                #then need to integrate over the unwanted coordinates
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                    if axes==['R','Z']:
+                        #apply velocity space Jacobian
+                        for v in range(len(dfn['V'])):
+                            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
 
-            elif axes==['E']:
-                #applying velocity space and gyrophase Jacobian
-                for v in range(len(dfn['V'])):
-                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
-                dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*constants.species_charge/(constants.species_mass)
+                        #then need to integrate over the first 3 dimensions which we do not need
+                        for counter in range(3):
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
 
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
+                    elif axes==['E','V_pitch']:
+                        #applying velocity space and gyrophase Jacobian
+                        for v in range(len(dfn['V'])):
+                            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+                        dfn['dfn']*=dfn['dP']*constants.species_charge/(constants.species_mass)
 
-                #then need to integrate over the unwanted coordinates
-                dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
-            elif axes==['R']:
-                #apply velocity space Jacobian
-                for v in range(len(dfn['V'])):
-                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+                        #then need to integrate over the unwanted coordinates
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
 
-                #then need to integrate over the first 3 dimensions which we do not need
-                for counter in range(3):
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
-                dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
+                    elif axes==['E']:
+                        #applying velocity space and gyrophase Jacobian
+                        for v in range(len(dfn['V'])):
+                            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]
+                        dfn['dfn']*=dfn['dP']*dfn['dV_pitch']*constants.species_charge/(constants.species_mass)
 
-            elif axes==['N']:
-                #apply velocity space Jacobian
-                for v in range(len(dfn['V'])):
-                    dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
-                dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
 
-                #applying real space Jacobian and integrate over toroidal angle
-                for r in range(len(dfn['R'])):
-                    dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
+                        #then need to integrate over the unwanted coordinates
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=0) #over gyrophase
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over Z
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over R
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #over V_pitch
 
-                #sum over all axes
-                for all_axes in range(dfn['dfn'].ndim):
-                    dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+                    elif axes==['R']:
+                        #apply velocity space Jacobian
+                        for v in range(len(dfn['V'])):
+                            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
 
-            #general option
-            elif len(axes)==dfn['dfn'].ndim: #if user supplies all axes then slice WITHOUT integrating
-                dfn['dfn']=dfn['dfn'][tuple(axes)]
-                #XXX need to then reset dfn['nV'],dfn['R'],dfn['dfn_index'] etc data here?
-            else:
-                print("ERROR: dfn_transform given invalid axes argument: {axes} (ID={ID})".format(axes=str(axes),ID=self.ID))
+                        #then need to integrate over the first 3 dimensions which we do not need
+                        for counter in range(3):
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0) #sum over gyrophase then V then V_pitch
+                        dfn['dfn']=np.sum(dfn['dfn'],axis=-1) #sum over Z
 
-        if len(axes)!=dfn['dfn'].ndim: #if user has not supplied all axes
-            dfn['dfn_index']=np.array(axes)
+                    elif axes==['N']:
+                        #apply velocity space Jacobian
+                        for v in range(len(dfn['V'])):
+                            dfn['dfn'][:,v,:,:,:]*=dfn['V'][v]**2
+                        dfn['dfn']*=dfn['dV']*dfn['dV_pitch']*dfn['dP']
+
+                        #applying real space Jacobian and integrate over toroidal angle
+                        for r in range(len(dfn['R'])):
+                            dfn['dfn'][:,:,:,r,:]*=dfn['R'][r]*2.0*constants.pi*dfn['dR']*dfn['dZ']
+
+                        #sum over all axes
+                        for all_axes in range(dfn['dfn'].ndim):
+                            dfn['dfn']=np.sum(dfn['dfn'],axis=0)
+
+            if dfn['IDFTYP']==3: #assume that each e.g. R dimension has corresponding dR quantity
+
+                #assume rectilinear dimensions
+                #XXX do not necessarily want to multiply by Jacobian here, since larger bins will measure larger densities
+                #XXX the Jacobian is also completely numerical and not separated into the DFN dimensions 
+                #XXX (i.e. like IDFTYP1 is where J in R dir is 2*pi*r, in Z dir is just 1 etc. these are all applicable separately) 
+                dfn['dfn']=dfn['dfn']*dfn['J'] #XXX cannot use *= here due to overflow
+
+                if axes==['N']:
+                    axes_to_integrate_over=[[index,axis] for index,axis in enumerate(dfn['dfn_index'])]
+                else:
+                    axes_to_integrate_over=[[index,axis] for index,axis in enumerate(dfn['dfn_index']) if axis not in axes]                        
+
+                for axes in reversed(axes_to_integrate_over):
+                    dfn['dfn']*=dfn[f'd{axes[1]}']
+                    for quantity in ['dfn','dfn_s']: dfn[quantity]=np.sum(dfn[quantity],axis=axes[0]) #sum
+                    for quantity in ['J','J_s']: dfn[quantity]=np.sum(dfn[quantity],axis=axes[0]) #XXX is this correct thing to do?
+
+            if len(axes)!=dfn['dfn'].ndim: #if user has not supplied all axes
+                dfn['dfn_index']=np.array(axes)
 
         return dfn
 
