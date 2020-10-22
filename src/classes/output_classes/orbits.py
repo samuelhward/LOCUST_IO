@@ -106,9 +106,11 @@ def read_orbits_LOCUST(filepath,number_coords=3,particles=[],**properties):
         if np.all(data_array[-1,:,:] == 0):
             data_array=data_array[:-1,:,:]
 
-        input_data['R']=data_array[:,0,:]
-        input_data['phi']=data_array[:,1,:]
-        input_data['Z']=data_array[:,2,:]
+
+        variable_names=['R','phi','Z',None,None,None,'mu','P_phi','E','sign']
+        for variable_name,index in zip(variable_names,range(number_coords)):
+            input_data[variable_name]=data_array[:,index,:]
+
         input_data['number_particles']=np.asarray(number_particles_to_read)
         input_data['number_timesteps']=np.asarray(number_timesteps)
         input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
@@ -343,6 +345,10 @@ class Orbits(classes.base_output.LOCUST_output):
             polar=True if axes==['phi','R'] else False
             ax = fig.add_subplot(111,polar=polar)
         ax.set_title(self.ID)
+
+        if ndim==1:
+            for particle in particles:
+                ax.plot(self[axes[0]][:,particle],color=colmap(colmap_val),linestyle=line_style,label=label)            
 
         if ndim==2: #2D plotting
 

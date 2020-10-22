@@ -94,7 +94,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
     #XXXcoil_data_options['ITER']['coil_offset']=np.array([phase_shift,phase_shift,phase_shift]) #XXX scan Phi0
     coil_data_options['ITER']['coil_coverage']=np.array([29.4,20.9,30.5]) #toroidal coverage DELTAPhij between coils for each row - assuming equal coil spacing for a given row (DELTAPhij=DELTAPhi)
     coil_data_options['ITER']['phase_shift_coils']=np.array([0.,0.,0.])
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([phase_shift,phase_shift,phase_shift]) #XXX
+    coil_data_options['ITER']['phase_shift_coils']=np.array([phase_shift,phase_shift,phase_shift]) #XXX
     #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,30.,30.]) #XXX
     #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,26.7,30.]) #XXX
     #coil_data_options['ITER']['phase_shift_coils']=np.array([86.,0.,34.])+30. #XXX
@@ -151,9 +151,9 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
             if reconstruction_type=='analytical':
                 for n in n_axis:
                     #the following are two equivalent ways of thinking about/calculating this
-                    amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
-                    #amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
-                    plt.plot(phi*deg_to_rad,amplitude_this_n,color=settings.cmap_default(.3*n/n_axis[-1]+.4),label=f'n={n}')
+                    #amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
+                    amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
+                    plt.plot(phi*deg_to_rad,amplitude_this_n,color=settings.cmap_jet(.3*n/n_axis[-1]+.4),label=f'n={n}')
                     waveform_reconstruction+=amplitude_this_n
             elif reconstruction_type=='individual':
                     pass 
@@ -188,6 +188,7 @@ if __name__=='__main__':
     parser.add_argument('--coil_current',type=float,action='store',default=90.,dest='coil_current',help="coil current [kAt]",required=False)
     parser.add_argument('--coil_rows',nargs='+',type=int,action='store',default=[1],dest='coil_rows',help="list of coil rows to plot (1=uppermost) [int] e.g. 1 2 3",required=False)
     parser.add_argument('--tokamak',type=str,action='store',default='ITER',dest='tokamak',help="tokamak name [-]",required=False)
+    parser.add_argument('--save',type=bool,action='store',default=False,dest='save',help="save gif? [-]",required=False)
 
     args=parser.parse_args()
     args={key:arg for key,arg in args._get_kwargs()}
@@ -196,7 +197,8 @@ if __name__=='__main__':
     phase_shift=np.linspace(0,360,360)
     animation=FuncAnimation(fig,plot_coils_RMP,frames=phase_shift,fargs=[args[arg] for arg in ['n_0','n_range','coil_current','coil_rows','tokamak']],repeat=True,interval=1) #cycle through phases and make animation
     plt.show()
-    animation.save('plot_coils_RMP.gif',writer='pillow')
+
+    if args['save']: animation.save('plot_coils_RMP.gif',writer='pillow')
 
 #################################
 
