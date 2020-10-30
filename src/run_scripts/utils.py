@@ -2320,9 +2320,6 @@ def command_line_arg_parse_generate_string(command_number_=0,**command_args):
         command_line_arg_parse_generate_string(command_number_=0,arg1=[some_dict],arg2=['1']) #yields '--arg1 key1=1 key2=2 --arg2 1'
     """
 
-    #make sure newlines are not inserted into arrays
-    np.set_printoptions(linewidth=99999999)
-
     command_arg_string=''
     for command_arg,command_value in command_args.items(): #command_arg is the name of the argument supplied to workflow when run from command line (e.g. filepath_input), command_value are corresponding arg_s (e.g. /some/file/path)    
 

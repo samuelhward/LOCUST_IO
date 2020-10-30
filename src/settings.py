@@ -28,7 +28,8 @@ except:
 ##################################################################
 
 #general
-np.set_printoptions(precision=5,threshold=3) #set printing style of numpy arrays
+np.set_printoptions(precision=None,threshold=99999999) #set printing style of numpy arrays
+np.set_printoptions(linewidth=99999999)
 
 #plotting
 def cmap_custom(from_rgb,to_rgb):
