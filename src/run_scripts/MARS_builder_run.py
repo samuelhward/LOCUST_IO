@@ -133,11 +133,11 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
 
         self.commands_available={}
-        self.commands_available['mkdir']=self.setup_MARS_builder_dirs,position
-        self.commands_available['get_code']=self.get_code,position
-        self.commands_available['make']=self.build_code,position
-        self.commands_available['run_code']=self.run_code,position
-        self.commands_available['cleanup']=self.clean_up_code,position
+        self.commands_available['mkdir']=self.setup_MARS_builder_dirs
+        self.commands_available['get_code']=self.get_code
+        self.commands_available['make']=self.build_code
+        self.commands_available['run_code']=self.run_code
+        self.commands_available['cleanup']=self.clean_up_code
         for command in commands:
             self.add_command(command_name=command,command_function=self.commands_available[command]) #add all workflow stages
 
