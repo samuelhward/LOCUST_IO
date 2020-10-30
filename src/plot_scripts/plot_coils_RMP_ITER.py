@@ -182,7 +182,7 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
 
     args=parser.parse_args()
 
-    plot_coils_RMP_ITER(**{key:arg for key,arg in args._get_kwargs()},colmap=settings.cmap_default)
+    plot_coils_RMP_ITER(**{key:arg for key,arg in args._get_kwargs() if arg is not None},colmap=settings.cmap_default)
     plt.show()
 
 #################################

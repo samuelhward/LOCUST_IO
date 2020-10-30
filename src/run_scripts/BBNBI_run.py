@@ -354,7 +354,7 @@ if __name__=='__main__':
     args.xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.xml_settings)
     args.commands=run_scripts.utils.literal_eval(args.commands)
 
-    this_run=BBNBI_run(**{key:arg for key,arg in args._get_kwargs()})
+    this_run=BBNBI_run(**{key:arg for key,arg in args._get_kwargs() if arg is not None})
     this_run.run()
 
 #################################
