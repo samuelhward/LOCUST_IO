@@ -91,6 +91,7 @@ class BBNBI_run(run_scripts.workflow.Workflow):
                 xml_settings=None,
                 number_particles=10000,
                 number_processors=1,
+                commands=['write_xml','run_code'],
                 *args,**kwargs):
         """
         notes:
@@ -106,6 +107,7 @@ class BBNBI_run(run_scripts.workflow.Workflow):
             xml_settings - dict containing settings to hard code in input XML
             number_particles - set number of markers to generate
             number_processors - set number of CPUs
+            commands - optional list of strings specifying order of subcommands to execute by workflow
         """
 
         #execute base class constructor to inherit required structures
@@ -127,8 +129,11 @@ class BBNBI_run(run_scripts.workflow.Workflow):
 
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
         
-        self.add_command(command_name='write_xml',command_function=self.write_xml_settings,position=1) #add new workflow 
-        self.add_command(command_name='run_code',command_function=self.call_BBNBI_actor,position=2) 
+        self.commands_available={}
+        self.commands_available['write_xml']=self.write_xml_settings
+        self.commands_available['run_code']=self.call_BBNBI_actor
+        for command in commands:
+            self.add_command(command_name=command,command_function=self.commands_available[command]) #add all workflow stages
 
     def write_xml_settings(self,*args,**kwargs):
         """
@@ -343,21 +348,13 @@ if __name__=='__main__':
     parser.add_argument('--xml_settings',nargs='+',type=str,action='store',default={},dest='xml_settings',help="settings contained in input XML file e.g. nmarker=64",required=False)
     parser.add_argument('--number_particles',type=int,action='store',default=10000,dest='number_particles',help="set number of markers to generate",required=False)
     parser.add_argument('--number_processors',type=int,action='store',default=1,dest='number_processors',help="set number of CPUs",required=False)
+    parser.add_argument('--commands',type=str,action='store',dest='commands',help="", required=False)
 
     args=parser.parse_args()
     args.xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.xml_settings)
+    args.commands=run_scripts.utils.literal_eval(args.commands)
 
-    this_run=BBNBI_run(dir_BBNBI=args.dir_BBNBI,
-                    shot_in=args.shot_in,
-                    shot_out=args.shot_out,
-                    run_in=args.run_in,
-                    run_out=args.run_out,
-                    username=args.username,
-                    imasdb=args.imasdb,
-                    imas_version=args.imas_version,
-                    xml_settings=args.xml_settings,
-                    number_particles=args.number_particles,
-                    number_processors=args.number_processors)
+    this_run=BBNBI_run(**{key:arg for key,arg in args._get_kwargs()}
     this_run.run()
 
 #################################

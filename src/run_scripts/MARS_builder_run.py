@@ -84,7 +84,15 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
         some_run.run() #this will execute all stages of a mars_build run
     """ 
 
-    def __init__(self,filepath_input,dir_output=support.dir_input_files,dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',environment_name='TITAN',settings_mars_read={},flags={}):
+    def __init__(self,
+        filepath_input,
+        dir_output=support.dir_input_files,
+        dir_MARS_builder=support.dir_run_scripts / 'mars_builder' / 'mars_builder_temp',
+        environment_name='TITAN',
+        settings_mars_read={},
+        flags={},
+        commands=['mkdir','get_code','make','run_code','cleanup'],
+        ):
         """
         notes:
             most information stored in MARS_builder_run.environment and MARS_builder_run.build, most init args are to init these instances
@@ -95,6 +103,7 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
             environment_name - string identifier to choose from selection of environments stored as class attributes 
             settings_mars_read - dict denoting variable names and values to set them to within mars_read.f90
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
+            commands - optional list of strings specifying order of subcommands to execute by workflow
         """
         
         #execute base class constructor to inherit required structures
@@ -123,11 +132,14 @@ class MARS_builder_run(run_scripts.workflow.Workflow):
 
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
 
-        self.add_command(command_name='mkdir',command_function=self.setup_MARS_builder_dirs,position=1) #add new workflow stages
-        self.add_command(command_name='get_code',command_function=self.get_code,position=2)
-        self.add_command(command_name='make',command_function=self.build_code,position=3)
-        self.add_command(command_name='run_code',command_function=self.run_code,position=4)
-        self.add_command(command_name='cleanup',command_function=self.clean_up_code,position=5)
+        self.commands_available={}
+        self.commands_available['mkdir']=self.setup_MARS_builder_dirs,position
+        self.commands_available['get_code']=self.get_code,position
+        self.commands_available['make']=self.build_code,position
+        self.commands_available['run_code']=self.run_code,position
+        self.commands_available['cleanup']=self.clean_up_code,position
+        for command in commands:
+            self.add_command(command_name=command,command_function=self.commands_available[command]) #add all workflow stages
 
     def setup_MARS_builder_dirs(self,*args,**kwargs):
         """
@@ -192,14 +204,16 @@ if __name__=='__main__':
     parser.add_argument('--dir_MARS_builder',type=str,action='store',default=support.dir_run_scripts / 'mars_builder',dest='dir_MARS_builder',help="path to mars_builder directory source code",required=False)
     parser.add_argument('--settings_mars_read',nargs='+',type=str,action='store',default={},dest='settings_mars_read',help="variable names and values to set them to within mars_read.f90",required=False)
     parser.add_argument('--flags',nargs='+',type=str,action='store',default={},dest='flags',help="compile flags",required=False)
-    
+    parser.add_argument('--commands',type=str,action='store',dest='commands',help="", required=False)
+
     args=parser.parse_args()
 
     #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
     args.settings_mars_read=run_scripts.utils.command_line_arg_parse_dict(args.settings_mars_read)
     args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
+    args.commands=run_scripts.utils.literal_eval(args.commands)
 
-    this_run=MARS_builder_run(filepath_input=args.filepath_input,dir_output=args.dir_output,environment_name=args.environment_name,dir_MARS_builder=args.dir_MARS_builder,settings_mars_read=args.settings_mars_read,flags=args.flags)
+    this_run=MARS_builder_run(**{key:arg for key,arg in args._get_kwargs()})
     this_run.run()
 
 #################################

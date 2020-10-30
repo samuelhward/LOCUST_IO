@@ -99,6 +99,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
                 imasdb=settings.imasdb,
                 imas_version=settings.imas_version,
                 xml_settings=None,
+                commands=['write_xml','run_code'],
                 *args,**kwargs):
         """
         notes:
@@ -112,6 +113,7 @@ class NEMO_run(run_scripts.workflow.Workflow):
             imasdb - local IMAS database name set by 'imasdb' command, sometimes called 'tokamak name'
             imas_version - string denoting IMAS major version e.g. '3'
             xml_settings - dict containing settings to hard code in input XML
+            commands - optional list of strings specifying order of subcommands to execute by workflow
         """
 
         #execute base class constructor to inherit required structures
@@ -130,9 +132,12 @@ class NEMO_run(run_scripts.workflow.Workflow):
         self.xml_settings=xml_settings
 
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
-        
-        self.add_command(command_name='write_xml',command_function=self.write_xml_settings,position=1) #add new workflow 
-        self.add_command(command_name='run_code',command_function=self.call_NEMO_actor,position=2) 
+
+        self.commands_available={}
+        self.commands_available['write_xml']=self.write_xml_settings
+        self.commands_available['run_code']=self.call_NEMO_actor
+        for command in commands:
+            self.add_command(command_name=command,command_function=self.commands_available[command]) #add all workflow stages
 
     def write_xml_settings(self,*args,**kwargs):
         """
@@ -276,19 +281,13 @@ if __name__=='__main__':
     parser.add_argument('--imasdb',type=str,action='store',default=settings.imasdb,dest='imasdb',help="local IMAS database name set by imasdb command, sometimes called 'tokamak name'",required=False)
     parser.add_argument('--imas_version',type=str,action='store',default=settings.imas_version,dest='imas_version',help="string denoting IMAS major version e.g. '3'",required=False)
     parser.add_argument('--xml_settings',nargs='+',type=str,action='store',default={},dest='xml_settings',help="settings contained in input XML file e.g. nmarker=64",required=False)
+    parser.add_argument('--commands',type=str,action='store',dest='commands',help="", required=False)
 
     args=parser.parse_args()
     args.xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.xml_settings)
+    args.commands=run_scripts.utils.literal_eval(args.commands)
 
-    this_run=NEMO_run(dir_NEMO=args.dir_NEMO,
-                    shot_in=args.shot_in,
-                    shot_out=args.shot_out,
-                    run_in=args.run_in,
-                    run_out=args.run_out,
-                    username=args.username,
-                    imasdb=args.imasdb,
-                    imas_version=args.imas_version,
-                    xml_settings=args.xml_settings)
+    this_run=NEMO_run(**{key:arg for key,arg in args._get_kwargs()})
     this_run.run()
 
 #################################

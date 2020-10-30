@@ -82,7 +82,18 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         some_run.run() #this will execute all stages of a LOCUST run including cloning, building, running and cleaning up afterwards
     """ 
 
-    def __init__(self,dir_LOCUST=support.dir_locust,dir_LOCUST_source=(support.dir_locust/'source'),dir_input=support.dir_input_files,dir_output=support.dir_output_files,dir_cache=support.dir_cache_files,environment_name='TITAN',repo_URL=settings.repo_URL_LOCUST,commit_hash=settings.commit_hash_default_LOCUST,settings_prec_mod={},flags={},*args,**kwargs):
+    def __init__(self,dir_LOCUST=support.dir_locust,
+        dir_LOCUST_source=(support.dir_locust/'source'),
+        dir_input=support.dir_input_files,
+        dir_output=support.dir_output_files,
+        dir_cache=support.dir_cache_files,
+        environment_name='TITAN',
+        repo_URL=settings.repo_URL_LOCUST,
+        commit_hash=settings.commit_hash_default_LOCUST,
+        settings_prec_mod={},
+        flags={},
+        commands=['mkdir','get_code','make','get_input','run_code','get_output','get_cache','cleanup'],
+        *args,**kwargs):
         """
         notes:
             most information stored in LOCUST_run.environment and LOCUST_run.build, most init args are to init these instances
@@ -97,6 +108,7 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             commit_hash - commit hash identifying this build - defaults to latest commit on settings.branch_default_LOCUST branch
             settings_prec_mod - dict denoting variable names and values to set them to within prec_mod.f90
             flags - dict denoting compile flags (no '-D' please e.g. STDOUT TOKAMAK=3)
+            commands - optional list of strings specifying order of subcommands to execute by workflow
         """
 
         #execute base class constructor to inherit required structures
@@ -135,15 +147,18 @@ class LOCUST_run(run_scripts.workflow.Workflow):
             self.root=pathlib.Path(settings.LOCUST_dir_root_default) #the default root set within LOCUST prec_mod.f90
 
         ################################# now make commands (defined below in this class) available to this workflow (and state position in execution order)
-        
-        self.add_command(command_name='mkdir',command_function=self.setup_LOCUST_dirs,position=1) #add new workflow stages
-        self.add_command(command_name='get_code',command_function=self.get_code,position=2)
-        self.add_command(command_name='make',command_function=self.make_code,position=3)
-        self.add_command(command_name='get_input',command_function=self.get_inputs,position=4)
-        self.add_command(command_name='run_code',command_function=self.run_code,position=5)
-        self.add_command(command_name='get_output',command_function=self.get_outputs,position=6)
-        self.add_command(command_name='get_cache',command_function=self.get_cache,position=7)
-        self.add_command(command_name='cleanup',command_function=self.cleanup,position=8)
+
+        self.commands_available={}
+        self.commands_available['mkdir']=self.setup_LOCUST_dirs
+        self.commands_available['get_code']=self.get_code
+        self.commands_available['make']=self.make_code
+        self.commands_available['get_input']=self.get_inputs
+        self.commands_available['run_code']=self.run_code
+        self.commands_available['get_output']=self.get_outputs
+        self.commands_available['get_cache']=self.get_cache
+        self.commands_available['cleanup']=self.cleanup
+        for command in commands:
+            self.add_command(command_name=command,command_function=self.commands_available[command]) #add all workflow stages
 
     def setup_LOCUST_dirs(self,*args,**kwargs):
         """
@@ -202,8 +217,8 @@ class LOCUST_run(run_scripts.workflow.Workflow):
         notes:
         """
 
-        self.build.make(directory=self.dir_LOCUST / 'locust',clean=True) #compile (source files are edited within this step)
-        self.build.make(directory=self.dir_LOCUST / 'locust',clean=False) #append /locust as this introduced in cloning stage
+        self.build.make(directory=self.dir_LOCUST / 'locust',clean=True) #run make clean
+        self.build.make(directory=self.dir_LOCUST / 'locust',clean=False) #edit source files and compile (must append /locust as this introduced in cloning stage)
 
     def run_code(self,*args,**kwargs):
         """
@@ -302,14 +317,15 @@ if __name__=='__main__':
     parser.add_argument('--commit',type=str,action='store',default=None,dest='commit_hash',help="optional commit hash of specific build",required=False)
     parser.add_argument('--settings_prec_mod',nargs='+',type=str,action='store',default={},dest='settings_prec_mod',help="variable names and values to set them to within prec_mod.f90",required=False)
     parser.add_argument('--flags',nargs='+',type=str,action='store',default={},dest='flags',help="compile flags",required=False)
-    
+    parser.add_argument('--commands',type=str,action='store',dest='commands',help="", required=False)
     args=parser.parse_args()
 
     #provide some extra parsing steps to flags, prec_mod settings and any similar dict-like input arguments
     args.settings_prec_mod=run_scripts.utils.command_line_arg_parse_dict(args.settings_prec_mod)
     args.flags=run_scripts.utils.command_line_arg_parse_dict(args.flags)
+    args.commands=run_scripts.utils.literal_eval(args.commands)
 
-    this_run=LOCUST_run(environment_name=args.environment_name,repo_URL=args.repo_URL,commit_hash=args.commit_hash,dir_LOCUST=args.dir_LOCUST,dir_input=args.dir_input,dir_output=args.dir_output,dir_cache=args.dir_cache,settings_prec_mod=args.settings_prec_mod,flags=args.flags,interactive=True)
+    this_run=LOCUST_run(**{key:arg for key,arg in args._get_kwargs()})
     this_run.run()
 
 #################################

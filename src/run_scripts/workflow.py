@@ -55,7 +55,7 @@ class Workflow:
         """
 
         self.workflow_name=self.__class__.__name__
-        self.commands=[] #holds list of functions to execute in order during .run()
+        self.commands=[] #holds ordered list of strings denoting names of functions to execute during .run()
         self.commands_dispatch={} #mapping between available run commands and their associated workflow() methods
 
     def add_command(self,command_name,command_function,position=None):
