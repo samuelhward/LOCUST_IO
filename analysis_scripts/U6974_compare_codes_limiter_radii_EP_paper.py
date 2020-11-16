@@ -1,5 +1,7 @@
 #look at RZ, EP and EP sampled plots for TRANSP vs LOCUST vs ASCOT then animate through the limiter radii
 
+#could also use alternate definition of : DFN_diff['dfn']=np.nan_to_num(np.log10((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/np.maximum.reduce([LOCUST_dfn_['dfn'],ASCOT_dfn_['dfn']])),nan=0.,posinf=0.,neginf=0.)
+
 import sys
 import numpy as np
 import context
@@ -23,8 +25,8 @@ cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
 cmap_default=settings.discrete_colmap(colmap_name='inferno_r',face_colour='white',number_bins=9) #create default colourmap
-settings.matplotlib_rc['axes']['labelsize']=15 #edit matplotlib rc settings
-for setting_type,settings in settings.matplotlib_rc.items(): matplotlib.rc(setting_type, **settings) #enable settings
+settings.matplotlib_rc['axes']['labelsize']=30 #edit matplotlib rc settings
+for setting_type,setting in settings.matplotlib_rc.items(): matplotlib.rc(setting_type, **setting) #enable settings
 
 
 filename_eq='g157418.03000'
@@ -80,16 +82,16 @@ LOCUST_files=[LOCUST_files[rad]]
 #start by creating some axis objects
 for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_files,run_IDs,colours):
 
-    #for ax in [ax1,ax2,ax3]:
-    #    ax.cla()
+    #for ax_ in ax:
+    #    ax_.cla()
 
     #toggle colourbars
-    colourbars=True
+    colourbars=False
     colourbar_array=[]
 
     LOCUST_dfn=Distribution_Function('LOCUST density (0.1s) - r = {}'.format(str(radius)),data_format='LOCUST',filename=LOCUST_run+LOCUST_file)
     TRANSP_dfn=run_scripts.utils.TRANSP_output_FI('TRANSP density (0.1s) - r = {}'.format(str(radius)),filename=shot_number+run_ID+TRANSP_files_tail_FI)
-    ASCOT_dfn=Distribution_Function('ASCOT density (0.1s) - r = {}'.format(str(radius)),data_format='ASCOT',filename=ASCOT_run+ASCOT_file,datatype='distribution_function')
+    ASCOT_dfn=Distribution_Function('ASCOT density (0.1s) - r = {}'.format(str(radius)),data_format='ASCOT',filename=ASCOT_run+ASCOT_file)
 
     #import wall, redefine pitch for ASCOT vs current in DIII-D and normalise DFNs according to beam powers
     wall=Wall('limiter - '+radius,data_format='ASCOT_2D_input',filename=wall_files+radius)
@@ -109,7 +111,8 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     ASCOT_dfn['dfn']*=beam_power/(BPCAP_ascot)
 
 
-    fig,ax=plt.subplots(ncols=2,sharex=True)
+    #fig,ax=plt.subplots(ncols=2,sharex=True) #XXX including both ASCOT lnL and LOCUST lnL  
+    fig,ax=plt.subplots(ncols=3,sharex=True) #XXX including both ASCOT lnL and LOCUST lnL  
     axes=['E','V_pitch']
 
     number_bins=5
@@ -122,9 +125,9 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
         contours,_ = mesh.legend_elements()    
         lines.append(contours[0])
         line_labels.append(label)
-    ax[0].legend(lines,line_labels,fontsize=10)
+    ax[0].legend(lines,line_labels,fontsize=20)
     #ax.set_title('limiter radius = {}'.format(radii[0]))
-    ax[0].set_title('a) Fast ion density $f$',fontsize=25)
+    ax[0].set_title('a) Fast ion density $f$',fontsize=25,pad=20)
 
     ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
     LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
@@ -135,23 +138,117 @@ for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_
     ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
     DFN_diff=copy.deepcopy(LOCUST_dfn)
     DFN_diff.ID='LOCUST dfn - ASCOT dfn'
-    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/LOCUST_dfn_['dfn'])),nan=-5.)
-    DFN_diff['dfn'][DFN_diff['dfn']>1.e3]=-5.
-    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,vminmax=[-5,3.],colmap=cmap_default)
-    ax[1].set_title(r'b) $\mathrm{log}_{10}(|f_{\mathrm{LOCUST}}-f_{\mathrm{ASCOT}}|\slash f_{\mathrm{LOCUST}})$',fontsize=25,pad=20)
-    ax[1].set_facecolor(settings.cmap_default(0.0))
+    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/np.maximum.reduce([LOCUST_dfn_['dfn'],ASCOT_dfn_['dfn']]))),nan=-5.)
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[1],axes=axes,transform=False,vminmax=[-4,0],colmap=cmap_default)
+    #ax[1].set_title(r'b) $\mathrm{log}_{10}(|f_{\mathrm{LOCUST}}-f_{\mathrm{ASCOT}}|\slash f_{\mathrm{LOCUST}})$',fontsize=25,pad=20) #XXX including both ASCOT lnL and LOCUST lnL
+    ax[1].set_title(r'b) $\delta f$',fontsize=25,pad=20) #XXX including both ASCOT lnL and LOCUST lnL
 
     for ax_ in ax:
-        ax_.set_xlabel('E [KeV]',fontsize=25)  
-        ax_.set_ylabel('$\lambda$',fontsize=25)  
-        ax_.set_xlim([np.min(DFN_diff['E']),np.max(DFN_diff['E'])])
-        ax_.set_ylim([np.min(DFN_diff['V_pitch']),np.max(DFN_diff['V_pitch'])])
-        ax_.set_xticks(DFN_diff['E'][::10])
-        ax_.set_yticks(DFN_diff['V_pitch'][::10])
+        ax_.set_xlabel('Energy [keV]',fontsize=25)  
+        ax_.set_ylabel('Pitch $\lambda$',fontsize=25)  
+        
+        ax_.set_xlim([0.,100.])
+        ax_.set_ylim([-.95,.95])
+        ax_.set_xticks(np.linspace(0.,100.,5))
+        ax_.set_yticks(np.linspace(-1.,1.,21)[::2])
 
     if colourbars is True:
-        for ax,mesh in zip([ax[1]],[DFN_diff_mesh]):
-            cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
+        for ax_,mesh in zip([ax[1]],[DFN_diff_mesh]):
+            cbar=fig.colorbar(mesh,ax=ax_,orientation='vertical',ticks=[-4,-3,-2,-1,0])
             colourbar_array.append(cbar)
 
-    plt.show()
+
+    #plt.show() #XXX including both ASCOT lnL and LOCUST lnL  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#XXX including both ASCOT lnL and LOCUST lnL  
+
+ascot_coulog=False
+
+LOCUST_beam_depo_tail='_ptcles.dat'
+LOCUST_files=['F_04-12-2018_16-11-28.285_TOTL.dfn','F_03-12-2018_22-55-59.961_TOTL.dfn','F_03-12-2018_22-58-49.281_TOTL.dfn','F_03-12-2018_22-57-37.348_TOTL.dfn','F_04-12-2018_00-13-14.371_TOTL.dfn','F_04-12-2018_14-11-36.625_TOTL.dfn']
+LOCUST_moments=['LOCUST_04-12-2018_16-11-28.285.h5','LOCUST_03-12-2018_22-55-59.961.h5','LOCUST_03-12-2018_22-58-49.281.h5','LOCUST_03-12-2018_22-57-37.348.h5','LOCUST_04-12-2018_00-13-14.371.h5','LOCUST_04-12-2018_14-11-36.625.h5']
+LOCUST_run='locust/run_1/'
+if ascot_coulog:
+    LOCUST_files[0]='F_28-04-2020_23-59-02.590_TOTL.dfn'
+    LOCUST_moments[0]='LOCUST_28-04-2020_23-59-02.590.h5'
+    LOCUST_run='locust/U69_ascot_coulog/noSOLCOL/'
+
+LOCUST_files=['F_04-12-2018_16-10-58.977_TOTL.dfn','F_04-12-2018_15-06-13.311_TOTL.dfn','F_04-12-2018_15-10-53.134_TOTL.dfn','F_04-12-2018_17-17-41.999_TOTL.dfn','F_04-12-2018_17-19-35.424_TOTL.dfn','F_05-12-2018_01-15-34.057_TOTL.dfn']
+LOCUST_moments=['LOCUST_04-12-2018_16-10-58.977.h5','LOCUST_04-12-2018_15-06-13.311.h5','LOCUST_04-12-2018_15-10-53.134.h5','LOCUST_04-12-2018_17-17-41.999.h5','LOCUST_04-12-2018_17-19-35.424.h5','LOCUST_05-12-2018_01-15-34.057.h5']
+LOCUST_run='locust/run_2/' #added -DSOLCOL
+if ascot_coulog:
+    LOCUST_files[0]='F_28-04-2020_18-10-55.938_TOTL.dfn'
+    LOCUST_moments[0]='LOCUST_28-04-2020_18-10-55.938.h5'
+    LOCUST_run='locust/U69_ascot_coulog/SOLCOL/'
+
+#start by creating some axis objects
+for radius,LOCUST_file,ASCOT_file,run_ID,colour in zip(radii,LOCUST_files,ASCOT_files,run_IDs,colours):
+
+    #for ax in [ax1,ax2,ax3]:
+    #    ax.cla()
+
+    #toggle colourbars
+    colourbars=True
+    colourbar_array=[]
+
+    LOCUST_dfn=Distribution_Function('LOCUST density (0.1s) - r = {}'.format(str(radius)),data_format='LOCUST',filename=LOCUST_run+LOCUST_file)
+    ASCOT_dfn=Distribution_Function('ASCOT density (0.1s) - r = {}'.format(str(radius)),data_format='ASCOT',filename=ASCOT_run+ASCOT_file)
+    LOCUST_dfn['E']/=1000.
+    ASCOT_dfn['E']/=1000.
+    ASCOT_dfn['dfn']*=beam_power/(BPCAP_ascot)
+    ASCOT_dfn_=ASCOT_dfn.transform(axes=axes)
+    LOCUST_dfn_=LOCUST_dfn.transform(axes=axes)
+    #interpolate ASCOT grid onto LOCUST grid
+    interpolator=processing.utils.interpolate_2D(ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch'],ASCOT_dfn_['dfn'],type='RBF',function='linear')
+    V_pitch,E=np.meshgrid(LOCUST_dfn_['V_pitch'],LOCUST_dfn_['E'])
+    ASCOT_dfn_['dfn']=interpolator(E,V_pitch)
+    ASCOT_dfn_['E'],ASCOT_dfn_['V_pitch']=LOCUST_dfn_['E'],LOCUST_dfn_['V_pitch']
+    DFN_diff=copy.deepcopy(LOCUST_dfn)
+    DFN_diff.ID='LOCUST dfn - ASCOT dfn'
+    DFN_diff['dfn']=np.nan_to_num(np.log10(np.abs((LOCUST_dfn_['dfn']-ASCOT_dfn_['dfn'])/np.maximum.reduce([LOCUST_dfn_['dfn'],ASCOT_dfn_['dfn']]))),nan=-5.)
+    DFN_diff_mesh=DFN_diff.plot(fig=fig,ax=ax[2],axes=axes,transform=False,vminmax=[-4,0],colmap=cmap_default)
+    #ax[1].set_title(r'c) $\mathrm{log}_{10}(|f_{\mathrm{LOCUST}}-f_{\mathrm{ASCOT}}|\slash f_{\mathrm{LOCUST}})$',fontsize=25,pad=20) #XXX including both ASCOT lnL and LOCUST lnL
+    ax[2].set_title(r'c) $\delta f\prime$',fontsize=25,pad=20) #XXX including both ASCOT lnL and LOCUST lnL
+
+    for ax_ in ax:
+        ax_.set_xlabel('Energy [keV]',fontsize=25)  
+        ax_.set_ylabel('Pitch $\lambda$',fontsize=25)  
+        
+        ax_.set_xlim([0.,100.])
+        ax_.set_ylim([-.95,.95])
+        ax_.set_xticks(np.linspace(0.,100.,5))
+        ax_.set_yticks(np.linspace(-1.,1.,21)[::2])
+
+    if colourbars is True:
+        for ax,mesh in zip([ax[2]],[DFN_diff_mesh]):
+            cbar=fig.colorbar(mesh,ax=ax,orientation='vertical',ticks=[-4,-3,-2,-1,0])
+            colourbar_array.append(cbar)
+
+plt.show()

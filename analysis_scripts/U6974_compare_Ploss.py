@@ -42,10 +42,10 @@ ASCOT_run='ascot/run_1/' #this is with old kinetic profiles which are not extrap
 
 ASCOT_files=['ascot_freia_1470026.h5','ascot_freia_1470030.h5','ascot_freia_1470033.h5','ascot_freia_1470037.h5','ascot_freia_1470041.h5','ascot_freia_1470045.h5']
 ASCOT_run='ascot/run_2/' #changed ORBITMETHOD to 4, added extrapolated kinetic profiles
-
-ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
-ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
-
+#
+#ASCOT_files=['ascot_freia_1470027.h5','ascot_freia_1470031.h5','ascot_freia_1470034.h5','ascot_freia_1470038.h5','ascot_freia_1470042.h5','ascot_freia_1470046.h5']
+#ASCOT_run='ascot/run_3/' #changed ORBITMETHOD back to 1, keep extrapolated kinetic profiles
+#
 ASCOT_files=['ascot_freia_1470028.h5','ascot_freia_1480719.h5','ascot_freia_1470035.h5','ascot_freia_1470039.h5','ascot_freia_1470043.h5','ascot_freia_1470047.h5']
 ASCOT_run='ascot/run_4/' #ORBITMETHOD 4 and non-extrapolated kinetic profiles
 
@@ -123,7 +123,7 @@ ax2.set_ylim([0.,0.15])
 ax3.set_title('ASCOT')
 ax3.set_ylim([0.,0.15])
 
-ax4.set_xlabel('radius')
+ax4.set_xlabel('radius [m]')
 ax4.set_ylabel('total PFC power [W] at time={}s'.format(time))
 ax4.legend(['LOCUST','TRANSP','ASCOT'])
 
@@ -138,8 +138,8 @@ fig,ax=plt.subplots(1)
 ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_locust/beam_power,color=cmap_g(0.0),linewidth=3)
 ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_transp/beam_power,color=cmap_r(0.0),linewidth=3)
 ax.plot([1.05,1.1,1.2,1.3,1.4,1.5],100.*beam_source_loss_ascot/beam_power,color=cmap_b(0.0),linewidth=3)
-ax.set_xlabel('radius',fontsize=20)
+ax.set_xlabel('$R_{\mathrm{fac}}$',fontsize=20)
 ax.set_ylabel('% prompt loss power',fontsize=20)
 #ax.set_title('at time={}s'.format(time),fontsize=20)
-ax.legend(['LOCUST','TRANSP','ASCOT'],fontsize=20)
+ax.legend(['LOCUST','NUBEAM','ASCOT'],fontsize=20)
 plt.show()
