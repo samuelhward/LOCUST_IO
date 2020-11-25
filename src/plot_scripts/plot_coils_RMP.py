@@ -95,10 +95,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
     coil_data_options['ITER']['coil_coverage']=np.array([29.4,20.9,30.5]) #toroidal coverage DELTAPhij between coils for each row - assuming equal coil spacing for a given row (DELTAPhij=DELTAPhi)
     coil_data_options['ITER']['phase_shift_coils']=np.array([0.,0.,0.])
     coil_data_options['ITER']['phase_shift_coils']=np.array([phase_shift,phase_shift,phase_shift]) #XXX
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,30.,30.]) #XXX
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([30.,26.7,30.]) #XXX
-    #coil_data_options['ITER']['phase_shift_coils']=np.array([86.,0.,34.])+30. #XXX
-    #coil_data_options['ITER']['phase_shift_coils']=-1.*np.array([10.,10.,10.]) #XXX
+    #coil_data_options['ITER']['phase_shift_coils']=np.array([86.,0.,34.]) #XXX
 
     #derive extra information for settings dispatch
     for tokamak in coil_data_options.keys():
@@ -144,7 +141,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
             I_fft=np.abs(np.fft.fft(I_j)) 
             axes[0].plot(I_fft[coil_row,1:int(len(I_fft[coil_row])/2)],'k-',label=f'fft') #XXX
         if plot_fft_reconstruction:
-            phi=np.linspace(0.,3.*360.,360)
+            phi=np.linspace(0.,360.,360)
             waveform_reconstruction=np.zeros(len(phi))
 
             reconstruction_type='analytical'

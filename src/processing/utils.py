@@ -456,6 +456,8 @@ def crop_2D(quantity,grid,reference,key,value,crop_value=0.0,over=True):
         for z_index,z in enumerate(grid['Z_1D']): 
             if reference_values[r_index,z_index]>value and over is True:
                 quantity_cropped[r_index,z_index]=crop_value
+            elif reference_values[r_index,z_index]<value and over is False:
+                quantity_cropped[r_index,z_index]=crop_value
 
     return quantity_cropped
 

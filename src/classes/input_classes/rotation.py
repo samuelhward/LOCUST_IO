@@ -189,8 +189,10 @@ def read_rotation_excel_1(filepath,**properties):
         must include spreadsheet name holding minor radius in properties['sheet_name']
         must include spreadsheet name holding rotation in properties['sheet_name_rotation']
         must include name of rotation variable e.g. Vt(tF/tE=2) in properties['rotation_name']
-        R_axis value is hardcoded here, please update accordingly
+        default R_axis set by ITER
     """
+
+    R_axis=properties.get('R_axis',6.2) 
 
     if 'sheet_name' not in properties: #must supply some sort of sheet_name
         print("ERROR: cannot read_rotation_excel_1 - properties['sheet_name'] must be set!\nreturning\n")
@@ -208,7 +210,6 @@ def read_rotation_excel_1(filepath,**properties):
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
     input_data['rotation_vel']*=1000. #convert from km/s
 
-    R_axis=6.2 #XXX warning this is hardcoded
     input_data['R_1D']=radius_minor+R_axis 
     input_data['rotation_ang']=input_data['rotation_vel']/input_data['R_1D']
 

@@ -218,25 +218,25 @@ def read_distribution_function_LOCUST(filepath,**properties):
             if properties['WIPE']:
                 input_data['dfn']=[] #Final combined DFn. grid
                 input_data['dfn_s']=[] #Dfn. M.C. error
-                for line in range(int(input_data['nP'])):
+                for line in range(int(input_data['nphase'])):
                     input_data['dfn'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
-                for line in range(int(input_data['nP'])):
+                for line in range(int(input_data['nphase'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
                 
             else:
                 input_data['dfn']=[] #Final combined DFn. grid  
                 input_data['dfn_s']=[] #Dfn. M.C. error
-                for line in range(int(input_data['nP'])): #Dfn. M.C. error
+                for line in range(int(input_data['nphase'])): #Dfn. M.C. error
                     input_data['dfn'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
-                for line in range(int(input_data['nP'])):
+                for line in range(int(input_data['nphase'])):
                     input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
         
         else:
             input_data['dfn']=[] #Final combined DFn. grid   
             input_data['dfn_s']=[] #Dfn. M.C. error
-            for line in range(int(input_data['nP'])): #Dfn. M.C. error
+            for line in range(int(input_data['nphase'])): #Dfn. M.C. error
                 input_data['dfn'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
-            for line in range(int(input_data['nP'])):
+            for line in range(int(input_data['nphase'])):
                 input_data['dfn_s'].extend(file.read_reals(dtype=np.float32)) #nP*nc long
 
         if input_data['IDFTYP']==2:
@@ -348,26 +348,27 @@ def read_distribution_function_LOCUST(filepath,**properties):
                 input_data['cpu_time']=file.read_reals(dtype=np.float64)
 
         #extra derived data
-        if input_data['nP']>1:
+        if input_data['nphase']>1:
             input_data['dP']=np.array(input_data['P'][1]-input_data['P'][0]) #special dimension bin width 
         else:
             input_data['dP']=np.array(2.*constants.pi)
         
     #some post processing
     if input_data['IDFTYP']==1:
-        input_data['dfn']*=0.5 #convert from same pitch dimension as TRANSP (per dSolidAngle/4pi) to per unit pitch 
+
         if properties['EBASE']:
             input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z']) #reference for names of each dfn dimension
             for key in ['dfn','dfn_s']:
-                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nP']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
-            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
+                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nphase']),int(input_data['nE']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['nc']=len(input_data['dfn'])/input_data['nphase'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         else:
             input_data['dfn_index']=np.array(['P','V','V_pitch','R','Z']) #reference for names of each dfn dimension
             for key in ['dfn','dfn_s']:
-                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nP']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
-            input_data['nc']=len(input_data['dfn'])/input_data['nP'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
+                input_data[key]=np.array(input_data[key]).reshape(int(input_data['nphase']),int(input_data['nV']),int(input_data['nV_pitch']),int(input_data['nZ']),int(input_data['nR']),order='F')  
+            input_data['nc']=len(input_data['dfn'])/input_data['nphase'] #nV*nV_pitch*nZ*nR (nZ, nR = nF)
         input_data['dfn']=np.swapaxes(input_data['dfn'],3,4) #swap final order to ...r,z - means plotting functions can assume index order x,y
 
+        input_data['dfn']*=0.5 #convert from same pitch dimension as TRANSP (per dSolidAngle/4pi) to per unit pitch 
         input_data['dR']=np.array(input_data['R'][1]-input_data['R'][0]) #R bin width
         input_data['dZ']=np.array(input_data['Z'][1]-input_data['Z'][0]) #Z bin width
         input_data['dV_pitch']=np.array(input_data['V_pitch'][1]-input_data['V_pitch'][0]) #pitch bin width
@@ -457,7 +458,8 @@ def read_distribution_function_ASCOT(filepath,**properties):
         input_data['dfn']*=constants.species_charge #[m^-3 eV^-1 dpitch^-1]
         
         input_data['dfn_index']=np.array(['P','E','V_pitch','R','Z'])
- 
+        input_data['IDFTYP']=1
+    
     print("finished reading distribution function from ASCOT")
 
     return input_data

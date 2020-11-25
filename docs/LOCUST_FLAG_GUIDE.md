@@ -178,4 +178,5 @@
 | `TITHRM`      | Set thermalisation cut-off energy to TITHRM*Ti                                                                                               |
 | `NCOILS`      | Specify total number of separate RMP coil rows                                                                                               |
 | `VROT`        | Load rotation profile data                                                                                                                   |
+| `ENEO`        | Add neoclassical electric field                                                                                                              |
 |               |                                                                                                                                              |
