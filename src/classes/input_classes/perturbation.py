@@ -1074,8 +1074,6 @@ class Perturbation(classes.base_input.LOCUST_input):
                 R=self['R_1D'] #make a mesh
                 Z=self['Z_1D'] 
                 dr,dz=R[1]-R[0],Z[1]-Z[0]
-                ax.set_xticks(R) #set axes ticks
-                ax.set_yticks(Z)
                 
                 Z,R=np.meshgrid(Z-dz/2.,R-dr/2.) #offset ticks onto bin centres
 
@@ -1377,12 +1375,7 @@ class Perturbation(classes.base_input.LOCUST_input):
         Z_poloidal=np.linspace(np.min(self['Z_1D']),np.max(self['Z_1D']),Z_poloidal_dim)
         
         dr,dz=R_poloidal[1]-R_poloidal[0],Z_poloidal[1]-Z_poloidal[0]
-        ax.set_xticks(R_poloidal) #set axes ticks
-        ax.set_yticks(Z_poloidal)
-
         
-            
-
         R_poloidal,Z_poloidal=np.meshgrid(R_poloidal,Z_poloidal) 
         R_poloidal,Z_poloidal=R_poloidal.flatten(),Z_poloidal.flatten()
         phi_poloidal=np.full(len(R_poloidal),phi)

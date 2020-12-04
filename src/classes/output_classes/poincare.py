@@ -191,8 +191,7 @@ class Poincare(classes.base_output.LOCUST_output):
         ax.set_title(self.ID)
         X=self['R'] #make a mesh
         Y=self['Z']
-        ax.set_xticks(X) #set axes ticks
-        ax.set_yticks(Y)
+
         dx,dy=X[1]-X[0],Y[1]-Y[0]
         Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
         phi_slice=np.argmin(np.abs(self['phi']-phi))
@@ -214,6 +213,9 @@ class Poincare(classes.base_output.LOCUST_output):
         ax.set_ylim(np.min(self['Z']),np.max(self['Z']))
         ax.set_xlabel('R [m]')
         ax.set_ylabel('Z [m]')
+
+        if real_scale is True: #set x and y plot limits to real scales
+            ax.set_aspect('equal')
 
         if ax_flag is True or fig_flag is True: #return the plot object
             return mesh

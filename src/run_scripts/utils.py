@@ -466,11 +466,6 @@ class TRANSP_output_FI(TRANSP_output):
             R=np.linspace(np.min(dfn_copy['R2D']),np.max(dfn_copy['R2D']),int(np.sqrt(len(dfn_copy['R2D'])))) #need to interpolate since irregular grid
             Z=np.linspace(np.min(dfn_copy['Z2D']),np.max(dfn_copy['Z2D']),int(np.sqrt(len(dfn_copy['Z2D']))))
             dr,dz=R[1]-R[0],Z[1]-Z[0]
-            ax.set_xticks(R) #set axes ticks
-            ax.set_yticks(Z)
-
-            
-                
 
             R,Z=np.meshgrid(R-dr/2.,Z-dz/2.)
             interpolator=processing.utils.interpolate_2D(dfn_copy['Z2D'],dfn_copy['R2D'],dfn_copy['dfn'],type='RBF',rect_grid=False)
@@ -522,11 +517,6 @@ class TRANSP_output_FI(TRANSP_output):
                 vmax=np.amax(dfn_copy['dfn'])
 
             dE,dV_pitch=dfn_copy['E'][1]-dfn_copy['E'][0],dfn_copy['V_pitch'][1]-dfn_copy['V_pitch'][0]
-            ax.set_xticks(dfn_copy['E']) #set axes ticks
-            ax.set_yticks(dfn_copy['V_pitch'])
-
-            
-                
 
             E,V_pitch=np.meshgrid(dfn_copy['E']-dE/2.,dfn_copy['V_pitch']-dV_pitch/2.) #X,Y this way because dfn dimension ordering
 

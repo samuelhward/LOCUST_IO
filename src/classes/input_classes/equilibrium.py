@@ -773,11 +773,6 @@ class Equilibrium(classes.base_input.LOCUST_input):
             X=self['R_1D'] #make a mesh
             Y=self['Z_1D']
             dx,dy=X[1]-X[0],Y[1]-Y[0]
-            ax.set_xticks(X) #set axes ticks
-            ax.set_yticks(Y)
-
-            
-                
 
             Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
             Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux

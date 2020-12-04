@@ -1422,13 +1422,8 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                 #self_binned_x and self_binned_x are first edges then converted to centres
                 self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
                 self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
-                dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]
-                ax.set_xticks(self_binned_x) #set axes ticks
-                ax.set_yticks(self_binned_y)
-
-                
+                dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]            
                     
-
                 self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
                 
                 if fill:

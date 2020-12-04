@@ -97,6 +97,11 @@ cmap_w=cmap_custom([1,1,1],[1,1,1]) #white
 cmap_k=cmap_custom([0,0,0],[0,0,0]) #black
 cmap_default=discrete_colmap(colmap_name='inferno_r',face_colour='white',number_bins=10) #create default colourmap
 
+cmap_blue_nice=colour_custom([25,118,210,1])
+cmap_green_nice=colour_custom([76,175,80,1])
+cmap_red_nice=colour_custom([244,67,54,1])
+cmap_poincare_bw=discrete_colmap('Greys',number_bins=2)
+
 plot_colour_LCFS=cmap_m(0.)
 plot_line_style_LCFS='-' 
 plot_colour_limiters=cmap_k(0.)

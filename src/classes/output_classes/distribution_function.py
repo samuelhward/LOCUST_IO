@@ -710,6 +710,56 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             ax.plot(self[axes[0]],self[key],color=colmap(colmap_val),linestyle=line_style,label=label)
             ax.set_ylabel(key)
 
+        #2D data
+        elif self[key].ndim==2:
+
+            X=self[axes[0]] #make a mesh
+            Y=self[axes[1]]
+            dx,dy=X[1]-X[0],Y[1]-Y[0]
+
+            Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
+            Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+
+            if vminmax:
+                vmin=vminmax[0]
+                vmax=vminmax[1]
+            else:
+                vmin=np.min(Z)
+                vmax=np.max(Z)
+            
+            #2D plot
+            if fill is True:
+                mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                for c in mesh.collections: #for use in contourf
+                    c.set_edgecolor("face")
+            else:
+                mesh=ax.contour(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                if settings.plot_contour_labels:
+                    ax.clabel(mesh,inline=1,fontsize=10)
+                
+            #mesh=ax.pcolormesh(X,Y,Z,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+
+            #3D plot
+            #ax=ax.axes(projection='3d')
+            #ax.view_init(elev=90, azim=None) #rotate the camera
+            #ax.plot_surface(X,Y,Z,rstride=1,cstride=1,colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',antialiased=True,vmin=np.amin(Z),vmax=np.amax(Z))
+            
+            if fig_flag is False:    
+                fig.colorbar(mesh,ax=ax,orientation='horizontal')
+
+            if LCFS:
+                ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
+            if limiters: #add boundaries if desired
+                ax.plot(limiters['rlim'],limiters['zlim'],color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
+
+            if real_scale is True: #set x and y plot limits to real scales
+                ax.set_aspect('equal')
+            else:
+                ax.set_aspect('auto')
+
+            if ax_flag is True or fig_flag is True: #return the plot object
+                return mesh
+                
         #plot distribution function
         elif key=='dfn':
             
@@ -749,10 +799,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
                 X=dfn_copy[axes[0]] #make a mesh
                 Y=dfn_copy[axes[1]]
                 dx,dy=X[1]-X[0],Y[1]-Y[0]
-
-                ax.set_xticks(X) #set axes ticks
-                ax.set_yticks(Y)
-
+                
                 Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
 
                 if fill:

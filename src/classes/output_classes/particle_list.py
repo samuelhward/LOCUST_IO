@@ -158,6 +158,7 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         input_data['time']=lines[:,6,0,:].flatten()
         input_data['dt']=lines[:,7,0,:].flatten()
         input_data['FG']=lines[:,8,0,:].flatten()
+        input_data['weight']=lines[:,8,0,:].flatten()
         input_data['tet']=lines[:,9,0,:].flatten()
         input_data['psi']=lines[1:,0,0,:].flatten()
         input_data['V_R_next']=lines[1:,1,0,:].flatten()
@@ -170,7 +171,6 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         #calculate some additional things
         input_data['status_flag']=np.array([status_flags_dispatch(dt) for dt in input_data['dt']])
         input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
-        input_data['weight']=np.full(len(input_data['R']),1.)
 
     print("finished reading final particle list from LOCUST")
 
@@ -510,12 +510,7 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                     self_binned_x=(self_binned_x[:-1]+self_binned_x[1:])*0.5
                     self_binned_y=(self_binned_y[:-1]+self_binned_y[1:])*0.5
 
-                    dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]
-                    ax.set_xticks(self_binned_x) #set axes ticks
-                    ax.set_yticks(self_binned_y)
-
-                    
-                        
+                    dx,dy=self_binned_x[1]-self_binned_x[0],self_binned_y[1]-self_binned_y[0]                        
 
                     self_binned_y,self_binned_x=np.meshgrid(self_binned_y-dy/2.,self_binned_x-dx/2.) #offset ticks onto bin centres
 

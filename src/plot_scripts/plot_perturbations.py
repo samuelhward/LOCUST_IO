@@ -127,8 +127,6 @@ def plot_perturbations(perturbations,key='dB_field_R_real',axes=['R','Z'],LCFS=F
             R=perturbations[0]['R_1D'] #make a mesh
             Z=perturbations[0]['Z_1D'] 
             dr,dz=R[1]-R[0],Z[1]-Z[0]
-            ax.set_xticks(R) #set axes ticks
-            ax.set_yticks(Z)
 
             Z,R=np.meshgrid(Z-dz/2.,R-dr/2.) #offset ticks onto bin centres
 
