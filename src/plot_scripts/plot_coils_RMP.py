@@ -134,7 +134,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
         if plot_perturbation_fundamental:
             phi=np.linspace(0.,360.,100)
             I_j_fundamental=waveform(n_0=n_0,phi=phi,phase_shift=coil_data_options[tokamak]['phase_shift_coils'][coil_row]) #plot theoretical waveform
-            axes[1].plot(phi*deg_to_rad,I_j_fundamental,color='magenta',linestyle='--',label='current profile')
+            axes[1].plot(phi,I_j_fundamental,color='magenta',linestyle='--',label='current profile')
         if plot_fft_yueqiang:
             axes[0].plot(n_axis,abs(I_n[coil_row]),label=f'coil row = {coil_row}',color=colour,marker='.',linestyle='-')
         if plot_fft_numpy: #calculate fft equivalent
@@ -150,30 +150,34 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
                     #the following are two equivalent ways of thinking about/calculating this
                     #amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
                     amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
-                    plt.plot(phi*deg_to_rad,amplitude_this_n,color=settings.cmap_jet(.3*n/n_axis[-1]+.4),label=f'n={n}')
+                    plt.plot(phi,amplitude_this_n,color=settings.cmap_plasma(.3*n/n_axis[-1]+.4),label=f'n={n}')
                     waveform_reconstruction+=amplitude_this_n
             elif reconstruction_type=='individual':
                     pass 
-            plt.plot(phi*deg_to_rad,waveform_reconstruction,'g-',label='sum')
+            plt.plot(phi,waveform_reconstruction,color=settings.cmap_red_nice(0.),label='sum')
 
         #for n_highlight in n_highlights:
         #    axes[0].axvline(n_highlight,'m')
         if plot_coils:
             for coil in range(coil_data_options[tokamak]['number_coils_per_row']): #update coil currents
                 rectangle=matplotlib.patches.Rectangle(
-                    xy=(coil_data_options[tokamak]['coil_locations'][coil_row,coil]*deg_to_rad-coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad/2.,0.0),
-                    width=coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad,
+                    xy=(coil_data_options[tokamak]['coil_locations'][coil_row,coil]-coil_data_options[tokamak]['coil_coverage'][coil_row]/2.,0.0),
+                    width=coil_data_options[tokamak]['coil_coverage'][coil_row],
                     height=I_j[coil_row,coil],
-                    edgecolor=colour,facecolor='none') #,label=f'coil row {coil_row}'
+                    edgecolor='black',facecolor='none') #,label=f'coil row {coil_row}'
                 axes[1].add_patch(rectangle)
-        axes[1].scatter(coil_data_options[tokamak]['coil_locations'][coil_row]*deg_to_rad,I_j[coil_row],color='m') #add on coil currents
+        axes[1].scatter(coil_data_options[tokamak]['coil_locations'][coil_row],I_j[coil_row],color='m') #add on coil currents
 
+    axes[0].set_xlabel('$n$')
     axes[0].set_xlim([0.,n_range])
     axes[0].set_ylim([-1.1*coil_current,1.1*coil_current])
-    axes[1].legend()
-    axes[1].set_xlim([np.min(coil_data_options[tokamak]['coil_locations'])*deg_to_rad-np.max(coil_data_options[tokamak]['coil_coverage'])*deg_to_rad/2.,np.max(coil_data_options[tokamak]['coil_locations'])*deg_to_rad+np.max(coil_data_options[tokamak]['coil_coverage'])*deg_to_rad/2.])
-    axes[1].set_xlim([0.,2.*np.pi])
+    axes[0].set_title('Fourier transform amplitude')
+    axes[1].set_xlabel('$\phi$')
+    axes[1].legend(loc='right')
+    axes[1].set_xlim([np.min(coil_data_options[tokamak]['coil_locations'])-np.max(coil_data_options[tokamak]['coil_coverage'])/2.,np.max(coil_data_options[tokamak]['coil_locations'])+np.max(coil_data_options[tokamak]['coil_coverage'])/2.])
+    axes[1].set_xlim([0.,360])
     axes[1].set_ylim([-1.1*coil_current,1.1*coil_current])
+    axes[1].set_title('Coil current [kAt]')
 
 if __name__=='__main__':
 

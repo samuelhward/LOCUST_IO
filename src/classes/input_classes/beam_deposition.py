@@ -1472,8 +1472,8 @@ class Beam_Deposition(classes.base_input.LOCUST_input):
                     ax.plot(limiters_max_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_max_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')
                     ax.plot(limiters_min_R*np.cos(np.linspace(0,2.0*constants.pi,100)),limiters_min_R*np.sin(np.linspace(0.0,2.0*constants.pi,100)),color=settings.plot_colour_limiters,linestyle=settings.plot_line_style_limiters,label='wall')           
             
-            if ax_flag is True or fig_flag is True: #return the plot object
-                    return mesh
+            if ax_flag is True or fig_flag is True and style=='histogram': #return the plot object
+                return mesh
 
             ax.set_xlabel(axes[0])
             ax.set_ylabel(axes[1])

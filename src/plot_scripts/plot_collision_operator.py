@@ -57,7 +57,7 @@ except:
 
 ##################################################################
 
-def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=settings.cmap_jet,colmap_val=None,line_style=settings.plot_line_style,ax=False,fig=False):
+def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='LOCUST',colmap=settings.cmap_jet,colmap_val=None,line_style=settings.plot_line_style,ax=False,fig=False):
     """
     plot collision operator drift coefficients for collisions of test particle against arbitrary background species
 
@@ -169,11 +169,11 @@ def plot_collision_operator(At,Ai,Zt,Zi,Ti,ni,Einj,Pdep,Bmod,type='NRL',colmap=s
         
     for counter,(drag,Ti_) in enumerate(zip(dE_dt,Ti/echg)):
         a_colour=colmap(np.random.uniform()) if colmap_val is None else colmap(colmap_val)
-        ax.plot(E/(1000.*echg),(drag/1.0e-13),color=a_colour,linestyle=line_style)#(counter/len(dE_dt))) #cycle through colours
-        ax.scatter(Ti_/1000.,0.,color=a_colour)
-        ax.set_xlabel('Energy [KeV]')
-        ax.set_ylabel('Energy drift [10e-13 J/s]')
-    ax.legend(tuple(['mass = {mass} [amu] temperature = {temp} [keV]'.format(mass=str(mass),temp=str((temp)/echg/1000)) for mass,temp in zip(Ai,Ti)]))
+        ax.plot(E/(1000.*echg),drag/(1000.*constants.charge_e),color=a_colour,linestyle=line_style)#(counter/len(dE_dt))) #cycle through colours
+        ax.scatter(Ti_/1000.,0.,color='black')
+        ax.set_xlabel('Energy [keV]')
+        ax.set_ylabel('Energy gain [keV/s]')
+    ax.legend(tuple(['A = {mass} [amu], Z = {Z}, temperature = {temp} [keV]'.format(mass=str(mass),temp=str((temp)/echg/1000),Z=str(Z)) for mass,temp,Z in zip(Ai,Ti,Zi)]))
 
     if ax_flag is False and fig_flag is False:
         plt.show() 
@@ -201,15 +201,15 @@ if __name__=='__main__': #plot collision operator and expected steady state dist
 
     fig,ax=plt.subplots(1)
     E,drag=plot_collision_operator(At=args.At,Ai=np.array(args.Ai),Zt=args.Zt,Zi=np.array(args.Zi),Ti=np.array(args.Ti),ni=np.array(args.ni),Einj=args.Einj,Pdep=args.Pdep,Bmod=args.Bmod,fig=fig,ax=ax,type=args.type,colmap=settings.cmap_jet)
-    ax.set_title('individual drag coefficients for test particle mass={} amu'.format(args.At))
+    ax.set_title('Dynamical friction rate for test particle mass={} amu'.format(args.At))
     plt.show()
 
     drag_total=np.sum(drag,axis=0) #sum electron and ion drags and plot
     fig,ax=plt.subplots(1)
-    ax.plot(E/(1000.*constants.charge_e),(drag_total/1.0e-13),color=settings.cmap_jet(np.random.uniform()))
+    ax.plot(E/(1000.*constants.charge_e),drag_total/(1000.*constants.charge_e),color=settings.cmap_jet(np.random.uniform()))
     ax.set_title('total drag for test particle mass={} amu'.format(args.At))
     ax.set_xlabel('Energy [KeV]')
-    ax.set_ylabel('Energy drift [10e-13 J/s]')
+    ax.set_ylabel('Energy gain [keV/s]')
     plt.show()
     
     #plot expected steady state distribution function (assuming no diffusion)

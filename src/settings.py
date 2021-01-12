@@ -132,7 +132,7 @@ matplotlib_rc['axes'] = {
                         'titlesize' : 30
                         }
 matplotlib_rc['figure'] = {    
-                        'autolayout' : True,
+                        'constrained_layout.use' : True,
                         'titlesize' : 30,
                         'figsize' : [10.,8.]
                         }

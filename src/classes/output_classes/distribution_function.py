@@ -718,7 +718,7 @@ class Distribution_Function(classes.base_output.LOCUST_output):
             dx,dy=X[1]-X[0],Y[1]-Y[0]
 
             Y,X=np.meshgrid(Y-dy/2.,X-dx/2.) #offset ticks onto bin centres
-            Z=self[key] #2D array (nR_1D,nZ_1D) of poloidal flux
+            Z=self[key]
 
             if vminmax:
                 vmin=vminmax[0]
