@@ -492,7 +492,7 @@ program mars_read
 ! *** Author:
 !
 !     Rob Akers, D3/1.36, Culham Centre for Fusion Energy, x6323 : original
-!     Samuel Ward, 81/147, ITER organization, samuel.ward@iter.org, +33 4 42 17 81 59 : LOCUST_IO workflow additions
+!     Samuel Ward, 81/147, ITER organization, samuel.ward@york.ac.uk : LOCUST_IO workflow additions
 !
 ! *** Error flags:               
 !

@@ -112,4 +112,4 @@ my_equilibrium.B_calc()
 
 ## How To Cite
 
-Samuel H. Ward. __LOCUST_IO__, University of York, Culham Centre for Fusion Energy and ITER organization, samuel.ward@iter.org
+Samuel H. Ward. __LOCUST_IO__, University of York, Culham Centre for Fusion Energy and ITER organization, samuel.ward@york.ac.uk
