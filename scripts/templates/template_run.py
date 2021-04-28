@@ -1196,6 +1196,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 dBR,dBphi,dBZ=rBRn6,rBPn6,rBZn6
             else:
                 dBR,dBphi,dBZ=[np.full(num_points,0.)]*3
+                d['phi_tor']=np.full(num_points,0.)
 
             plt.rc('text', usetex=True)
 
