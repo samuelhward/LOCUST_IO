@@ -106,7 +106,7 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
 
     I_j=waveform(n_0=n_0,phi=coil_data_options[tokamak]['coil_locations'],phase_shift=coil_data_options[tokamak]['phase_shift_coils'][:,None])
 
-    #manually fourier transform to n space
+    #manually fourier transform to n space (eq 4 and 7 in notes)
     n_axis=np.linspace(1,n_range,n_range,dtype=int)
     I_n_cos=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))
     I_n_sin=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))

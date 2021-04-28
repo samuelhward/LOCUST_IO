@@ -1212,10 +1212,10 @@ dPH_MARS(j) = N_fundamental * PH1(j)
 
 #if (TOKAMAK==1)
 
-if( NC == 3 )then
+if( NC==3 .or. NC==4)then
       cp = +cos( -dPH_MARS(j)*pi/180.0_gpu )
       sp =  sin( -dPH_MARS(j)*pi/180.0_gpu )
-elseif( NC==6 )then
+elseif( NC==5 .or. NC == 6)then
       cp = +cos( (-9.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
       sp =  sin( (-9.0_gpu*PH0(j) + dPH_MARS(j) )*pi/180.0_gpu )
 elseif( NC==12 )then

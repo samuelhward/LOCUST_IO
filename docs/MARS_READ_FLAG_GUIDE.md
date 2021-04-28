@@ -2,6 +2,7 @@
 
 |     flag     |           description           |
 |--------------|---------------------------------|
+| `N0`=X       | fundamental toroidal mode number|
 | `NC`=X       | toroidal mode number            |
 | `COILROW`=X  | coil row number to dump (1-3)   |
 | `TOKAMAK`=1  | set tokamak to ITER             |
