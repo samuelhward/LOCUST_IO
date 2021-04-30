@@ -2050,9 +2050,7 @@ def generate_NBI_geometry(machine='ITER',**properties):
             for beamletgroup_column in range(data['number_columns_per_unit']):
                 for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
                     data['beamlet_angle_vertical'][:,beamletgroup_column,beamletgroup_segment,:,:]+=np.arctan2(data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:],data['beamletgroup_focal_length']) - data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]
-            print(np.arctan2(data['beamlet_centres_Y_machine'][:,beamletgroup_column,beamletgroup_segment,:,:],data['beamletgroup_focal_length']))
-            print(data['beamletgroup_angle_vertical'])
-            data['beamlet_tilt']=49.2*1.e-3*1.e3 #[rad]
+            data['beamlet_tilt']=49.2*1.e-3 #[rad]
         elif 'heating' in beam_name:
             data['beamlet_angle_vertical']+=49.2*1.e-3 #beamlet downward vertical tilt - same for all beamlets [rad] (beta_y in drawings)
             #on-off axis settings
@@ -2212,11 +2210,15 @@ def create_IDS_NBI(shot,run,**properties):
 
         #add operating data for this unit
         IDS.nbi.unit[unit].power_launched.data=np.array([nbi_data['power']]) 
+        IDS.nbi.unit[unit].power_launched.time=np.array([0.]) 
         IDS.nbi.unit[unit].energy.data=np.array([nbi_data['energy_full']])
+        IDS.nbi.unit[unit].energy.time=np.array([0.])
         IDS.nbi.unit[unit].species.a=nbi_data['a']
         IDS.nbi.unit[unit].species.z_n=nbi_data['z'] 
         IDS.nbi.unit[unit].beam_current_fraction.data=np.array([[fraction] for fraction in nbi_data['beam_current_fraction']],ndmin=2) #extra dim over timeslices
+        IDS.nbi.unit[unit].beam_current_fraction.time=np.array([0.])
         IDS.nbi.unit[unit].beam_power_fraction.data=np.array([[fraction] for fraction in nbi_data['beam_power_fraction']],ndmin=2) #extra dim over timeslices
+        IDS.nbi.unit[unit].beam_power_fraction.time=np.array([0.])
 
     IDS.nbi.ids_properties.homogeneous_time=1
     IDS.nbi.time=np.array([0.0])
