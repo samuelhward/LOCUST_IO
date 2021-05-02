@@ -21,8 +21,25 @@ colmap=matplotlib.cm.get_cmap('plasma') #set default colourmap
 import numpy as np
 
 
+#agreeing directions:
+'''
+i3dr=-1
+phase=90
+n=-3
+phi=np.linspace(0,2*3.14159,100)
+R=2.0701
+Z=0.69999
+
 i3dr=+1
-phase=np.pi/2
+phase=90
+n=-3
+phi=np.linspace(0,2*3.14159,100)
+R=2.0701
+Z=0.69999
+'''
+
+i3dr=+1
+phase=90
 n=-3
 phi=np.linspace(0,2*3.14159,100)
 R=2.0701
@@ -30,9 +47,7 @@ Z=0.69999
 
 p=pert('','LOCUST','sample_BPLASMA_n3',mode_number=n)
 p.plot_components(R=R,Z=Z,phi=0,phase=phase,i3dr=i3dr,colmap=colmap,absolute=False,vminmax=[0,0.006])
-
 #print([dB for dB in p.evaluate(R=,phi=,Z=)]) #compare vs example field
-
 exit()
 
 #Mike's code

@@ -55,7 +55,7 @@ switch='i3dr' #XXX instead of commenting etc. could add command line argparse
 
 harmonic='n3'
 harmonic='n-3'
-#harmonic='n-3_phase_90' 
+harmonic='n-3_phase_90' 
 
 pulse='157418'
 code='LOCUST'
@@ -64,8 +64,8 @@ folder='3D_field_checks'
 filename_eq=pathlib.Path(pulse) / code / 'g157418.03000' 
 equi=Equilibrium(filename_eq,'GEQDSK',filename_eq)
 
-per_rot=perturbation('rot','LOCUST_field_data',pathlib.Path(pulse) / folder / switch / harmonic / 'field_data.out_rot') #check our perturbation at fixed RZ point but rotating toroidally
-per_plane=perturbation('plane','LOCUST_field_data',pathlib.Path(pulse) / folder / switch / harmonic / 'field_data.out_plane') #check out perturbation at fixed toroidal point and examine poloidal plane
+per_rot=perturbation('rot','LOCUST_field_data',pathlib.Path(pulse) / code / folder / switch / harmonic / 'field_data.out_rot') #check our perturbation at fixed RZ point but rotating toroidally
+per_plane=perturbation('plane','LOCUST_field_data',pathlib.Path(pulse) / code / folder / switch / harmonic / 'field_data.out_plane') #check out perturbation at fixed toroidal point and examine poloidal plane
 
 #plane is on regular poloidal grid - infer the grid dimensions
 Z_dim=int(np.where(per_plane['R']==per_plane['R'][0])[0].size)

@@ -81,17 +81,20 @@ import processing.utils
 shot_number='157418'
 
 response_type='response'    
-response_type='vacuum'
-response_type='response_hi_res'
-response_type='response_hi_res_90_i3dr-1' # --> great shape, but total losses ~ 12%
+#response_type='vacuum'
+#response_type='response_hi_res'
+response_type='response_hi_res_90_i3dr-1'
 #response_type='response_hi_res_-90_i3dr1'
-response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #XXX latest re-runs --> same fit as DCTDC2 but losses 11.4%
-#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2' #XXX latest re-runs --> good overall loss agreement + shape in E pitch (not so much E)
+#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #XXX latest re-runs
+##response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2' #XXX latest re-runs
 #response_type='response_hi_res_90_i3dr+1_n-3' #XXX currently running on 8
 
+response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #latest runs
+#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2'
 
-folder_2D='2D_23ms'  
-folder_3D='3D_23ms'
+
+#folder_2D='2D_23ms'  
+#folder_3D='3D_23ms'
 folder_2D='2D_full_slow'  
 folder_3D='3D_full_slow'
 
@@ -212,51 +215,101 @@ DFN_3D.plot(fig=fig,ax=ax2,axes=['R','Z'],real_scale=True,limiters=wall)
 #DFN_3D_split.plot(fig=fig,ax=ax3,axes=['R'],status_flags=['PFC_intercept_3D'],colmap=settings.cmap_r,weight=True,style='histogram',number_bins=100) 
 
 
-moment_to_plot='density'
-MOM_2D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_b)
-MOM_3D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_k)
-ax4.set_xlim([0.6,1.1])
-ax4.set_ylim([0.,8e11])
-plt.show()
+#moment_to_plot='density'
+#MOM_2D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_b)
+#MOM_3D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_k)
+#ax4.set_xlim([0.6,1.1])
+#ax4.set_ylim([0.,8e11])
+#plt.show()
 
 #XXX commented out whilst FPL is too big plt.plot(100*DFN_2D_split['PFC_power']/Pdep_2D_desired,color='b') #100 to turn into percentage
 #XXX commented out whilst FPL is too big plt.plot(100*DFN_3D_split['PFC_power']/Pdep_3D_desired,color='k')
-plt.title('% PFC power/Pdep')
-plt.legend(('2D','3D'))
+#plt.title('% PFC power/Pdep')
+#plt.legend(('2D','3D'))
+#plt.show()
+
+
+# read SPIRAL data
+filepath_sav=support.dir_output_files / shot_number / 'SPIRAL_output' / 'all_variables_for_sam.sav'
+sav=readsav(filepath_sav)
+
+# check SPIRAL data
+fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2) #plot the difference
+mesh1=ax1.contourf(sav['ehis'],sav['phis'],sav['surfhist_wc']-sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True)
+cbar1=fig.colorbar(mesh1,ax=ax1,orientation='vertical')
+mesh2=ax2.contourf(sav['ehis'],sav['phis'],sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True)
+cbar2=fig.colorbar(mesh2,ax=ax2,orientation='vertical')
+
+# check LOCUST data
+
+DFN_diff=copy.deepcopy(DFN_3D)
+DFN_diff['dfn']=DFN_3D['dfn']-DFN_2D['dfn']
+DFN_diff_mesh=DFN_diff.plot(ax=ax3,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=True,number_bins=10)
+DFN_2D_mesh=DFN_2D.plot(ax=ax4,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=True,number_bins=10)
+cbar3=fig.colorbar(DFN_diff_mesh,ax=ax3,orientation='vertical')
+cbar4=fig.colorbar(DFN_2D_mesh,ax=ax4,orientation='vertical')
 plt.show()
+
+# check LOCUST+SPIRAL data
+fig,ax=plt.subplots(1)
+mesh1=ax1.contour(sav['ehis'],sav['phis'],sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True,levels=5)
+DFN_2D_mesh=DFN_2D.plot(ax=ax,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=False,number_bins=5)
+ax.set_xlim(10,80)
+plt.show()
+
+
+#remove silly numbers from array
+def remove_outliers(array):
+    array[array==np.inf]=1.e2
+    array[array==-np.inf]=1.e2
+    array[array>1.e10]=1.e2
+    array[array<-1.e10]=1.e2
+    return array
 
 fig,((ax1))=plt.subplots(1) #plot the difference
 
-vminmax=[0,1]
-number_bins_diff=7
+vminmax=[-1.5,0]
+number_bins_diff=10
 
 #compare with Mike's data
-filepath_sav=support.dir_output_files / shot_number / 'SPIRAL_output' / 'all_variables_for_sam.sav'
-sav=readsav(filepath_sav)
 X=copy.deepcopy(sav['ehis'])
 Y=copy.deepcopy(sav['phis'])
-Z=copy.deepcopy(sav['surfhist_wc']-sav['surfhist_noc'])
-#Z/=np.mean(sav['surfhist_noc']) #normalise
-Z=(Z-np.max(Z))/(np.min(Z)-np.max(Z)) #normalise
+Z=np.nan_to_num(np.abs(sav['surfhist_wc']-sav['surfhist_noc'])/sav['surfhist_noc']) #normalise
+print(f"spiral total fractional change = {np.sum(np.abs(sav['surfhist_wc']-sav['surfhist_noc']))/np.sum(sav['surfhist_noc'])}")
+Z=remove_outliers(Z)
+Z=np.log10(Z)
+Z=remove_outliers(Z)
+print(f'spiral max = {np.max(Z)}')
+print(f'spiral min = {np.min(Z)}')
+print(f'spiral mean = {np.mean(Z)}')#print(np.mean(np.nan_to_num(np.abs(sav['surfhist_wc']-sav['surfhist_noc'])/sav['surfhist_noc'],nan=1e-5)))
+#Z=(Z-np.max(Z))/(np.min(Z)-np.max(Z)) #normalise
 #Z/=np.sum(Z)*(sav['ehis'][1]-sav['ehis'][0])*(sav['phis'][1]-sav['phis'][0]) #normalise
 X,Y=np.meshgrid(X,Y) #dfn is r,z so need to swap order here
 #mesh=ax1.contourf(X,Y,Z,levels=np.linspace(vminmax[0],vminmax[1],num=number_bins_diff),colors=settings.cmap_plasma(np.linspace(vminmax[0],vminmax[1],num=number_bins_diff)),edgecolor='none',linewidth=0,antialiased=True,vmin=vminmax[0],vmax=vminmax[1])
 mesh=ax1.contourf(X,Y,Z,cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True,levels=np.linspace(vminmax[0],vminmax[1],num=number_bins_diff))
+#mesh=ax1.contourf(X,Y,Z,cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True)
 SPIRAL_contours,_ = mesh.legend_elements()
 axes=['R','Z']
 axes=['E','V_pitch']
 DFN_diff=copy.deepcopy(DFN_3D)
-DFN_diff['dfn']=(DFN_3D['dfn']-DFN_2D['dfn'])
-print(f"total difference in FI fraction LOCUST ={100*(DFN_3D.transform(axes=['N'])['dfn']-DFN_2D.transform(axes=['N'])['dfn'])/DFN_2D.transform(axes=['N'])['dfn']}")
-print(f"total difference in FI fraction SPIRAL ={100*(np.sum(sav['surfhist_wc'])-np.sum(sav['surfhist_noc']))/(np.sum(sav['surfhist_noc']))}")
-
+DFN_diff['dfn']=DFN_3D['dfn']-DFN_2D['dfn']
+print(f"locust total fractional change = {np.sum(np.abs(DFN_3D['dfn']-DFN_2D['dfn']))/np.sum(DFN_2D['dfn'])}")
 #DFN_diff['dfn']/=DFN_diff.transform(axes=['N'])['dfn'] #normalise
 DFN_diff=DFN_diff.transform(axes=axes)
-#DFN_diff['dfn']/=np.mean(DFN_2D.transform(axes=axes)['dfn']) #normalise
-DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
+DFN_diff['dfn']=np.nan_to_num(np.abs(DFN_diff['dfn'])/DFN_2D.transform(axes=axes)['dfn']) #normalise
+DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
+DFN_diff['dfn']=np.log10(DFN_diff['dfn'])
+DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
+print(f"locust max = {np.max(DFN_diff['dfn'])}")
+print(f"locust min = {np.min(DFN_diff['dfn'])}")
+print(f"locust mean = {np.mean(DFN_diff['dfn'])}")
+#import sys
+#sys.exit()
+#DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
 DFN_diff['E']/=1000 #convert to keV for plotting
 #eq.plot(ax=ax1,fig=fig,key='flux_tor_norm_rz',vminmax=[0.7,1.],fill=False,number_bins=2) #XXX
-DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_w,fill=False,number_bins=number_bins_diff,vminmax=vminmax,transform=False)
+DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_inferno,fill=False,number_bins=number_bins_diff,vminmax=vminmax,transform=False)
+#DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_inferno,fill=False,transform=False)
 LOCUST_contours,_ = DFN_diff_mesh.legend_elements()    
 cbar=fig.colorbar(mesh,ax=ax1,orientation='vertical')
 cbar.add_lines(DFN_diff_mesh)
@@ -271,6 +324,7 @@ ax1.set_title(r'Fast-ion density reduction due to $n$=3 magnetic perturbation')
 fig.set_tight_layout(True)  
 plt.show()
 
+axis='V_pitch'
 axis='E'
 if axis=='V_pitch':
     axis_to_integrate=1
@@ -284,21 +338,26 @@ elif axis=='E':
     convert_to_eV=1.
 
 fig,((ax1))=plt.subplots(1) #plot the difference in E space
-Z=copy.deepcopy(sav['surfhist_wc']-sav['surfhist_noc'])
-d_axis=(sav[quantity_to_integrate][1]-sav[quantity_to_integrate][0])*convert_to_eV
-Z=np.sum(d_axis*Z,axis=axis_to_integrate)
-#Z/=np.mean(np.sum(d_axis*sav['surfhist_noc'],axis=axis_to_integrate)) #normalise
-Z=(Z-np.max(Z))/(np.min(Z)-np.max(Z)) #normalise
+#Z=copy.deepcopy(sav['surfhist_wc']-sav['surfhist_noc'])
+
+surfhist_wc_summed=np.sum(sav['surfhist_wc'],axis=axis_to_integrate)
+surfhist_noc_summed=np.sum(sav['surfhist_noc'],axis=axis_to_integrate)
+Z=np.nan_to_num(np.abs(surfhist_wc_summed-surfhist_noc_summed)/surfhist_noc_summed) #normalise
+Z=remove_outliers(Z)
+Z=np.log10(Z)
+Z=remove_outliers(Z)
+#Z=(Z-np.max(Z))/(np.min(Z)-np.max(Z)) #normalise
 #Z/=np.sum(Z)*(sav['ehis'][1]-sav['ehis'][0])*(sav['phis'][1]-sav['phis'][0])*convert_to_eV #normalise
 ax1.plot(sav[quantity_to_plot_against],Z,color='red')
-DFN_diff=copy.deepcopy(DFN_3D)
-DFN_diff['dfn']=(DFN_3D['dfn']-DFN_2D['dfn'])
-#DFN_diff['dfn']/=DFN_diff.transform(axes=['N'])['dfn'] #normalise
-DFN_diff=DFN_diff.transform(axes=[axis])
-#DFN_diff['dfn']/=np.mean(DFN_2D.transform(axes=[axis])['dfn']) #normalise
 
+DFN_diff=copy.deepcopy(DFN_3D)
+DFN_diff['dfn']=DFN_3D.transform(axes=[axis])['dfn']-DFN_2D.transform(axes=[axis])['dfn']
+DFN_diff['dfn']=np.nan_to_num(np.abs(DFN_diff['dfn'])/DFN_2D.transform(axes=[axis])['dfn']) #normalise
+DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
+DFN_diff['dfn']=np.log10(DFN_diff['dfn'])
+DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
 DFN_diff['E']/=1000 #convert to keV for plotting
-DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
+#DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
 DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=[axis],colmap=settings.cmap_k,transform=False)
 
 plt.title('')
