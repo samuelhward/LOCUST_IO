@@ -80,18 +80,28 @@ import processing.utils
 
 shot_number='157418'
 
-response_type='response'    
+#response_type='response'    
 #response_type='vacuum'
 #response_type='response_hi_res'
-response_type='response_hi_res_90_i3dr-1'
 #response_type='response_hi_res_-90_i3dr1'
-#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #XXX latest re-runs
-##response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2' #XXX latest re-runs
-#response_type='response_hi_res_90_i3dr+1_n-3' #XXX currently running on 8
+response_type='response_hi_res_90_i3dr-1_n-3' #best fit
+#response_type='response_hi_res_90_i3dr+1_n-3' #need to run
 
-response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #latest runs
-#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2'
+#latest runs
+#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2' #~20% max loss
+#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2'  #~40% max loss
+#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2_2D_wall'
+#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2_2D_wall'
 
+#running
+#response_type='response_hi_res_90_i3dr+1_n-3_2D_wall' #running on 8
+#response_type='response_hi_res_90_i3dr-1_n-3_2D_wall' #running on 9
+
+#need these 2D runs
+#3D wall noDCTDC2 running on 7
+#2D wall noDCTDC2
+#3D wall done
+#2D wall 
 
 #folder_2D='2D_23ms'  
 #folder_3D='3D_23ms'
@@ -109,6 +119,8 @@ wall_filename=eq_filename
 
 DFN_2D=DFN(ID='2D',data_format='LOCUST',filename=DFN_2D_filename)
 DFN_3D=DFN(ID='3D',data_format='LOCUST',filename=DFN_3D_filename)
+DFN_2D['E']/=1000. #convert to keV
+DFN_3D['E']/=1000.
 #XXX commented out whilst FPL is too big DFN_2D_split=FPL(ID='2D -DSPLIT',data_format='LOCUST',filename=DFN_2D_split_filename,compression=True,coordinates=['R','Z','phi','V_R','V_tor','V_Z','status_flag','time','PFC_intercept','additional_flag1'])
 #XXX commented out whilst FPL is too big DFN_3D_split=FPL(ID='3D -DSPLIT',data_format='LOCUST',filename=DFN_3D_split_filename,compression=True,coordinates=['R','Z','phi','V_R','V_tor','V_Z','status_flag','time','PFC_intercept','additional_flag1'])
 MOM_2D=Mom(ID='2D moments',data_format='LOCUST',filename=MOM_2D_filename)
@@ -180,13 +192,13 @@ DFN_2D.set(flux_tor_norm_rz=flux_tor_norm_rz)
 DFN_3D.set(flux_tor_norm_rz=flux_tor_norm_rz)
 DFN_2D['dfn'][...,flux_tor_norm_rz<rho_crop]=0.
 DFN_3D['dfn'][...,flux_tor_norm_rz<rho_crop]=0.
-DFN_2D['dfn'][:,DFN_2D['E']<1.e4,:,:,:]=0. #cut off DFN below 10keV
-DFN_3D['dfn'][:,DFN_3D['E']<1.e4,:,:,:]=0.
+DFN_2D['dfn'][:,DFN_2D['E']<10.,:,:,:]=0. #cut off DFN below 10keV
+DFN_3D['dfn'][:,DFN_3D['E']<10.,:,:,:]=0.
 #'''
 
 
 
-fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2)
+#fig,((ax1,ax2),(ax3,ax4))=plt.subplots(2,2)
 
 '''
 mesh_2D=DFN_2D.plot(fig=fig,ax=ax1,axes=['E','V_pitch'],vminmax=[0,30000.])
@@ -197,8 +209,8 @@ ax2.set_xlim(10000,85000)
 ax2.set_ylim(-1,1)
 '''
 
-DFN_2D.plot(fig=fig,ax=ax1,axes=['R','Z'],real_scale=True,limiters=wall)
-DFN_3D.plot(fig=fig,ax=ax2,axes=['R','Z'],real_scale=True,limiters=wall)
+#DFN_2D.plot(fig=fig,ax=ax1,axes=['R','Z'],real_scale=True,limiters=wall)
+#DFN_3D.plot(fig=fig,ax=ax2,axes=['R','Z'],real_scale=True,limiters=wall)
 #for ax,mesh in zip([ax1,ax2],[mesh_2D,mesh_3D]):
 #    cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
 
@@ -241,7 +253,6 @@ mesh2=ax2.contourf(sav['ehis'],sav['phis'],sav['surfhist_noc'],cmap=settings.cma
 cbar2=fig.colorbar(mesh2,ax=ax2,orientation='vertical')
 
 # check LOCUST data
-
 DFN_diff=copy.deepcopy(DFN_3D)
 DFN_diff['dfn']=DFN_3D['dfn']-DFN_2D['dfn']
 DFN_diff_mesh=DFN_diff.plot(ax=ax3,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=True,number_bins=10)
@@ -251,9 +262,21 @@ cbar4=fig.colorbar(DFN_2D_mesh,ax=ax4,orientation='vertical')
 plt.show()
 
 # check LOCUST+SPIRAL data
-fig,ax=plt.subplots(1)
-mesh1=ax1.contour(sav['ehis'],sav['phis'],sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',linewidth=0,antialiased=True,levels=5)
-DFN_2D_mesh=DFN_2D.plot(ax=ax,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=False,number_bins=5)
+fig,(ax1,ax2)=plt.subplots(2)
+DFN_2D_mesh=DFN_2D.plot(ax=ax1,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=False,number_bins=5)
+DFN_3D_mesh=DFN_3D.plot(ax=ax2,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=False,number_bins=5)
+mesh1=ax1.contour(sav['ehis'],sav['phis'],sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',antialiased=True,levels=5,linestyles='dashed')
+mesh2=ax2.contour(sav['ehis'],sav['phis'],sav['surfhist_wc'],cmap=settings.cmap_inferno,edgecolor='none',antialiased=True,levels=5,linestyles='dashed')
+ax1.set_xlim(10,80)
+ax2.set_xlim(10,80)
+plt.show()
+
+# look at un-normalised dF
+fig,(ax)=plt.subplots(1)
+DFN_diff=copy.deepcopy(DFN_3D)
+DFN_diff['dfn']=DFN_3D.transform(axes=['E','V_pitch'])['dfn']-DFN_2D.transform(axes=['E','V_pitch'])['dfn']
+DFN_diff_mesh=DFN_diff.plot(ax=ax,fig=fig,axes=['E','V_pitch'],colmap=settings.cmap_inferno,fill=False,number_bins=5,transform=False)
+mesh=ax.contour(sav['ehis'],sav['phis'],sav['surfhist_wc']-sav['surfhist_noc'],cmap=settings.cmap_inferno,edgecolor='none',antialiased=True,levels=5,linestyles='dashed')
 ax.set_xlim(10,80)
 plt.show()
 
@@ -293,7 +316,7 @@ axes=['R','Z']
 axes=['E','V_pitch']
 DFN_diff=copy.deepcopy(DFN_3D)
 DFN_diff['dfn']=DFN_3D['dfn']-DFN_2D['dfn']
-print(f"locust total fractional change = {np.sum(np.abs(DFN_3D['dfn']-DFN_2D['dfn']))/np.sum(DFN_2D['dfn'])}")
+print(f"locust total fractional change = {np.sum(np.abs(DFN_3D.transform(axes=axes)['dfn']-DFN_2D.transform(axes=axes)['dfn']))/np.sum(DFN_2D.transform(axes=axes)['dfn'])}")
 #DFN_diff['dfn']/=DFN_diff.transform(axes=['N'])['dfn'] #normalise
 DFN_diff=DFN_diff.transform(axes=axes)
 DFN_diff['dfn']=np.nan_to_num(np.abs(DFN_diff['dfn'])/DFN_2D.transform(axes=axes)['dfn']) #normalise
@@ -306,7 +329,6 @@ print(f"locust mean = {np.mean(DFN_diff['dfn'])}")
 #import sys
 #sys.exit()
 #DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
-DFN_diff['E']/=1000 #convert to keV for plotting
 #eq.plot(ax=ax1,fig=fig,key='flux_tor_norm_rz',vminmax=[0.7,1.],fill=False,number_bins=2) #XXX
 DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_inferno,fill=False,number_bins=number_bins_diff,vminmax=vminmax,transform=False)
 #DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_inferno,fill=False,transform=False)
@@ -324,8 +346,8 @@ ax1.set_title(r'Fast-ion density reduction due to $n$=3 magnetic perturbation')
 fig.set_tight_layout(True)  
 plt.show()
 
-axis='V_pitch'
 axis='E'
+axis='V_pitch'
 if axis=='V_pitch':
     axis_to_integrate=1
     quantity_to_integrate='ehis'
@@ -356,7 +378,6 @@ DFN_diff['dfn']=np.nan_to_num(np.abs(DFN_diff['dfn'])/DFN_2D.transform(axes=[axi
 DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
 DFN_diff['dfn']=np.log10(DFN_diff['dfn'])
 DFN_diff['dfn']=remove_outliers(DFN_diff['dfn'])
-DFN_diff['E']/=1000 #convert to keV for plotting
 #DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
 DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=[axis],colmap=settings.cmap_k,transform=False)
 
