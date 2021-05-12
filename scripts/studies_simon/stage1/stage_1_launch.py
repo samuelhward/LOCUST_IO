@@ -11,6 +11,8 @@ stage 1
     - fix Pr=0.3 and τφ/τE=2.
     - vary n=3,n=4 + sideband
     - vary absolute toroidal phase in 6 steps
+    - 12 runs
+
 ---
  
 notes:         
