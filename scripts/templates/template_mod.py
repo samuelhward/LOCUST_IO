@@ -280,7 +280,6 @@ table_species_AZ['deuterium']=[2.,1.] #need to stay floats
 table_species_LOCUST['deuterium']='AD'
 table_species_AZ['tritium']=[3.,1.]
 table_species_LOCUST['tritium']='AT'
-'''
 table_species_AZ['helium3']=[3.,2.]
 table_species_LOCUST['helium3']='AHe3'
 table_species_AZ['helium']=[4.,2.]
@@ -293,7 +292,6 @@ table_species_AZ['neon']=[20.2,10.]
 table_species_LOCUST['neon']='ANe20'
 table_species_AZ['tungsten']=[183.8,74.]
 table_species_LOCUST['tungsten']='AW184'
-'''
 
 fraction_beryllium=0.02
 fraction_neon=0.002
@@ -359,7 +357,9 @@ config_beam_species=config_beam_species_default
 #initialise all the lists of arguments passed to the batch study from the launch script
 args_batch={}
 
-args_batch_names=['parameters__sheet_name_kinetic_prof',
+args_batch_names=[
+                  'simulation__plasma_species'
+                  'parameters__sheet_name_kinetic_prof',
                   'parameters__sheet_name_rotation',
                   'parameters__var_name_rotation',
                   'parameters__toroidal_mode_numbers',
