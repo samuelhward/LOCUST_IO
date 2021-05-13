@@ -414,6 +414,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         """
 
         notes:
+            XXX broken - need to copy structure/logic in get_kinetic_profiles_excel
             cannot currently use since IDSs do not contain:
                 ids.core_profiles.profiles_1d[0].grid.rho_tor
                 ids.core_profiles.profiles_1d[0].grid.rho_tor_norm
@@ -498,9 +499,11 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 density['n']*=fraction_neon #assumed .2% electron density
                 density.properties['species']=species_name #re-label species type
 
-            elif {species for species in table_species_AZ}=={'deuterium','tritium'}: #if running pure DT set DT densities to half electron density 
+            # if running with just H isotopes then set as fraction of electron density 
+            # (assume same H isotope density throughout plasma)
+            elif {species for species in table_species_AZ}<={'hydrogen','deuterium','tritium'}:
                 density=copy.deepcopy(density_electrons)
-                density['n']*=.5 #assumed 50% electron density
+                density['n']/=float(len({species for species in table_species_AZ})) #assume equal contributions from each species, however many there are
                 density.properties['species']=species_name #re-label species type
 
             else:
