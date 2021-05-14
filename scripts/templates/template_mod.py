@@ -358,7 +358,7 @@ config_beam_species=config_beam_species_default
 args_batch={}
 
 args_batch_names=[
-                  'simulation__plasma_species'
+                  'parameters__plasma_species'
                   'parameters__sheet_name_kinetic_prof',
                   'parameters__sheet_name_rotation',
                   'parameters__var_name_rotation',

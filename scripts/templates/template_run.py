@@ -348,7 +348,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         temperatures=[]
         rotations=[]
         #loop through all non-electronic ion species and grab number density
-        for species_name in self.args['simulation__plasma_species']:
+        for species_name in self.args['parameters__plasma_species']:
             species_AZ=table_species_AZ[species_name]        
             try:
                 for filename in list((support.dir_input_files / self.args['LOCUST_run__dir_input']).glob(f'density_{species_name}*')):
@@ -446,7 +446,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         species_densities=[]
 
         #loop through all non-electronic ion species and set number density
-        for species_name in self.args['simulation__plasma_species']:
+        for species_name in self.args['parameters__plasma_species']:
             species_AZ=table_species_AZ[species_name]        
             try:
                 density=Number_Density(ID='',data_format='IDS',
@@ -493,7 +493,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         species_present=[] #record which ion species we find in excel
         species_densities=[]
         #loop through all non-electronic ion species and set number density
-        for species_name in self.args['simulation__plasma_species']:
+        for species_name in self.args['parameters__plasma_species']:
             species_AZ=table_species_AZ[species_name]        
 
             if species_name is 'beryllium':
@@ -508,9 +508,9 @@ class RMP_study_run(run_scripts.workflow.Workflow):
 
             # if running with just H isotopes then set as fraction of electron density 
             # (assume same H isotope density throughout plasma)
-            elif {species for species in self.args['simulation__plasma_species']}<={'hydrogen','deuterium','tritium'}:
+            elif {species for species in self.args['parameters__plasma_species']}<={'hydrogen','deuterium','tritium'}:
                 density=copy.deepcopy(density_electrons)
-                density['n']/=float(len({species for species in self.args['simulation__plasma_species']})) #assume equal contributions from each species, however many there are
+                density['n']/=float(len({species for species in self.args['parameters__plasma_species']})) #assume equal contributions from each species, however many there are
                 density.properties['species']=species_name #re-label species type
 
             else:
@@ -708,7 +708,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         new_IDS.core_profiles.profiles_1d[0].grid.rho_tor_norm=(rho_tor_core_prof-rho_tor_core_prof[0])/(rho_tor_core_prof[-1]-rho_tor_core_prof[0]) #remove rho_tor_norm as this grid seems to be different
 
         #if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
-        az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['simulation__plasma_species']})
+        az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['parameters__plasma_species']})
         for ion_counter,ion in enumerate(new_IDS.core_profiles.profiles_1d[0].ion):
             if [ion.element[0].a,ion.element[0].z_n] not in az_avail: 
                 new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
@@ -747,7 +747,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         density_electrons.dump_data(data_format='IDS',shot=self.args['IDS__shot'],run=self.args['IDS__run'],species='electrons')
 
         #loop through all non-electronic ion species and set equal temperature
-        for species_name in self.args['simulation__plasma_species']:
+        for species_name in self.args['parameters__plasma_species']:
             species_AZ=table_species_AZ[species_name]        
 
             temperature=Temperature(ID='',data_format='EXCEL1',species='ions',filename=self.args['RMP_study__filepath_kinetic_profiles'].relative_to(support.dir_input_files),sheet_name=self.args['parameters__sheet_name_kinetic_prof'])
@@ -763,9 +763,9 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 density['n']*=fraction_neon #assumed .2% electron density
                 density.properties['species']=species_name #re-label species type
 
-            elif {species for species in self.args['simulation__plasma_species']}<={'hydrogen','deuterium','tritium'}:
+            elif {species for species in self.args['parameters__plasma_species']}<={'hydrogen','deuterium','tritium'}:
                 density=copy.deepcopy(density_electrons)
-                density['n']/=float(len({species for species in self.args['simulation__plasma_species']})) #assume equal contributions from each species, however many there are
+                density['n']/=float(len({species for species in self.args['parameters__plasma_species']})) #assume equal contributions from each species, however many there are
                 density.properties['species']=species_name #re-label species type
 
 
@@ -806,7 +806,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         densities.append(density_electrons)
 
         #loop through all non-electronic ion species and set number density            
-        for species_name in self.args['simulation__plasma_species']:
+        for species_name in self.args['parameters__plasma_species']:
             species_AZ=table_species_AZ[species_name]        
             density=None
             #XXX add species which are 'assumed' - these are not contained in the data anywhere right now
@@ -921,7 +921,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         except:
             raise ImportError("ERROR: read_beam_depo_IDS could not import IMAS module!\nreturning\n")
             return
-        az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['simulation__plasma_species']})
+        az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['parameters__plasma_species']})
         IDS=imas.ids(self.args['IDS__shot'],self.args['IDS__run'])
         IDS.open_env(self.args['IDS__username'],self.args['IDS__imasdb'],settings.imas_version) 
         IDS.core_profiles.get()
@@ -1499,7 +1499,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='run RMP_study from command line in Python!')
     
 
-    parser.add_argument('--simulation__plasma_species',type=str,action='store',dest='simulation__plasma_species',help="",default='"{}"'.format(['deuterium','tritium']))
+    parser.add_argument('--parameters__plasma_species',type=str,action='store',dest='parameters__plasma_species',help="",default='"{}"'.format(['deuterium','tritium']))
     parser.add_argument('--parameters__sheet_name_kinetic_prof',type=str,action='store',dest='parameters__sheet_name_kinetic_prof',help="",default=None)
     parser.add_argument('--parameters__sheet_name_rotation',type=str,action='store',dest='parameters__sheet_name_rotation',help="",default=None)
     parser.add_argument('--parameters__var_name_rotation',type=str,action='store',dest='parameters__var_name_rotation',help="",default=None)
@@ -1553,7 +1553,7 @@ if __name__=='__main__':
     args.MARS_read__flags=run_scripts.utils.command_line_arg_parse_dict(args.MARS_read__flags)
     args.NEMO_run__xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.NEMO_run__xml_settings)
     args.BBNBI_run__xml_settings=run_scripts.utils.command_line_arg_parse_dict(args.BBNBI_run__xml_settings)
-    args.simulation__plasma_species=run_scripts.utils.literal_eval(args.simulation__plasma_species)
+    args.parameters__plasma_species=run_scripts.utils.literal_eval(args.parameters__plasma_species)
     args.RMP_study__filepaths_3D_fields_U=run_scripts.utils.literal_eval(args.RMP_study__filepaths_3D_fields_U)
     args.RMP_study__filepaths_3D_fields_M=run_scripts.utils.literal_eval(args.RMP_study__filepaths_3D_fields_M)
     args.RMP_study__filepaths_3D_fields_L=run_scripts.utils.literal_eval(args.RMP_study__filepaths_3D_fields_L)
