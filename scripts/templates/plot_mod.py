@@ -92,7 +92,7 @@ except:
 try:
     #cwd=pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
     #sys.path.append(str(cwd.parents[1]))
-    from .templates.template_mod import *
+    from .template_mod import *
 except:
     raise ImportError("ERROR: templates/template_mod.py could not be imported!\nreturning\n") 
     sys.exit(1)
