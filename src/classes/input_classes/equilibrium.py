@@ -221,6 +221,7 @@ def read_equilibrium_IDS(shot,run,**properties):
     notes:
         idum not read
         assumes dim1, dim2 of IDS are R,Z respectively
+        reads limiter and LCFS from same source
     """
  
     print("reading equilibrium from IDS")
@@ -247,10 +248,10 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['zmaxis']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.magnetic_axis.z).reshape([])
     input_data['simag']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_axis/(2.0*constants.pi)).reshape([]) #convert to Wb/rad
     input_data['sibry']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.psi_boundary/(2.0*constants.pi)).reshape([]) #convert to Wb/rad
-    input_data['current']=np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])
+    input_data['current']=np.abs(np.asarray(input_IDS.equilibrium.time_slice[0].global_quantities.ip).reshape([])) #force +ve as Yueqiang does (LOCUST does not care)
  
     #1D data
-    input_data['bcentr']=np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0)
+    input_data['bcentr']=np.abs(np.asarray(input_IDS.equilibrium.vacuum_toroidal_field.b0)) #force +ve as Yueqiang does (LOCUST does not care)
     input_data['fpol']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f) #flux grid data
     input_data['pres']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.pressure)
     input_data['ffprime']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_1d.f_df_dpsi)
@@ -273,6 +274,7 @@ def read_equilibrium_IDS(shot,run,**properties):
     input_data['phirz']=np.asarray(input_IDS.equilibrium.time_slice[0].profiles_2d[0].phi)/(2.0*constants.pi) #convert to Wb/rad
  
     #harder bits (values derived from grids and profiles)
+    input_data['lcfs_n']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
     input_data['limitr']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.outline.z)).reshape([])
     input_data['nbbbs']=np.asarray(len(input_IDS.equilibrium.time_slice[0].boundary.lcfs.z)).reshape([])
     input_data['nR_1D']=np.asarray(len(R_1D)).reshape([])
@@ -450,20 +452,28 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         'zmaxis','xdum','sibry','xdum','xdum']
         for key in float_keys:
             write_number(file,output_data[key],cnt)
- 
-        write_1d(file,output_data['fpol'],cnt)
+    
+        #need to interpolate onto equally spaced grid according to GEQDSK convention
+        flux_pol_norm_old=(output_data['flux_pol']-output_data['flux_pol'][0])/(output_data['flux_pol'][-1]-output_data['flux_pol'][0])
+        flux_pol_norm_new=np.linspace(0,1,output_data['nR_1D'])
+        interpolated_variables={}
+        for var in ['fpol','pres','ffprime','pprime','qpsi']:
+            interpolator=processing.utils.interpolate_1D(flux_pol_norm_old,output_data[var])
+            interpolated_variables[var]=interpolator(flux_pol_norm_new)
+
+        write_1d(file,interpolated_variables['fpol'],cnt)
         if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
             file.write('\n') 
         cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
-        write_1d(file,output_data['pres'],cnt)
+        write_1d(file,interpolated_variables['pres'],cnt)
         if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
             file.write('\n') 
         cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
-        write_1d(file,output_data['ffprime'],cnt)
+        write_1d(file,-interpolated_variables['ffprime'],cnt) #Yueqiang reverses this (possibly ad hoc?) but LOCUST does not use this data
         if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
             file.write('\n') 
         cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
-        write_1d(file,output_data['pprime'],cnt)
+        write_1d(file,-interpolated_variables['pprime'],cnt) #Yueqiang reverses this (possibly ad hoc?) but LOCUST does not use this data
         if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
             file.write('\n') 
         cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
@@ -471,7 +481,7 @@ def dump_equilibrium_GEQDSK(output_data,filepath,**properties):
         if processing.utils.get_next(cnt) != 0: #if last character was not newline, write newline
             file.write('\n') 
         cnt = itertools.cycle([0,1,2,3,4]) #reinitialise counter
-        write_1d(file,output_data['qpsi'],cnt) 
+        write_1d(file,interpolated_variables['qpsi'],cnt) 
         if processing.utils.get_next(cnt) == 0: #check if \n was written last
             file.write(processing.utils.fortran_string(len(output_data['lcfs_r']),5)+processing.utils.fortran_string(len(output_data['rlim']),5)+'\n') #write out number of limiter/plasma boundary points
         else:
