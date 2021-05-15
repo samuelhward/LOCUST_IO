@@ -210,12 +210,12 @@ for config_beam_1,config_beam_2 in zip(configs_beam_1,configs_beam_2):
                             #run-specific settings
 
                             
-                            LOCUST_run__flags=LOCUST_run__flags_default
+                            LOCUST_run__flags=copy.deepcopy(LOCUST_run__flags_default)
                             #XXX CURRENTLY WAITING FOR FIX LOCUST_run__flags['I3DR']=-1 
                             LOCUST_run__settings_prec_mod={}
                             LOCUST_run__settings_prec_mod['nmde']=len(parameters__toroidal_mode_number) #number of total toroidal harmonics = number of modes
-                            LOCUST_run__settings_prec_mod['Ab']='AD' 
-                            LOCUST_run__settings_prec_mod['Zb']='+1.0_gpu' 
+                            LOCUST_run__settings_prec_mod['Ab']=table_species_LOCUST[config_beam_species] 
+                            LOCUST_run__settings_prec_mod['Zb']=f'+{table_species_AZ[config_beam_species][-1]}_gpu' 
                             LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                             LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                             LOCUST_run__settings_prec_mod['threadsPerBlock']=128
