@@ -781,7 +781,9 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                     inpt.dump_data(data_format='IDS',shot=self.args['IDS__shot'],run=self.args['IDS__run'],species=species_name,A=species_AZ[0],Z=species_AZ[1])
 
         #add wall
-        wall=Wall(ID='',data_format='GEQDSK',filename=self.args['RMP_study__filepath_equilibrium'])
+        #always use the wall outline from the 15MA baseline scenario
+        wall_path=list((RMP_study__dir_input_database / 'ITER_15MAQ10_case5' / folder_name_DataEq).glob('*eqdsk*'))[0].relative_to(support.dir_input_files)
+        wall=Wall(ID='',data_format='GEQDSK',filename=wall_path)
         wall.dump_data(data_format='IDS_2D',shot=self.args['IDS__shot'],run=self.args['IDS__run'])
 
     def extrapolate_kinetic_profiles(self,*args,**kwargs):
@@ -1499,7 +1501,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description='run RMP_study from command line in Python!')
     
 
-    parser.add_argument('--parameters__plasma_species',type=str,action='store',dest='parameters__plasma_species',help="",default='"{}"'.format(['deuterium','tritium']))
+    parser.add_argument('--parameters__plasma_species',type=str,action='store',dest='parameters__plasma_species',help="",default='{}'.format(['deuterium','tritium']))
     parser.add_argument('--parameters__sheet_name_kinetic_prof',type=str,action='store',dest='parameters__sheet_name_kinetic_prof',help="",default=None)
     parser.add_argument('--parameters__sheet_name_rotation',type=str,action='store',dest='parameters__sheet_name_rotation',help="",default=None)
     parser.add_argument('--parameters__var_name_rotation',type=str,action='store',dest='parameters__var_name_rotation',help="",default=None)
