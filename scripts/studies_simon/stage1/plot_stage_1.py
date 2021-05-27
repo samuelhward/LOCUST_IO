@@ -99,10 +99,10 @@ for plasma_state_counter,(power,Pr,tftE) in enumerate(zip(PFC_power,batch_data.p
         relative_phases_upper_middle=batch_data.parameters__phases_uppers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
         relative_phases_lower_middle=batch_data.parameters__phases_lowers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
 
-        ax.scatter(batch_data.parameters__phases_uppers[mode_number_counter],power[mode_number_counter]/1.e6,label=f'toroidal mode numbers = {mode_number}')
+        ax.scatter(batch_data.parameters__phases_uppers[mode_number_counter],power[mode_number_counter]/1.e6,label=f'$n$ = {mode_number}')
         ax.set_xlabel('Absolute rigid phase $\mathrm{d}\Phi$')
         ax.set_ylabel('PFC power flux [MW]')
-        ax.set_title(f'relative phase U:M={mode_number[0]*relative_phases_upper_middle[0]}, M:L={mode_number[0]*relative_phases_lower_middle[0]}')
+        ax.set_title(f'relative phase U:M={np.abs(mode_number[0])*relative_phases_upper_middle[0]}, M:L={np.abs(mode_number[0])*relative_phases_lower_middle[0]}')
         ax.legend()
     
     plt.show()
