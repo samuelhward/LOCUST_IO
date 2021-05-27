@@ -139,9 +139,9 @@ parameters__kinetic_profs_tF_tE=[2.]
 
 #n=3 and 4 harmonic settings - both first side band and corresponding rigid phases to scan
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
-parameters__phases_uppers=[np.linspace(0,120,7)[:-1]+30.+200./3.,np.linspace(0,90,7)[:-1]+30.+250./4.]
+parameters__phases_uppers=[np.linspace(0,120,7)[:-1]+30.+200./3.-3.3,np.linspace(0,90,7)[:-1]+30.+250./4.-3.3]
 parameters__phases_middles=[np.linspace(0,120,7)[:-1]+26.7+0./3.,np.linspace(0,90,7)[:-1]+26.7+0./4.]
-parameters__phases_lowers=[np.linspace(0,120,7)[:-1]+30.+140./3.,np.linspace(0,90,7)[:-1]+30.+95./4.]
+parameters__phases_lowers=[np.linspace(0,120,7)[:-1]+30.+140./3.-3.3,np.linspace(0,90,7)[:-1]+30.+95./4.-3.3]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
@@ -156,7 +156,7 @@ config_beam_2='on'
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','kin_extrap','run_BBNBI','depo_get','run_LOCUST','clean_input']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','run_BBNBI','depo_get','run_LOCUST','clean_input']\""
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
