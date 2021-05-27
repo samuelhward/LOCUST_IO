@@ -2400,6 +2400,74 @@ def literal_eval(*things):
     if len(outputs)==1: outputs=outputs[0] #to avoid user having to results=literal_eval(*things)[0]
     return outputs
 
+def read_pfile(filename):
+    """
+    notes:
+        - does not do any parsing, check units
+        - assumes psinorm = flux_pol_norm
+    """
+
+    data={}
+    with open(filename,'r') as file:
+        lines=file.readlines()    
+        for line in lines:
+            split_line=line.split()
+            if 'psinorm' in line: # at a headerline            
+                this_quantity=split_line[2]
+                data[this_quantity]={}
+                data[this_quantity]['flux_pol_norm']=[]
+                data[this_quantity][this_quantity]=[]
+            else:
+                data[this_quantity]['flux_pol_norm'].append(float(split_line[0]))
+                data[this_quantity][this_quantity].append(float(split_line[1]))
+        for key in data:
+            data[key]['flux_pol_norm']=np.asarray(data[key]['flux_pol_norm'])
+            data[key][key]=np.asarray(data[key][key])
+
+    return data 
+
+def pfile_2_LOCUST(filename):
+    """
+    notes:
+        - XXX untested blueprint
+        - should make this command line arg
+    """
+
+    try:
+        import context
+    except:
+        raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
+        sys.exit(1)
+
+    from classes.input_classes.temperature import Temperature
+    from classes.input_classes.number_density import Number_Density
+    from classes.input_classes.rotation import Rotation
+
+    data=read_gfile(filename)
+
+    ti_new=Temperature('')
+    te_new=Temperature('')
+    ne_new=Number_Density('')
+    w_new=Rotation('')
+
+    ti_new['T']=data['ti(KeV)']['ti(KeV)']*1.e3
+    ti_new['flux_pol_norm']=data['ti(KeV)']['flux_pol_norm']
+
+    te_new['T']=data['te(KeV)']['te(KeV)']*1.e3
+    te_new['flux_pol_norm']=data['te(KeV)']['flux_pol_norm']
+
+    ne_new['n']=data['ne(10^20/m^3)']['ne(10^20/m^3)']*1.e20
+    ne_new['flux_pol_norm']=data['ne(10^20/m^3)']['flux_pol_norm']
+
+    w_new['rotation_ang']=data['omeg(kRad/s)']['omeg(kRad/s)']*1.e3
+    w_new['flux_pol_norm']=data['omeg(kRad/s)']['flux_pol_norm']
+
+    ti_new.dump_data(data_format='LOCUST',filename=filename.parents[0] / ('profile_Ti.dat_'+filename.parts[-1]))
+    te_new.dump_data(data_format='LOCUST',filename=filename.parents[0] / ('profile_Te.dat_'+filename.parts[-1]))
+    ne_new.dump_data(data_format='LOCUST',filename=filename.parents[0] / ('profile_ne.dat_'+filename.parts[-1]))
+    w_new.dump_data(data_format='LOCUST',filename=filename.parents[0] / ('profile_wT.dat_'+filename.parts[-1]))
+ 
+
 #################################
  
 ##################################################################

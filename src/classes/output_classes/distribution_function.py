@@ -252,7 +252,7 @@ def read_distribution_function_LOCUST(filepath,**properties):
         month=int(filename[5:7])
         year=int(filename[8:12])
         filedate=datetime.date(day=day,month=month,year=year)
-        change_date=datetime.date(day=11,month=7,year=2019)
+        change_date=datetime.date(day=15,month=4,year=2019)
         if filedate>change_date:
             input_data['R_1D']=file.read_reals(dtype=np.float32) #Eqm. R grid. (nR_1D long) 
             input_data['Z_1D']=file.read_reals(dtype=np.float32) #Eqm. Z grid. (nZ_1D long)

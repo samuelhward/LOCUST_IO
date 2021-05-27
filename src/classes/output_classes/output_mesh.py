@@ -31,6 +31,11 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
     sys.exit(1)  
+try:
+    import run_scripts.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/run_scripts/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)  
 
 try:
     import classes.base_output 
@@ -71,9 +76,9 @@ def read_output_mesh_LOCUST(filepath,**properties):
     input_data={}
 
     reader = vtk.vtkGenericDataObjectReader()
-    reader.SetFileName(filepath)
+    reader.SetFileName(str(filepath))
     reader.Update()
-    input_data['X'],input_data['Y'],input_data['Z']=np.array(reader.GetOutput().GetPoints().GetData())
+    input_data['X'],input_data['Y'],input_data['Z']=np.array(reader.GetOutput().GetPoints().GetData()).T
     input_data['R'],input_data['phi']=processing.utils.XYZ_to_RphiZ(input_data['X'],input_data['Y'])
 
     return input_data
@@ -125,7 +130,7 @@ class Output_Mesh(classes.base_output.LOCUST_output):
         else:
             print("ERROR: {} cannot read_data() - please specify a compatible data_format (LOCUST)\n".format(self.ID))            
 
-    def plot(self,style='histogram',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
+    def plot(self,style='line',axes=['R','Z'],LCFS=False,limiters=False,real_scale=False,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,label='',ax=False,fig=False):
         """
         plots beam deposition
 
@@ -172,10 +177,11 @@ class Output_Mesh(classes.base_output.LOCUST_output):
             
         ax.set_title(self.ID)
 
+        ndim=len(axes)
         if ndim==2: #plot 2D histograms
 
             if style=='line':
-                ax.plot(self[axes[0]],self[axes[1]],color=colmap(colmap_val),s=1,label=self.ID)
+                ax.plot(self[axes[0]],self[axes[1]],color=colmap(colmap_val),label=self.ID)
 
             elif style=='scatter':
                 ax.scatter(self[axes[0]],self[axes[1]],color=colmap(colmap_val),marker='x',s=1,label=self.ID)
@@ -230,7 +236,7 @@ class Output_Mesh(classes.base_output.LOCUST_output):
                 ax.set_aspect('equal')
  
             if style=='line':
-                ax.plot(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(colmap_val),s=1,label=self.ID)
+                ax.plot(self[axes[0]],self[axes[1]],self[axes[2]],color=colmap(colmap_val),label=self.ID)
 
             elif style=='scatter':
                 ax.scatter(self[axes[0]],self[axes[1]],zs=self[axes[2]],color=colmap(colmap_val),s=0.1,label=self.ID)

@@ -797,6 +797,7 @@ class Equilibrium(classes.base_input.LOCUST_input):
             #2D plot
             if fill is True:
                 mesh=ax.contourf(X,Y,Z,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
+                #mesh=ax.pcolormesh(X,Y,Z,edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax,cmap=colmap)
                 for c in mesh.collections: #for use in contourf
                     c.set_edgecolor("face")
             else:

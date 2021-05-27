@@ -260,7 +260,7 @@ class Environment:
     ################################# VIKING
     environments['VIKING']={}
     environments['VIKING']['export']={}
-    environments['VIKING']['export']['OMP_NUM_THREADS']=2
+    environments['VIKING']['export']['OMP_NUM_THREADS']=1
     environments['VIKING']['export']['OMP_STACKSIZE']=102400
     environments['VIKING']['export']['NO_AT_BRIDGE']=1
     environments['VIKING']['export']['FFLAGS']='"-I$HDF5_DIR/include"'

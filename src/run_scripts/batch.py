@@ -112,7 +112,7 @@ class Batch:
     batch_system['VIKING']['flag_command']='#SBATCH'
     batch_system['VIKING']['flags']={}
     batch_system['VIKING']['flags']['job-name']='LOCUST'
-    batch_system['VIKING']['flags']['gres']='gpu:2'
+    batch_system['VIKING']['flags']['gres']='gpu:1' #or you will queue forever
     batch_system['VIKING']['flags']['partition']='gpu'
     batch_system['VIKING']['flags']['cpus-per-task']=1
     batch_system['VIKING']['flags']['mail-user']='samuel.ward@york.ac.uk'
@@ -120,8 +120,8 @@ class Batch:
     batch_system['VIKING']['flags']['output']='LOCUST_SLURM.out'
     batch_system['VIKING']['flags']['error']='LOCUST_SLURM.err'
     batch_system['VIKING']['flags']['ntasks']=1
-    batch_system['VIKING']['flags']['mem']='32gb'
-    batch_system['VIKING']['flags']['time']='02:00:00'
+    batch_system['VIKING']['flags']['mem']='16gb'
+    batch_system['VIKING']['flags']['time']='48:00:00'
 
 
     def __init__(self,**batch_settings):
