@@ -77,18 +77,34 @@ from classes.input_classes.wall import Wall as Wall
 import processing.utils
 
 
-
 shot_number='157418'
 
-response_type='response'    
-response_type='vacuum'
-response_type='response_hi_res'
-response_type='response_hi_res_90_i3dr-1' # --> great shape, but total losses ~ 12%
-#response_type='response_hi_res_-90_i3dr1'
-response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2' #XXX latest re-runs --> same fit as DCTDC2 but losses 11.4%
-#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2' #XXX latest re-runs --> good overall loss agreement + shape in E pitch (not so much E)
-#response_type='response_hi_res_90_i3dr+1_n-3' #XXX currently running on 8
+#read Mike data
+filepath_sav=support.dir_output_files / shot_number / 'SPIRAL_output' / 'all_variables_for_sam.sav'
+sav=readsav(filepath_sav)
 
+#response_type='response'    
+#response_type='response_lo_res_90_i3dr-1_n-3_noDCTDC2_hiPitchres_notune'
+#response_type='vacuum'
+#response_type='response_hi_res'
+#response_type='response_hi_res_-90_i3dr1'
+#response_type='response_hi_res_90_i3dr-1_n-3' #old best fit
+#response_type='response_hi_res_90_i3dr-1_n-3_hiPitchres' #increased resolution in pitch and remove BRELAX
+#response_type='response_hi_res_90_i3dr+1_n-3' #need to run
+
+#latest runs
+#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2_2D_wall'
+#response_type='response_hi_res_90_i3dr-1_n-3_noDCTDC2'  #~40% max loss
+#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2_2D_wall' 
+#response_type='response_hi_res_90_i3dr+1_n-3_noDCTDC2'  #~20% max loss - recheck
+#response_type='response_hi_res_90_i3dr+1_n-3_2D_wall'
+#response_type='response_hi_res_90_i3dr-1_n-3_2D_wall'
+
+response_type='response_hi_res_90_i3dr-1_n-3_hiPitchres_noDCTDC2_new_profiles_2D_wall'
+response_type='response_hi_res_90_i3dr-1_n-3_hiPitchres_noDCTDC2_new_profiles' #new best fit
+
+# notes
+# BIG difference in 2D dfn between 3D and 2D wall...much higher 2D density with 3D wall
 
 folder_2D='2D_23ms'  
 folder_3D='3D_23ms'
@@ -106,6 +122,8 @@ wall_filename=eq_filename
 
 DFN_2D=DFN(ID='2D',data_format='LOCUST',filename=DFN_2D_filename)
 DFN_3D=DFN(ID='3D',data_format='LOCUST',filename=DFN_3D_filename)
+DFN_2D['E']/=1000. #convert to keV
+DFN_3D['E']/=1000.
 #XXX commented out whilst FPL is too big DFN_2D_split=FPL(ID='2D -DSPLIT',data_format='LOCUST',filename=DFN_2D_split_filename,compression=True,coordinates=['R','Z','phi','V_R','V_tor','V_Z','status_flag','time','PFC_intercept','additional_flag1'])
 #XXX commented out whilst FPL is too big DFN_3D_split=FPL(ID='3D -DSPLIT',data_format='LOCUST',filename=DFN_3D_split_filename,compression=True,coordinates=['R','Z','phi','V_R','V_tor','V_Z','status_flag','time','PFC_intercept','additional_flag1'])
 MOM_2D=Mom(ID='2D moments',data_format='LOCUST',filename=MOM_2D_filename)
@@ -166,19 +184,27 @@ wall=Wall(ID='157418 2D wall',data_format='GEQDSK',filename=wall_filename)
 
 #crop DFN to within rho=sqrt(toroidal_flux)=0.7
 #'''
-rho_crop=0.7
+rho_crop=0.8  #
+rho_crop=0.73 #point at which new DFN grid discretisation cannot be blamed
+rho_crop=0.79
+rho_crop=0.78 
+rho_crop=0.76
+rho_crop=0.77 #best fit 
 eq.set(flux_tor_norm=(eq['flux_tor']-eq['flux_tor'][0])/(eq['flux_tor'][-1]-eq['flux_tor'][0]))
 eq.set(flux_tor_norm_rz=processing.utils.flux_func_to_RZ(eq['flux_pol'],np.sqrt(np.abs(eq['flux_tor_norm'])),eq)) #calculate rho grid
-eq.set(flux_tor_norm_rz=processing.utils.LCFS_crop(eq['flux_tor_norm_rz'],eq,eq,crop_value=0.0,outside=True))
-#eq.plot(key='flux_tor_norm_rz',vminmax=[0.7,1.],fill=False,number_bins=2) #XXX
+#eq.set(flux_tor_norm_rz=processing.utils.LCFS_crop(eq['flux_tor_norm_rz'],eq,eq,crop_value=0.0,outside=True)) #remove DFN outisde LCFS
 flux_tor_norm_rz=processing.utils.value_at_RZ(*[dimension.T.flatten() for dimension in np.meshgrid(DFN_2D['R'],DFN_2D['Z'])],eq['flux_tor_norm_rz'],eq).reshape(len(DFN_2D['R']),len(DFN_2D['Z']))
 DFN_2D.set(flux_tor_norm_rz=flux_tor_norm_rz)
 #DFN_2D.plot(axes=['R','Z'],key='flux_tor_norm_rz',vminmax=[0.7,1.],real_scale=True,LCFS=eq) #XXX
 DFN_3D.set(flux_tor_norm_rz=flux_tor_norm_rz)
 DFN_2D['dfn'][...,flux_tor_norm_rz<rho_crop]=0.
 DFN_3D['dfn'][...,flux_tor_norm_rz<rho_crop]=0.
-DFN_2D['dfn'][:,DFN_2D['E']<1.e4,:,:,:]=0. #cut off DFN below 10keV
-DFN_3D['dfn'][:,DFN_3D['E']<1.e4,:,:,:]=0.
+DFN_2D['dfn'][:,DFN_2D['E']<10.,:,:,:]=0. #cut off DFN below 10keV
+DFN_3D['dfn'][:,DFN_3D['E']<10.,:,:,:]=0.
+DFN_2D['dfn'][:,DFN_2D['E']>80.5,:,:,:]=0. #cut off DFN above max SPIRAL energy 80.5keV (and seeming cut-off in data at ~82.5keV)
+DFN_3D['dfn'][:,DFN_3D['E']>80.5,:,:,:]=0.
+sav['surfhist_wc'][:,sav['ehis']>80.5]=0.
+sav['surfhist_noc'][:,sav['ehis']>80.5]=0.
 #'''
 
 
@@ -214,7 +240,7 @@ DFN_3D.plot(fig=fig,ax=ax2,axes=['R','Z'],real_scale=True,limiters=wall)
 
 moment_to_plot='density'
 MOM_2D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_b)
-MOM_3D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_k)
+MOM_3D.plot(key=moment_to_plot,fig=fig,ax=ax4,colmap=settings.cmap_r)
 ax4.set_xlim([0.6,1.1])
 ax4.set_ylim([0.,8e11])
 plt.show()
@@ -228,11 +254,9 @@ plt.show()
 fig,((ax1))=plt.subplots(1) #plot the difference
 
 vminmax=[0,1]
-number_bins_diff=7
+number_bins_diff=8
 
 #compare with Mike's data
-filepath_sav=support.dir_output_files / shot_number / 'SPIRAL_output' / 'all_variables_for_sam.sav'
-sav=readsav(filepath_sav)
 X=copy.deepcopy(sav['ehis'])
 Y=copy.deepcopy(sav['phis'])
 Z=copy.deepcopy(sav['surfhist_wc']-sav['surfhist_noc'])
@@ -252,9 +276,15 @@ print(f"total difference in FI fraction SPIRAL ={100*(np.sum(sav['surfhist_wc'])
 
 #DFN_diff['dfn']/=DFN_diff.transform(axes=['N'])['dfn'] #normalise
 DFN_diff=DFN_diff.transform(axes=axes)
+
+#XXX more cut-offs
+# remove elements that satisfy dfn_3D-dfn_2D>0 (only focus on net loss regions)
+#sav['surfhist_wc'][sav['surfhist_wc']>sav['surfhist_noc']]=sav['surfhist_noc'][sav['surfhist_wc']>sav['surfhist_noc']] 
+#DFN_diff['dfn'][DFN_3D.transform(axes=axes)['dfn']>DFN_2D.transform(axes=axes)['dfn']]=DFN_2D.transform(axes=axes)['dfn'][DFN_3D.transform(axes=axes)['dfn']>DFN_2D.transform(axes=axes)['dfn']] 
+
+
 #DFN_diff['dfn']/=np.mean(DFN_2D.transform(axes=axes)['dfn']) #normalise
 DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
-DFN_diff['E']/=1000 #convert to keV for plotting
 #eq.plot(ax=ax1,fig=fig,key='flux_tor_norm_rz',vminmax=[0.7,1.],fill=False,number_bins=2) #XXX
 DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=axes,colmap=settings.cmap_w,fill=False,number_bins=number_bins_diff,vminmax=vminmax,transform=False)
 LOCUST_contours,_ = DFN_diff_mesh.legend_elements()    
@@ -272,6 +302,7 @@ fig.set_tight_layout(True)
 plt.show()
 
 axis='E'
+axis='V_pitch'
 if axis=='V_pitch':
     axis_to_integrate=1
     quantity_to_integrate='ehis'
@@ -297,10 +328,8 @@ DFN_diff['dfn']=(DFN_3D['dfn']-DFN_2D['dfn'])
 DFN_diff=DFN_diff.transform(axes=[axis])
 #DFN_diff['dfn']/=np.mean(DFN_2D.transform(axes=[axis])['dfn']) #normalise
 
-DFN_diff['E']/=1000 #convert to keV for plotting
 DFN_diff['dfn']=(DFN_diff['dfn']-np.max(DFN_diff['dfn']))/(np.min(DFN_diff['dfn'])-np.max(DFN_diff['dfn'])) #normalise
 DFN_diff_mesh=DFN_diff.plot(ax=ax1,fig=fig,axes=[axis],colmap=settings.cmap_k,transform=False)
-
 plt.title('')
 plt.show()
 
