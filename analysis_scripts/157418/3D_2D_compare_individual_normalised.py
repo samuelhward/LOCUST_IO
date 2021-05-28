@@ -380,7 +380,6 @@ ax1.set_xticks(np.linspace(10,80,8))
 ax1.set_yticks(np.linspace(-1.,1.,5))
 ax1.legend([LOCUST_contours[0],SPIRAL_contours[-1]],['LOCUST','SPIRAL'],fontsize=20,loc='center right',framealpha=0.4)
 ax1.set_title(r'Fast-ion density reduction due to $n$=3 magnetic perturbation')
-fig.set_tight_layout(True)
 set_ax_lim_EP(ax1)
 plt.show()
 
@@ -427,7 +426,6 @@ legend.append('LOCUST')
 ax1.legend(legend, loc='lower center',fontsize=15)
 ax1.set_ylabel('$\delta f$')
 ax1.set_title('')
-fig.set_tight_layout(True)
 plt.show()
 
 #################################
