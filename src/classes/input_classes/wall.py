@@ -86,7 +86,7 @@ def read_wall_LOCUST_2D(filepath,**properties):
         Z_0=0.        #origin always at Z=0
         del(lines[0])
 
-        angles=np.mod(np.linspace(0.,(3599./3600.)*2.*constants.pi,3600)+pi,2.*constants.pi) #LOCUST always assumes counter-clockwise limiters starting from inboard side
+        angles=np.mod(np.linspace(0.,(3599./3600.)*2.*np.pi,3600)+np.pi,2.*np.pi) #LOCUST always assumes counter-clockwise limiters starting from inboard side
         
         r=[]
         z=[]
@@ -337,18 +337,18 @@ def dump_wall_LOCUST_2D(output_data,filepath,**properties):
         #calculate angle and radius of limiter points with respect to geometric centre 
         Z_0=0. #LOCUST always assumes Z_0 is zero
         angles=np.arctan2(output_data['zlim']-Z_0,output_data['rlim']-R_0)
-        angles[angles<0]=2.*constants.pi+angles[angles<0]
+        angles[angles<0]=2.*np.pi+angles[angles<0]
         radii=(output_data['zlim']-Z_0)/np.sin(angles)
         angles,radii=processing.utils.sort_arrays(angles,radii) #now sort all arrays together in order of angle to stop any over wrapping
 
-        angles=np.append(-1.*(2.*constants.pi-angles[-1]),angles) #add last value to start to make periodic for interpolator 
+        angles=np.append(-1.*(2.*np.pi-angles[-1]),angles) #add last value to start to make periodic for interpolator 
         radii=np.append(radii[-1],radii)
 
-        angles=np.append(angles,angles[1]+2.*constants.pi) #add original first value to end
+        angles=np.append(angles,angles[1]+2.*np.pi) #add original first value to end
         radii=np.append(radii,radii[1])
 
         #now interpolate in polar coordinates onto 3600 points in theta, starting anti-clockwise from outboard side 
-        angles_new=np.mod(np.linspace(0.,(3599./3600.)*2.*constants.pi,3600)+pi,2.*constants.pi)
+        angles_new=np.mod(np.linspace(0.,(3599./3600.)*2.*np.pi,3600)+np.pi,2.*np.pi)
 
         radii_interpolator=processing.utils.interpolate_1D(angles,radii,type='interp1d',function='linear')
         radii_new=radii_interpolator(angles_new)
