@@ -247,12 +247,14 @@ for parameters__database,parameters__sheet_name_kinetic_prof in zip(
                         BBNBI_run__dir_BBNBI=support.dir_bbnbi
                         
                         #3D field settings
+                        """
                         if run_number==1: #make first run axisymmetric as control run
                             del(LOCUST_run__flags['B3D'])
                             del(LOCUST_run__flags['B3D_EX'])
                         else:
                             LOCUST_run__flags['B3D']=True
                             LOCUST_run__flags['B3D_EX']=True
+                        """
                         #if all coilsets do not rotate together we must split them up individually!
                         if all(rotation==parameters__rotation_upper for rotation in [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]): 
                             #if coils rotate together but we still want one row offset with others then define relative phase for mars_read
