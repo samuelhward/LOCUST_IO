@@ -1,10 +1,10 @@
-#plot_stage_1.py
+#plot_stage_5.py
  
 """
 Samuel Ward
-05/05/21
+02/06/21
 ----
-script for plotting stage 1 of Simon's studies 
+script for plotting stage 5 of Simon's studies 
 ---
  
 notes:         
@@ -54,6 +54,7 @@ try:
     cwd=pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
     sys.path.append(str(cwd.parents[1]))
     import templates.plot_mod
+    from random_scripts.plot_X_point_displacement import plot_X_point_displacement
 except:
     raise ImportError("ERROR: templates/template_mod.py could not be imported!\nreturning\n") 
     sys.exit(1)
@@ -61,7 +62,7 @@ except:
 ################################################################## 
 #Main 
 
-import stage_1_launch as batch_data
+import stage_5_launch as batch_data
 
 outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
 
@@ -87,22 +88,24 @@ for output in outputs:
 
 '''
 
-PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__kinetic_profs_Pr),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
+PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
 # one figure per plasma
-fig,axs=plt.subplots(len(batch_data.parameters__kinetic_profs_Pr),constrained_layout=True)
+fig,axs=plt.subplots(len(batch_data.parameters__databases)*len(batch_data.parameters__toroidal_mode_numbers),2,constrained_layout=True)
+axs=np.array([axs]).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),2)
 colours=['r','b'] #one colour per mode number
 
-for plasma_state_counter,(ax,power,Pr,tftE) in enumerate(zip([axs],PFC_power,batch_data.parameters__kinetic_profs_Pr,batch_data.parameters__kinetic_profs_tF_tE)):
-    for mode_number_counter,(mode_number,colour) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,colours)):
-        #find relative phase between coils for this toroidal mode number
-        relative_phases_upper_middle=batch_data.parameters__phases_uppers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-        relative_phases_lower_middle=batch_data.parameters__phases_lowers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-        ax.scatter(np.abs(mode_number[0])*(batch_data.parameters__phases_middles[mode_number_counter]),100*power[mode_number_counter]/Pinj,label=f'$n$ = {mode_number}, U:M={int(np.abs(mode_number[0])*relative_phases_upper_middle[0])}, L:M={int(np.abs(mode_number[0])*relative_phases_lower_middle[0])}',color=colour)
+for plasma_state_counter,(row,database) in enumerate(zip(axs,batch_data.parameters__databases)):
+    for mode_number_counter,(subrow,mode_number,colour) in enumerate(zip(row,batch_data.parameters__toroidal_mode_numbers,colours)):
+        case=int(batch_data.parameters__databases[plasma_state_counter][-1])
+        n=int(np.abs(mode_number[0]))
+        ax_left,ax_right=subrow        
+        plot_X_point_displacement(case=case,n=n,LVV=90,fig=fig,ax=ax_left)
+        ax_right.scatter(np.arange(len(PFC_power[plasma_state_counter][mode_number_counter])),100*PFC_power[plasma_state_counter][mode_number_counter]/Pinj)
+        ax_right.set_xlabel('Point',fontsize=15)
+        ax_right.set_ylabel('Deposited power lost [%]',fontsize=15)
+        ax_right.set_ylabel('Ploss [%]',fontsize=15)
 
-ax.legend()
-ax.set_xlabel('Relative rigid phase $\Delta\phi$',fontsize=20) #\Phi for absolute
-ax.set_ylabel('Deposited power lost [%]',fontsize=20)
 # remove ticks from total ax
 #ax_total = fig.add_subplot(111,frameon=False)
 #ax_total.tick_params(axis='both',which='both',bottom=False,labelbottom=False,left=False,labelleft=False)

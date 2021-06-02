@@ -89,18 +89,18 @@ for output in outputs:
 
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
-fig,ax=plt.subplots(1)
+fig,ax=plt.subplots(1,constrained_layout=True)
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         #find relative phase between coils for this toroidal mode number
-        relative_phases_upper_middle=batch_data.parameters__phases_uppers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-        relative_phases_lower_middle=batch_data.parameters__phases_lowers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
+        relative_phases_upper_middle=batch_data.parameters__phases_uppers_cases_all[scenario_counter][mode_number_counter]-batch_data.parameters__phases_middles_cases_all[scenario_counter][mode_number_counter]
+        relative_phases_lower_middle=batch_data.parameters__phases_lowers_cases_all[scenario_counter][mode_number_counter]-batch_data.parameters__phases_middles_cases_all[scenario_counter][mode_number_counter]
         #plot relative phase
-        ax.scatter(np.abs(mode_number[0])*(batch_data.parameters__phases_middles[mode_number_counter]-26.7),100.*PFC_power[scenario_counter,mode_number_counter]/33.e6,label=f'{scenario}, $n$ = {mode_number}')
+        ax.scatter(np.abs(mode_number[0])*(batch_data.parameters__phases_middles[mode_number_counter]),100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,label=f'{scenario}, $n$ = {mode_number}, U:M={int(np.abs(mode_number[0])*relative_phases_upper_middle[0])}, L:M={int(np.abs(mode_number[0])*relative_phases_lower_middle[0])}')
 
-ax.set_xlabel('Absolute rigid phase $\Delta\Phi$',fontsize=20)
-ax.set_ylabel('PFC power flux [%P_dep]',fontsize=20)
-ax.legend(fontsize=10)
+ax.set_xlabel('Relative rigid phase $\Delta\phi$',fontsize=20) #\Phi for absolute
+ax.set_ylabel('Deposited power lost [%]',fontsize=20)
+ax.legend(fontsize=15,bbox_to_anchor=(.5,.3),ncol=1,loc='center')
 plt.show()
 
 #################################
