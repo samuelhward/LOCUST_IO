@@ -25,19 +25,19 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     import numpy as np 
     import copy,support
 
-    if ax is False:
+    if ax is None:
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
     else:
         ax_flag=True
 
-    if fig is False:
+    if fig is None:
         fig_flag=False
     else:
         fig_flag=True
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
- 
+
     KAPPROACH = 2
     PU10 = 0
     PL10=0
@@ -248,19 +248,18 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     kgrid = KAPPROACH  
     if kgrid==1:
-        SYLAB = '$|I^{U}|=|I^{L}|$ [kAt]|' 
-        SXLAB = '$|I^{M}|$ [kAt]'
+        SYLAB = '$|I^{\mathrm{U}}|=|I^{\mathrm{L}}|$ [kAt]|' 
+        SXLAB = '$|I^{\mathrm{M}}|$ [kAt]'
     elif kgrid==2:
-        SYLAB = '$\Phi_{U}-\Phi_{M}$ [degree]'
-        SXLAB = '$\Phi_{L}-\Phi_{M}$ [degree]'
+        SYLAB = '$\Phi_{\mathrm{U}}-\Phi_{\mathrm{M}}$ [deg]'
+        SXLAB = '$\Phi_{\mathrm{L}}-\Phi_{\mathrm{M}}$ [deg]'
     elif kgrid==3:
-        SYLAB = '$\Phi_{U} - \Phi_{L}$ [degree]'
+        SYLAB = '$\Phi_{\mathrm{U}} - \Phi_{\mathrm{L}}$ [deg]'
     elif kgrid==4:
         SYLAB = '$\alpha_{2}$'
-        SXLAB = '$\Phi$ [degree]'
+        SXLAB = '$\Phi$ [deg]'
 
-    fig,ax=plt.subplots(1)
-    levels=np.linspace(np.min(VnXpt*1e+3),np.max(VnXpt*1e+3),20)
+    levels=np.linspace(np.min(VnXpt*1e+3),np.max(VnXpt*1e+3),7)
     mesh=ax.contourf(Icc2.T,Icc1.T,VnXpt.T*1e+3,levels=levels,cmap='Greys')
     cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
     # define contour levels we want to calculate points at
@@ -273,6 +272,8 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     #total number of points to interpolate onto
     #this will be spread out over the contour's sub-paths (if any) in proportion to their length
     number_coords_new=8
+    if case == 3 and n == 4: number_coords_new+=2 # strange topology/rounding errors means need to step in for this case
+
     for contour in mesh.collections: 
         contour_x=[]
         contour_y=[]
@@ -299,6 +300,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
             distance=np.insert(distance,0,0.) #first distance is 0
             distance=(distance-distance[0])/(distance[-1]-distance[0]) #normalise
             interpolator=processing.utils.interpolate_1D(distance,coords,function='cubic',type='interp1d',smooth=0)
+            #allocate number of points based on relative length of sub-path
             number_coords_this_path=int(number_coords_new*path_lengths[path_number]/np.sum(path_lengths))
             distance_coords_new=np.linspace(0,1,number_coords_this_path+1)[:-1] #this loops back onto itself, so add  extra point and remove the end
             coords_new=interpolator(distance_coords_new)
@@ -310,7 +312,21 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     ax.set_xlabel(SXLAB)
     ax.set_ylabel(SYLAB)
-    ax.set_title('$|\\xi_{X}|(r=a)$ [mm]')
+
+    levels_coords=np.array(levels_coords,ndmin=2).T
+    for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter, fontsize=12)
+
+    if case == 3 and n == 4: 
+        rotation=45. 
+        x=0.2
+        y=0.05
+    else:
+        rotation=0. 
+        x=0.03
+        y=0.92
+
+    ax.text(x=x,y=y,s=f'case = {case}, n={n}',horizontalalignment='left',rotation=rotation,
+    fontsize=10,transform=ax.transAxes)#,color=settings.colour_custom(rgba=[100,100,100,1])(0.))
 
     if ax_flag is True or fig_flag is True: #return the plot object
         return mesh
@@ -321,3 +337,4 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     # so now levels_coords[n][0] contains the x coordinates for points along contour n
     # so now levels_coords[n][1] contains the y coordinates for points along contour n
 
+    
