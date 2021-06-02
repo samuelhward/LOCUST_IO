@@ -125,10 +125,12 @@ parameters__kinetic_profs_tF_tE=[2.]
 #3D field parameters which vary independently - if you want to vary these together then put them into the same loop nesting below
 #2D arrays, each element has length = number of modes
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
-# pick optimal phases from stage 1 for below, the zeroth and fourth phases for n=3,4 respectively
-parameters__phases_uppers=[np.linspace(0,120,7)[:-1][1:2]+30.+200./3.-3.3,np.linspace(0,90,7)[:-1][   ]+30.+250./4.-3.3]
-parameters__phases_middles=[np.linspace(0,120,7)[:-1][1:2]+26.7+0./3.,np.linspace(0,90,7)[:-1][   ]+26.7+0./4.]
-parameters__phases_lowers=[np.linspace(0,120,7)[:-1][1:2]+30.+140./3.-3.3,np.linspace(0,90,7)[:-1][   ]+30.+95./4.-3.3]
+# index of optimal absolute phase (lowest losses) from stage_1 are:
+# case 5, n=3: 2nd simulation 
+# case 5, n=4: 5th simulation
+parameters__phases_uppers=[np.linspace(0,120,7)[:-1][1:2]+30.+200./3.-3.3,np.linspace(0,90,7)[:-1][4:5]+30.+250./4.-3.3]
+parameters__phases_middles=[np.linspace(0,120,7)[:-1][1:2]+26.7+0./3.,np.linspace(0,90,7)[:-1][4:5]+26.7+0./4.]
+parameters__phases_lowers=[np.linspace(0,120,7)[:-1][1:2]+30.+140./3.-3.3,np.linspace(0,90,7)[:-1][4:5]+30.+95./4.-3.3]
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
@@ -215,7 +217,7 @@ for parameters__database,parameters__sheet_name_kinetic_prof in zip(
                         LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                         LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                         LOCUST_run__settings_prec_mod['threadsPerBlock']=64
-                        LOCUST_run__settings_prec_mod['blocksPerGrid']=1024
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=128
                         LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1
@@ -241,12 +243,6 @@ for parameters__database,parameters__sheet_name_kinetic_prof in zip(
                         BBNBI_run__dir_BBNBI=support.dir_bbnbi
 
                         #3D field settings
-                        if run_number==1: #make first run axisymmetric as control run
-                            del(LOCUST_run__flags['B3D'])
-                            del(LOCUST_run__flags['B3D_EX'])
-                        else:
-                            LOCUST_run__flags['B3D']=True
-                            LOCUST_run__flags['B3D_EX']=True
                         #if all coilsets do not rotate together we must split them up individually!
                         if all(rotation==parameters__rotation_upper for rotation in [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]): 
                             #if coils rotate together but we still want one row offset with others then define relative phase for mars_read
