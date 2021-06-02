@@ -125,8 +125,8 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 
 parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3'] #these all zipped at same level in main loop because source data is not consistent enough
 parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'"]
-configs_beam_species=['hydrogen','deuterium']
-plasmas_species=[['hydrogen'],['deuterium']] #"\"['']\""
+configs_beam_species=['deuterium','deuterium']
+plasmas_species=[['deuterium'],['deuterium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -226,7 +226,7 @@ for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_specie
                                 parameters__current_middle,
                                 parameters__current_lower])])
 
-                        parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}'
+                        parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}_{config_beam_species[0]}'
 
                         parameter_strings.append(parameters__parameter_string)
 
