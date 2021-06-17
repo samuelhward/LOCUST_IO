@@ -6,7 +6,7 @@ Samuel Ward
 ----
 stage 2
 
-    - start with best phases (absolute losses) for each n from stage 1 
+    - start with best phases (absolute losses) from stage 1 
     - fix phase
     - vary n=3,n=4 + sideband
     - vary current 15,30,60,90 
