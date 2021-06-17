@@ -6,12 +6,12 @@ Samuel Ward
 ----
 stage 5
 
-    - start with best phases (absolute losses) from stage 4 
+    - note that max X-point displacement is optimal
     - fix current at 67.5kAt
     - fix central coil phase from stage 4
-    - vary upper/lower coil phase out of those in stage 3?? in 4 steps
-    - vary 7.5MA/2.65T hydrogen and 7.5MA/5.3T deuterium-deuterium scenarios
+    - vary upper/lower coil phase to trace out contour on 2/3 max X-point displacement in 4 steps
     - vary n=3,n=4 + sideband
+    - vary 7.5MA/2.65T hydrogen (case 2) and 7.5MA/5.3T (case 3) deuterium-deuterium scenarios
     - 16 runs
 ---
  
@@ -125,8 +125,8 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 
 parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3'] #these all zipped at same level in main loop because source data is not consistent enough
 parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'"]
-configs_beam_species=['deuterium','deuterium']
-plasmas_species=[['deuterium'],['deuterium']] #"\"['']\""
+configs_beam_species=['hydrogen','deuterium']
+plasmas_species=[['hydrogen'],['deuterium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -166,22 +166,32 @@ contour_relative_phase_lower_case3_n4 = np.array([0.0, 86.70346757605165, 173.95
 #contour_relative_phase_upper_case3_n4[contour_relative_phase_upper_case3_n4<0]+=360.
 #contour_relative_phase_lower_case3_n4[contour_relative_phase_lower_case3_n4<0]+=360.
 
+# take every other value (so 4 each)
+contour_relative_phase_upper_case2_n3=contour_relative_phase_upper_case2_n3[::2]
+contour_relative_phase_lower_case2_n3=contour_relative_phase_lower_case2_n3[::2]
+contour_relative_phase_upper_case2_n4=contour_relative_phase_upper_case2_n4[::2]
+contour_relative_phase_lower_case2_n4=contour_relative_phase_lower_case2_n4[::2]
+contour_relative_phase_upper_case3_n3=contour_relative_phase_upper_case3_n3[::2]
+contour_relative_phase_lower_case3_n3=contour_relative_phase_lower_case3_n3[::2]
+contour_relative_phase_upper_case3_n4=contour_relative_phase_upper_case3_n4[::2]
+contour_relative_phase_lower_case3_n4=contour_relative_phase_lower_case3_n4[::2]
+
 # index of optimal absolute phase (lowest losses) from stage_4 are:
-# case 2, n=3: 1st simulation XXX re-determining with D plasma currently 
-# case 2, n=4: 4th simulation XXX re-determining with D plasma currently
+# case 2, n=3: 1st simulation 
+# case 2, n=4: 4th simulation
 # case 3, n=3: 4th simulation 
 # case 3, n=4: 3rd simulation 
 
 # to check these are correct, verify that U-M and L-M give the above relative phases and parameters__phases_middles* are the optimal values from stage_4
 parameters__phases_uppers_case2=[
-    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][]+30.-3.3,
-    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][]+30.-3.3]
+    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][3]+30.-3.3]
 parameters__phases_middles_case2=[
-    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][])+26.7,
-    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][])+26.7]
+    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][0])+26.7,
+    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][3])+26.7]
 parameters__phases_lowers_case2=[
-    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][]+30.-3.3,
-    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][]+30.-3.3]
+    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][3]+30.-3.3]
 
 parameters__phases_uppers_case3=[
     contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
