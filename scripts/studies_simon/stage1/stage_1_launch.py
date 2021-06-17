@@ -6,13 +6,13 @@ Samuel Ward
 ----
 stage 1 
 
-    - fix 15MA ITER baseline scenario
-    - fix relative coil phase (table 2) n3(U-M=200,L-M=140) n4(U-M=250,L-M=95) 
+    - fix 15MA ITER baseline scenario (case 5)
+    - start with best phases (X-point displacement) from table 2 (Yueqiang)
+    - fix relative coil phase 
     - fix Pr=0.3 and τφ/τE=2.
     - vary n=3,n=4 + sideband
     - vary absolute toroidal phase in 6 steps
     - 12 runs
-
 ---
  
 notes:         
