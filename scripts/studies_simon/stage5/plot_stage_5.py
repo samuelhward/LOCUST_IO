@@ -22,6 +22,7 @@ try:
     import copy
     import matplotlib.pyplot as plt
     import os
+    import scipy.constants
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -71,7 +72,7 @@ PFC_power=[]
 for output in outputs:
     if output:
         i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron])
+        PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5])
     else:
         PFC_power.append([-10.])
 
@@ -89,6 +90,12 @@ for output in outputs:
 '''
 
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
+
+for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
+    if beam_species=='hydrogen':
+        PFC_power[scenario_counter]*=scipy.constants.physical_constants['proton mass'][0]
+    elif beam_species=='deuterium':
+        PFC_power[scenario_counter]*=scipy.constants.physical_constants['deuteron mass'][0]
 
 # one figure per plasma
 fig,axs=plt.subplots(len(batch_data.parameters__databases)*len(batch_data.parameters__toroidal_mode_numbers),2,constrained_layout=True)
