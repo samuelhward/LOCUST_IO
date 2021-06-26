@@ -144,7 +144,7 @@ config_beam_2='on'
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflow_commands="\"['mkdir','3D_get','3D_calc','B_check_3D']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','B_check_3D','clean_input']\""
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -199,7 +199,6 @@ for parameters__database,parameters__sheet_name_kinetic_prof in zip(
                                 parameters__current_lower])])
 
                         parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}'
-                        parameters__parameter_string=str(run_number)
                         parameter_strings.append(parameters__parameter_string)
 
                         #################################
