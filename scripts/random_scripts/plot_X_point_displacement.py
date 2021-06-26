@@ -68,41 +68,10 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     if ncase == 8:
         SDIR_RMP     = 'case8_12d5MA_5d3T/n'+str(n1)+'_Pr03_tfte2/' 
-        B0EXP = 5.3               
 
-    kcasen = 'n='+str(n1)
-
-    SLW     = 3 
-    NR      = 101
-    NZ      = 201
-    Rplot   = 6.2   
-    Zplot   = 0.0
-
-    R0EXP = 6.2
-    mu0   = 4e-7*np.pi
     Imid  = 100
     Ixpt  = 44
-    sedge = 0.995
-    kplot = 2
-
-    if KAPPROACH==1 or KAPPROACH==2 or KAPPROACH==4: 
-        KDIMENSION = 2
-    if KAPPROACH==3:
-        KDIMENSION = 1
-
-    if KDIMENSION==2:
-        DVV_WVa= np.zeros((1,4))  
-    if KDIMENSION==1:
-        DVV_WVa= np.zeros((1,3)) 
-
-    DVV_CI = DVV_WVa # mid-plane plasma surface displacement 
-    DVV_CX = DVV_WVa # X-point plasma surface displacement
-    DVV_CR = DVV_WVa # ration of DVV_CX / DVV_CI
-
-    DVV_JXB = DVV_WVa # mid-plane plasma surface displacement 
-    DVV_REY = DVV_WVa # X-point plasma surface displacement
-    DVV_NTV = DVV_WVa # ration of DVV_CX / DVV_CI
-    DVV_TOT = DVV_WVa # ration of DVV_CX / DVV_CI
+    KDIMENSION = 2
 
     # read field data 
     def load(filename):
@@ -192,7 +161,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     for k1 in range(len(Ica1)):
         # if KDIMENSION>1:  print('k1='+str(k1))
-        for k2 in range(Nk1):
+        for k2 in range(len(Ica2)):
 
             if KAPPROACH==1:
                 Ic1 =Icc1[k1,k2]*np.exp(1j*PU)
@@ -317,13 +286,13 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter, fontsize=12)
 
     if case == 3 and n == 4: 
-        rotation=45. 
-        x=0.2
-        y=0.05
+        rotation=0. #[deg] 
+        x=0.03
+        y=1.05
     else:
         rotation=0. 
         x=0.03
-        y=0.92
+        y=1.05
 
     ax.text(x=x,y=y,s=f'case = {case}, n={n}',horizontalalignment='left',rotation=rotation,
     fontsize=10,transform=ax.transAxes)#,color=settings.colour_custom(rgba=[100,100,100,1])(0.))
