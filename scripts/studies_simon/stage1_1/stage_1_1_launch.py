@@ -137,7 +137,6 @@ parameters__kinetic_profs_tF_tE=[2.]
 #3D field parameters which vary independently - if you want to vary these together then put them into the same loop nesting below
 #2D arrays, each element has length = number of modes
 
-#n=3 and 4 harmonic settings - both first side band and corresponding rigid phases to scan
 parameters__toroidal_mode_numbers=[[-3]]
 parameters__phases_uppers=[np.linspace(0,120,7)[:-1]+30.+200./3.-3.3]
 parameters__phases_middles=[np.linspace(0,120,7)[:-1]+26.7+0./3.]
