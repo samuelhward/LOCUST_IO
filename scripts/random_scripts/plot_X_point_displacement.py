@@ -4,6 +4,8 @@ Python adaptation of Yueqiang's script for plotting X-point displacement from XP
 also generates points along contour of fixed X-point displacement
 
 expects input_files/X_point_displacement_data/* directory from Yueqiang
+
+note that the phase shift here is in the opposite direction to the ITER coordinate system i.e. for n=3 with max X-point displacement at [200,140], this corresponds to [-200/3,-140/3] in ITER machine coordinates.
 '''
 
 

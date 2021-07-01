@@ -1218,10 +1218,10 @@ class RMP_study_run(run_scripts.workflow.Workflow):
             plt.rc('text', usetex=True)
 
             for ax,quantity_MARSF,quantity_probeG,component in zip(axes,['dB_field_R','dB_field_tor','dB_field_Z'],[dBR,dBphi,dBZ],['R','\phi','Z']):
-                ax.plot(d['phi_tor']+phi0,quantity_probeG,'g-',label=f'probe_g')
+                ax.plot(d['phi_tor']+phi0,quantity_probeG,'g-',label=f'probe\_g')
                 ax.plot(phi_points*rad_2_deg,combined_field[quantity_MARSF],'b',linestyle='--',label=f'Python check') #overplot these as they SHOULD be the same
                 ax.plot(phi_points*rad_2_deg,combined_field_BCHECK[quantity_MARSF],'b',linestyle='-',label=f'LOCUST')
-                ax.set_ylabel(r'$\widetilde{{ \underline{{B}}}}_{{{}}}$ [T]'.format(component))
+                #ax.set_ylabel(r'$\widetilde{{ \underline{{B}}}}_{{{}}}$ [T]'.format(component))
             axes[0].legend()
             axes[-1].set_xlabel('$\phi$ [degrees]')
 
