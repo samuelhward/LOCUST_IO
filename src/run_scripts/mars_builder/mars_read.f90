@@ -2480,10 +2480,10 @@ endif
                              TRIM(ADJUSTL(STR_N))
 #ifndef COILROW
             write( lun, * ) 'Phase U,M,L : '
-            write( lun, '(3E15.8)' ) PH1(1:3)
+            write( lun, * ) PH1(1:3)
 #else
             write( lun, * ) 'Phase Row '//TRIM(ADJUSTL(STR_C))//' :'
-            write( lun, '(3E15.8)' ) PH1(COILROW)
+            write( lun, * ) PH1(COILROW)
 #endif
 
 #if defined (FXXYY)
