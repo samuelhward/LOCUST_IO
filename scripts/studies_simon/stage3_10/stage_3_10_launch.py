@@ -143,6 +143,7 @@ parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 # index of optimal absolute phase (lowest losses) from stage_1_10 are:
 # case 5, n=3: 1st simulation 
 # case 5, n=4: 2nd simulation
+# to check these are correct, verify that U-M and L-M give the above relative phases and parameters__phases_middles* are the optimal values from stage_1*
 parameters__phases_uppers=[
     np.linspace(0,120,7)[:-1][0]-np.array([84.59014209730469, 97.97671623514145, 157.45157877171604, 244.88956133500577, 309.2524113727721, 295.8771305794595, 236.3980603134114, 148.970331391124])/3.+30-3.3,
     np.linspace(0,90,7)[:-1][1]-np.array([-225.94568453777023, -211.08243707342373, -150.69617805444034, -64.54854169694258, 0.8932135128582925, -13.98452459543561, -74.36047160900125, -160.5089086556394])/4.+30-3.3
