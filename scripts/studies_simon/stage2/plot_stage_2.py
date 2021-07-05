@@ -82,7 +82,6 @@ for output,current,col_val in zip(outputs,currents,np.linspace(0,1,len(batch_dat
         i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
         PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron])
         output['E']/=1000. #convert to keV
-        batch_data.parameters__currents_upper
         output['weight'][i]=1.e6*output['f']*(output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i]*0.5*constants.mass_deuteron/Pinj
         output.plot(fig=fig1,ax=ax1,axes=['time'],fill=False,label=f'{current/1000.}kAt',colmap=settings.cmap_default,colmap_val=col_val,number_bins=200,weight=True)
         output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=f'{current/1000.}kAt',colmap=settings.cmap_default,colmap_val=col_val,number_bins=200,weight=True)
