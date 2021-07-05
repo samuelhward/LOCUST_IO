@@ -9,6 +9,7 @@ note that the phase shift here is in the opposite direction to the ITER coordina
 '''
 
 
+
 def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     """[summary]
 
@@ -26,6 +27,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     import context
     import numpy as np 
     import copy,support
+    import matplotlib.pyplot as plt
 
     if ax is None:
         ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
@@ -39,6 +41,9 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     if fig_flag is False:
         fig = plt.figure() #if user has not externally supplied figure, generate
+
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        ax = fig.add_subplot(111)
 
     KAPPROACH = 2
     PU10 = 0
@@ -60,13 +65,16 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
         SDIR_RMP     = 'case3_7d5MA_5d3T/n'+str(n1)+'_Pr03_tfte2/'
         B0EXP = 5.3               
 
+    if ncase == 5:
+        SDIR_RMP     = 'case5_15MA_5d3T_Q10/n'+str(n1)+'_Pr03_tfte2/' 
+        B0EXP = 5.3               
+
     if ncase == 6:
         SDIR_RMP     = 'case6_15MA_5d3T_Q5/n'+str(n1)+'_Pr03_tfte2/' 
         B0EXP = 5.3               
 
-    if ncase == 5:
-        SDIR_RMP     = 'case5_15MA_5d3T_Q10/n'+str(n1)+'_Pr03_tfte2/' 
-        B0EXP = 5.3               
+    if ncase == 7:
+        SDIR_RMP     = 'case7_7d5MA_4d5T/n'+str(n1)+'_Pr03_tfte2/' 
 
     if ncase == 8:
         SDIR_RMP     = 'case8_12d5MA_5d3T/n'+str(n1)+'_Pr03_tfte2/' 
@@ -133,12 +141,15 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     translation_options[2]={}
     translation_options[3]={}
     translation_options[5]={}
+    translation_options[7]={}
     translation_options[2][3]=[0,0]
     translation_options[2][4]=[80,330]
     translation_options[3][3]=[150,200]
     translation_options[3][4]=[0,0]
     translation_options[5][3]=[0,0]
     translation_options[5][4]=[100,260]
+    translation_options[7][3]=[120,250]
+    translation_options[7][4]=[180,160]
     dx,dy=translation_options[ncase][n1]
 
     # note Yueqiang x-axis is upper coil row, so flip here since I prefer upper row being y-axis
@@ -270,7 +281,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
             distance=np.cumsum(np.sqrt(np.sum(np.diff(coords,axis=1)**2,axis=0)))
             distance=np.insert(distance,0,0.) #first distance is 0
             distance=(distance-distance[0])/(distance[-1]-distance[0]) #normalise
-            interpolator=processing.utils.interpolate_1D(distance,coords,function='cubic',type='interp1d',smooth=0)
+            interpolator=processing.utils.interpolate_1D(distance,coords,function='linear',type='interp1d',smooth=0)
             #allocate number of points based on relative length of sub-path
             number_coords_this_path=int(number_coords_new*path_lengths[path_number]/np.sum(path_lengths))
             distance_coords_new=np.linspace(0,1,number_coords_this_path+1)[:-1] #this loops back onto itself, so add  extra point and remove the end
@@ -305,7 +316,8 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     if ax_flag is False and fig_flag is False:
         plt.show() 
 
-    # so now levels_coords[n][0] contains the x coordinates for points along contour n
-    # so now levels_coords[n][1] contains the y coordinates for points along contour n
+    return levels_coords
 
+    # so now levels_coords[p,0,n][n] contains the x coordinate for point p along contour n
+    # so now levels_coords[p,1,n][n] contains the y coordinate for point p along contour n
     
