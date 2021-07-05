@@ -4,7 +4,7 @@
 Samuel Ward
 29/06/21
 ----
-script for plotting stage 3 of Simon's studies 
+script for plotting stage 3_10 of Simon's studies 
 ---
  
 notes:         
