@@ -168,45 +168,45 @@ contour_relative_phase_lower_case3_n4 = -np.array([0.0, 86.70346757605165, 173.9
 #contour_relative_phase_upper_case3_n4[contour_relative_phase_upper_case3_n4<0]+=360.
 #contour_relative_phase_lower_case3_n4[contour_relative_phase_lower_case3_n4<0]+=360.
 
-# index of optimal absolute phase (lowest losses) from stage_4_1 are:
-# case 2, H n=3: XXX simulation 
-# case 2, H n=4: XXX simulation
-# case 2, D n=3: XXX simulation 
-# case 2, D n=4: XXX simulation
-# case 3, D n=3: XXX simulation 
-# case 3, D n=4: XXX simulation 
+# index of optimal absolute phase (lowest losses) from stage_4_10 are:
+# case 2, H n=3: 1st simulation 
+# case 2, H n=4: 2nd simulation
+# case 2, D n=3: 1st simulation 
+# case 2, D n=4: 1st simulation
+# case 3, D n=3: 4th simulation 
+# case 3, D n=4: 5th simulation 
 
 # to check these are correct, verify that U-M and L-M give the above relative phases and parameters__phases_middles* are the optimal values from stage_4
 # assuming that XPD is same for H and D plasmas
 parameters__phases_uppers_case2_H=[
-    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][1]+30.-3.3]
 parameters__phases_middles_case2_H=[
-    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][XXX])+26.7,
-    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][XXX])+26.7]
+    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][0])+26.7,
+    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][1])+26.7]
 parameters__phases_lowers_case2_H=[
-    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][1]+30.-3.3]
 
 parameters__phases_uppers_case2_D=[
-    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_upper_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_upper_case2_n4+np.linspace(0,90,6)[:-1][0]+30.-3.3]
 parameters__phases_middles_case2_D=[
-    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][XXX])+26.7,
-    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][XXX])+26.7]
+    np.full(len(contour_relative_phase_upper_case2_n3),np.linspace(0,120,6)[:-1][0])+26.7,
+    np.full(len(contour_relative_phase_upper_case2_n4),np.linspace(0,90,6)[:-1][0])+26.7]
 parameters__phases_lowers_case2_D=[
-    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_lower_case2_n3+np.linspace(0,120,6)[:-1][0]+30.-3.3,
+    contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][0]+30.-3.3]
 
 parameters__phases_uppers_case3_D=[
-    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][4]+30.-3.3]
 parameters__phases_middles_case3_D=[
-    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][XXX])+26.7,
-    np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][XXX])+26.7]
+    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][3])+26.7,
+    np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][4])+26.7]
 parameters__phases_lowers_case3_D=[
-    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][4]+30.-3.3]
 
 parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2_H,parameters__phases_uppers_case2_D,parameters__phases_uppers_case3_D]
 parameters__phases_middles_cases_all=[parameters__phases_middles_case2_H,parameters__phases_middles_case2_D,parameters__phases_middles_case3_D]
