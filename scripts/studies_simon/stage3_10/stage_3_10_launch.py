@@ -140,17 +140,17 @@ parameters__kinetic_profs_tF_tE=[2.]
 #n=3 and 4 harmonic settings - both first side band and corresponding rigid phases to scan
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 
-# index of optimal absolute phase (lowest losses) from stage_1 are:
-# case 5, n=3: XXX simulation 
-# case 5, n=4: XXX simulation
+# index of optimal absolute phase (lowest losses) from stage_1_10 are:
+# case 5, n=3: 1st simulation 
+# case 5, n=4: 2nd simulation
 parameters__phases_uppers=[
     -np.array([84.59014209730469, 97.97671623514145, 157.45157877171604, 244.88956133500577, 309.2524113727721, 295.8771305794595, 236.3980603134114, 148.970331391124])/3.+30-3.3,
     -np.array([-225.94568453777023, -211.08243707342373, -150.69617805444034, -64.54854169694258, 0.8932135128582925, -13.98452459543561, -74.36047160900125, -160.5089086556394])/4.+30-3.3
     ]
 
 parameters__phases_middles=[
-    np.full(len(parameters__phases_uppers[0]),np.linspace(0,120,7)[:-1][XXX])+26.7,
-    np.full(len(parameters__phases_uppers[1]),np.linspace(0,90,7)[:-1][XXX])+26.7
+    np.full(len(parameters__phases_uppers[0]),np.linspace(0,120,7)[:-1][0])+26.7,
+    np.full(len(parameters__phases_uppers[1]),np.linspace(0,90,7)[:-1][1])+26.7
 ]
 
 parameters__phases_lowers = [
