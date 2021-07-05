@@ -125,12 +125,12 @@ parameters__kinetic_profs_tF_tE=[2.]
 #3D field parameters which vary independently - if you want to vary these together then put them into the same loop nesting below
 #2D arrays, each element has length = number of modes
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
-# index of optimal absolute phase (lowest losses) from stage_1 are:
-# case 5, n=3: XXX simulation 
-# case 5, n=4: XXX simulation
-parameters__phases_uppers=[np.linspace(0,120,7)[:-1][XXX]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1][XXX]+30.-250./4.-3.3]
-parameters__phases_middles=[np.linspace(0,120,7)[:-1][XXX]+26.7+0./3.,np.linspace(0,90,7)[:-1][XXX]+26.7+0./4.]
-parameters__phases_lowers=[np.linspace(0,120,7)[:-1][XXX]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1][XXX]+30.-95./4.-3.3]
+# index of optimal absolute phase (lowest losses) from stage_1_10 are:
+# case 5, n=3: 1st simulation 
+# case 5, n=4: 2nd simulation
+parameters__phases_uppers=[np.linspace(0,120,7)[:-1][0:1]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1][1:2]+30.-250./4.-3.3]
+parameters__phases_middles=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][1:2]+26.7+0./4.]
+parameters__phases_lowers=[np.linspace(0,120,7)[:-1][0:1]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1][1:2]+30.-95./4.-3.3]
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
