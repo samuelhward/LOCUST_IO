@@ -124,10 +124,10 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3'] #these all zipped at same level in main loop because source data is not consistent enough
-parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'nT=0.76ne'","'iterDD.iterFSBMI'"]
-configs_beam_species=['hydrogen','deuterium','deuterium']
-plasmas_species=[['hydrogen'],['deuterium'],['deuterium']] #"\"['']\""
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7'] #these all zipped at same level in main loop because source data is not consistent enough
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'"]
+configs_beam_species=['hydrogen','deuterium','deuterium','deuterium']
+plasmas_species=[['hydrogen'],['deuterium'],['deuterium'],['deuterium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -157,6 +157,11 @@ contour_relative_phase_upper_case3_n3 = -np.array([-145.2716393483703, -120.2954
 contour_relative_phase_lower_case3_n3 = -np.array([-40.0, 47.38213631307841, 115.75256832617907, 145.10254993460026, 85.3990492991743, -1.9832026288900206, -70.35180144888817, -99.7339733621876])/3.
 contour_relative_phase_upper_case3_n4 = -np.array([16.551006721206214, 101.63738829604354, 186.16856300536085, 272.622759500644, 206.2821589689221, 101.73275455393512, 360.0, 283.9907025144561])/4.
 contour_relative_phase_lower_case3_n4 = -np.array([0.0, 86.70346757605165, 173.95152266509925, 259.290976102509, 360.0, 258.0480590049009, 153.2833530850786, 75.78994993180221])/4.
+contour_relative_phase_upper_case7_n3 = -np.array([-180.8982266, -163.6965917 , -106.09998978, -24.07638456, 46.97770407, 29.81883198, -27.77752547, -109.7981419])/3.
+contour_relative_phase_lower_case7_n3 = -np.array([-25., 64.24894848, 136.30523227, 176.08312545, 131.3915865, 42.15514932, -29.90019883, -69.69885907])/3.
+contour_relative_phase_upper_case7_n4 = -np.array([-125.07069558, -103.38580963, -44.16881469, 38.68319062, 126.51926018, 104.94660554, 45.71372546, -37.14116784])/4.
+contour_relative_phase_lower_case7_n4 = -np.array([-120., -23.67811381, 57.0005977, 112.43866172, 96.51266678, 0.20322827, -80.46864141, -135.90423969])/4.
+
 
 # leave as negative values since easier to translate to positive than translate whole X-displacement pattern
 #contour_relative_phase_upper_case2_n3[contour_relative_phase_upper_case2_n3<0]+=360.
@@ -175,6 +180,8 @@ contour_relative_phase_lower_case3_n4 = -np.array([0.0, 86.70346757605165, 173.9
 # case 2, D n=4: 1st simulation
 # case 3, D n=3: 4th simulation 
 # case 3, D n=4: 5th simulation 
+# case 7, D n=3: XXX simulation 
+# case 7, D n=4: XXX simulation 
 
 # to check these are correct, verify that U-M and L-M give the above relative phases and parameters__phases_middles* are the optimal values from stage_4
 # assuming that XPD is same for H and D plasmas
@@ -208,9 +215,20 @@ parameters__phases_lowers_case3_D=[
     contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
     contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][4]+30.-3.3]
 
-parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2_H,parameters__phases_uppers_case2_D,parameters__phases_uppers_case3_D]
-parameters__phases_middles_cases_all=[parameters__phases_middles_case2_H,parameters__phases_middles_case2_D,parameters__phases_middles_case3_D]
-parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2_H,parameters__phases_lowers_case2_D,parameters__phases_lowers_case3_D]
+parameters__phases_uppers_case7_D=[
+    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
+    contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+parameters__phases_middles_case7_D=[
+    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][XXX])+26.7,
+    np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][XXX])+26.7]
+parameters__phases_lowers_case7_D=[
+    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
+    contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+
+
+parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2_H,parameters__phases_uppers_case2_D,parameters__phases_uppers_case3_D,parameters__phases_uppers_case7_D]
+parameters__phases_middles_cases_all=[parameters__phases_middles_case2_H,parameters__phases_middles_case2_D,parameters__phases_middles_case3_D,parameters__phases_middles_case7_D]
+parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2_H,parameters__phases_lowers_case2_D,parameters__phases_lowers_case3_D,parameters__phases_lowers_case7_D]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
