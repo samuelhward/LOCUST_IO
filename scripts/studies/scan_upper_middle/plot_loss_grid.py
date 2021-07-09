@@ -78,6 +78,7 @@ for output in outputs:
 PFC_power=np.array(PFC_power).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__kinetic_profs_Pr),len(batch_data.parameters__phases_upper),len(batch_data.parameters__phases_middle))
 
 fig,ax=plt.subplots(len(batch_data.parameters__kinetic_profs_Pr),len(batch_data.configs_beam_1))
+ax=np.array([ax],ndmin=2)
 counter=0 #counter over different scenarios
 for beam_config_counter,(config_beam_1,config_beam_2) in enumerate(zip(batch_data.configs_beam_1,batch_data.configs_beam_2)):
     for plasma_state_counter,(Pr,tftE) in enumerate(zip(batch_data.parameters__kinetic_profs_Pr,batch_data.parameters__kinetic_profs_tF_tE)):
