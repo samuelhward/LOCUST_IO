@@ -272,6 +272,41 @@ target_IDS_dispatch['ITER_10MA_case6']['03']['2']['run']=1
 target_IDS_dispatch['ITER_10MA_case6']['03']['2']['sheet_name_kinetic_prof']='10MA80MWEC035N'
 target_IDS_dispatch['ITER_10MA_case6']['03']['2']['sheet_name_rotation']='Vtor,Pr=0.3'
 target_IDS_dispatch['ITER_10MA_case6']['03']['2']['var_name_rotation']='Vtor,tF/tE=2'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']={}
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']={} 
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']={}
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']['shot']=131037
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']['run']=2
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']['sheet_name_kinetic_prof']='Pr=1,tF=2tE'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']['sheet_name_rotation']='Pr=1'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['2']['var_name_rotation']='Vt(tF/tE=2)'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']={}
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']['shot']=131037
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']['run']=0
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']['sheet_name_kinetic_prof']='Pr=1,tF=tE'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']['sheet_name_rotation']='Pr=1'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['1']['var_name_rotation']='Vt(tF/tE=1)'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']={} #lowest rotation
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']['shot']=131037
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']['run']=1
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']['sheet_name_kinetic_prof']='Pr=1,tF=0.5tE'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']['sheet_name_rotation']='Pr=1'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['1']['05']['var_name_rotation']='Vt(tF/tE=0.5)'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']={} 
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']={} #highest rotation
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']['shot']=131037 
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']['run']=3
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']['sheet_name_kinetic_prof']='Pr=0.3,tF=2tE'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']['sheet_name_rotation']='Pr=0.3'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['2']['var_name_rotation']='Vt(tF/tE=2)'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']={}
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']['shot']=131037
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']['run']=4
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']['sheet_name_kinetic_prof']='Pr=0.3,tF=tE'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']['sheet_name_rotation']='Pr=0.3'
+target_IDS_dispatch['ITER_7d5MA4d5T_case7']['03']['1']['var_name_rotation']='Vt(tF/tE=1)'
+
+
 
 #dispatch tables for species stored in IDSs and prec_mod
 table_species_AZ={} #A,Z
@@ -431,7 +466,7 @@ LOCUST_run__flags_default['LNLBT']=True
 LOCUST_run__flags_default['GEQDSKFIX1']=True
 LOCUST_run__flags_default['GEQDSKFIX2']=True
 LOCUST_run__flags_default['BP']=True
-LOCUST_run__flags_default['TIMAX']='0.5D0'
+LOCUST_run__flags_default['TIMAX']='0.05D0'
 LOCUST_run__flags_default['SPLIT']=True
 LOCUST_run__flags_default['SMALLEQ']=True #XXX test whether we need this when using mesh
 #LOCUST_run__flags_default['CONLY']=True
