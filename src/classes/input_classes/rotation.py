@@ -208,7 +208,7 @@ def read_rotation_excel_1(filepath,**properties):
     input_data['flux_tor_norm_sqrt'],input_data['r_1D']=run_scripts.utils.read_kinetic_profile_data_excel_1(filepath=filepath,x='x',y='a',sheet_name=properties['sheet_name'])
     input_data['flux_tor_norm']=input_data['flux_tor_norm_sqrt']**2.
     input_data['flux_pol_norm_sqrt']=np.sqrt(input_data['flux_pol_norm'])
-    input_data['rotation_vel']*=1000. #convert from km/s
+    input_data['rotation_vel']*=-1000. #convert from km/s and reverse (because listed as speed but direction is always negative in ITER coordinates)
 
     input_data['R_1D']=radius_minor+R_axis 
     input_data['rotation_ang']=input_data['rotation_vel']/input_data['R_1D']
