@@ -10,7 +10,7 @@ note that the phase shift here is in the opposite direction to the ITER coordina
 
 
 
-def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
+def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='MARS',colourbar=False):
     """[summary]
 
     Args:
@@ -19,6 +19,8 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
         LVV (int, optional): [description]. Defaults to 90.
         fig ([type], optional): [description]. Defaults to None.
         ax ([type], optional): [description]. Defaults to None.
+        coord_system ([type], optional): [if 'ITER' then plot in ITER coordinate system]. Defaults to 'MARS'.
+        colourbar ([type], optional): [Toggle whether to add colourbar if fig/ax supplied]. Defaults to False.
 
     Returns:
         [type]: [description]
@@ -152,11 +154,12 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     translation_options[7][4]=[180,160]
     dx,dy=translation_options[ncase][n1]
 
-    # note Yueqiang x-axis is upper coil row, so flip here since I prefer upper row being y-axis
-    Ica2[Ica2>360-dx]-=360
-    Ica1[Ica1>360-dy]-=360
-    Ica2=np.sort(Ica2)
-    Ica1=np.sort(Ica1)
+    if coord_system=='MARS': 
+        # note Yueqiang x-axis is upper coil row, so swap here since I prefer upper row being y-axis
+        Ica2[Ica2>360-dx]-=360
+        Ica1[Ica1>360-dy]-=360
+        Ica2=np.sort(Ica2)
+        Ica1=np.sort(Ica1)
 
     if KDIMENSION==2:
       Icc1,Icc2 = np.meshgrid(Ica1,Ica2)
@@ -225,6 +228,12 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     # now for plotting and calculating X-point displacement contour
 
+    if coord_system=='ITER': 
+        Icc1=-Icc1+360
+        Icc2=-Icc2+360
+        Icc1/=n
+        Icc2/=n
+
     import matplotlib.pyplot as plt 
     import processing.utils 
 
@@ -243,14 +252,16 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
 
     levels=np.linspace(np.min(VnXpt*1e+3),np.max(VnXpt*1e+3),7)
     mesh=ax.contourf(Icc2.T,Icc1.T,VnXpt.T*1e+3,levels=levels,cmap='Greys')
-    cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
+    if fig_flag is False or colourbar is True:    
+        cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
     # define contour levels we want to calculate points at
     levels=[
             2*np.max(VnXpt)*1e+3/3,
             ]
     levels_coords=[]
     mesh=ax.contour(Icc2.T,Icc1.T,VnXpt.T*1e+3,levels=levels,colors='m')
-    cbar.add_lines(mesh)
+    if fig_flag is False or colourbar is True:    
+        cbar.add_lines(mesh)
     #total number of points to interpolate onto
     #this will be spread out over the contour's sub-paths (if any) in proportion to their length
     number_coords_new=8
@@ -296,7 +307,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
     ax.set_ylabel(SYLAB)
 
     levels_coords=np.array(levels_coords,ndmin=2).T
-    for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter, fontsize=12)
+    for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter)
 
     if case == 3 and n == 4: 
         rotation=0. #[deg] 
@@ -308,13 +319,15 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None):
         y=1.05
 
     ax.text(x=x,y=y,s=f'case = {case}, n={n}',horizontalalignment='left',rotation=rotation,
-    fontsize=10,transform=ax.transAxes)#,color=settings.colour_custom(rgba=[100,100,100,1])(0.))
+    transform=ax.transAxes)#,color=settings.colour_custom(rgba=[100,100,100,1])(0.))
 
     if ax_flag is True or fig_flag is True: #return the plot object
         return mesh
 
     if ax_flag is False and fig_flag is False:
         plt.show() 
+
+    print(f'max XPD at: U={Icc1[np.max(VnXpt)==VnXpt]},L={Icc2[np.max(VnXpt)==VnXpt]} in {coord_system} coord system')
 
     return levels_coords
 
