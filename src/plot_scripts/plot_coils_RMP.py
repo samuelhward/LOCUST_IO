@@ -55,7 +55,7 @@ except:
 ###################################################################################################
 #Main
 
-def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokamak='ITER',waveform='cos'):
+def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokamak='ITER',simple=True,waveform='cos',axes=False,fig=False):
     """
     plot generic RMP coils as well as associated theoretical harmonics
 
@@ -66,13 +66,37 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
         coil_current - coil current [kAt] 
         coil_rows - list of coil rows to plot (1=uppermost) [int]
         tokamak - tokamak name [-]
+        simple - plot only modes stronger than 10% max amplitude? [bool]
         waveform - waveform type [str]
+        ax - take input axes (can be used to stack plots) [list of mpl two axes objects]
+        fig - take input fig (can be used to add colourbars etc)
     notes:
     """
 
+    if axes is False:
+        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+    else:
+        ax_flag=True
 
-    for ax in axes: ax.cla() #clear axes
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+        
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        axes=[None,None]
+        axes[0] = fig.add_subplot(121)
+        axes[1] = fig.add_subplot(122)
 
+    for ax in axes: 
+        try:
+            ax.cla() #clear axes
+        except:
+            pass
+        
     rad_to_deg=360./2.*np.pi
     deg_to_rad=2.*np.pi/360.
 
@@ -111,8 +135,9 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
     I_n_cos=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))
     I_n_sin=np.zeros((coil_data_options[tokamak]['number_rows'],n_range))
 
+    #calculate complex amplitude for each harmonic in each row
     for coil_row in np.arange(coil_data_options[tokamak]['number_rows']):
-        for n in n_axis: #calculate complex amplitude for each harmonic in each row
+        for n in n_axis: 
             I_n_cos[coil_row,n-1]=(2./(n*np.pi))*np.sin(n*coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad/2.)*np.sum(I_j[coil_row]*np.cos(n*coil_data_options[tokamak]['coil_locations'][coil_row]*deg_to_rad))
             I_n_sin[coil_row,n-1]=(2./(n*np.pi))*np.sin(n*coil_data_options[tokamak]['coil_coverage'][coil_row]*deg_to_rad/2.)*np.sum(I_j[coil_row]*np.sin(n*coil_data_options[tokamak]['coil_locations'][coil_row]*deg_to_rad))
 
@@ -126,58 +151,66 @@ def plot_coils_RMP(phase_shift,n_0,n_range,coil_current,coil_rows=[1,2,3],tokama
     plot_perturbation_fundamental=True
 
     for coil_row,colour in zip(coil_rows,['blue','red','green']):
-        #axes[0].plot(n_axis,I_n[coil_row].real,label=f'coil row = {coil_row}',color=colour,linestyle=':')
-        #axes[0].plot(n_axisI_n[coil_row].imag,label=f'coil row = {coil_row}',color=colour,linestyle=':')
+        #if axes[0]: axes[0].plot(n_axis,I_n[coil_row].real,label=f'coil row = {coil_row}',color=colour,linestyle=':')
+        #if axes[0]: axes[0].plot(n_axisI_n[coil_row].imag,label=f'coil row = {coil_row}',color=colour,linestyle=':')
         
         coil_row-=1
 
         if plot_perturbation_fundamental:
             phi=np.linspace(0.,360.,100)
             I_j_fundamental=waveform(n_0=n_0,phi=phi,phase_shift=coil_data_options[tokamak]['phase_shift_coils'][coil_row]) #plot theoretical waveform
-            axes[1].plot(phi,I_j_fundamental,color='magenta',linestyle='--',label='current profile')
+            if axes[1]: axes[1].plot(phi,I_j_fundamental,color='magenta',linestyle='--',label='current profile')
         if plot_fft_yueqiang:
-            axes[0].plot(n_axis,abs(I_n[coil_row]),label=f'coil row = {coil_row}',color=colour,marker='.',linestyle='-')
+            if axes[0]: axes[0].plot(n_axis,abs(I_n[coil_row]),label=f'coil row = {coil_row}',color=colour,marker='.',linestyle='-')
         if plot_fft_numpy: #calculate fft equivalent
             I_fft=np.abs(np.fft.fft(I_j)) 
-            axes[0].plot(I_fft[coil_row,1:int(len(I_fft[coil_row])/2)],'k-',label=f'fft') #XXX
+            if axes[0]: axes[0].plot(I_fft[coil_row,1:int(len(I_fft[coil_row])/2)],'k-',label=f'fft') #XXX
         if plot_fft_reconstruction:
             phi=np.linspace(0.,360.,360)
             waveform_reconstruction=np.zeros(len(phi))
 
             reconstruction_type='analytical'
-            if reconstruction_type=='analytical':
-                for n in n_axis:
-                    #the following are two equivalent ways of thinking about/calculating this
-                    #amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
-                    amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad)
-                    plt.plot(phi,amplitude_this_n,color=settings.cmap_plasma(.3*n/n_axis[-1]+.4),label=f'n={n}')
-                    waveform_reconstruction+=amplitude_this_n
-            elif reconstruction_type=='individual':
-                    pass 
-            plt.plot(phi,waveform_reconstruction,color=settings.cmap_red_nice(0.),label='sum')
+            if axes[1]:
+                if reconstruction_type=='analytical':
+                    for n in n_axis:
+                        #the following are two equivalent ways of thinking about/calculating this
+                        #amplitude_this_n=abs(I_n[coil_row,n-1])*np.cos(n*phi*deg_to_rad-np.arctan2(I_n[coil_row,n-1].imag,I_n[coil_row,n-1].real))
+                        amplitude_this_n=I_n.real[coil_row,n-1]*np.cos(n*phi*deg_to_rad)+I_n.imag[coil_row,n-1]*np.sin(n*phi*deg_to_rad) #I_n * e{i*n*phi}
+                        if simple and abs(I_n[coil_row,n-1])>=0.1*coil_current:
+                            axes[1].plot(phi,amplitude_this_n,color=settings.cmap_plasma(.3*n/n_axis[-1]+.4),label=f'$n$={n}')
+                            waveform_reconstruction+=amplitude_this_n
+                elif reconstruction_type=='individual':
+                        pass 
+                axes[1].plot(phi,waveform_reconstruction,color=settings.cmap_red_nice(0.),label='sum')
 
-        #for n_highlight in n_highlights:
-        #    axes[0].axvline(n_highlight,'m')
-        if plot_coils:
-            for coil in range(coil_data_options[tokamak]['number_coils_per_row']): #update coil currents
-                rectangle=matplotlib.patches.Rectangle(
-                    xy=(coil_data_options[tokamak]['coil_locations'][coil_row,coil]-coil_data_options[tokamak]['coil_coverage'][coil_row]/2.,0.0),
-                    width=coil_data_options[tokamak]['coil_coverage'][coil_row],
-                    height=I_j[coil_row,coil],
-                    edgecolor='black',facecolor='none') #,label=f'coil row {coil_row}'
-                axes[1].add_patch(rectangle)
-        axes[1].scatter(coil_data_options[tokamak]['coil_locations'][coil_row],I_j[coil_row],color='m') #add on coil currents
+        #if axes[0]: 
+        #   for n_highlight in n_highlights:
+        #        axes[0].axvline(n_highlight,'m')
+        if axes[1]: 
+            if plot_coils:
+                for coil in range(coil_data_options[tokamak]['number_coils_per_row']): #update coil currents
+                    rectangle=matplotlib.patches.Rectangle(
+                        xy=(coil_data_options[tokamak]['coil_locations'][coil_row,coil]-coil_data_options[tokamak]['coil_coverage'][coil_row]/2.,0.0),
+                        width=coil_data_options[tokamak]['coil_coverage'][coil_row],
+                        height=I_j[coil_row,coil],
+                        edgecolor='black',facecolor='none') #,label=f'coil row {coil_row}'
+                    axes[1].add_patch(rectangle)
+            axes[1].scatter(coil_data_options[tokamak]['coil_locations'][coil_row],I_j[coil_row],color='m') #add on coil currents
+    if axes[0]: 
+        axes[0].set_xlabel('$n$')
+        axes[0].set_xlim([0.,n_range])
+        axes[0].set_ylim([-1.1*coil_current,1.1*coil_current])
+        axes[0].set_title('Fourier transform amplitude')
+    if axes[1]: 
+        axes[1].set_xlabel('$\phi$ [deg]')
+        axes[1].legend(loc='right')
+        axes[1].set_xlim([np.min(coil_data_options[tokamak]['coil_locations'])-np.max(coil_data_options[tokamak]['coil_coverage'])/2.,np.max(coil_data_options[tokamak]['coil_locations'])+np.max(coil_data_options[tokamak]['coil_coverage'])/2.])
+        axes[1].set_xlim([0.,360])
+        axes[1].set_ylim([-1.1*coil_current,1.1*coil_current])
+        axes[1].set_title('Coil current [kAt]')
 
-    axes[0].set_xlabel('$n$')
-    axes[0].set_xlim([0.,n_range])
-    axes[0].set_ylim([-1.1*coil_current,1.1*coil_current])
-    axes[0].set_title('Fourier transform amplitude')
-    axes[1].set_xlabel('$\phi$')
-    axes[1].legend(loc='right')
-    axes[1].set_xlim([np.min(coil_data_options[tokamak]['coil_locations'])-np.max(coil_data_options[tokamak]['coil_coverage'])/2.,np.max(coil_data_options[tokamak]['coil_locations'])+np.max(coil_data_options[tokamak]['coil_coverage'])/2.])
-    axes[1].set_xlim([0.,360])
-    axes[1].set_ylim([-1.1*coil_current,1.1*coil_current])
-    axes[1].set_title('Coil current [kAt]')
+    if ax_flag is False and fig_flag is False:
+        plt.show()
 
 if __name__=='__main__':
 
@@ -189,6 +222,7 @@ if __name__=='__main__':
     parser.add_argument('--coil_current',type=float,action='store',default=90.,dest='coil_current',help="coil current [kAt]",required=False)
     parser.add_argument('--coil_rows',nargs='+',type=int,action='store',default=[1],dest='coil_rows',help="list of coil rows to plot (1=uppermost) [int] e.g. 1 2 3",required=False)
     parser.add_argument('--tokamak',type=str,action='store',default='ITER',dest='tokamak',help="tokamak name [-]",required=False)
+    parser.add_argument('--simple',type=bool,action='store',default=True,dest='simple',help="plot only modes stronger than 10% max amplitude? [-]",required=False)
     parser.add_argument('--save',type=bool,action='store',default=False,dest='save',help="save gif? [-]",required=False)
 
     args=parser.parse_args()
@@ -196,7 +230,7 @@ if __name__=='__main__':
 
     fig,axes=plt.subplots(2)
     phase_shift=np.linspace(0,360,360)
-    animation=FuncAnimation(fig,plot_coils_RMP,frames=phase_shift,fargs=[args[arg] for arg in ['n_0','n_range','coil_current','coil_rows','tokamak']],repeat=True,interval=1) #cycle through phases and make animation
+    animation=FuncAnimation(fig,plot_coils_RMP,frames=phase_shift,fargs=[args[arg] for arg in ['n_0','n_range','coil_current','coil_rows','tokamak','simple']]+['cos']+[[ax for ax in axes]]+[fig],repeat=True,interval=1) #cycle through phases and make animation
     plt.show()
 
     if args['save']: animation.save('plot_coils_RMP.gif',writer='pillow')
