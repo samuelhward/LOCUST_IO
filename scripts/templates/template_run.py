@@ -707,6 +707,10 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         new_IDS.core_profiles.profiles_1d[0].grid.rho_tor=rho_tor_core_prof
         new_IDS.core_profiles.profiles_1d[0].grid.rho_tor_norm=(rho_tor_core_prof-rho_tor_core_prof[0])/(rho_tor_core_prof[-1]-rho_tor_core_prof[0]) #remove rho_tor_norm as this grid seems to be different
 
+        #in case this new IDS is missing rho_tor then interpolate (needed by BBNBI)
+        if not np.any(new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor):
+            new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor=interpolator_rho_tor(new_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.*np.pi)) #remember from IDS to GEQDSK (to [Wb/rad])
+
         #if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
         az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['parameters__plasma_species']})
         for ion_counter,ion in enumerate(new_IDS.core_profiles.profiles_1d[0].ion):
