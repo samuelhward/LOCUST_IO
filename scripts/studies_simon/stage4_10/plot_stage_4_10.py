@@ -93,9 +93,9 @@ for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
         ax.scatter(np.abs(mode_number[0])*(batch_data.parameters__phases_middles[mode_number_counter]),100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
         label=f'{scenario} ({batch_data.configs_beam_species[scenario_counter]}), $n$ = {mode_number}, U:M={int(np.abs(mode_number[0])*relative_phases_upper_middle[0])}, L:M={int(np.abs(mode_number[0])*relative_phases_lower_middle[0])}')
 
-ax.set_xlabel('Relative rigid phase $\Delta\phi$',fontsize=20) #\Phi for absolute
-ax.set_ylabel('Deposited power lost [%]',fontsize=20)
-ax.legend(fontsize=15,bbox_to_anchor=(.5,.3),ncol=1,loc='center')
+ax.set_xlabel('Relative rigid phase $\Delta\phi$') #\Phi for absolute
+ax.set_ylabel('Deposited power lost [%]')
+ax.legend(bbox_to_anchor=(.5,.3),ncol=1,loc='best')
 plt.show()
 
 #################################

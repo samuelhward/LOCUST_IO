@@ -105,22 +105,24 @@ axs=np.array([axs]).reshape(len(scenarios),len(batch_data.parameters__toroidal_m
 axes={scenario:ax for scenario,ax in zip(scenarios,axs)}
 for plasma_state_counter,(database,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
     for mode_number_counter,(mode_number) in enumerate(batch_data.parameters__toroidal_mode_numbers):
+        colourbar=False
         if beam_species == 'hydrogen':
             colour='r'
         elif beam_species == 'deuterium':
             colour='b'
+            colourbar=True
         else:
             colour='k'
         case=int(batch_data.parameters__databases[plasma_state_counter][-1])
         n=int(np.abs(mode_number[0]))
         ax_left,ax_right=axes[database][mode_number_counter]        
-        plot_X_point_displacement(case=case,n=n,LVV=90,fig=fig,ax=ax_left)
-        ax_right.scatter(np.arange(len(PFC_power[plasma_state_counter][mode_number_counter])),100*PFC_power[plasma_state_counter][mode_number_counter]/Pinj,label=f'({beam_species} plasma)',color=colour)
-        ax_right.set_xlabel('Point',fontsize=15)
-        ax_right.set_ylabel(f'Deposited power lost [%]',fontsize=15)
-        ax_right.set_ylabel('Ploss [%]',fontsize=15)
+        plot_X_point_displacement(case=case,n=n,LVV=90,fig=fig,ax=ax_left,colourbar=colourbar,coord_system='MARS') #use MARS system because contours might be generated differently if using ITER system, so points might not match up
+        ax_right.scatter(np.arange(len(PFC_power[plasma_state_counter][mode_number_counter])),100*PFC_power[plasma_state_counter][mode_number_counter]/Pinj,label=f'{beam_species[0]}',color=colour)
+        ax_right.set_xlabel('Point')
+        ax_right.set_ylabel(f'Deposited power lost [%]')
+        ax_right.set_ylabel('Ploss [%]')
 
-#axes[batch_data.parameters__databases[0]][0][1].legend() 
+axes[batch_data.parameters__databases[0]][0][1].legend() 
 
 # remove ticks from total ax
 #ax_total = fig.add_subplot(111,frameon=False)
