@@ -12,8 +12,8 @@ stage 5.10
     - fix central coil phase from stage 4.10
     - vary upper/lower coil phase to trace out contour on 2/3 max X-point displacement in 8 steps
     - vary n=3,n=4 + sideband
-    - vary 7.5MA/2.65T (case 2) hydrogen/Hbeam + deuterium-deuterium/Dbeam and 7.5MA/5.3T (case 3) deuterium-deuterium/Dbeam scenarios
-    - 48 runs
+    - vary 7.5MA/2.65T (case 2) hydrogen/Hbeam + deuterium-deuterium/Dbeam and 7.5MA/5.3T (case 3) deuterium-deuterium/Dbeam and 7.5MA/4.5T (case 7) deuterium-deuterium/Dbeam scenarios
+    - 64 runs
 ---
  
 notes:         
@@ -178,10 +178,10 @@ contour_relative_phase_lower_case7_n4 = -np.array([-120., -23.67811381, 57.00059
 # case 2, H n=4: 2nd simulation
 # case 2, D n=3: 1st simulation 
 # case 2, D n=4: 1st simulation
-# case 3, D n=3: 4th simulation 
+# case 3, D n=3: 2nd simulation 
 # case 3, D n=4: 5th simulation 
-# case 7, D n=3: XXX simulation 
-# case 7, D n=4: XXX simulation 
+# case 7, D n=3: 4th simulation 
+# case 7, D n=4: 1st simulation 
 
 # to check these are correct, verify that U-M and L-M give the above relative phases and parameters__phases_middles* are the optimal values from stage_4
 # assuming that XPD is same for H and D plasmas
@@ -206,24 +206,24 @@ parameters__phases_lowers_case2_D=[
     contour_relative_phase_lower_case2_n4+np.linspace(0,90,6)[:-1][0]+30.-3.3]
 
 parameters__phases_uppers_case3_D=[
-    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][1]+30.-3.3,
     contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][4]+30.-3.3]
 parameters__phases_middles_case3_D=[
-    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][3])+26.7,
+    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][1])+26.7,
     np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][4])+26.7]
 parameters__phases_lowers_case3_D=[
-    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][1]+30.-3.3,
     contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][4]+30.-3.3]
 
 parameters__phases_uppers_case7_D=[
-    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_upper_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_upper_case3_n4+np.linspace(0,90,6)[:-1][0]+30.-3.3]
 parameters__phases_middles_case7_D=[
-    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][XXX])+26.7,
-    np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][XXX])+26.7]
+    np.full(len(contour_relative_phase_upper_case3_n3),np.linspace(0,120,6)[:-1][3])+26.7,
+    np.full(len(contour_relative_phase_upper_case3_n4),np.linspace(0,90,6)[:-1][0])+26.7]
 parameters__phases_lowers_case7_D=[
-    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][XXX]+30.-3.3,
-    contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][XXX]+30.-3.3]
+    contour_relative_phase_lower_case3_n3+np.linspace(0,120,6)[:-1][3]+30.-3.3,
+    contour_relative_phase_lower_case3_n4+np.linspace(0,90,6)[:-1][0]+30.-3.3]
 
 
 parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2_H,parameters__phases_uppers_case2_D,parameters__phases_uppers_case3_D,parameters__phases_uppers_case7_D]
@@ -243,7 +243,7 @@ config_beam_2='on'
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','run_BBNBI','depo_get','run_LOCUST','clean_input']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','run_BBNBI','depo_get','calc_poinc','run_LOCUST','clean_input']\""
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
