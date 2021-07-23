@@ -35,6 +35,12 @@ if __name__=='__main__':
         sys.exit(1)
 
 try:
+    from classes.input_classes.equilibrium import Equilibrium
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/equilibrium.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -63,6 +69,19 @@ except:
 #Main 
 
 import stage_3_10_launch as batch_data
+
+outputs=templates.plot_mod.get_output_files(batch_data,'poinc')
+for run_number,output in enumerate(outputs):
+    equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][run_number],GEQDSKFIX1=True,GEQDSKFIX2=True)
+    fig,ax=plt.subplots(1)
+    if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number] and output is not None: #this is the 2D case    
+        equilibrium.plot()
+    elif output is not None:
+        output.plot(ax=ax,fig=fig,LCFS=equilibrium,limiters=equilibrium,real_scale=True)
+        ax.set_xlim([4.5,6.0])
+        ax.set_ylim([-4.0,-1.3])
+    plt.show()
+
 
 outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
 
