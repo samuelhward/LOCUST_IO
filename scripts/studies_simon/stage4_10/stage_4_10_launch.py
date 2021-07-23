@@ -9,10 +9,10 @@ stage 4.10
     - start with best phases (X-point displacement) from table 2 (Yueqiang) (reversed)
     - fix Pr=0.3 and τφ/τE=2.
     - fix current at 30kAt
-    - vary 7.5MA/2.65T (case 2) hydrogen/Hbeam + deuterium-deuterium/Dbeam and 7.5MA/5.3T (case 3) deuterium-deuterium/Dbeam scenarios
+    - vary 7.5MA/2.65T (case 2) hydrogen/Hbeam + deuterium-deuterium/Dbeam and 7.5MA/5.3T (case 3) deuterium-deuterium/Dbeam and 7.5MA/4.5T (case 7) deuterium-deuterium/Dbeam scenarios
     - vary n=3,n=4 + sideband
     - vary absolute phase in 5 steps
-    - 30 runs 
+    - 40 runs 
 ---
  
 notes:         
@@ -151,9 +151,9 @@ parameters__phases_uppers_case3=[np.linspace(0,120,6)[:-1]+30.-330./3.-3.3,np.li
 parameters__phases_middles_case3=[np.linspace(0,120,6)[:-1]+26.7+0./3.,np.linspace(0,90,6)[:-1]+26.7+0./4.]
 parameters__phases_lowers_case3=[np.linspace(0,120,6)[:-1]+30.-20./3.-3.3,np.linspace(0,90,6)[:-1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case7=[np.linspace(0,120,6[:-1]+30.-290./3.-3.3),np.linspace(0,90,6)[:-1]+30.-XXX/3.-3.3]
-parameters__phases_middles_case7=[np.linspace(0,120,6[:-1]+30.-0./3.-3.3),np.linspace(0,90,6)[:-1]+26.7-0./3.]
-parameters__phases_lowers_case7=[np.linspace(0,120,6[:-1]+30.-55./3.-3.3),np.linspace(0,90,6)[:-1]+30.-XXX/3.-3.3]
+parameters__phases_uppers_case7=[np.linspace(0,120,6)[:-1]+30.-290./3.-3.3,np.linspace(0,90,6)[:-1]+30.-0./4.-3.3]
+parameters__phases_middles_case7=[np.linspace(0,120,6)[:-1]+26.7-0./3.,np.linspace(0,90,6)[:-1]+26.7-0./4.]
+parameters__phases_lowers_case7=[np.linspace(0,120,6)[:-1]+30.-55./3.-3.3,np.linspace(0,90,6)[:-1]+30.+10./4.-3.3]
 
 # iterates at same level as scenario above
 # assuming that XPD is same for H and D plasmas
