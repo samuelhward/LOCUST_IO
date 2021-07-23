@@ -7,6 +7,7 @@ Samuel Ward
 File which holds physical constants and other data
 ---
 notes: 
+    - should replace with scipy.constants
 ---
 '''
 

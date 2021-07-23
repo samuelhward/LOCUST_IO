@@ -137,7 +137,8 @@ matplotlib_rc['figure'] = {
                         'figsize' : [10.,8.]
                         }
 matplotlib_rc['legend'] = {
-                        'loc' : 'best'    
+                        'loc' : 'best',    
+                        'fontsize' : 10    
                         }
 for setting_type,setting in matplotlib_rc.items(): matplotlib.rc(setting_type, **setting) #enable settings
 
