@@ -89,7 +89,7 @@ def read_perturbation_LOCUST(filepath,**properties):
         #read lazily
         for line in file:
             split_line=line.split()
-            if len(split_line)==8 and not any(letter in line for letter in support.alphabet):
+            if len(split_line)==8:
                 input_data['R_2D'].append(float(split_line[0]))
                 input_data['Z_2D'].append(float(split_line[1]))
                 input_data['dB_field_R_real'].append(float(split_line[2]))
@@ -376,8 +376,8 @@ def read_perturbation_MARSF(filepath,**properties):
             Z_dim=int(np.where(input_data['R_2D']==input_data['R_2D'][0])[0].size)
             input_data['R_2D']=input_data['R_2D'].reshape(R_dim,Z_dim)
             input_data['Z_2D']=input_data['Z_2D'].reshape(R_dim,Z_dim)
-            input_data['R_1D']=input_data['R_2D'][0,:].flatten()
-            input_data['Z_1D']=input_data['Z_2D'][:,0].flatten()
+            input_data['R_1D']=input_data['R_2D'][:,0].flatten()
+            input_data['Z_1D']=input_data['Z_2D'][0,:].flatten()
             input_data['dB_field_R_real']=input_data['dB_field_R_real'].reshape(R_dim,Z_dim)
             input_data['dB_field_R_imag']=input_data['dB_field_R_imag'].reshape(R_dim,Z_dim)
             input_data['dB_field_Z_real']=input_data['dB_field_Z_real'].reshape(R_dim,Z_dim)

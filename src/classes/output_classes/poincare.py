@@ -21,6 +21,7 @@ import sys #have global imports --> makes less modular (no "from output_classes 
 
 try:
     import numpy as np
+    import matplotlib.pyplot as plt
     import pathlib
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
