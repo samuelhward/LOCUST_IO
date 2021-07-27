@@ -19,6 +19,8 @@ try:
     import numpy as np 
     import os
     import pathlib
+    import matplotlib 
+    import matplotlib.pyplot as plt 
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -47,6 +49,16 @@ try:
     from classes.input_classes.rotation import Rotation
 except:
     raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/rotation.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from classes.input_classes.beam_deposition import Beam_Deposition
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/beam_deposition.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from classes.input_classes.wall import Wall
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/wall.py could not be imported!\nreturning\n") 
     sys.exit(1)
 try:
     from classes.output_classes.distribution_function import Distribution_Function
@@ -80,6 +92,12 @@ except:
     sys.exit(1)
 
 try:
+    import processing.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import settings
 except:
     raise ImportError("ERROR: LOCUST_IO/src/settings.py could not be imported!\nreturning\n") 
@@ -102,7 +120,6 @@ except:
 
 def get_output_files(batch_data,output_type='dfn',**kwargs):
 
-    outputs=[]
     output_file_dispatch={}
     output_file_dispatch['dfn']='*.dfn'
     output_file_dispatch['fpl']='ptcl_cache.dat'
@@ -128,6 +145,47 @@ def get_output_files(batch_data,output_type='dfn',**kwargs):
             for dir_output_filepath in dir_output_filepaths:
                 try:
                     yield output_classes_dispatch[output_type](ID=parameter_string,data_format='LOCUST',filename=dir_output_filepath,**kwargs)
+                except:
+                    yield None
+        else:
+            yield None
+
+def get_input_files(batch_data,input_type='eq',**kwargs):
+
+    input_file_dispatch={}
+    input_file_dispatch['eq']='locust_eqm'
+    input_file_dispatch['pert']='BPLASMA_n?'
+    input_file_dispatch['temp']='profile_T*.dat'
+    input_file_dispatch['numden']='profile_ne.dat'
+    input_file_dispatch['rot']='profile_wT.dat'
+    input_file_dispatch['beamdepo']='ptcles.dat'
+    input_file_dispatch['wall']='locust_wall'
+
+    input_file_type_dispatch={}
+    input_file_type_dispatch['eq']='GEQDSK'
+    input_file_type_dispatch['pert']='MARSF'
+    input_file_type_dispatch['temp']='LOCUST'
+    input_file_type_dispatch['numden']='LOCUST'
+    input_file_type_dispatch['rot']='LOCUST'
+    input_file_type_dispatch['beamdepo']='LOCUST'
+    input_file_type_dispatch['wall']='LOCUST_3D'
+
+    input_classes_dispatch={}
+    input_classes_dispatch['eq']=Equilibrium
+    input_classes_dispatch['pert']=Perturbation
+    input_classes_dispatch['temp']=Temperature
+    input_classes_dispatch['numden']=Number_Density
+    input_classes_dispatch['rot']=Rotation
+    input_classes_dispatch['beamdepo']=Beam_Deposition
+    input_classes_dispatch['wall']=Wall
+
+    for parameter_string,dir_input in zip(batch_data.parameter_strings,batch_data.args_batch['LOCUST_run__dir_input']): #within each GPU folder the path to each input is the same
+        dir_input=pathlib.Path(dir_input.strip("\'"))
+        dir_input_filepaths=list(dir_input.glob(input_file_dispatch[input_type])) #get all filenames for runs corresponding to this choice of parameters    
+        if dir_input_filepaths:
+            for dir_input_filepath in dir_input_filepaths:
+                try:
+                    yield input_classes_dispatch[input_type](ID=parameter_string,data_format=input_file_type_dispatch[input_type],filename=dir_input_filepath,**kwargs)
                 except:
                     yield None
         else:
@@ -179,8 +237,6 @@ def plot_kinetic_profiles(batch_data):
     notes:
     """
 
-    import matplotlib.pyplot as plt 
-
     for parameters__database,parameters__sheet_name_kinetic_prof in zip(
             batch_data.parameters__databases,batch_data.parameters__sheet_names_kinetic_prof): 
         for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(batch_data.parameters__kinetic_profs_tF_tE,batch_data.parameters__kinetic_profs_Pr):
@@ -197,8 +253,66 @@ def plot_kinetic_profiles(batch_data):
             density=Number_Density(ID='',data_format='EXCEL1',species='deuterium',filename=RMP_study__filepath_kinetic_profiles.relative_to(support.dir_input_files),sheet_name=parameters__sheet_name_kinetic_prof)
 '''
 
+def plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
 
+    #interpolate poincare R Z to psi theta
 
+    if ax is False:
+        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+    else:
+        ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        ax = fig.add_subplot(111)
+
+    equilibrium.set(psirz_norm=(equilibrium['psirz']-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag']))
+
+    R,Z=np.meshgrid(poincare_map['R'],poincare_map['Z'])
+    R,Z=R.flatten(),Z.flatten()
+
+    psi_2D=processing.utils.value_at_RZ(
+        R=R,
+        Z=Z,
+        quantity=equilibrium['psirz_norm'],
+        grid=equilibrium
+        ).reshape(
+            len(poincare_map['Z']),
+            len(poincare_map['R'])
+        ).T
+
+    theta_2D=processing.utils.angle_pol(
+        R_major=equilibrium['rmaxis'],
+        R=R,
+        Z=Z,
+        Z_major=equilibrium['zmaxis']
+        ).reshape(
+            len(poincare_map['Z']),
+            len(poincare_map['R'])
+        ).T*180./np.pi
+    theta_2D[theta_2D>180]-=360
+
+    phi_slice=np.argmin(np.abs(poincare_map['phi']-phi))
+    inds=np.where((poincare_map['map'][:,:,phi_slice].flatten()==1))[0]
+
+    ax.scatter(
+        theta_2D.flatten()[inds][::1],
+        psi_2D.flatten()[inds][::1],
+        s=0.05
+    )
+    ax.set_ylim([0.,1.])
+    ax.set_xlim([-180.,180.])
+    ax.set_xlabel(r'$\theta$ [deg]')
+    ax.set_ylabel(r'$\psi_{\mathrm{n}}$')
+
+    plt.show()
 
 #################################
  
