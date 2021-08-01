@@ -16,10 +16,8 @@ notes:
 
 import sys #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
 try:
+    import pathlib,matplotlib,multiprocessing,os,functools
     import numpy as np 
-    import os
-    import pathlib
-    import matplotlib 
     import matplotlib.pyplot as plt 
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
@@ -118,78 +116,155 @@ except:
 ################################################################## 
 #Main 
 
-def get_output_files(batch_data,output_type='dfn',**kwargs):
 
-    output_file_dispatch={}
-    output_file_dispatch['dfn']='*.dfn'
-    output_file_dispatch['fpl']='ptcl_cache.dat'
-    output_file_dispatch['rund']='rundata*_1'
-    output_file_dispatch['poinc']='Poincare_map*.dat'
-    output_file_dispatch['orbit2D']='ORBIT_2D'
-    output_file_dispatch['orbit3D']='ORBIT_3D'
-    output_file_dispatch['pfc']='pfc_hitmap*'
+def read_locust_io_obj(filename,classtype='eq',*args,**kwargs):
+    """read single locust_io object from filename and class type
+    """
 
-    output_classes_dispatch={}
-    output_classes_dispatch['dfn']=Distribution_Function
-    output_classes_dispatch['fpl']=Final_Particle_List
-    output_classes_dispatch['rund']=Rundata
-    output_classes_dispatch['poinc']=Poincare
-    output_classes_dispatch['orbit2D']=Orbits
-    output_classes_dispatch['orbit3D']=Orbits
-    output_classes_dispatch['pfc']=Output_Mesh
+    data_format_dispatch={}
+    data_format_dispatch['eq']='GEQDSK'
+    data_format_dispatch['pert']='MARSF'
+    data_format_dispatch['temp']='LOCUST'
+    data_format_dispatch['numden']='LOCUST'
+    data_format_dispatch['rot']='LOCUST'
+    data_format_dispatch['beamdepo']='LOCUST'
+    data_format_dispatch['wall']='LOCUST_3D'
+    data_format_dispatch['dfn']='LOCUST'
+    data_format_dispatch['fpl']='LOCUST'
+    data_format_dispatch['rund']='LOCUST'
+    data_format_dispatch['poinc']='LOCUST'
+    data_format_dispatch['orbit2D']='LOCUST'
+    data_format_dispatch['orbit3D']='LOCUST'
+    data_format_dispatch['pfc']='LOCUST'
 
-    for parameter_string,dir_output in zip(batch_data.parameter_strings,batch_data.args_batch['LOCUST_run__dir_output']): #within each GPU folder the path to each output is the same
-        dir_output=pathlib.Path(dir_output.strip("\'"))
-        dir_output_filepaths=list(dir_output.glob(output_file_dispatch[output_type])) #get all filenames for runs corresponding to this choice of parameters    
-        if dir_output_filepaths:
-            for dir_output_filepath in dir_output_filepaths:
+    classes_dispatch={}
+    classes_dispatch['eq']=Equilibrium
+    classes_dispatch['pert']=Perturbation
+    classes_dispatch['temp']=Temperature
+    classes_dispatch['numden']=Number_Density
+    classes_dispatch['rot']=Rotation
+    classes_dispatch['beamdepo']=Beam_Deposition
+    classes_dispatch['wall']=Wall
+    classes_dispatch['dfn']=Distribution_Function
+    classes_dispatch['fpl']=Final_Particle_List
+    classes_dispatch['rund']=Rundata
+    classes_dispatch['poinc']=Poincare
+    classes_dispatch['orbit2D']=Orbits
+    classes_dispatch['orbit3D']=Orbits
+    classes_dispatch['pfc']=Output_Mesh
+
+    if filename:
+        try:
+            return classes_dispatch[classtype](ID=filename,data_format=data_format_dispatch[classtype],filename=filename,**kwargs)
+        except:
+            return None
+
+
+def get_io_files(batch_data=None,classtype='eq',io='input',yield_filenames=False):
+    """get all input/output objects/filenames for particular set of simulations
+    """
+
+    file_extension_dispatch={}
+    file_extension_dispatch['dfn']='*.dfn'
+    file_extension_dispatch['fpl']='ptcl_cache.dat'
+    file_extension_dispatch['rund']='rundata*_1'
+    file_extension_dispatch['poinc']='Poincare_map*.dat'
+    file_extension_dispatch['orbit2D']='ORBIT_2D'
+    file_extension_dispatch['orbit3D']='ORBIT_3D'
+    file_extension_dispatch['pfc']='pfc_hitmap*'
+    file_extension_dispatch['eq']='locust_eqm'
+    file_extension_dispatch['pert']='BPLASMA_n?'
+    file_extension_dispatch['temp']='profile_T*.dat'
+    file_extension_dispatch['numden']='profile_ne.dat'
+    file_extension_dispatch['rot']='profile_wT.dat'
+    file_extension_dispatch['beamdepo']='ptcles.dat'
+    file_extension_dispatch['wall']='locust_wall'
+
+    io_type_dispatch={}
+    io_type_dispatch['dfn']='output'
+    io_type_dispatch['fpl']='output'
+    io_type_dispatch['rund']='output'
+    io_type_dispatch['poinc']='output'
+    io_type_dispatch['orbit2D']='output'
+    io_type_dispatch['orbit3D']='output'
+    io_type_dispatch['pfc']='output'
+    io_type_dispatch['eq']='input'
+    io_type_dispatch['pert']='input'
+    io_type_dispatch['temp']='input'
+    io_type_dispatch['numden']='input'
+    io_type_dispatch['rot']='input'
+    io_type_dispatch['beamdepo']='input'
+    io_type_dispatch['wall']='input'
+
+    for parameter_string,dir in zip(batch_data.parameter_strings,batch_data.args_batch[f'LOCUST_run__dir_{io_type_dispatch[classtype]}']): #within each GPU folder the path to each file is the same
+        dir=pathlib.Path(dir.strip("\'"))
+        dir_filepaths=list(dir.glob(file_extension_dispatch[classtype])) #get all filenames for runs corresponding to this choice of parameters    
+        if dir_filepaths:
+            for dir_filepath in dir_filepaths:
                 try:
-                    yield output_classes_dispatch[output_type](ID=parameter_string,data_format='LOCUST',filename=dir_output_filepath,**kwargs)
+                    if yield_filenames:
+                        if dir_filepath: 
+                            yield dir_filepath
+                        else:
+                            yield None
+                    else:
+                        yield read_locust_io_obj(filename=dir_filepath,classtype=classtype)
                 except:
                     yield None
         else:
             yield None
 
-def get_input_files(batch_data,input_type='eq',**kwargs):
+# for backwards compatability
 
-    input_file_dispatch={}
-    input_file_dispatch['eq']='locust_eqm'
-    input_file_dispatch['pert']='BPLASMA_n?'
-    input_file_dispatch['temp']='profile_T*.dat'
-    input_file_dispatch['numden']='profile_ne.dat'
-    input_file_dispatch['rot']='profile_wT.dat'
-    input_file_dispatch['beamdepo']='ptcles.dat'
-    input_file_dispatch['wall']='locust_wall'
+def get_output_files(*args,**kwargs):    
+    return get_io_files(*args,**kwargs)
+def get_input_files(*args,**kwargs):    
+    return get_io_files(*args,**kwargs)
 
-    input_file_type_dispatch={}
-    input_file_type_dispatch['eq']='GEQDSK'
-    input_file_type_dispatch['pert']='MARSF'
-    input_file_type_dispatch['temp']='LOCUST'
-    input_file_type_dispatch['numden']='LOCUST'
-    input_file_type_dispatch['rot']='LOCUST'
-    input_file_type_dispatch['beamdepo']='LOCUST'
-    input_file_type_dispatch['wall']='LOCUST_3D'
+def apply_func_parallel(func,classtype,batch_data,processes=4,chunksize=4):
+    """
+    apply function func() in parallel across every piece of batch data 
+    notes:
+        func signature should take filename and classtype
+    """
+    filenames=list(get_io_files(batch_data=batch_data,classtype=classtype,yield_filenames=True))
+    pool=multiprocessing.Pool(processes=processes)
+    results=pool.map(functools.partial(func,classtype=classtype),(filenames),chunksize=chunksize)
+    return results
 
-    input_classes_dispatch={}
-    input_classes_dispatch['eq']=Equilibrium
-    input_classes_dispatch['pert']=Perturbation
-    input_classes_dispatch['temp']=Temperature
-    input_classes_dispatch['numden']=Number_Density
-    input_classes_dispatch['rot']=Rotation
-    input_classes_dispatch['beamdepo']=Beam_Deposition
-    input_classes_dispatch['wall']=Wall
+'''
+XXX this decorator does not work since multiprocessing.Pool.map requires pickling
+and decorated functions cannot be pickled
 
-    for parameter_string,dir_input in zip(batch_data.parameter_strings,batch_data.args_batch['LOCUST_run__dir_input']): #within each GPU folder the path to each input is the same
-        dir_input=pathlib.Path(dir_input.strip("\'"))
-        dir_input_filepaths=list(dir_input.glob(input_file_dispatch[input_type])) #get all filenames for runs corresponding to this choice of parameters    
-        if dir_input_filepaths:
-            for dir_input_filepath in dir_input_filepaths:
-                try:
-                    yield input_classes_dispatch[input_type](ID=parameter_string,data_format=input_file_type_dispatch[input_type],filename=dir_input_filepath,**kwargs)
-                except:
-                    yield None
-        else:
-            yield None
+#decorator for applying a function to all locust_io objects in a given batch
+
+#add extra top level because we need an arg (classtype) which is only 
+#used by the decorator and not the function we are decorating 
+#i.e. we want to change HOW we decorate without having classtype in the returned function signature
+def apply_func(classtype,*args,**kwargs): #this is the signature of the decorate @apply_func_filename
+    """function to decorate should operate on a locust_io object
+
+    args:
+        classtype - type of locust_io object e.g. fpl
+    notes:
+        decorated function signature is now the filename of the object to operate on
+        
+    """
+    def decorator(func): #this defines the decorator 
+        def inner(filename,*args,**kwargs): # this is now the new signature of the decorated function
+            locust_io_obj=read_locust_io_obj(filename=filename,classtype=classtype)
+            return func(locust_io_obj,*args,**kwargs)
+        return inner
+        #return functools.partial(inner,classtype=classtype)
+    return decorator
+#easiest if you start at the decorator() level, which always takes a func as its arg, which is always the proceeding "def func()" statement
+#that function decorator() then defines an inner() function, with a given signature that does a certain thing, then returns inner()
+#at this point it's crucial to remember that inner() is a function - so decorator is returning a function definition
+#hence calling decorator() on func is actually now calling inner() and returning that result
+#then at the top level there is another layer which simply takes an arg and changes the decorator() definition based on that arg
+#i.e. the arg is changing how the behaviour of the decoration - calling the outermost level with its args returns the decorator, which then returns the next level etc.
+#and this essentially means that @outermost_decorator(some_arg)=@final_decorator 
+''' 
 
 def get_divergence_files(batch_data):
     """
@@ -311,8 +386,9 @@ def plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
     ax.set_xlim([-180.,180.])
     ax.set_xlabel(r'$\theta$ [deg]')
     ax.set_ylabel(r'$\psi_{\mathrm{n}}$')
-
-    plt.show()
+    
+    if ax_flag is False and fig_flag is False:
+        plt.show()
 
 #################################
  
