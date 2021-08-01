@@ -126,10 +126,10 @@ parameters__kinetic_profs_tF_tE=[2.,2.,2.,2.]#,0.5]
 
 #3D field parameters which vary independently - if you want to vary these together then put them into the same loop nesting below
 #2D arrays, each element has length = number of modes
-parameters__toroidal_mode_numbers=[[-3],[-4],[-3,-6],[-4,-5]]
-parameters__phases_uppers=[np.linspace(0,120,9)[:-1],np.linspace(0,90,9)[:-1]]*2 
-parameters__phases_middles=[[0],[0]]*2
-parameters__phases_lowers=[np.linspace(0,120,9)[:-1],np.linspace(0,90,9)[:-1]]*2
+parameters__toroidal_mode_numbers=[[-3],[-3,-6],[-4],[-4,-5]]
+parameters__phases_uppers=[np.linspace(0,120,9)[:-1]]*2+[np.linspace(0,90,9)[:-1]]*2 
+parameters__phases_middles=[[0]]*4
+parameters__phases_lowers=[np.linspace(0,120,9)[:-1]]*2+[np.linspace(0,90,9)[:-1]]*2
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
