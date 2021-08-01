@@ -100,7 +100,7 @@ for parameters__database,parameters__sheet_name_kinetic_prof in zip(
                                 #poincare_map.plot(ax=axs[1],fig=fig,real_scale=True)
                                 templates.plot_mod.plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=axs[1],fig=fig)
 
-                                plt.title(f'i3dr={parameters__i3dr}, $n$={perturbation.mode_number}')
+                                fig.suptitle(f'i3dr={parameters__i3dr}, $n$={perturbation.mode_number}')
                                 plt.show()
 
                             run_number+=1
