@@ -158,6 +158,8 @@ def read_locust_io_obj(filename,classtype='eq',*args,**kwargs):
             return classes_dispatch[classtype](ID=filename,data_format=data_format_dispatch[classtype],filename=filename,**kwargs)
         except:
             return None
+    else:
+        return None
 
 
 def get_io_files(batch_data=None,classtype='eq',io='input',yield_filenames=False):
@@ -228,8 +230,8 @@ def apply_func_parallel(func,classtype,batch_data,processes=4,chunksize=4):
         func signature should take filename and classtype
     """
     filenames=list(get_io_files(batch_data=batch_data,classtype=classtype,yield_filenames=True))
-    pool=multiprocessing.Pool(processes=processes)
-    results=pool.map(functools.partial(func,classtype=classtype),(filenames),chunksize=chunksize)
+    with multiprocessing.Pool(processes=processes) as pool:
+        results=pool.map(functools.partial(func,classtype=classtype),(filenames),chunksize=chunksize)
     return results
 
 '''
