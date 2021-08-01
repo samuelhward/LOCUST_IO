@@ -65,16 +65,18 @@ except:
 
 import scan_upper_lower_all_scenarios_launch as batch_data
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
-
 Pinj=33.e6
-PFC_power=[]
-for output in outputs:
-    if output:
-        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron])
+
+def calc_PFC_power(filename,classtype='fpl'):
+    fpl=templates.plot_mod.read_locust_io_obj(filename=filename,classtype=classtype)
+    if fpl:
+        i=np.where(fpl['status_flag']=='PFC_intercept_3D')[0]
+        PFC_power=1.e6*fpl['f']*np.sum((fpl['V_R'][i]**2+fpl['V_phi'][i]**2+fpl['V_Z'][i]**2)*fpl['FG'][i])*0.5*constants.mass_deuteron
     else:
-        PFC_power.append([-10.])
+        PFC_power=-1
+    return PFC_power  
+
+PFC_power=templates.plot_mod.apply_func_parallel(calc_PFC_power,'fpl',batch_data,processes=16,chunksize=8)
 
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper),len(batch_data.parameters__phases_lower))
 
@@ -85,7 +87,8 @@ for plasma_state_counter,database in enumerate(batch_data.parameters__databases)
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         dLPHASE,dUPHASE=batch_data.parameters__phases_lowers[mode_number_counter][1]-batch_data.parameters__phases_lowers[mode_number_counter][0],batch_data.parameters__phases_uppers[mode_number_counter][1]-batch_data.parameters__phases_upper[0]
         LPHASE,UPHASE=np.append(batch_data.parameters__phases_lowers[mode_number_counter],batch_data.parameters__phases_lowers[mode_number_counter][-1]+dLPHASE),np.append(batch_data.parameters__phases_uppers[mode_number_counter],batch_data.parameters__phases_uppers[mode_number_counter][-1]+dUPHASE)
-        mesh=ax[plasma_state_counter,2*mode_number_counter].pcolormesh(LPHASE-dLPHASE/2.,UPHASE-dUPHASE/2.,100*PFC_power[plasma_state_counter,mode_number_counter]/Pinj,cmap=settings.discrete_colmap(colmap_name='inferno',face_colour='black',number_bins=11),edgecolor='none',antialiased=True,vmin=0,vmax=10)
+        #mesh=ax[plasma_state_counter,2*mode_number_counter].pcolormesh(LPHASE-dLPHASE/2.,UPHASE-dUPHASE/2.,100*PFC_power[plasma_state_counter,mode_number_counter]/Pinj,cmap=settings.discrete_colmap(colmap_name='Greys',face_colour='black',number_bins=11),edgecolor='none',antialiased=True,vmin=0,vmax=10)
+        mesh=ax[plasma_state_counter,2*mode_number_counter].contourf(LPHASE-dLPHASE/2.,UPHASE-dUPHASE/2.,100*PFC_power[plasma_state_counter,mode_number_counter]/Pinj,cmap=settings.discrete_colmap(colmap_name='Greys',face_colour='black',number_bins=11),edgecolor='none',antialiased=True)#,vmin=0,vmax=10)
         ax[plasma_state_counter,2*mode_number_counter].set_xticks(batch_data.parameters__phases_lowers[mode_number_counter])
         ax[plasma_state_counter,2*mode_number_counter].set_yticks(batch_data.parameters__phases_uppers[mode_number_counter])
         ax[plasma_state_counter,2*mode_number_counter].set_xlim([np.min(batch_data.parameters__phases_lowers[mode_number_counter]),np.max(batch_data.parameters__phases_lowers[mode_number_counter])])
