@@ -68,7 +68,62 @@ except:
 ################################################################## 
 #Main 
 
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+
 import scan_resolution_launch as batch_data
+
+
+
+
+
+outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
+fig,ax1=plt.subplots(1,1,constrained_layout=True)
+Pinj=33.e6
+Einj=1.e6
+for run_number,output in enumerate(outputs):
+    if output is not None:
+        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
+        PFC_power=100.*1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron/Pinj
+        #weight_factor=Pinj/np.sum(output['weight']*Einj*constants.charge_e)
+        #print(1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron)
+        #print(np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron)
+        #print(batch_data.parameters__perturbation_resolutions_R[run_number])
+        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
+            ax1.axhline(PFC_power,color='red',label='2D field losses',linewidth=2)
+        else:
+            ax1.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),PFC_power,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2)
+ax1.set_xlabel("")
+ax1.set_xlabel(r"Perturbation grid spacing (log$_{10}$) [m]")
+ax1.set_ylabel("NBI power loss [%]")
+ax1.legend()
+#ax1.tick_params(
+#    axis='x',          
+#    which='both',      
+#    bottom=False,      
+#    top=False,         
+#    labelbottom=False) 
+
+
+ax2=ax1.twinx()
+outputs=templates.plot_mod.get_divergence_files(batch_data)
+for run_number,output in enumerate(outputs):
+    if output is not None:
+        field_data_RZ,field_data_XY=output
+        divB=np.log10(np.sum(np.abs(field_data_RZ['divB'])))/len(field_data_RZ['divB'].flatten())
+        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
+            ax2.axhline(divB,color=cmap_r(0.),label='2D case')
+        else:
+            ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color=cmap_b(0.),marker='x',linestyle='solid',alpha=1,linewidth=2)
+            #ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='-',alpha=1,linewidth=2)
+ax2.set_ylabel(r"$\Sigma\left|\nabla\cdot\mathbf{B}\right|$ (log$_{10}$)",color=cmap_b(0.))
+ax2.tick_params('y',colors=cmap_b(0.))
+plt.show()
+
+
+
+
 
 #cycle through poincare maps
 outputs=templates.plot_mod.get_output_files(batch_data,'poinc')
@@ -82,43 +137,6 @@ for run_number,output in enumerate(outputs):
         ax.set_xlim([4.5,6.0])
         ax.set_ylim([-4.0,-1.3])
     plt.show()
-
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
-fig,ax=plt.subplots(1)
-Pinj=33.e6
-Einj=1.e6
-for run_number,output in enumerate(outputs):
-    if output is not None:
-        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power=100.*1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron/Pinj
-        #weight_factor=Pinj/np.sum(output['weight']*Einj*constants.charge_e)
-        #print(1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron)
-        #print(np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron)
-        #print(batch_data.parameters__perturbation_resolutions_R[run_number])
-        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax.axhline(PFC_power,color='red',label='axisymmetric field',linewidth=2)
-        else:
-            ax.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),PFC_power,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2)
-ax.set_xlabel("Perturbation grid spacing [m] [log$_{10}$]")
-ax.set_ylabel("% loss power")
-ax.legend()
-plt.show()
-
-outputs=templates.plot_mod.get_divergence_files(batch_data)
-fig,ax=plt.subplots(1)
-for run_number,output in enumerate(outputs):
-    if output is not None:
-        field_data_RZ,field_data_XY=output
-        divB=np.log10(np.sum(np.abs(field_data_RZ['divB']))/len(field_data_RZ['divB'].flatten()))
-        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax.axhline(divB,color='red',label='2D case')
-        else:
-            ax.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2)
-            #ax.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='-',alpha=1,linewidth=2)
-
-ax.set_xlabel(r"Perturbation grid spacing [m] [log$_{10}$]")
-ax.set_ylabel(r"Mean $\nabla B$ [log$_{10}$]")
-plt.show()
 
 '''
 outputs=templates.plot_mod.get_divergence_files(batch_data)
