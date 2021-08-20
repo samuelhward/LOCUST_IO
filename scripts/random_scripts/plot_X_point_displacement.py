@@ -10,7 +10,7 @@ note that the phase shift here is in the opposite direction to the ITER coordina
 
 
 
-def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='MARS',colourbar=False):
+def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='MARS',colourbar=False,plot_points=True):
     """[summary]
 
     Args:
@@ -21,7 +21,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
         ax ([type], optional): [description]. Defaults to None.
         coord_system ([type], optional): [if 'ITER' then plot in ITER coordinate system]. Defaults to 'MARS'.
         colourbar ([type], optional): [Toggle whether to add colourbar if fig/ax supplied]. Defaults to False.
-
+        plot_points - toggle whether to plot points along XPD contour
     Returns:
         [type]: [description]
     """
@@ -299,7 +299,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
             coords_new=interpolator(distance_coords_new)
             contour_coords_x.extend(coords_new[0,:])
             contour_coords_y.extend(coords_new[1,:])
-            ax.scatter(*coords_new,color='y')
+            if plot_points: ax.scatter(*coords_new,color='y')
         levels_coords.append([contour_coords_x,contour_coords_y])
         #ax.scatter(contour_x,contour_y,color='r')
 
@@ -307,7 +307,8 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
     ax.set_ylabel(SYLAB)
 
     levels_coords=np.array(levels_coords,ndmin=2).T
-    for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter)
+    if plot_points:
+        for counter,(x,y) in enumerate(levels_coords): ax.text(x * (1 + 0.015), y * (1 + 0.015) , counter)
 
     if case == 3 and n == 4: 
         rotation=0. #[deg] 
@@ -318,7 +319,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
         x=0.03
         y=1.05
 
-    ax.text(x=x,y=y,s=f'case = {case}, n={n}',horizontalalignment='left',rotation=rotation,
+    ax.text(x=x,y=y,s=f'XPD: case {case}, $n={n}$',horizontalalignment='left',rotation=rotation,
     transform=ax.transAxes)#,color=settings.colour_custom(rgba=[100,100,100,1])(0.))
 
     if ax_flag is True or fig_flag is True: #return the plot object
