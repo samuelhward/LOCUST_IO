@@ -11,7 +11,7 @@ stage 3.10.2
     - fix central coil phase from stage 1_10
     - vary upper/lower coil phase to trace out contour on 2/3 max X-point displacement in 8 steps
     - vary n=3,n=4 + sideband
-    - compare with 60kAt stage 2_10 run
+    - compare with 60kAt stage 2_10 and 1_10_1 runs
     - reduce TIMAX, massively increase number of particles
     - 16 runs
 ---
