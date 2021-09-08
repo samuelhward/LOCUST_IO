@@ -332,6 +332,5 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
 
     return levels_coords
 
-    # so now levels_coords[p,0,n][n] contains the x coordinate for point p along contour n
-    # so now levels_coords[p,1,n][n] contains the y coordinate for point p along contour n
-    
+    # so now levels_coords[n,0,p] contains the x coordinate for point p along contour n
+    # so now levels_coords[n,1,p] contains the y coordinate for point p along contour n
