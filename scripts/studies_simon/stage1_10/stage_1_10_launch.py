@@ -138,17 +138,18 @@ parameters__kinetic_profs_tF_tE=[2.]
 #2D arrays, each element has length = number of modes
 
 #n=3 and 4 harmonic settings - both first side band and corresponding rigid phases to scan
-parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
-parameters__phases_uppers=[np.linspace(0,120,7)[:-1]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1]+30.-250./4.-3.3]
-parameters__phases_middles=[np.linspace(0,120,7)[:-1]+26.7+0./3.,np.linspace(0,90,7)[:-1]+26.7+0./4.]
-parameters__phases_lowers=[np.linspace(0,120,7)[:-1]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1]+30.-95./4.-3.3]
+parameters__toroidal_mode_numbers=[[-3],[-3,-6],[-4],[-4,-5]]
+parameters__phases_uppers=[np.linspace(0,120,7)[:-1]+30.-200./3.-3.3]*2+[np.linspace(0,90,7)[:-1]+30.-250./4.-3.3]*2
+parameters__phases_middles=[np.linspace(0,120,7)[:-1]+26.7+0./3.]*2+[np.linspace(0,90,7)[:-1]+26.7+0./4.]*2
+parameters__phases_lowers=[np.linspace(0,120,7)[:-1]+30.-140./3.-3.3]*2+[np.linspace(0,90,7)[:-1]+30.-95./4.-3.3]*2
+
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
-parameters__currents_upper=np.array([90.])*1000.
-parameters__currents_middle=np.array([90.])*1000.
-parameters__currents_lower=np.array([90.])*1000.
+parameters__currents_upper=np.array([60.,90.])*1000.
+parameters__currents_middle=np.array([60.,90.])*1000.
+parameters__currents_lower=np.array([60.,90.])*1000.
 
 config_beam_1='off'
 config_beam_2='on'
@@ -168,11 +169,11 @@ parameter_strings=[]
 for parameters__database,parameters__sheet_name_kinetic_prof in zip(
         parameters__databases,parameters__sheet_names_kinetic_prof): 
     for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
-        #note - different sets of toroidal mode numbers require scanning different absolute phase ranges
-        for parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers):
-            for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower): #nest at same level == offset them together rigidly 
-                for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): #nest at same level == rotating them together rigidly
-                    for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
+        for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): #nest at same level == rotating them together rigidly
+            for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
+                #note - different sets of toroidal mode numbers require scanning different absolute phase ranges
+                for parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers):
+                    for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower): #nest at same level == offset them together rigidly 
 
                         run_number+=1 #increment run counter              
                                                    
