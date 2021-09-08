@@ -39,6 +39,16 @@ try:
 except:
     raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/equilibrium.py could not be imported!\nreturning\n") 
     sys.exit(1)
+try:
+    from classes.input_classes.beam_deposition import Beam_Deposition
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/perturbation.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    import processing.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 try:
     import support
@@ -69,6 +79,20 @@ except:
 #Main 
 
 import compare_field_lucia_launch as batch_data
+
+
+fpls=list(templates.plot_mod.get_input_files(batch_data,'fpl'))
+
+for counter,fpl in enumerate(fpls):
+    beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_input'][counter].strip('\''))/'ptcles.dat')
+    fpl.set(theta_initial=processing.utils.angle_pol(R_major=0.639277243e1,R=fpl['R_initial'],Z=fpl['Z_initial'],Z_major=0.597384943))
+    fpl.set(theta_final=processing.utils.angle_pol(R_major=0.639277243e1,R=fpl['R'],Z=fpl['Z'],Z_major=0.597384943))
+fig,ax=plt.subplots(1)
+
+for counter,fpl in enumerate(fpls): fpl.plot(axes=['psi_initial'],fig=fig,ax=ax,colmap_val=counter/len(fpls),colmap=settings.cmap_inferno)
+ax.legend([str(fpl.filename).split('phase')[0] for fpl in fpls])
+plt.show()
+sys.exit()
 
 perturbations=templates.plot_mod.get_input_files(batch_data,'pert')
 poincare_maps=templates.plot_mod.get_output_files(batch_data,'poinc')
