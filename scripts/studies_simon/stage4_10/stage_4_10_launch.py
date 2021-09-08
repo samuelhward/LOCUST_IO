@@ -151,7 +151,7 @@ parameters__phases_uppers_case3=[np.linspace(0,120,6)[:-1]+30.-330./3.-3.3,np.li
 parameters__phases_middles_case3=[np.linspace(0,120,6)[:-1]+26.7+0./3.,np.linspace(0,90,6)[:-1]+26.7+0./4.]
 parameters__phases_lowers_case3=[np.linspace(0,120,6)[:-1]+30.-20./3.-3.3,np.linspace(0,90,6)[:-1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case7=[np.linspace(0,120,6)[:-1]+30.-290./3.-3.3,np.linspace(0,90,6)[:-1]+30.-0./4.-3.3]
+parameters__phases_uppers_case7=[np.linspace(0,120,6)[:-1]+30.-290./3.-3.3,np.linspace(0,90,6)[:-1]+30.-0./4.-3.3] #XXX -290 here should be -295
 parameters__phases_middles_case7=[np.linspace(0,120,6)[:-1]+26.7-0./3.,np.linspace(0,90,6)[:-1]+26.7-0./4.]
 parameters__phases_lowers_case7=[np.linspace(0,120,6)[:-1]+30.-55./3.-3.3,np.linspace(0,90,6)[:-1]+30.+10./4.-3.3]
 
