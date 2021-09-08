@@ -4,10 +4,10 @@
 Samuel Ward
 23/07/21
 ----
-script for plotting stage 1.10 of Simon's studies 
+script for plotting stage 1.10.1 of Simon's studies 
 ---
  
-notes:         
+notes:
 ---
 """
 
@@ -33,6 +33,21 @@ if __name__=='__main__':
     except:
         raise ImportError("ERROR: context.py could not be imported!\nreturning\n")
         sys.exit(1)
+try:
+    from classes.input_classes.equilibrium import Equilibrium
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/equilibrium.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    from classes.input_classes.beam_deposition import Beam_Deposition
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/input_classes/perturbation.py could not be imported!\nreturning\n") 
+    sys.exit(1)
+try:
+    import processing.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n") 
+    sys.exit(1)
 
 try:
     import support
@@ -61,56 +76,117 @@ except:
 ################################################################## 
 #Main 
 
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+
 import stage_1_10_1_launch as batch_data
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
+#outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
 
 Pinj=33.e6
-PFC_power=[]
-for output in outputs:
-    if output:
-        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron])
-    else:
-        PFC_power.append([-10.])
 
-'''
-outputs=templates.plot_mod.get_output_files(batch_data,'rund')
 
-Pinj=33.e6
-PFC_power=[]
-for output in outputs:
-    if output is not None and output['run_status']=='completed':
-        PFC_power.append([output['PFC_power']['total']])
-    else:
-        PFC_power.append([-10.])
+#read input data
+input_dBs=np.array(list(templates.plot_mod.get_output_files(batch_data,'pert'))).reshape(len(batch_data.parameters__phases_upper),len(batch_data.parameters__toroidal_mode_numbers[0]))
+equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][0],GEQDSKFIX1=True,GEQDSKFIX2=True)
+beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_cache'][0].strip('\''))/'ptcles.dat')
+number_markers=8*batch_data.LOCUST_run__settings_prec_mod['threadsPerBlock']*batch_data.LOCUST_run__settings_prec_mod['blocksPerGrid']
+for key in beam_deposition.data.keys():
+    try:
+        beam_deposition[key]=beam_deposition[key][0:number_markers]
+    except:
+        pass
 
-'''
+#read outputs
+output_fpls=list(templates.plot_mod.get_output_files(batch_data,'fpl'))
 
-PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__kinetic_profs_Pr),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
+#calculate some data
+for output_fpl,input_dB in zip(output_fpls,input_dBs):
+    if output_fpl and np.all(input_dB):
+        #set toroidal mode number
+        for mode in input_dB:
+            mode.mode_number=-int(str(mode.filename)[-1])
+        output_fpl.set(theta_initial=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpl['R_initial'],Z=output_fpl['Z_initial'],Z_major=0.597384943))
+        output_fpl.set(theta_final=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpl['R'],Z=output_fpl['Z'],Z_major=0.597384943))
+        output_fpl.set(dTheta=output_fpl['theta_final']-output_fpl['theta_initial'])
+        output_fpl.set(dPhi=output_fpl['phi']-output_fpl['phi_initial'])
+        output_fpl['power']=output_fpl['weight']*0.5*constants.mass_deuteron*(output_fpl['V_R']**2+output_fpl['V_phi']**2+output_fpl['V_Z']**2)
+        #output_fpl['weight']=output_fpl['weight']*0.5*constants.mass_deuteron*(output_fpl['V_R']**2+output_fpl['V_phi']**2+output_fpl['V_Z']**2)
+        output_fpl.set(V_pitch_initial_2D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpl.data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
+        output_fpl.set(V_pitch_initial_3D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpl.data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=[mode for mode in input_dB],i3dr=-1,phase=0.))
+        output_fpl.set(V_pitch_final_2D=processing.utils.pitch_calc(output_fpl,equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
+        output_fpl.set(V_pitch_final_3D=processing.utils.pitch_calc(output_fpl,equilibria=[equilibrium],perturbations=[mode for mode in input_dB],i3dr=-1,phase=0.))
+        output_fpl.set(dV_pitch_initial=output_fpl['V_pitch_initial_3D']-output_fpl['V_pitch_initial_2D'])
+        output_fpl.set(dV_pitch_final=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_final_2D'])
+        output_fpl.set(dV_pitch=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_initial_3D'])
+        output_fpl.set(ddV_pitch=output_fpl['dV_pitch_final']-output_fpl['dV_pitch_initial'])
+        output_fpl.set(psi_norm_initial=(output_fpl['psi_initial']-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag']))
+        output_fpl.set(psi_norm_sqrt_initial=np.sqrt(output_fpl['psi_norm_initial']))
 
-# one figure per plasma
-fig,axs=plt.subplots(len(batch_data.parameters__kinetic_profs_Pr),constrained_layout=True)
-colours=['r','b'] #one colour per mode number
 
-for plasma_state_counter,(ax,power,Pr,tftE) in enumerate(zip([axs],PFC_power,batch_data.parameters__kinetic_profs_Pr,batch_data.parameters__kinetic_profs_tF_tE)):
-    for mode_number_counter,(mode_number,colour) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,colours)):
-        #find relative phase between coils for this toroidal mode number
-        relative_phases_upper_middle=batch_data.parameters__phases_uppers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-        relative_phases_lower_middle=batch_data.parameters__phases_lowers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-        ax.scatter(np.abs(mode_number[0])*(batch_data.parameters__phases_middles[mode_number_counter]),100*power[mode_number_counter]/Pinj,label=f'$n$ = {mode_number}, U:M={int(np.abs(mode_number[0])*relative_phases_upper_middle[0])}, L:M={int(np.abs(mode_number[0])*relative_phases_lower_middle[0])}',color=colour)
+if __name__=='__main__':
 
-ax.legend()
-ax.set_xlabel('Relative rigid phase $\Delta\phi$',fontsize=20) #\Phi for absolute
-ax.set_ylabel('Deposited power lost [%]',fontsize=20)
-# remove ticks from total ax
-#ax_total = fig.add_subplot(111,frameon=False)
-#ax_total.tick_params(axis='both',which='both',bottom=False,labelbottom=False,left=False,labelleft=False)
+    run_number=0
+    for parameters__database,parameters__sheet_name_kinetic_prof in zip(
+            parameters__databases,parameters__sheet_names_kinetic_prof): 
+        for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
+            
+            '''
+            equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][run_number],GEQDSKFIX1=True,GEQDSKFIX2=True)
+            beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_cache'][run_number].strip('\''))/'ptcles.dat')
+            #always generate more markers that used, so crop the beam deposition down
+            number_markers=8*batch_data.LOCUST_run__settings_prec_mod['threadsPerBlock']*batch_data.LOCUST_run__settings_prec_mod['blocksPerGrid']
+            for key in beam_deposition.data.keys():
+                try:
+                    beam_deposition[key]=beam_deposition[key][0:number_markers]
+                except:
+                    pass
+            '''
 
-plt.show()
+            for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(batch_data.parameters__rotations_upper,batch_data.parameters__rotations_middle,batch_data.parameters__rotations_lower): #nest at same level == rotating them together rigidly
+                for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(batch_data.parameters__currents_upper,batch_data.parameters__currents_middle,batch_data.parameters__currents_lower):
+                    for parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower in zip(batch_data.parameters__toroidal_mode_numbers,batch_data.parameters__phases_uppers,parameters__phases_middles,batch_data.parameters__phases_lowers):
+
+                        number_points=len(batch_data.parameters__phases_lower)    
+                        #fig,ax=plt.subplots(number_points)
+                        #ax=np.array(ax,ndmin=1)
+
+                        for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(batch_data.parameters__phases_upper,batch_data.parameters__phases_middle,batch_data.parameters__phases_lower): #nest at same level == offset them together rigidly 
+
+                            output_fpls[run_number].plot(axes=['phi','Z'],style='scatter',fill=False,colmap=settings.cmap_default,colfield='V_phi',number_bins=200,weight=True)
+                        
+                            run_number+=1
+
+                        plt.show()
+
+
+    #find markers which lost at all phases
+    markers_always_lost = set(list(np.where(np.all(np.array([output_fpl['status_flag'] for output_fpl in output_fpls])=='PFC_intercept_3D',axis=0))[0]))
+    markers_sometimes_lost = set(list(np.where(np.any(np.array([output_fpl['status_flag'] for output_fpl in output_fpls])=='PFC_intercept_3D',axis=0))[0]))-markers_always_lost
+
+    for output_fpl in output_fpls:
+        output_fpl['status_flag'][list(markers_always_lost)]='always_lost'
+
+
+    fig,axs = plt.subplots(3,2,subplot_kw={'projection': 'polar'})
+
+
+    fig,axs = plt.subplots(3,2)
+
+    for counter,(output_fpl,ax) in enumerate(zip(output_fpls,[ax for row in axs for ax in row])):
+        output_fpl.plot(axes=['phi','theta_final'],style='scatter',status_flags=['always_lost'],fill=False,colmap=settings.cmap_inferno,colmap_val=counter/len(output_fpls),colfield='time',number_bins=200,weight=True,fig=fig,ax=ax)
+        output_fpl.plot(axes=['E','V_pitch_final_3D'],style='scatter',status_flags=['always_lost'],fill=False,colmap=settings.cmap_inferno,colmap_val=counter/len(output_fpls),colfield='theta_final',number_bins=200,weight=True,fig=fig,ax=ax)
+
+
+    fig,ax = plt.subplots(1)
+
+    for counter,output_fpl in enumerate(output_fpls):
+        output_fpl.plot(axes=['time'],style='histogram',fill=False,colmap=settings.cmap_inferno,colmap_val=counter/len(output_fpls),colfield='V_phi',number_bins=500,weight=True,fig=fig,ax=ax)
+
 
 #################################
- 
+
 ##################################################################
- 
+
 ###################################################################################################
