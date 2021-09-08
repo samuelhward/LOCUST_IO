@@ -116,31 +116,50 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_15MAQ10_case5'] #these all zipped at same level in main loop because source data is not consistent enough
-parameters__sheet_names_kinetic_prof=["'Flat n'"]
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7']
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
+configs_beam_species=['deuterium','deuterium','deuterium','deuterium']
+plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
 
 #kinetic profile parameters which vary independently
-parameters__kinetic_profs_Pr=[1.] #lowest rotation
-parameters__kinetic_profs_tF_tE=[0.5]
+parameters__kinetic_profs_Pr=[0.3]
+parameters__kinetic_profs_tF_tE=[2.]
 
-#3D field parameters which vary independently - if you want to vary these together then put them into the same loop nesting below
-#2D arrays, each element has length = number of modes
-parameters__toroidal_mode_numbers=[[-3,-6]]
-parameters__phases_upper=np.array([86.])+30. #86,0,34 = default for maximmum stochasticity in coil coordinate system
-parameters__phases_middle=np.array([0.])+26.7
-parameters__phases_lower=np.array([34.])+30.
+parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
+
+# since optimal phases now depend on both case and toroidal mode number need to introduce another iteration level
+parameters__phases_uppers_case2=[30.-190./3.-3.3,30.-230./4.-3.3]
+parameters__phases_middles_case2=[26.7+0./3.,26.7+0./4.]
+parameters__phases_lowers_case2=[30.-145./3.-3.3,30.-75./4.-3.3]
+
+parameters__phases_uppers_case3=[30.-330./3.-3.3,30.-215./4.-3.3]
+parameters__phases_middles_case3=[26.7+0./3.,26.7+0./4.]
+parameters__phases_lowers_case3=[30.-20./3.-3.3,30.-100./4.-3.3]
+
+parameters__phases_uppers_case5=[30.-200./3.-3.3,30.-250./4.-3.3]
+parameters__phases_middles_case5=[26.7+0./3.,26.7+0./4.]
+parameters__phases_lowers_case5=[30.-140./3.-3.3,30.-95./4.-3.3]
+
+parameters__phases_uppers_case7=[30.-290./3.-3.3,30.-0./4.-3.3]
+parameters__phases_middles_case7=[26.7-0./3.,26.7-0./4.]
+parameters__phases_lowers_case7=[30.-55./3.-3.3,30.+10./4.-3.3]
+
+parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
+parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
+parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case5,parameters__phases_lowers_case7]
+
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
-parameters__currents_upper=np.array([90.])*1000.
-parameters__currents_middle=np.array([90.])*1000.
-parameters__currents_lower=np.array([90.])*1000.
+parameters__currents_upper=np.array([0.,90.])*1000.
+parameters__currents_middle=np.array([0.,90.])*1000.
+parameters__currents_lower=np.array([0.,90.])*1000.
 
-configs_beam_1=['diagnostic','diagnostic']
-configs_beam_2=[None,None]
+configs_beam_1=['diagnostic']
+configs_beam_2=[None]
 
 ##################################################################
 #define the workflow commands in order we want to execute them
@@ -156,197 +175,210 @@ parameter_strings=[]
 
 #first level are the data which remain constant for a parameter scan
 for config_beam_1,config_beam_2 in zip(configs_beam_1,configs_beam_2):
-    for parameters__database,parameters__sheet_name_kinetic_prof in zip(
-            parameters__databases,parameters__sheet_names_kinetic_prof): 
+    for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_species,plasma_species,
+            parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in zip(
+            parameters__databases,parameters__sheet_names_kinetic_prof,configs_beam_species,plasmas_species,
+            parameters__phases_uppers_cases_all,parameters__phases_middles_cases_all,parameters__phases_lowers_cases_all): 
         for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
-            for parameters__toroidal_mode_number in parameters__toroidal_mode_numbers:
-                for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower): #nest at same level == offset them together rigidly 
-                    for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): #nest at same level == rotating them together rigidly
-                        for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
+            for parameters__toroidal_mode_number,parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower):
+                for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): #nest at same level == rotating them together rigidly
+                    for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
 
-                            run_number+=1 #increment run counter              
-                                                       
-                            #create a string of variables identifying this run
-                            parameters__kinetic_prof_tF_tE_string=parameters__kinetic_profs_tF_tE__dispatch[parameters__kinetic_prof_tF_tE] #generate some variable string equivalents for later
-                            parameters__kinetic_prof_Pr_string=parameters__kinetic_profs_Pr__dispatch[parameters__kinetic_prof_Pr]
+                        #skip n_0=4 when current = 0 since will be same as n=3 case
+                        if parameters__current_upper==0. and -4 in parameters__toroidal_mode_number:
+                            continue
 
-                            parameters__parameter_string=''
-                            parameters__parameter_string+='_'.join(['{}_{}'.format(parameter,str(value)) for parameter,value in zip([
-                                            'tFtE',
-                                            'Pr'
-                                            ],[
-                                            parameters__kinetic_prof_tF_tE,
-                                            parameters__kinetic_prof_Pr])])
+                        run_number+=1 #increment run counter              
 
-                            parameters__parameter_string+='_ntor_'
+                        #create a string of variables identifying this run
+                        parameters__kinetic_prof_tF_tE_string=parameters__kinetic_profs_tF_tE__dispatch[parameters__kinetic_prof_tF_tE] #generate some variable string equivalents for later
+                        parameters__kinetic_prof_Pr_string=parameters__kinetic_profs_Pr__dispatch[parameters__kinetic_prof_Pr]
+
+                        parameters__parameter_string=''
+                        parameters__parameter_string+='_'.join(['{}_{}'.format(parameter,str(value)) for parameter,value in zip([
+                                        'tFtE',
+                                        'Pr'
+                                        ],[
+                                        parameters__kinetic_prof_tF_tE,
+                                        parameters__kinetic_prof_Pr])])
+
+                        parameters__parameter_string+='_ntor_'
+                        for mode in parameters__toroidal_mode_number:
+                            parameters__parameter_string+='{}_'.format(str(mode)) #add toroidal mode information    
+                        parameters__parameter_string+='_'.join(['{}_{}'.format(parameter,str(value)) for parameter,value in zip([
+                                'phaseu',
+                                'phasem',
+                                'phasel',
+                                'rotu',
+                                'rotm',
+                                'rotl',
+                                'ikatu',
+                                'ikatm',
+                                'ikatl'],[
+                                parameters__phase_upper,
+                                parameters__phase_middle,
+                                parameters__phase_lower,
+                                parameters__rotation_upper,
+                                parameters__rotation_middle,
+                                parameters__rotation_lower,
+                                parameters__current_upper,
+                                parameters__current_middle,
+                                parameters__current_lower])])
+
+                        parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}'
+                        parameter_strings.append(parameters__parameter_string)
+
+                        #################################
+                        #define corresponding workflow args passed to batch (denoted wth __batch)
+
+                        #run-specific settings
+
+                        LOCUST_run__flags=copy.deepcopy(LOCUST_run__flags_default)
+                        LOCUST_run__flags['TIMAX']='0.5D0'
+                        LOCUST_run__flags['PSIMGRLX']=True #equilibria are relatively poor so relax magnetic axis location
+
+                        if parameters__current_upper==0.:
+                            del(LOCUST_run__flags['B3D'])
+                            del(LOCUST_run__flags['B3D_EX'])
+                        else:
+                            LOCUST_run__flags['B3D']=True
+                            LOCUST_run__flags['B3D_EX']=True
+
+                        #XXX CURRENTLY WAITING FOR FIX LOCUST_run__flags['I3DR']=-1 
+                        LOCUST_run__settings_prec_mod={}
+                        LOCUST_run__settings_prec_mod['nmde']=len(parameters__toroidal_mode_number) #number of total toroidal harmonics = number of modes
+                        LOCUST_run__settings_prec_mod['Ab']=table_species_LOCUST[config_beam_species] 
+                        LOCUST_run__settings_prec_mod['Zb']=f'+{table_species_AZ[config_beam_species][-1]}_gpu' 
+                        LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
+                        LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
+                        LOCUST_run__settings_prec_mod['threadsPerBlock']=64
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64*16
+                        LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
+                        LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
+                        LOCUST_run__settings_prec_mod['niter']=1
+
+                        #if using diagnostic beam then lower the beam average power
+                        if config_beam_1 is 'diagnostic': 
+                            LOCUST_run__settings_prec_mod['Pdep']=f'{0.13*1.e6}_gpu'
+
+                        MARS_read__flags={}
+                        MARS_read__flags['TOKAMAK']=1
+                        MARS_read__flags['N0']=np.abs(parameters__toroidal_mode_number[0])
+                        MARS_read__flags['PLS']=True
+                        MARS_read__flags['UPHASE']=f'{parameters__phase_upper}D0' #XXX does this account for counter-rotating harmonics?
+                        MARS_read__flags['MPHASE']=f'{parameters__phase_middle}D0'
+                        MARS_read__flags['LPHASE']=f'{parameters__phase_lower}D0'
+                        MARS_read__settings={}
+                        MARS_read__settings['TAIL']="{}".format(MARS_read__tails)
+                        MARS_read__settings['IKATN']=f'[{parameters__current_upper/1000.}_gpu,{parameters__current_middle/1000.}_gpu,{parameters__current_lower/1000.}_gpu]'
+                        MARS_read__settings['dXR']=f'{0.010}_gpu'
+                        MARS_read__settings['dXZ']=f'{0.010}_gpu'
+                        
+                        NEMO_run__xml_settings={}
+                        NEMO_run__xml_settings['nmarker']=LOCUST_run__settings_prec_mod['threadsPerBlock']*LOCUST_run__settings_prec_mod['blocksPerGrid']*16
+                        NEMO_run__xml_settings['fokker_flag']=0
+
+                        BBNBI_run__xml_settings={}
+                        BBNBI_run__number_particles=LOCUST_run__settings_prec_mod['threadsPerBlock']*LOCUST_run__settings_prec_mod['blocksPerGrid']*16
+                        BBNBI_run__dir_BBNBI=support.dir_bbnbi
+
+                        #3D field settings
+
+                        #if all coilsets do not rotate together we must split them up individually!
+                        if all(rotation==parameters__rotation_upper for rotation in [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]): 
+                            #if coils rotate together but we still want one row offset with others then define relative phase for mars_read
+                            nnum_string=str(['{}'.format(mode) for mode in parameters__toroidal_mode_number]).replace('\'','')
+                            phase_string='['
+                            omega_string='['
                             for mode in parameters__toroidal_mode_number:
-                                parameters__parameter_string+='{}_'.format(str(mode)) #add toroidal mode information    
-                            parameters__parameter_string+='_'.join(['{}_{}'.format(parameter,str(value)) for parameter,value in zip([
-                                    'phaseu',
-                                    'phasem',
-                                    'phasel',
-                                    'rotu',
-                                    'rotm',
-                                    'rotl',
-                                    'ikatu',
-                                    'ikatm',
-                                    'ikatl'],[
-                                    parameters__phase_upper,
-                                    parameters__phase_middle,
-                                    parameters__phase_lower,
-                                    parameters__rotation_upper,
-                                    parameters__rotation_middle,
-                                    parameters__rotation_lower,
-                                    parameters__current_upper,
-                                    parameters__current_middle,
-                                    parameters__current_lower])])
+                                for phase,omega in zip([parameters__phase_upper],
+                                                        [parameters__rotation_upper]):
+                                    phase_string+='{}_gpu,'.format(0.0) #setting phase to 0 since this now controlled in mars_read preprocessor code 
+                                    omega_string+='{}_gpu,'.format(omega)
+                            phase_string=phase_string[:-1]+']'
+                            omega_string=omega_string[:-1]+']'
 
-                            parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}'
-                            parameter_strings.append(parameters__parameter_string)
+                        else:
+                            LOCUST_run__flags['NCOILS']=3 #if we have separate coils then multiply up quantities for each coilset
+                            LOCUST_run__settings_prec_mod['nmde']*=LOCUST_run__flags['NCOILS'] #number of total toroidal harmonics = number of modes * number of coilsets
+                            nnum_string=str(['{}'.format(mode) for mode in parameters__toroidal_mode_number for coil_row in range(LOCUST_run__flags['NCOILS'])]).replace('\'','')
+                            phase_string='['
+                            omega_string='['
+                            for mode in parameters__toroidal_mode_number:
+                                for phase,omega in zip([parameters__phase_upper,parameters__phase_middle,parameters__phase_lower],
+                                                        [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]):
+                                    phase_string+='{}_gpu,'.format(0.0) #setting phase to 0 since this now controlled in mars_read preprocessor code
+                                    omega_string+='{}_gpu,'.format(omega)
+                            phase_string=phase_string[:-1]+']'
+                            omega_string=omega_string[:-1]+']'
 
-                            #################################
-                            #define corresponding workflow args passed to batch (denoted wth __batch)
+                        LOCUST_run__settings_prec_mod['phase']=phase_string
+                        LOCUST_run__settings_prec_mod['omega']=omega_string
+                        LOCUST_run__settings_prec_mod['nnum']=nnum_string
 
-                            #run-specific settings
+                        args_batch['parameters__plasma_species'].append('"{}"'.format(plasma_species))
+                        args_batch['parameters__sheet_name_kinetic_prof'].append(copy.deepcopy(parameters__sheet_name_kinetic_prof))
+                        args_batch['parameters__sheet_name_rotation'].append(copy.deepcopy('"{}"'.format(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['sheet_name_rotation'])))
+                        args_batch['parameters__var_name_rotation'].append(copy.deepcopy('"{}"'.format(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['var_name_rotation'])))
+                        args_batch['parameters__toroidal_mode_numbers'].append(copy.deepcopy("'{}'".format(parameters__toroidal_mode_number)))
+                        args_batch['LOCUST_run__dir_LOCUST'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / parameters__database / RMP_study__name / parameters__parameter_string))))
+                        args_batch['LOCUST_run__dir_LOCUST_source'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / 'source'))))
+                        args_batch['LOCUST_run__dir_input'].append(copy.deepcopy("'{}'".format(str(support.dir_input_files / parameters__database / RMP_study__name / parameters__parameter_string))))
+                        args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / parameters__database / RMP_study__name / parameters__parameter_string))))
+                        args_batch['LOCUST_run__dir_cache'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / parameters__database / RMP_study__name)))) #one level less to pool cache files into same directory across simulations
+                        args_batch['LOCUST_run__environment_name'].append(copy.deepcopy(LOCUST_run__environment_name))
+                        args_batch['LOCUST_run__repo_URL'].append(copy.deepcopy(LOCUST_run__repo_URL))
+                        args_batch['LOCUST_run__commit_hash'].append(copy.deepcopy(LOCUST_run__commit_hash))
+                        args_batch['LOCUST_run__settings_prec_mod'].append(copy.deepcopy(LOCUST_run__settings_prec_mod))
+                        args_batch['LOCUST_run__flags'].append(copy.deepcopy(LOCUST_run__flags))
+                        args_batch['NEMO_run__dir_NEMO'].append(copy.deepcopy(support.dir_nemo))
+                        args_batch['NEMO_run__xml_settings'].append(copy.deepcopy(NEMO_run__xml_settings))
+                        args_batch['BBNBI_run__dir_BBNBI'].append(copy.deepcopy(BBNBI_run__dir_BBNBI))
+                        args_batch['BBNBI_run__xml_settings'].append(copy.deepcopy(BBNBI_run__xml_settings))
+                        args_batch['BBNBI_run__number_particles'].append(copy.deepcopy(BBNBI_run__number_particles))
+                        args_batch['MARS_read__tail_U'].append(copy.deepcopy(MARS_read__tail_U))
+                        args_batch['MARS_read__tail_M'].append(copy.deepcopy(MARS_read__tail_M))
+                        args_batch['MARS_read__tail_L'].append(copy.deepcopy(MARS_read__tail_L))
+                        args_batch['MARS_read__settings'].append(copy.deepcopy(MARS_read__settings))
+                        args_batch['MARS_read__flags'].append(copy.deepcopy(MARS_read__flags))
+                        args_batch['MARS_read__dir_MARS_builder'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / parameters__database / RMP_study__name / (parameters__parameter_string + '_MARS_builder') ))))
+                        args_batch['RMP_study__name'].append(copy.deepcopy(RMP_study__name))
+                        args_batch['RMP_study__filepath_kinetic_profiles'].append(copy.deepcopy(list((RMP_study__dir_input_database / parameters__database / folder_name_DataEq).glob('*.xlsx'))[0])) #determine path to current kinetic profiles
+                        args_batch['RMP_study__filepath_equilibrium'].append(copy.deepcopy(list((RMP_study__dir_input_database / parameters__database / folder_name_DataEq).glob('*eqdsk*'))[0])) #determine path to current equilibrium
+                        args_batch['RMP_study__filepath_additional_data'].append(copy.deepcopy(RMP_study__filepaths_additional_data))
+                        args_batch['RMP_study__workflow_commands'].append(RMP_study__workflow_commands)
+                        
+                        #find paths to 3D fields corresponding to desired parameters depending on requested field type
 
+                        RMP_study__field_type='plasma_response' #response or vacuum
+
+                        for coil_row in ['cU','cM','cL']:
+
+                            if RMP_study__field_type is 'vacuum':
+                                RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / 'ITER_15MAQ10_case5'/ 'DataVac' / 'PureVac'
+                                field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_V') for mode in parameters__toroidal_mode_number])
+
+                            elif RMP_study__field_type is 'vacuum_resistive_wall':
+                                RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / 'ITER_15MAQ10_case5'/ 'DataVac' / 'WithRW'
+                                field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_Pr{parameters__kinetic_prof_Pr_string}_tfte{parameters__kinetic_prof_tF_tE_string}.IN') for mode in parameters__toroidal_mode_number])
                             
-                            LOCUST_run__flags=copy.deepcopy(LOCUST_run__flags_default)
-                            #XXX CURRENTLY WAITING FOR FIX LOCUST_run__flags['I3DR']=-1 
-                            LOCUST_run__settings_prec_mod={}
-                            LOCUST_run__settings_prec_mod['nmde']=len(parameters__toroidal_mode_number) #number of total toroidal harmonics = number of modes
-                            LOCUST_run__settings_prec_mod['Ab']=table_species_LOCUST[config_beam_species] 
-                            LOCUST_run__settings_prec_mod['Zb']=f'+{table_species_AZ[config_beam_species][-1]}_gpu' 
-                            LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
-                            LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
-                            LOCUST_run__settings_prec_mod['threadsPerBlock']=128
-                            LOCUST_run__settings_prec_mod['blocksPerGrid']=1024
-                            LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
-                            LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
-                            LOCUST_run__settings_prec_mod['niter']=1
+                            elif RMP_study__field_type is 'plasma_response':
+                                RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / parameters__database / folder_name_DataMarsf
+                                field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_Pr{parameters__kinetic_prof_Pr_string}_tfte{parameters__kinetic_prof_tF_tE_string}.IN') for mode in parameters__toroidal_mode_number])
 
-                            #if using diagnostic beam then lower the beam average power
-                            if config_beam_1 is 'diagnostic': 
-                                LOCUST_run__settings_prec_mod['Pdep']=f'{0.13*1.e6}_gpu'
+                            args_batch[f'RMP_study__filepaths_3D_fields_{coil_row[-1]}'].append(field_filepath_string)
 
-                            MARS_read__flags={}
-                            MARS_read__flags['TOKAMAK']=1
-                            MARS_read__flags['N0']=np.abs(parameters__toroidal_mode_number[0])
-                            MARS_read__flags['PLS']=True
-                            MARS_read__flags['UPHASE']=f'{parameters__phase_upper}D0' #XXX does this account for counter-rotating harmonics?
-                            MARS_read__flags['MPHASE']=f'{parameters__phase_middle}D0'
-                            MARS_read__flags['LPHASE']=f'{parameters__phase_lower}D0'
-                            MARS_read__settings={}
-                            MARS_read__settings['TAIL']="{}".format(MARS_read__tails)
-                            MARS_read__settings['IKATN']=f'[{parameters__current_upper/1000.}_gpu,{parameters__current_middle/1000.}_gpu,{parameters__current_lower/1000.}_gpu]'
-                            MARS_read__settings['dXR']=f'{0.010}_gpu'
-                            MARS_read__settings['dXZ']=f'{0.010}_gpu'
-                            
-                            
+                        args_batch['IDS__shot'].append(copy.deepcopy(IDS__shot))
+                        args_batch['IDS__run'].append(copy.deepcopy(IDS__run))
+                        args_batch['IDS__username'].append(copy.deepcopy(IDS__username))
+                        args_batch['IDS__imasdb'].append(copy.deepcopy(IDS__imasdb))
+                        args_batch['IDS__target_IDS_shot'].append(copy.deepcopy(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['shot']))
+                        args_batch['IDS__target_IDS_run'].append(copy.deepcopy(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['run']))
 
-                            NEMO_run__xml_settings={}
-                            NEMO_run__xml_settings['nmarker']=LOCUST_run__settings_prec_mod['threadsPerBlock']*LOCUST_run__settings_prec_mod['blocksPerGrid']*16
-                            NEMO_run__xml_settings['fokker_flag']=0
-
-                            BBNBI_run__xml_settings={}
-                            BBNBI_run__number_particles=LOCUST_run__settings_prec_mod['threadsPerBlock']*LOCUST_run__settings_prec_mod['blocksPerGrid']*16
-                            BBNBI_run__dir_BBNBI=support.dir_bbnbi
-
-                            #3D field settings
-
-                            #if all coilsets do not rotate together we must split them up individually!
-                            if all(rotation==parameters__rotation_upper for rotation in [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]): 
-                                #if coils rotate together but we still want one row offset with others then define relative phase for mars_read
-                                nnum_string=str(['{}'.format(mode) for mode in parameters__toroidal_mode_number]).replace('\'','')
-                                phase_string='['
-                                omega_string='['
-                                for mode in parameters__toroidal_mode_number:
-                                    for phase,omega in zip([parameters__phase_upper],
-                                                            [parameters__rotation_upper]):
-                                        phase_string+='{}_gpu,'.format(0.0) #setting phase to 0 since this now controlled in mars_read preprocessor code 
-                                        omega_string+='{}_gpu,'.format(omega)
-                                phase_string=phase_string[:-1]+']'
-                                omega_string=omega_string[:-1]+']'
-
-                            else:
-                                LOCUST_run__flags['NCOILS']=3 #if we have separate coils then multiply up quantities for each coilset
-                                LOCUST_run__settings_prec_mod['nmde']*=LOCUST_run__flags['NCOILS'] #number of total toroidal harmonics = number of modes * number of coilsets
-                                nnum_string=str(['{}'.format(mode) for mode in parameters__toroidal_mode_number for coil_row in range(LOCUST_run__flags['NCOILS'])]).replace('\'','')
-                                phase_string='['
-                                omega_string='['
-                                for mode in parameters__toroidal_mode_number:
-                                    for phase,omega in zip([parameters__phase_upper,parameters__phase_middle,parameters__phase_lower],
-                                                            [parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower]):
-                                        phase_string+='{}_gpu,'.format(0.0) #setting phase to 0 since this now controlled in mars_read preprocessor code
-                                        omega_string+='{}_gpu,'.format(omega)
-                                phase_string=phase_string[:-1]+']'
-                                omega_string=omega_string[:-1]+']'
-
-                            LOCUST_run__settings_prec_mod['phase']=phase_string
-                            LOCUST_run__settings_prec_mod['omega']=omega_string
-                            LOCUST_run__settings_prec_mod['nnum']=nnum_string
-
-                            args_batch['parameters__sheet_name_kinetic_prof'].append(copy.deepcopy(parameters__sheet_name_kinetic_prof))
-                            args_batch['parameters__sheet_name_rotation'].append(copy.deepcopy('"{}"'.format(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['sheet_name_rotation'])))
-                            args_batch['parameters__var_name_rotation'].append(copy.deepcopy('"{}"'.format(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['var_name_rotation'])))
-                            args_batch['parameters__toroidal_mode_numbers'].append(copy.deepcopy("'{}'".format(parameters__toroidal_mode_number)))
-                            args_batch['LOCUST_run__dir_LOCUST'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / parameters__database / RMP_study__name / parameters__parameter_string))))
-                            args_batch['LOCUST_run__dir_LOCUST_source'].append(copy.deepcopy("'{}'".format(str(support.dir_locust / 'source'))))
-                            args_batch['LOCUST_run__dir_input'].append(copy.deepcopy("'{}'".format(str(support.dir_input_files / parameters__database / RMP_study__name / parameters__parameter_string))))
-                            args_batch['LOCUST_run__dir_output'].append(copy.deepcopy("'{}'".format(str(support.dir_output_files / parameters__database / RMP_study__name / parameters__parameter_string))))
-                            args_batch['LOCUST_run__dir_cache'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / parameters__database / RMP_study__name)))) #one level less to pool cache files into same directory across simulations
-                            args_batch['LOCUST_run__environment_name'].append(copy.deepcopy(LOCUST_run__environment_name))
-                            args_batch['LOCUST_run__repo_URL'].append(copy.deepcopy(LOCUST_run__repo_URL))
-                            args_batch['LOCUST_run__commit_hash'].append(copy.deepcopy(LOCUST_run__commit_hash))
-                            args_batch['LOCUST_run__settings_prec_mod'].append(copy.deepcopy(LOCUST_run__settings_prec_mod))
-                            args_batch['LOCUST_run__flags'].append(copy.deepcopy(LOCUST_run__flags))
-                            args_batch['NEMO_run__dir_NEMO'].append(copy.deepcopy(support.dir_nemo))
-                            args_batch['NEMO_run__xml_settings'].append(copy.deepcopy(NEMO_run__xml_settings))
-                            args_batch['BBNBI_run__dir_BBNBI'].append(copy.deepcopy(BBNBI_run__dir_BBNBI))
-                            args_batch['BBNBI_run__xml_settings'].append(copy.deepcopy(BBNBI_run__xml_settings))
-                            args_batch['BBNBI_run__number_particles'].append(copy.deepcopy(BBNBI_run__number_particles))
-                            args_batch['MARS_read__tail_U'].append(copy.deepcopy(MARS_read__tail_U))
-                            args_batch['MARS_read__tail_M'].append(copy.deepcopy(MARS_read__tail_M))
-                            args_batch['MARS_read__tail_L'].append(copy.deepcopy(MARS_read__tail_L))
-                            args_batch['MARS_read__settings'].append(copy.deepcopy(MARS_read__settings))
-                            args_batch['MARS_read__flags'].append(copy.deepcopy(MARS_read__flags))
-                            args_batch['MARS_read__dir_MARS_builder'].append(copy.deepcopy("'{}'".format(str(support.dir_cache_files / parameters__database / RMP_study__name / (parameters__parameter_string + '_MARS_builder') ))))
-                            args_batch['RMP_study__name'].append(copy.deepcopy(RMP_study__name))
-                            args_batch['RMP_study__filepath_kinetic_profiles'].append(copy.deepcopy(list((RMP_study__dir_input_database / parameters__database / folder_name_DataEq).glob('*.xlsx'))[0])) #determine path to current kinetic profiles
-                            args_batch['RMP_study__filepath_equilibrium'].append(copy.deepcopy(list((RMP_study__dir_input_database / parameters__database / folder_name_DataEq).glob('*eqdsk*'))[0])) #determine path to current equilibrium
-                            args_batch['RMP_study__filepath_additional_data'].append(copy.deepcopy(RMP_study__filepaths_additional_data))
-                            args_batch['RMP_study__workflow_commands'].append(RMP_study__workflow_commands)
-                            
-                            #find paths to 3D fields corresponding to desired parameters depending on requested field type
-
-                            RMP_study__field_type='plasma_response' #response or vacuum
-
-                            for coil_row in ['cU','cM','cL']:
-
-                                if RMP_study__field_type is 'vacuum':
-                                    RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / 'ITER_15MAQ10_case5'/ 'DataVac' / 'PureVac'
-                                    field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_V') for mode in parameters__toroidal_mode_number])
-
-                                elif RMP_study__field_type is 'vacuum_resistive_wall':
-                                    RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / 'ITER_15MAQ10_case5'/ 'DataVac' / 'WithRW'
-                                    field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_Pr{parameters__kinetic_prof_Pr_string}_tfte{parameters__kinetic_prof_tF_tE_string}.IN') for mode in parameters__toroidal_mode_number])
-                                
-                                elif RMP_study__field_type is 'plasma_response':
-                                    RMP_study__filepaths_3D_field_head=RMP_study__dir_input_database / parameters__database / folder_name_DataMarsf
-                                    field_filepath_string='"{}"'.format([str(RMP_study__filepaths_3D_field_head/f'BPLASMA_MARSF_n{np.abs(mode)}_{coil_row}_Pr{parameters__kinetic_prof_Pr_string}_tfte{parameters__kinetic_prof_tF_tE_string}.IN') for mode in parameters__toroidal_mode_number])
-
-                                args_batch[f'RMP_study__filepaths_3D_fields_{coil_row[-1]}'].append(field_filepath_string)
-
-                            args_batch['IDS__shot'].append(copy.deepcopy(IDS__shot))
-                            args_batch['IDS__run'].append(copy.deepcopy(IDS__run))
-                            args_batch['IDS__username'].append(copy.deepcopy(IDS__username))
-                            args_batch['IDS__imasdb'].append(copy.deepcopy(IDS__imasdb))
-                            args_batch['IDS__target_IDS_shot'].append(copy.deepcopy(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['shot']))
-                            args_batch['IDS__target_IDS_run'].append(copy.deepcopy(target_IDS_dispatch[parameters__database][parameters__kinetic_prof_Pr_string][parameters__kinetic_prof_tF_tE_string]['run']))
-
-                            args_batch['IDS__NBI_shot'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['shot']))
-                            args_batch['IDS__NBI_run'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['run']))
-                            args_batch['IDS__NBI_imasdb'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['imasdb']))
-                            args_batch['IDS__NBI_username'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['user']))
+                        args_batch['IDS__NBI_shot'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['shot']))
+                        args_batch['IDS__NBI_run'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['run']))
+                        args_batch['IDS__NBI_imasdb'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['imasdb']))
+                        args_batch['IDS__NBI_username'].append(copy.deepcopy(config_beam_dispatch[config_beam_1][config_beam_2][config_beam_species]['user']))
 
 ##################################################################
 #define and launch the batch scripts
