@@ -159,10 +159,11 @@ def read_locust_io_obj(filename,classtype='eq',*args,**kwargs):
         except:
             return None
     else:
+        print(f'could not open {filename}!')
         return None
 
 
-def get_io_files(batch_data=None,classtype='eq',io='input',yield_filenames=False):
+def get_io_files(batch_data=None,classtype='eq',yield_filenames=False):
     """get all input/output objects/filenames for particular set of simulations
     """
 
@@ -223,15 +224,15 @@ def get_output_files(*args,**kwargs):
 def get_input_files(*args,**kwargs):    
     return get_io_files(*args,**kwargs)
 
-def apply_func_parallel(func,classtype,batch_data,processes=4,chunksize=4):
+def apply_func_parallel(func,classtype,batch_data,processes=4,chunksize=4,**func_args):
     """
     apply function func() in parallel across every piece of batch data 
     notes:
-        func signature should take filename and classtype
+        func signature must take filename and classtype
     """
     filenames=list(get_io_files(batch_data=batch_data,classtype=classtype,yield_filenames=True))
     with multiprocessing.Pool(processes=processes) as pool:
-        results=pool.map(functools.partial(func,classtype=classtype),(filenames),chunksize=chunksize)
+        results=pool.map(functools.partial(func,classtype=classtype,**func_args),(filenames),chunksize=chunksize)
     return results
 
 '''
