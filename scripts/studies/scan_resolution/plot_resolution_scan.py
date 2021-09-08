@@ -74,9 +74,17 @@ cmap_b=settings.colour_custom([33,150,243,1])
 
 import scan_resolution_launch as batch_data
 
-
-
-
+""" 
+outputs=templates.plot_mod.get_divergence_files(batch_data)
+for run_number,output in enumerate(outputs):
+    if run_number==1: continue
+    if output is not None:
+        field_data_RZ,field_data_XY=output
+        p=np.where((np.abs(field_data_RZ['dB_field_R'])>1.0) | (np.log(np.abs(field_data_RZ['divB']))<-10.))
+        field_data_RZ['divB'][p]=1.e-3
+        field_data_RZ['divB']=np.log10(np.abs(field_data_RZ['divB']))
+        field_data_RZ.plot(key='divB')
+"""
 
 outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
 fig,ax1=plt.subplots(1,1,constrained_layout=True)
@@ -93,7 +101,7 @@ for run_number,output in enumerate(outputs):
         if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
             ax1.axhline(PFC_power,color='red',label='2D field losses',linewidth=2)
         else:
-            ax1.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),PFC_power,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2)
+            ax1.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),PFC_power,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2,s=80)
 ax1.set_xlabel("")
 ax1.set_xlabel(r"Perturbation grid spacing (log$_{10}$) [m]")
 ax1.set_ylabel("NBI power loss [%]")
@@ -111,13 +119,16 @@ outputs=templates.plot_mod.get_divergence_files(batch_data)
 for run_number,output in enumerate(outputs):
     if output is not None:
         field_data_RZ,field_data_XY=output
-        divB=np.log10(np.sum(np.abs(field_data_RZ['divB'])))/len(field_data_RZ['divB'].flatten())
+        #remove silly values that arise from evaluating the field outside the original domain
+        p=np.where(np.abs(field_data_RZ['dB_field_R'])<1.0)
+        #p=np.where((np.abs(field_data_RZ['dB_field_R'])>1.0) | (np.log(np.abs(field_data_RZ['divB']))<-10.))
+        divB=np.log10(np.mean(np.abs(field_data_RZ['divB'][p])))
         if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
             ax2.axhline(divB,color=cmap_r(0.),label='2D case')
         else:
-            ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color=cmap_b(0.),marker='x',linestyle='solid',alpha=1,linewidth=2)
+            ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color=cmap_b(0.),marker='x',linestyle='solid',alpha=1,linewidth=2,s=80)
             #ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='-',alpha=1,linewidth=2)
-ax2.set_ylabel(r"$\Sigma\left|\nabla\cdot\mathbf{B}\right|$ (log$_{10}$)",color=cmap_b(0.))
+ax2.set_ylabel(r"Mean $\left|\nabla\cdot\mathbf{B}\right|$ (log$_{10}$)",color=cmap_b(0.))
 ax2.tick_params('y',colors=cmap_b(0.))
 plt.show()
 
