@@ -10,10 +10,12 @@ stage 1.10.1
     - start with best phases (X-point displacement) from table 2 (Yueqiang) (reversed)
     - fix relative coil phase 
     - fix Pr=0.3 and τφ/τE=2.
-    - vary n=3,n=4 + sideband
+    - vary n=3,n=4
+    - vary sideband inclusion
+    - vary current 60,90kAt
     - vary absolute toroidal phase in 6 steps
     - reduce TIMAX, massively increase number of particles
-    - 12 runs
+    - 48 runs
 ---
  
 notes:         
