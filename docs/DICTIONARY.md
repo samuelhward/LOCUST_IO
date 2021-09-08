@@ -151,24 +151,50 @@ Since this package aims to bridge the gap between various file formats for diffe
     0D data
         n                                                               #number of particles per GPU (blocks per grid * threads per block)
         ngpu                                                            #number of GPUs (OMP threads)
-        niter                                                           #
+        niter                                                           #number simulation iterations
         npt_                                                            #number of particle info slots
-        nphc                                                            #
+        nphc                                                            #number particle cache levels (0th is final position, last is initial position)
         ntri                                                            #
         number_particles                                                #total number of particles = n*ngpu
     1D data
-        R                                                               #r coordinate of particle
-        phi                                                             #phi coordinate of particle [rad]
-        Z                                                               #z coordinate of particle
-        V_R                                                             #v_r coordinate of particle
-        V_phi                                                           #V_phi coordinate of particle
-        V_Z                                                             #v_z coordinate of particle
-        V_pitch                                                         #v_parallel/v
-        energy                                                          #energy of particle
-        time                                                            #time coordinate of particle
-        status_flag                                                     #status value of particle at this time
-        status_flags                                                    #possible status flags and their associated values
-
+        R                                                               #R coordinate of particle  
+        phi                                                             #phi coordinate of particle [rad]  
+        Z                                                               #Z coordinate of particle  
+        V_R                                                             #V_R coordinate of particle [m/s]   
+        V_phi                                                           #V_phi coordinate of particle [m/s]  
+        V_Z                                                             #V_Z coordinate of particle [m/s]  
+        time                                                            #time coordinate of particle [s]
+        dt                                                              #particle status flag  
+        FG                                                              #particle weight [#/s]
+        tet                                                             #tet ID holding particle
+        V_R_next                                                        #V_R coordinate of particle at next timestep [m/s]  
+        V_phi_next                                                      #V_phi coordinate of particle at next timestep [m/s]  
+        V_Z_next                                                        #V_Z coordinate of particle at next timestep [m/s]  
+        R_next                                                          #R coordinate of particle at next timestep   
+        phi_next                                                        #phi coordinate of particle at next timestep   
+        Z_next                                                          #Z coordinate of particle at next timestep   
+        psi_initial                                                     #psi coordinate of particle at start of simulation   
+        R_initial                                                       #R coordinate of particle at start of simulation   
+        phi_initial                                                     #phi coordinate of particle at start of simulation   
+        Z_initial                                                       #Z coordinate of particle at start of simulation   
+        V_R_initial                                                     #V_R coordinate of particle at start of simulation   
+        V_phi_initial                                                   #V_phi coordinate of particle at start of simulation   
+        V_Z_initial                                                     #V_Z coordinate of particle at start of simulation   
+        time_initial                                                    #time coordinate of particle at start of simulation   
+        dt_initial                                                      #dt coordinate of particle at start of simulation   
+        FG_initial                                                      #FG coordinate of particle at start of simulation   
+        tet_initial                                                     #tet coordinate of particle at start of simulation   
+        V_R_next_initial                                                #V_R_next coordinate of particle at start of simulation   
+        V_phi_next_initial                                              #V_phi_next coordinate of particle at start of simulation   
+        V_Z_next_initial                                                #V_Z_next coordinate of particle at start of simulation   
+        R_next_initial                                                  #R_next coordinate of particle at start of simulation   
+        phi_next_initial                                                #phi_next coordinate of particle at start of simulation   
+        Z_next_initial                                                  #Z_next coordinate of particle at start of simulation   
+        weight                                                          #particle weight [#/s]  
+        f                                                               #power scaling; power of each marker = E*weight*f*1e6 
+        E                                                               #marker energy [eV]
+        status_flag                                                     #status value of particle at simulation end
+        status_flags                                                    #numerical values corresponding to possible status_flags 
 #### Distribution Function:
 
     0D data

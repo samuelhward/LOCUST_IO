@@ -23,6 +23,7 @@ try:
     import numpy as np
     import pathlib
     import ast
+    import copy
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
     sys.exit(1)
@@ -144,33 +145,22 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         lines=[[float(number) for number in line.split()] for line in lines]
         lines=[number for line in lines for number in line]
         del(lines[0:6])
-        input_data['f']=np.array(lines[-1]) #Pdep/Pabs
-            
+        input_data['f']=np.array(lines[-1]) #mystery scaling factor that needs to be included, means that loss power = sum(marker energies)*f*1e6 
+        del(lines[-1])
         #transfer chunk from lines to file_buffer and assimilate into dictionary
         lines=np.array([lines[0:niter*npt_*nphc*(n*ngpu)]]).reshape(niter,npt_,nphc,(n*ngpu),order='F')
 
-        input_data['R']=lines[:,0,0,:].flatten()
-        input_data['phi']=lines[:,1,0,:].flatten()
-        input_data['Z']=lines[:,2,0,:].flatten()
-        input_data['V_R']=lines[:,3,0,:].flatten()
-        input_data['V_phi']=lines[:,4,0,:].flatten()
-        input_data['V_Z']=lines[:,5,0,:].flatten()
-        input_data['time']=lines[:,6,0,:].flatten()
-        input_data['dt']=lines[:,7,0,:].flatten()
-        input_data['FG']=lines[:,8,0,:].flatten()
-        input_data['weight']=lines[:,8,0,:].flatten()
-        input_data['tet']=lines[:,9,0,:].flatten()
-        input_data['psi']=lines[1:,0,0,:].flatten()
-        input_data['V_R_next']=lines[1:,1,0,:].flatten()
-        input_data['V_phi_next']=lines[1:,2,0,:].flatten()
-        input_data['V_Z_next']=lines[1:,3,0,:].flatten()
-        input_data['R_next']=lines[1:,4,0,:].flatten()
-        input_data['phi_next']=lines[1:,5,0,:].flatten()
-        input_data['Z_next']=lines[1:,6,0,:].flatten()
+        #first cache/buffer level contains final positions of each particle
+        #last level contains initial positions
+        for buffer_level,buffer_string in zip([0,-1],['','_initial']):
+            for counter,quantity in enumerate(['R','phi','Z','V_R','V_phi','V_Z','time','dt','FG','tet','psi_initial','V_R_next','V_phi_next','V_Z_next','R_next','phi_next','Z_next']):
+                if 'psi' in quantity: quantity='psi_initial' #this slot is always psi_initial regardless of cache level
+                input_data[quantity+buffer_string]=copy.deepcopy(lines[:,counter,buffer_level,:].flatten())
 
+        input_data['weight']=copy.deepcopy(input_data['FG'])
         #calculate some additional things
         input_data['status_flag']=np.array([status_flags_dispatch(dt) for dt in input_data['dt']])
-        input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.species_charge
+        input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.charge_e
 
     print("finished reading final particle list from LOCUST")
 

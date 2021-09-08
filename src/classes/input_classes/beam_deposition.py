@@ -1046,7 +1046,7 @@ def dump_beam_depo_ASCOT_guiding_centre(output_data,filepath,equilibrium,**prope
 
         #calculate particle energies if missing
         if 'E' not in output_data.keys():
-            output_data['E']=0.5*constants.species_mass*(output_data['V_R']**2+output_data['V_phi']**2+output_data['V_Z']**2)/constants.species_charge
+            output_data['E']=0.5*constants.species_mass*(output_data['V_R']**2+output_data['V_phi']**2+output_data['V_Z']**2)/constants.charge_e
 
         #interpolate B field to particle locations with supplied equilibrium
         if not np.all([component in equilibrium.data.keys() for component in ['B_field_R','B_field_tor','B_field_Z']]):
