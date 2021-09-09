@@ -153,8 +153,8 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         #first cache/buffer level contains final positions of each particle
         #last level contains initial positions
         for buffer_level,buffer_string in zip([0,-1],['','_initial']):
-            for counter,quantity in enumerate(['R','phi','Z','V_R','V_phi','V_Z','time','dt','FG','tet','psi_initial','V_R_next','V_phi_next','V_Z_next','R_next','phi_next','Z_next']):
-                if 'psi' in quantity: quantity='psi_initial' #this slot is always psi_initial regardless of cache level
+            for counter,quantity in enumerate(['R','phi','Z','V_R','V_phi','V_Z','time','dt','FG','tet','psi_norm_initial','V_R_next','V_phi_next','V_Z_next','R_next','phi_next','Z_next']):
+                if 'psi' in quantity: quantity='psi_norm_initial' #this slot is always psi_initial regardless of cache level
                 input_data[quantity+buffer_string]=copy.deepcopy(lines[:,counter,buffer_level,:].flatten())
 
         input_data['weight']=copy.deepcopy(input_data['FG'])
