@@ -86,7 +86,7 @@ def read_poincare_LOCUST(filepath,**properties):
     for _ in range(6):
         file.read_record(dtype=np.byte)
 
-    input_data['phi']=np.linspace(0,2.*np.pi,input_data['nTP'])/input_data['npln']
+    input_data['phi']=np.arange(input_data['nTP'])*2.*np.pi/input_data['npln']
 
     input_data['R0P'],input_data['R1P'],input_data['Z0P'],input_data['Z1P']=file.read_reals(dtype=np.float32)
     
