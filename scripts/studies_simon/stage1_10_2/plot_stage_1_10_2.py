@@ -98,6 +98,8 @@ for key in beam_deposition.data.keys():
     except:
         pass
 
+equilibrium['q_rz']=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
+
 #read outputs
 output_fpls=list(templates.plot_mod.get_output_files(batch_data,'fpl'))
 
@@ -121,8 +123,12 @@ for output_fpl,input_dB in zip(output_fpls,input_dBs):
         output_fpl.set(dV_pitch_final=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_final_2D'])
         output_fpl.set(dV_pitch=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_initial_3D'])
         output_fpl.set(ddV_pitch=output_fpl['dV_pitch_final']-output_fpl['dV_pitch_initial'])
-        output_fpl.set(psi_norm_initial=(output_fpl['psi_initial']-equilibrium['simag'])/(equilibrium['sibry']-equilibrium['simag']))
         output_fpl.set(psi_norm_sqrt_initial=np.sqrt(output_fpl['psi_norm_initial']))
+        output_fpl.set(q_initial=processing.utils.value_at_RZ(R=output_fpl['R_initial'],Z=output_fpl['Z_initial'],quantity=equilibrium['q_rz'],grid=equilibrium))
+        #to avoid discontinuities in the colour map since lots of markers near to phi=0 and theta=0
+        for key in output_fpl.data:
+            if np.any([angle in key for angle in ['theta','phi']]):
+                output_fpl[key][output_fpl[key]>np.pi]-=2.*np.pi
 
 if __name__=='__main__':
 
@@ -161,7 +167,7 @@ if __name__=='__main__':
 
     #find markers quickly lost
     for output_fpl in output_fpls:
-        markers_prompt_loss,=np.where((output_fpl['time']<=0.005))
+        markers_prompt_loss,=np.where((output_fpl['time']<=0.005) & (output_fpl['status_flag']=='PFC_intercept_3D'))
         output_fpl['status_flag'][list(markers_prompt_loss)]='quickly_lost'
 
     #find markers lost to wall panels
