@@ -90,6 +90,7 @@ Pinj=33.e6
 #read input data
 input_dBs=np.array(list(templates.plot_mod.get_output_files(batch_data,'pert'))).reshape(len(batch_data.parameters__phases_upper),len(batch_data.parameters__toroidal_mode_numbers[0]))
 equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][0],GEQDSKFIX1=True,GEQDSKFIX2=True)
+equilibrium['q_rz']=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
 beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_cache'][0].strip('\''))/'ptcles.dat')
 number_markers=8*batch_data.LOCUST_run__settings_prec_mod['threadsPerBlock']*batch_data.LOCUST_run__settings_prec_mod['blocksPerGrid']
 for key in beam_deposition.data.keys():
@@ -102,7 +103,6 @@ beam_deposition['power']=beam_deposition['weight']*0.5*constants.mass_deuteron*(
 beam_deposition.set(V_pitch_2D=processing.utils.pitch_calc(beam_deposition,equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
 beam_deposition.set(q=processing.utils.value_at_RZ(R=beam_deposition['R'],Z=beam_deposition['Z'],quantity=equilibrium['q_rz'],grid=equilibrium))
 
-equilibrium['q_rz']=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
 
 #read outputs
 output_fpls=list(templates.plot_mod.get_output_files(batch_data,'fpl'))
