@@ -356,7 +356,7 @@ def plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
     R,Z=np.meshgrid(poincare_map['R'],poincare_map['Z'])
     R,Z=R.flatten(),Z.flatten()
 
-    psi_2D=processing.utils.value_at_RZ(
+    psi_norm_2D=processing.utils.value_at_RZ(
         R=R,
         Z=Z,
         quantity=equilibrium['psirz_norm'],
@@ -382,7 +382,7 @@ def plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
 
     ax.scatter(
         theta_2D.flatten()[inds][::1],
-        psi_2D.flatten()[inds][::1],
+        psi_norm_2D.flatten()[inds][::1],
         s=0.05
     )
     ax.set_ylim([0.,1.])
@@ -392,6 +392,62 @@ def plot_poincare_psi_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
     
     if ax_flag is False and fig_flag is False:
         plt.show()
+
+def plot_poincare_q_theta(poincare_map,equilibrium,phi=0.,ax=False,fig=False):
+
+    #interpolate poincare R Z to q theta
+
+    if ax is False:
+        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+    else:
+        ax_flag=True
+
+    if fig is False:
+        fig_flag=False
+    else:
+        fig_flag=True
+
+    if fig_flag is False:
+        fig = plt.figure() #if user has not externally supplied figure, generate
+    
+    if ax_flag is False: #if user has not externally supplied axes, generate them
+        ax = fig.add_subplot(111)
+
+    R,Z=np.meshgrid(poincare_map['R'],poincare_map['Z'])
+    R,Z=R.flatten(),Z.flatten()
+
+    q_rz=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
+    q_2D=processing.utils.value_at_RZ(R=R,Z=Z,quantity=q_rz,grid=equilibrium).reshape(
+        len(poincare_map['Z']),
+        len(poincare_map['R'])).T
+
+    theta_2D=processing.utils.angle_pol(
+        R_major=equilibrium['rmaxis'],
+        R=R,
+        Z=Z,
+        Z_major=equilibrium['zmaxis']
+        ).reshape(
+            len(poincare_map['Z']),
+            len(poincare_map['R'])
+        ).T*180./np.pi
+    theta_2D[theta_2D>180]-=360
+
+    phi_slice=np.argmin(np.abs(poincare_map['phi']-phi))
+    inds=np.where((poincare_map['map'][:,:,phi_slice].flatten()==1))[0]
+
+    ax.scatter(
+        theta_2D.flatten()[inds][::1],
+        q_2D.flatten()[inds][::1],
+        s=0.05
+    )
+    #ax.set_ylim([0.,1.])
+    ax.set_xlim([-180.,180.])
+    ax.set_xlabel(r'$\theta$ [deg]')
+    ax.set_ylabel(r'$q$')
+    
+    if ax_flag is False and fig_flag is False:
+        plt.show()
+
 
 #################################
  
