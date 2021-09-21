@@ -63,13 +63,19 @@ except:
 
 ################################################################## Orbit read functions
 
-def read_orbits_LOCUST(filepath,number_coords=3,particles=[],**properties):
+def read_orbits_LOCUST(filepath,number_coords=3,particles=[],lazy=False,**properties):
     """
     reads orbits stored in LOCUST format - r phi z
 
+    args:
+        filepath - path to file
+        number_coords - number of coordinates for each particle stored in file (all are read)
+        particles - array of particle IDs to read ([] for all)
+        lazy - toggle slow, line-by-line lazy reading or fast, memory-intensive reading
     notes:
         reads in a headerline for number of particles
         reads in a footerline for number of time steps
+        once a particle terminates it maintains its position, hence plotting last X steps of marker might not show a trajectory if it terminates before then
     """
 
     print("reading orbits from LOCUST")
@@ -86,26 +92,39 @@ def read_orbits_LOCUST(filepath,number_coords=3,particles=[],**properties):
         particles=particles if particles else list(range(number_particles_total))
         number_particles_to_read=len(particles) if particles else number_particles_total
 
-        data_array=np.empty(shape=(number_timesteps+1,number_coords,number_particles_to_read))
-        counter=0
-        counter_particle=0
-        counter_coord=0
-        counter_timestep=0
-        while counter<number_timesteps*number_coords*number_particles_total:
-            line=file.readline()
-            if not line: break
-            for number in line.split():
-                if counter_particle in particles:
-                    data_array[counter_timestep,counter_coord,particles.index(counter_particle)]=float(number)
-                
-                counter+=1
-                counter_particle=np.mod(counter,number_particles_total)
-                counter_coord=np.mod(int(counter/number_particles_total),number_coords)
-                counter_timestep=np.mod(int(counter/(number_particles_total*number_coords)),number_timesteps)
+        if lazy:
 
-        if np.all(data_array[-1,:,:] == 0):
-            data_array=data_array[:-1,:,:]
+            counter=0
+            data_array=np.empty(shape=(number_timesteps+1,number_coords,number_particles_to_read))
+            counter_particle=0
+            counter_coord=0
+            counter_timestep=0
+            while counter<number_timesteps*number_coords*number_particles_total:
+                line=file.readline()
+                if not line: break
+                for number in line.split():
+                    if counter_particle in particles: 
+                        data_array[counter_timestep,counter_coord,particles.index(counter_particle)]=float(number)
+                    
+                    counter+=1
+                    counter_particle=np.mod(counter,number_particles_total)
+                    counter_coord=np.mod(int(counter/number_particles_total),number_coords)
+                    counter_timestep=np.mod(int(counter/(number_particles_total*number_coords)),number_timesteps)
 
+            if np.all(data_array[-1,:,:] == 0): #sometimes number_timesteps is too small
+                data_array=data_array[:-1,:,:]
+
+        else:
+
+            data_array=file.readlines()
+            del(data_array[-1]) #already read this above
+            data_array=np.array([float(value) for line in data_array for value in line.split()]) #parse into 1D array
+            try: #reshape data, sometimes length differs
+                data_array=data_array.reshape((number_timesteps,number_coords,number_particles_total)) 
+            except:
+                data_array=data_array.reshape((number_timesteps+1,number_coords,number_particles_total))
+
+            data_array=data_array[:,:,particles] #strip out any unwanted particles
 
         variable_names=['R','phi','Z',None,None,None,'mu','P_phi','E','sign']
         for variable_name,index in zip(variable_names,range(number_coords)):
@@ -114,7 +133,7 @@ def read_orbits_LOCUST(filepath,number_coords=3,particles=[],**properties):
         input_data['number_particles']=np.asarray(number_particles_to_read)
         input_data['number_timesteps']=np.asarray(number_timesteps)
         input_data['X'],input_data['Y']=processing.utils.RphiZ_to_XYZ(input_data['R'],input_data['phi'])
-           
+
     print("finished reading orbits from LOCUST")
 
     return input_data
