@@ -371,15 +371,24 @@ if __name__=='__main__':
         ngpus=8
         ngpus_per_group=1
         ngpu_groups=int(ngpus/ngpus_per_group)
-        n_sims_per_gpu_group=int(len(list(args_batch.values())[0])/ngpu_groups)
+        number_simulations=len(list(args_batch.values())[-1])
+        n_sims_per_gpu_group=int(number_simulations/ngpu_groups)
 
-        for gpu_group in range(ngpu_groups):
-            for sim in np.arange(n_sims_per_gpu_group*gpu_group,n_sims_per_gpu_group*(gpu_group+1)):
+        #need to account for non-integer simulations per gpu_group
+        #essentially the first "remainder" number of gpu_groups do 1 extra simulation 
+        remainder_simulations=list(range(np.mod(number_simulations,ngpu_groups)+1)) #e.g. if remainder = 3 this is [0,1,2,3] - need one extra since we look at the differences
+        remainder_simulations+=[remainder_simulations[-1] for _ in range(ngpu_groups-len(remainder_simulations)+1)] #again need one extra since we use differences
+
+        processes=[]
+        for counter,gpu_group in enumerate(range(ngpu_groups)):
+            for sim in np.arange(n_sims_per_gpu_group*gpu_group+remainder_simulations[counter],n_sims_per_gpu_group*(gpu_group+1)+remainder_simulations[counter+1]):
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl']=np.zeros(32,dtype=int) #opt to run more markers on fewer GPUs in parallel
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl'][gpu_group*ngpus_per_group:(gpu_group+1)*ngpus_per_group]=1 
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl']=np.array2string(args_batch['LOCUST_run__settings_prec_mod'][sim]['incl'],separator=',')
-
-        processes = [multiprocessing.Process(target=Batch_wrapper, args=({key:value[slice(gpu*n_sims_per_gpu_group,(gpu+1)*n_sims_per_gpu_group)] for key,value in args_batch.items()},), kwargs={'workflow_filepath':path_template_run,'environment_name_batch':LOCUST_run__environment_name,'environment_name_workflow':LOCUST_run__environment_name,'interactive':True}) for gpu in range(ngpus)]
+                args_batch['LOCUST_run__settings_prec_mod'][sim]['blocksPerGrid']*=ngpu_groups #scale up markers to match decrease in ngpus 
+            processes.append(
+                multiprocessing.Process(target=Batch_wrapper, args=({key:value[n_sims_per_gpu_group*gpu_group+remainder_simulations[counter]:n_sims_per_gpu_group*(gpu_group+1)+remainder_simulations[counter+1]] for key,value in args_batch.items()},), kwargs={'workflow_filepath':path_template_run,'environment_name_batch':LOCUST_run__environment_name,'environment_name_workflow':LOCUST_run__environment_name,'interactive':True})
+            )
 
         for p in processes:
             p.start()
@@ -394,6 +403,7 @@ if __name__=='__main__':
             environment_name_batch=LOCUST_run__environment_name,
             environment_name_workflow=LOCUST_run__environment_name,
             interactive=False)  
+
 
 #################################
  
