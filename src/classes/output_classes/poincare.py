@@ -22,6 +22,7 @@ import sys #have global imports --> makes less modular (no "from output_classes 
 try:
     import numpy as np
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
     import pathlib
 except:
     raise ImportError("ERROR: initial modules could not be imported!\nreturning\n")
@@ -233,14 +234,12 @@ class Poincare(classes.base_output.LOCUST_output):
             *args - positional args to pass to .plot()
         """
 
-        fig=plt.figure() #if user has not externally supplied figure, generate
+        fig=plt.figure()
         phi=self['phi']
         
-        def plot_func(self,*args,**kwargs): #decorate plot method to clear supplied axes
-            if kwargs['ax']: kwargs['ax'].cla()            
-            return self.plot(*args,**kwargs)
-
-        animation=FuncAnimation(fig,plot_func,frames=phi,fargs=[*args],repeat=True,interval=1)
+        animation=FuncAnimation(fig,self.plot,frames=phi,fargs=[
+            'histogram',False,False,True,settings.cmap_default,'',False,fig
+        ],repeat=True,interval=1)
         plt.show()
         if save: animation.save('poincare_animation.gif',writer='pillow')
 
