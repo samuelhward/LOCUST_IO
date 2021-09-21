@@ -133,7 +133,8 @@ for output_fpl,input_dB in zip(output_fpls,input_dBs):
         for key in output_fpl.data:
             if np.any([angle in key for angle in ['theta','phi']]):
                 output_fpl[key][output_fpl[key]>np.pi]-=2.*np.pi
-
+                output_fpl[key]*=180./np.pi
+                
 if __name__=='__main__':
 
     run_number=0
