@@ -1391,51 +1391,116 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         """
         run LOCUST to calculate trajectory of markers with termination flag=status_flags in 2D and 3D field
 
-        args:
-            status_flags - plot trajectories for markers which satisfy these termination flags
-            number_markers - number of trajectories to plot
         notes:
-            assume beam deposition already generated in the input directory and is in LOCUST_FO_weighted format
             assume output particle list already generated in the output directory
-            works by exploiting the fact that the marker index does not change from input to output
+            assume required excel files are present
         """
 
-        number_markers=10
+        #need our own copy of prec_mod settings since we need to 
+        #1. determine plasma composition if kin_get has not been run
+        #2. massively reduce number of total threads, since this speeds the code up massively
+
+        LOCUST_run__settings_prec_mod__orbit=copy.deepcopy(self.args['LOCUST_run__settings_prec_mod'])
+
+        #first need to calculate Zeff and plasma composition using kinetic data in excel files
+        #start with electron density
+        density_electrons=Number_Density(ID='',data_format='EXCEL1',species='electrons',filename=self.args['RMP_study__filepath_kinetic_profiles'].relative_to(support.dir_input_files),sheet_name=self.args['parameters__sheet_name_kinetic_prof'])
+
+        #now grab ion densities
+        species_present=[] #record which ion species we find in excel
+        species_densities=[]
+        #loop through all non-electronic ion species and set number density
+        for species_name in self.args['parameters__plasma_species']:
+            species_AZ=table_species_AZ[species_name]        
+
+            if species_name is 'beryllium':
+                density=copy.deepcopy(density_electrons)
+                density['n']*=fraction_beryllium #assumed 2% electron density
+                density.properties['species']=species_name #re-label species type
+
+            elif species_name is 'neon':
+                density=copy.deepcopy(density_electrons)
+                density['n']*=fraction_neon #assumed .2% electron density
+                density.properties['species']=species_name #re-label species type
+
+            # if running with just H isotopes then set as fraction of electron density 
+            # (assume same H isotope density throughout plasma)
+            elif {species for species in self.args['parameters__plasma_species']}<={'hydrogen','deuterium','tritium'}:
+                density=copy.deepcopy(density_electrons)
+                density['n']/=float(len({species for species in self.args['parameters__plasma_species']})) #assume equal contributions from each species, however many there are
+                density.properties['species']=species_name #re-label species type
+
+            else:
+                try: #just try to read all species, some (e.g. Ne and Be) of which might not be present, so until errors are properly raised then errors may be printed - please ignore
+                    density=Number_Density(ID='',data_format='EXCEL1',species=species_name,filename=self.args['RMP_study__filepath_kinetic_profiles'].relative_to(support.dir_input_files),sheet_name=self.args['parameters__sheet_name_kinetic_prof'])
+                except:
+                    density=None
+
+            if density is not None:
+                species_present.append(species_name)
+                #species_densities.append(np.mean(density['n'])) #take average density then find Zeff/find Zeff at each point then mean = same thing
+                species_densities.append(density['n'][0]) #XXX take core value of impurity to set LOCUST density
+
+        #add some setting prec_mod.f90
+        LOCUST_run__settings_prec_mod__orbit['fi']='[{}]'.format(','.join([str(species_density/np.sum(species_densities))+'_gpu' for species_density in species_densities]))
+        LOCUST_run__settings_prec_mod__orbit['Ai']='[{}]'.format(','.join([table_species_LOCUST[species_name] for species_name in species_present])) 
+        LOCUST_run__settings_prec_mod__orbit['Zi']='[{}]'.format(','.join([str(table_species_AZ[species_name][1])+'_gpu' for species_name in species_present]))
+        LOCUST_run__settings_prec_mod__orbit['nion']=len(species_present)
+
+        #how many markers to plot? 0.01s~5GB for 10 markers, 1 bounce ~ 10-100us
+        number_markers=200.
+        LOCUST_run__settings_prec_mod__orbit['threadsPerBlock']=8
+        LOCUST_run__settings_prec_mod__orbit['blocksPerGrid']=16
+
         ptcles_input=self.args['LOCUST_run__dir_input'] / 'ptcles.dat'
         ptcles_orbit=self.args['LOCUST_run__dir_input'] / 'ptcles.dat_orbit'
-
-        input_list=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=ptcles_input)
         output_list=Final_Particle_List(ID='',data_format='LOCUST',filename=self.args['LOCUST_run__dir_output']/'ptcl_cache.dat')
-        indices=[]
-        status_flags=['PFC_intercept_3D']
-        for status_flag in status_flags:
-            indices.extend(np.where(output_list['status_flag']==status_flag)[0])
+        equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=self.args['RMP_study__filepath_equilibrium'],GEQDSKFIX1=True,GEQDSKFIX2=True)
+        equilibrium['q_rz']=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
+        output_list.set(q_initial=processing.utils.value_at_RZ(R=output_list['R_initial'],Z=output_list['Z_initial'],quantity=equilibrium['q_rz'],grid=equilibrium))
 
-        beam_depo=Beam_Deposition(ID='')
-        beam_depo['R']=input_list['R'][indices]
-        beam_depo['phi']=input_list['phi'][indices]
-        beam_depo['Z']=input_list['Z'][indices]
-        beam_depo['V_R']=input_list['V_R'][indices]
-        beam_depo['V_phi']=input_list['V_phi'][indices]
-        beam_depo['V_Z']=input_list['V_Z'][indices]
-        beam_depo['weight']=input_list['weight'][indices]
+        #specify conditions of markers we want to follow
+        status_flags=['PFC_intercept_3D']
+        conditions={
+            'q_initial' : [3,4],
+            'time' : [0.,0.0005],
+            #'phi_initial' : [1.36,1.4],
+        }
+
+        #find markers satisfying these conditions
+        indices=np.where(
+        (np.any([output_list['status_flag']==status_flag for status_flag in status_flags])) #satisfying the status_flags
+        &
+        (np.all([(output_list[parameter]>condition[0]) & (output_list[parameter]<condition[1]) for parameter,condition in conditions.items()],axis=0)))[0] #satisfying individual parameters
+
+        #add those characteristics to the filename
+        condition_string='_'.join(parameter+'_'+f'{condition[0]}-{condition[1]}' for parameter,condition in conditions.items())
+
+        beam_depo=Beam_Deposition(ID='') #create blank deposition
+        beam_depo['R']=output_list['R_initial'][indices]
+        beam_depo['phi']=output_list['phi_initial'][indices]
+        beam_depo['Z']=output_list['Z_initial'][indices]
+        beam_depo['V_R']=output_list['V_R_initial'][indices]
+        beam_depo['V_phi']=output_list['V_phi_initial'][indices]
+        beam_depo['V_Z']=output_list['V_Z_initial'][indices]
+        beam_depo['weight']=output_list['weight'][indices]
         beam_depo.dump_data(data_format='LOCUST_FO_weighted',filename=ptcles_orbit,shuffle=False) 
 
         #rename files for LOCUST and to avoid overwriting
-        ptcles_input.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat_locust')
-        ptcles_orbit.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat')
+        ptcles_input=ptcles_input.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat_locust')
+        ptcles_orbit=ptcles_orbit.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat')
 
         LOCUST_run__flags_orbit=copy.deepcopy(self.args['LOCUST_run__flags'])
         LOCUST_run__flags_orbit['PLOT']=number_markers
-        LOCUST_run__flags_orbit['NOPFC']=True #speed up by ignoring large mesh
+        #LOCUST_run__flags_orbit['NOPFC']=True #speed up by ignoring large mesh
         if 'SPLIT' in LOCUST_run__flags_orbit: del(LOCUST_run__flags_orbit['SPLIT'])
 
+        #if original was a run with a 3D field
         if all([arg in LOCUST_run__flags_orbit for arg in ['B3D','B3D_EX']]):
+            #if we have not already generated the orbits including the 3D field
+            if not list(self.args['LOCUST_run__dir_output'].glob(f'ORBIT_3D_{condition_string}')):
 
-            if not list(self.args['LOCUST_run__dir_output'].glob('ORBIT_3D')):
-
-                LOCUST_run__flags_orbit['TIMAX']='0.05D0' #0.01s~5GB for 10 markers, 1 bounce ~ 10us
-                LOCUST_run__flags_orbit['TIMAX']='0.01D0' #0.01s~5GB for 10 markers, 1 bounce ~ 10us
+                LOCUST_run__flags_orbit['TIMAX']='0.001D0'
 
                 LOCUST_workflow=run_scripts.LOCUST_run.LOCUST_run(
                     environment_name=self.args['LOCUST_run__environment_name'],
@@ -1446,18 +1511,21 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                     dir_input=self.args['LOCUST_run__dir_input'],
                     dir_output=self.args['LOCUST_run__dir_output'],
                     dir_cache=self.args['LOCUST_run__dir_cache'],
-                    settings_prec_mod=self.args['LOCUST_run__settings_prec_mod'],
+                    settings_prec_mod=LOCUST_run__settings_prec_mod__orbit,
                     flags=LOCUST_run__flags_orbit,
                     commands=LOCUST_run__default_commands)
                 LOCUST_workflow.run()
-                list(self.args['LOCUST_run__dir_output'].glob('ORBIT*.dat'))[0].rename(self.args['LOCUST_run__dir_output'] / 'ORBIT_3D')
+                for orbit_file in self.args['LOCUST_run__dir_output'].glob('ORBIT*.dat'):
+                    if '3D' not in orbit_file.parts[-1] and '2D' not in orbit_file.parts[-1]: 
+                        orbit_file.rename(self.args['LOCUST_run__dir_output'] / f'ORBIT_3D_{condition_string}')
                
             del(LOCUST_run__flags_orbit['B3D'])
             del(LOCUST_run__flags_orbit['B3D_EX'])
 
-        if not list(self.args['LOCUST_run__dir_output'].glob('ORBIT_2D')):
+        #now check if we have not calculated equivalent 2D orbits, otherwise calculate them
+        if not list(self.args['LOCUST_run__dir_output'].glob(f'ORBIT_2D_{condition_string}')):
 
-            LOCUST_run__flags_orbit['TIMAX']='0.0001D0' #1 bounce ~ 10us
+            LOCUST_run__flags_orbit['TIMAX']='0.0001D0' #1 bounce ~ 10-100us
             LOCUST_workflow=run_scripts.LOCUST_run.LOCUST_run(
                 environment_name=self.args['LOCUST_run__environment_name'],
                 repo_URL=self.args['LOCUST_run__repo_URL'],
@@ -1467,15 +1535,17 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 dir_input=self.args['LOCUST_run__dir_input'],
                 dir_output=self.args['LOCUST_run__dir_output'],
                 dir_cache=self.args['LOCUST_run__dir_cache'],
-                settings_prec_mod=self.args['LOCUST_run__settings_prec_mod'],
+                settings_prec_mod=LOCUST_run__settings_prec_mod__orbit,
                 flags=LOCUST_run__flags_orbit,
                 commands=LOCUST_run__default_commands)
             LOCUST_workflow.run()
-            list(self.args['LOCUST_run__dir_output'].glob('ORBIT*.dat'))[0].rename(self.args['LOCUST_run__dir_output'] / 'ORBIT_2D')
+            for orbit_file in self.args['LOCUST_run__dir_output'].glob('ORBIT*.dat'):
+                if '3D' not in orbit_file.parts[-1] and '2D' not in orbit_file.parts[-1]: 
+                    orbit_file.rename(self.args['LOCUST_run__dir_output'] / f'ORBIT_2D_{condition_string}')
 
         #reverse file renaming
-        ptcles_orbit.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat_orbit')
-        ptcles_input.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat')
+        ptcles_orbit=ptcles_orbit.rename(self.args['LOCUST_run__dir_input'] / f'ptcles.dat_{condition_string}')
+        ptcles_input=ptcles_input.rename(self.args['LOCUST_run__dir_input'] / 'ptcles.dat')
 
     def clean_input(self,*args,**kwargs):
         """
