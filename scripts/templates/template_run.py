@@ -1365,27 +1365,40 @@ class RMP_study_run(run_scripts.workflow.Workflow):
     def create_Poincare(self,*args,**kwargs):
         """
         notes:
+            poincare_type = 1 : fixed length mode
+            poincare_type = 2 : fixed toroidal angle mode 
+            poincare_type = 3 : low stats island mode
         """
 
+        poincare_types=[2]
 
-        if not list(self.args['LOCUST_run__dir_output'].glob('Poincare_map*.dat')):
-            poincare_flags=copy.deepcopy(self.args['LOCUST_run__flags'])
-            poincare_flags['POINCARE']=3
-            poincare_flags['NOPFC']=True #speed up by ignoring large mesh
-            if 'SPLIT' in poincare_flags: del(poincare_flags['SPLIT']) #stop junk particle cache from Poincaré mode overwriting result
-            poincare_workflow=run_scripts.LOCUST_run.LOCUST_run(
-                environment_name=self.args['LOCUST_run__environment_name'],
-                repo_URL=self.args['LOCUST_run__repo_URL'],
-                commit_hash=self.args['LOCUST_run__commit_hash'],
-                dir_LOCUST=self.args['LOCUST_run__dir_LOCUST'],
-                dir_LOCUST_source=self.args['LOCUST_run__dir_LOCUST_source'],
-                dir_input=self.args['LOCUST_run__dir_input'],
-                dir_output=self.args['LOCUST_run__dir_output'],
-                dir_cache=self.args['LOCUST_run__dir_cache'],
-                settings_prec_mod=self.args['LOCUST_run__settings_prec_mod'],
-                flags=poincare_flags,
-                commands=LOCUST_run__default_commands)
-            poincare_workflow.run()
+        for poincare_type in poincare_types:
+
+            if f'Poincare_map_{poincare_type}.dat' not in [filepath.parts[-1] for filepath in self.args['LOCUST_run__dir_output'].glob('Poincare_map*.dat')]:
+
+                poincare_flags=copy.deepcopy(self.args['LOCUST_run__flags'])
+                poincare_flags['POINCARE']=poincare_type
+                poincare_flags['NOPFC']=True #speed up by ignoring large mesh
+                if 'SPLIT' in poincare_flags: del(poincare_flags['SPLIT']) #stop junk particle cache from Poincaré mode overwriting result
+                poincare_workflow=run_scripts.LOCUST_run.LOCUST_run(
+                    environment_name=self.args['LOCUST_run__environment_name'],
+                    repo_URL=self.args['LOCUST_run__repo_URL'],
+                    commit_hash=self.args['LOCUST_run__commit_hash'],
+                    dir_LOCUST=self.args['LOCUST_run__dir_LOCUST'],
+                    dir_LOCUST_source=self.args['LOCUST_run__dir_LOCUST_source'],
+                    dir_input=self.args['LOCUST_run__dir_input'],
+                    dir_output=self.args['LOCUST_run__dir_output'],
+                    dir_cache=self.args['LOCUST_run__dir_cache'],
+                    settings_prec_mod=self.args['LOCUST_run__settings_prec_mod'],
+                    flags=poincare_flags,
+                    commands=LOCUST_run__default_commands)
+                poincare_workflow.run()
+                
+                try:
+                    output_poincare_file=list(self.args['LOCUST_run__dir_output'].glob('Poincare_map_??-??-????_??-??-??.???.dat'))[0]
+                    output_poincare_file.rename(output_poincare_file.parents[0] / f'Poincare_map_{poincare_type}.dat')
+                except:    
+                    pass
 
     def calculate_orbits(self,*args,**kwargs):
         """
