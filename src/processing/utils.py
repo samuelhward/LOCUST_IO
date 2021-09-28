@@ -322,12 +322,12 @@ def value_at_RZ(R,Z,quantity,grid):
     notes:
     """
 
-    interpolator=interpolate_2D(grid['R_1D'],grid['Z_1D'],quantity,function='linear')
-    value_at_coordinate=[]
+    interpolator=processing.utils.interpolate_2D(grid['R_1D'],grid['Z_1D'],quantity,function='linear')
+    value_at_coordinate=np.zeros(len(R))
 
-    for r,z in zip(R,Z): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
+    for counter,(r,z) in enumerate(zip(R,Z)): #do element-wise to avoid implicitly interpolating 2x1D arrays onto a single 2D grid
         rz_point=interpolator(r,z)
-        value_at_coordinate.append(np.squeeze(rz_point))
+        value_at_coordinate[counter]=np.squeeze(rz_point)
 
     return np.asarray(value_at_coordinate)
 
