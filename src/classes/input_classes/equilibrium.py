@@ -1191,24 +1191,15 @@ class Equilibrium(classes.base_input.LOCUST_input):
             self.B_calc()
 
         print("evaluate generating B_field interpolators")
-        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R']) #construct interpolators here
-        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'])
-        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'])
+        B_field_R_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_R'],type='RBS',function='linear') #construct interpolators here
+        B_field_tor_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_tor'],type='RBS',function='linear')
+        B_field_Z_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['B_field_Z'],type='RBS',function='linear')
         print("evaluate finished generating B_field interpolators")
 
-        B_R=[]
-        B_tor=[]
-        B_Z=[]  
-
-        for R_point,Z_point in zip(R,Z):
-            B_R.append(float(B_field_R_interpolator(R_point,Z_point)))
-            B_tor.append(float(B_field_tor_interpolator(R_point,Z_point)))
-            B_Z.append(float(B_field_Z_interpolator(R_point,Z_point)))
+        B_R=B_field_R_interpolator(R,Z,grid=False)
+        B_tor=B_field_tor_interpolator(R,Z,grid=False)
+        B_Z=B_field_Z_interpolator(R,Z,grid=False)
         
-        B_R=np.asarray(B_R)
-        B_tor=np.asarray(B_tor)
-        B_Z=np.asarray(B_Z)
-
         return B_R,B_tor,B_Z
 
     def calc_r_LCFS(self):

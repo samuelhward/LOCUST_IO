@@ -997,13 +997,14 @@ class Perturbation(classes.base_input.LOCUST_input):
         else:
             print("ERROR: {} cannot dump_data() - please specify a compatible data_format (LOCUST/point_data/IDS/POCA)\n".format(self.ID))
 
-    def plot(self,key='dB_field',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,gridlines=False,label='',ax=False,fig=False):
+    def plot(self,phi=0.,key='dB_field',axes=['R','Z'],LCFS=False,limiters=False,number_bins=20,fill=True,vminmax=None,i3dr=-1,phase=0.,colmap=settings.cmap_default,colmap_val=np.random.uniform(),line_style=settings.plot_line_style,gridlines=False,label='',ax=False,fig=False):
         """
         plots a perturbation
         
         notes:
             
         args:
+            phi - toroidal angle to plot at if in R,Z [rad]
             key - selects which data in perturbation to plot
             axes - list of strings specifying which axes should be plotted (current options only XY or RZ)
             LCFS - toggles plasma boundary on/off in 2D plots (requires equilibrium argument)
@@ -1081,7 +1082,7 @@ class Perturbation(classes.base_input.LOCUST_input):
 
                     R_poloidal,Z_poloidal=np.meshgrid(self['R_1D'],self['Z_1D']) 
                     R_flat,Z_flat=R_poloidal.flatten(),Z_poloidal.flatten()
-                    phi_flat=np.full(len(R_flat),0.) #XXX this zero should be phi parameter for tomographic slices
+                    phi_flat=np.full(len(R_flat),phi) 
 
                     dB_R,dB_tor,dB_Z=self.evaluate(R=R_flat,phi=phi_flat,Z=Z_flat,phase=phase,i3dr=i3dr,mode_number=self.mode_number) #evaluate poloidally
 
@@ -1281,36 +1282,27 @@ class Perturbation(classes.base_input.LOCUST_input):
         if not mode_number: mode_number=self.mode_number
 
         print("perturbation_calc_point generating B_field interpolators")
-        dB_field_R_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_real']) #construct interpolators here
-        dB_field_R_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_imag']) 
-        dB_field_tor_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_real'])
-        dB_field_tor_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_imag'])
-        dB_field_Z_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_real'])
-        dB_field_Z_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_imag'])
+        dB_field_R_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_real'],type='RBS',function='linear') #construct interpolators here
+        dB_field_R_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_R_imag']),type='RBS',function='linear' 
+        dB_field_tor_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_real'],type='RBS',function='linear')
+        dB_field_tor_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_tor_imag'],type='RBS',function='linear')
+        dB_field_Z_real_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_real'],type='RBS',function='linear')
+        dB_field_Z_imag_interpolator=processing.utils.interpolate_2D(self['R_1D'],self['Z_1D'],self['dB_field_Z_imag'],type='RBS',function='linear')
         print("perturbation_calc_point finished generating B_field interpolators")
 
-        dB_R=[]
-        dB_tor=[]
-        dB_Z=[]  
+        dB_field_R_real=dB_field_R_real_interpolator(R,Z,grid=False)
+        dB_field_R_imag=dB_field_R_imag_interpolator(R,Z,grid=False)
+        dB_field_tor_real=dB_field_tor_real_interpolator(R,Z,grid=False)
+        dB_field_tor_imag=dB_field_tor_imag_interpolator(R,Z,grid=False)
+        dB_field_Z_real=dB_field_Z_real_interpolator(R,Z,grid=False)
+        dB_field_Z_imag=dB_field_Z_imag_interpolator(R,Z,grid=False)
 
-        for R_point,phi_point,Z_point in zip(R,phi,Z):
-            dB_field_R_real=float(dB_field_R_real_interpolator(R_point,Z_point))
-            dB_field_R_imag=float(dB_field_R_imag_interpolator(R_point,Z_point))
-            dB_field_tor_real=float(dB_field_tor_real_interpolator(R_point,Z_point))
-            dB_field_tor_imag=float(dB_field_tor_imag_interpolator(R_point,Z_point))
-            dB_field_Z_real=float(dB_field_Z_real_interpolator(R_point,Z_point))
-            dB_field_Z_imag=float(dB_field_Z_imag_interpolator(R_point,Z_point))
+        cp = np.cos(mode_number*phi*i3dr-phase)
+        sp = np.sin(mode_number*phi*i3dr-phase)
 
-            cp = np.cos(mode_number*phi_point*i3dr-phase)
-            sp = np.sin(mode_number*phi_point*i3dr-phase)
-
-            dB_R.extend([dB_field_R_real*cp - dB_field_R_imag*sp])
-            dB_tor.extend([(dB_field_tor_real*cp - dB_field_tor_imag*sp)*i3dr])
-            dB_Z.extend([dB_field_Z_real*cp - dB_field_Z_imag*sp])
-
-        dB_R=np.asarray(dB_R)
-        dB_tor=np.asarray(dB_tor)
-        dB_Z=np.asarray(dB_Z)
+        dB_R=dB_field_R_real*cp - dB_field_R_imag*sp
+        dB_tor=(dB_field_tor_real*cp - dB_field_tor_imag*sp)*i3dr
+        dB_Z=dB_field_Z_real*cp - dB_field_Z_imag*sp
 
         return dB_R,dB_tor,dB_Z
 
