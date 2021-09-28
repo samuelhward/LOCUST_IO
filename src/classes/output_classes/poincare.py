@@ -203,8 +203,8 @@ class Poincare(classes.base_output.LOCUST_output):
         if style is 'histogram':
             mesh=ax.pcolormesh(X,Y,self['map'][:,:,phi_slice],cmap=colmap,edgecolor='none',antialiased=True)
         elif style is 'scatter':
-            inds=np.where(self['map'][:,:,phi_slice].flatten()==1)[0]
-            ax.scatter(X.flatten()[inds],Y.flatten()[inds],cmap=colmap,edgecolor='none',antialiased=True,s=0.03)
+            inds=np.where(self['map'][:,:,phi_slice].flatten()>=1)[0]
+            ax.scatter(X.flatten()[inds],Y.flatten()[inds],c=self['map'][:,:,phi_slice].flatten()[inds],cmap=colmap,edgecolor='none',antialiased=True,s=0.03)
 
         if LCFS:
             ax.plot(LCFS['lcfs_r'],LCFS['lcfs_z'],color=settings.plot_colour_LCFS,linestyle=settings.plot_line_style_LCFS,label='LCFS') 
