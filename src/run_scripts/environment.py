@@ -85,7 +85,8 @@ class Environment:
     environments['TITAN']['export']['OMP_STACKSIZE']=102400
     environments['TITAN']['export']['CUDA_CACHE_DISABLE']=1
     environments['TITAN']['module load']=[
-                                'IMAS/3.32.1-4.9.1',
+                                #'IMAS/3.32.1-4.9.1',
+                                'IMAS/3.28.1-4.7.2',
                                 'CUDA/10.1.105']
     environments['TITAN']['module unload']=[
                                 'matplotlib',
@@ -94,7 +95,7 @@ class Environment:
     environments['TITAN']['module switch']=[
                                 'PGI/19.4-GCC-6.4.0-2.28',
                                 'HDF5/1.10.5-PGI-19.4-GCC-6.4.0-2.28',
-                                'Python/3.8.6-GCCcore-10.2.0'
+                                #'Python/3.8.6-GCCcore-10.2.0'
                                 ]
     environments['TITAN']['misc']={}
     environments['TITAN']['misc']['ulimit']="-s 2000000"
