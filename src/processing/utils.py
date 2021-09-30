@@ -247,9 +247,9 @@ def interpolate_1D(X_axis,Y_axis,function='cubic',type='interp1d',smooth=0):
         return
 
     if type=='RBF':
-        interpolator=scipy.interpolate.Rbf(X_axis,Y_axis,function=function,smooth=smooth)
+        interpolator=scipy.interpolate.RBFInterpolator(X_axis,Y_axis,function=function,smooth=smooth)
     elif type=='interp1d':
-        interpolator=scipy.interpolate.interp1d(X_axis,Y_axis,kind=function)
+        interpolator=scipy.interpolate.interp1d(X_axis,Y_axis,kind=function,fill_value='extrapolate')
 
     return interpolator
 
@@ -344,7 +344,7 @@ def flux_func_to_RZ(psi,quantity,equilibrium):
         equilibrium - equilibrium object with 2D psi grid
     """
 
-    interpolator=interpolate_1D(psi,quantity,type='RBF')
+    interpolator=interpolate_1D(psi,quantity,type='interp1d')
     Z_2D,R_2D=np.meshgrid(equilibrium['Z_1D'],equilibrium['R_1D']) #this way around to order dimensions as [r,z]
     quantity_2D=copy.deepcopy(R_2D)
 
