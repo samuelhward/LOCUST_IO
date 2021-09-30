@@ -519,12 +519,12 @@ class Final_Particle_List(classes.base_output.LOCUST_output):
                         mesh=ax.contour(self_binned_x,self_binned_y,self_binned,levels=np.linspace(vmin,vmax,num=number_bins),colors=colmap(np.linspace(0.,1.,num=number_bins)),edgecolor='none',linestyles=line_style,antialiased=True,vmin=vmin,vmax=vmax)
                         if settings.plot_contour_labels:
                             ax.clabel(mesh,inline=1,fontsize=10)
-                        
-                    if fig_flag is False:    
-                        fig.colorbar(mesh,ax=ax,orientation='horizontal')
-                        
+                                                
                 elif style=='scatter':
                     mesh=ax.scatter(self[axes[0]][p],self[axes[1]][p],c=self[colfield][p],cmap=colmap,marker='x',s=1,label=self.ID)
+                
+                if fig_flag is False:    
+                    fig.colorbar(mesh,ax=ax,orientation='horizontal')
 
             if axes==['R','Z']:
                 if LCFS: #plot plasma boundarys
