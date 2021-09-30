@@ -69,7 +69,7 @@ except:
 
 ################################################################## Final_Particle_List read functions
 
-def read_final_particle_list_LOCUST(filepath,**properties):
+def read_final_particle_list_LOCUST(filepath,reduced=True,**properties):
     """
     reads final particle list stored in LOCUST format
 
@@ -78,8 +78,8 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         contains lots of references to process_ptcles.pro, written by Rob Akers
         status_flag describes each particle's final status (guide stored in status_flags, verbose guide in LOCUST/ctrk_mod.f90/ctrk_kernel) 
     args:
-        compression - toggle True for large files for efficient processing
-        coordinates - the particle coordinates to read in if compression enabled        
+        filepath - filepath from dir_input_files
+        reduced - do not read obscure data to reduce memory consumption 
     """
 
     print("reading final particle list from LOCUST")
@@ -150,16 +150,20 @@ def read_final_particle_list_LOCUST(filepath,**properties):
         #transfer chunk from lines to file_buffer and assimilate into dictionary
         lines=np.array([lines[0:niter*npt_*nphc*(n*ngpu)]]).reshape(niter,npt_,nphc,(n*ngpu),order='F')
 
+        #in the case of reduced reading mode, ignore the following quantities
+        quantities_to_ignore=['R','phi','Z','V_R','V_phi','V_Z','time','psi_norm_initial']
+
         #first cache/buffer level contains final positions of each particle
         #last level contains initial positions
         for buffer_level,buffer_string in zip([0,-1],['','_initial']):
             for counter,quantity in enumerate(['R','phi','Z','V_R','V_phi','V_Z','time','dt','FG','tet','psi_norm_initial','V_R_next','V_phi_next','V_Z_next','R_next','phi_next','Z_next']):
-                if 'psi' in quantity: quantity='psi_norm_initial' #this slot is always psi_initial regardless of cache level
-                input_data[quantity+buffer_string]=copy.deepcopy(lines[:,counter,buffer_level,:].flatten())
-
-        input_data['weight']=copy.deepcopy(input_data['FG'])
+                if reduced and quantity not in quantities_to_ignore:
+                    if 'psi' in quantity: quantity='psi_norm_initial' #this slot is always psi_initial regardless of cache level
+                    input_data[quantity+buffer_string]=copy.deepcopy(lines[:,counter,buffer_level,:].flatten())
+        
+        input_data['weight']=copy.deepcopy(lines[:,8,0,:].flatten())
         #calculate some additional things
-        input_data['status_flag']=np.array([status_flags_dispatch(dt) for dt in input_data['dt']])
+        input_data['status_flag']=np.array([status_flags_dispatch(dt) for dt in lines[:,7,0,:].flatten()])
         input_data['E']=.5*constants.species_mass*(input_data['V_R']**2+input_data['V_phi']**2+input_data['V_Z']**2)/constants.charge_e
 
     print("finished reading final particle list from LOCUST")
