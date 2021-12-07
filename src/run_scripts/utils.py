@@ -1959,6 +1959,14 @@ def generate_NBI_geometry(machine='ITER',**properties):
             data['grid_origin_X_machine']=data['grid_origin_R_machine']*np.cos(data['grid_origin_phi_machine'])
             data['grid_origin_Y_machine']=data['grid_origin_R_machine']*np.sin(data['grid_origin_phi_machine'])
 
+        else: #XXX just copy diagnostic beam - cannot find data for heating
+            data['grid_origin_R_machine']=28.926 #[metres]
+            data['grid_origin_phi_machine']=np.pi/2.-(26.*np.pi/180.-np.arctan2(1.4129,data['grid_origin_R_machine'])) #[rad]
+            data['grid_origin_Z_machine']=0.90915 #[metres] XXX? unsure about this one
+            data['grid_origin_X_machine']=data['grid_origin_R_machine']*np.cos(data['grid_origin_phi_machine'])
+            data['grid_origin_Y_machine']=data['grid_origin_R_machine']*np.sin(data['grid_origin_phi_machine'])
+
+
         #beamlet and group dimensions
         data['beamlet_duct_width']=20.*1.e-3 #[metres]
         data['beamlet_duct_height']=22.*1.e-3 #[metres]
@@ -1967,6 +1975,11 @@ def generate_NBI_geometry(machine='ITER',**properties):
 
         #beamline angles
         if beam_name is 'diagnostic':
+            data['beamline_angle_vertical']=np.arctan2(0.320,20.665) #XXX think this is already taken into account by beamlet_tilt below
+            data['beamline_tangency_radius']=1.4129    
+            data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R_machine']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
+
+        else: #XXX just copy diagnostic beam - cannot find data for heating
             data['beamline_angle_vertical']=np.arctan2(0.320,20.665) #XXX think this is already taken into account by beamlet_tilt below
             data['beamline_tangency_radius']=1.4129    
             data['beamline_aiming_angle_horizontal']=np.arcsin(data['beamline_tangency_radius']/data['grid_origin_R_machine']) #horizontal plane angle between beam line and vector connecting beam origin with machine origin 
@@ -1983,11 +1996,11 @@ def generate_NBI_geometry(machine='ITER',**properties):
         data['beamletgroup_centres_phi_machine']=np.arctan2(data['beamletgroup_centres_y_machine'],data['beamletgroup_centres_x_machine'])
         data['beamletgroup_centres_r_machine']=data['beamletgroup_centres_x_machine']*np.cos(data['beamletgroup_centres_phi_machine'])+data['beamletgroup_centres_y_machine']*np.sin(data['beamletgroup_centres_phi_machine'])
 
-        #focussing in XY/RZ plane - same for DNB and HNB
+        #focussing in XY plane - same for DNB and HNB (vertical plane focussing different, only DNB (not HNB) beamlet groups have finite focal length)
         if beam_name is 'diagnostic':
             data['beamletgroup_focal_length']=20.665 #[metres]
         elif 'heating' in beam_name:
-            data['beamletgroup_focal_length']=25.4 #[metres]
+            data['beamletgroup_focal_length']=25.4 #[metres] 
         data['beamletgroup_angle_vertical']=np.arctan2(data['beamletgroup_centres_y'],data['beamletgroup_focal_length']) #[rad] angle between beamlet group unit normal and machine horizontal plane (alpha_y in drawings)
         data['beamletgroup_angle_horizontal']=np.arctan2(data['beamletgroup_centres_x'],data['beamletgroup_focal_length']) #angle between beamletgroup and beamline projected in horizontal plane [rad] (alpha_x in drawings)
         data['beamletgroup_focal_point_X']=data['grid_origin_X_machine']-data['beamletgroup_focal_length']*np.sin(np.pi/2.-data['grid_origin_phi_machine']+data['beamline_aiming_angle_horizontal'])
@@ -2043,15 +2056,15 @@ def generate_NBI_geometry(machine='ITER',**properties):
         data['beamlet_centres_phi_machine']=np.arctan2(data['beamlet_centres_Y_machine'],data['beamlet_centres_X_machine'])
         data['beamlet_centres_R_machine']=data['beamlet_centres_X_machine']*np.cos(data['beamlet_centres_phi_machine'])+data['beamlet_centres_Y_machine']*np.sin(data['beamlet_centres_phi_machine'])
 
-        #find angle of inclination of beamlet with horizontal plane
+        #find angle of inclination of beamlet with horizontal plane - this is where vertical focussing is done
         #XXX! not sure if beamline vertical tilt needs taking into account of or if this is already taken into account by beamlet_angle_vertical - assuming beamline is horizontal here
         if beam_name is 'diagnostic':
             #since diagnostic beam focal length of beamlet=focal length of beamletgroup we can do something simple
             for beamletgroup_column in range(data['number_columns_per_unit']):
                 for beamletgroup_segment in range(data['number_beamletgroups_per_column']):
                     data['beamlet_angle_vertical'][:,beamletgroup_column,beamletgroup_segment,:,:]+=np.arctan2(data['beamlet_centres_y'][:,beamletgroup_column,beamletgroup_segment,:,:],data['beamletgroup_focal_length']) - data['beamletgroup_angle_vertical'][beamletgroup_column,beamletgroup_segment]
-            data['beamlet_tilt']=49.2*1.e-3 #[rad]
-        elif 'heating' in beam_name:
+            data['beamlet_tilt']=-15.5*1.e-3 #[rad]
+        elif 'heating' in beam_name: #no focussing of beamlets in each group here
             data['beamlet_angle_vertical']+=49.2*1.e-3 #beamlet downward vertical tilt - same for all beamlets [rad] (beta_y in drawings)
             #on-off axis settings
             data['beamlet_tilt']=10.*1.e-3 if axis is 'on' else -10.*1.e-3 #[rad]
@@ -2073,12 +2086,14 @@ def generate_NBI_geometry(machine='ITER',**properties):
             data['power']=2.*1.e6 #0.1s pulse every 1.4 seconds [W]
             data['power average']=0.13*1.e6 #[W]
             data['energy_full']=100.*1.e3 #[eV]
+            data['a']=1.008 #[amu] 
+            data['z']=1.
         elif 'heating' in beam_name:
             data['power']=33.*1.e6 #0.1s pulse every 1.4 seconds [W]
             data['power average']=33.*1.e6 #[W]
             data['energy_full']=1000.*1.e3 #[eV]
-        data['a']=2. #this needs to be in amu
-        data['z']=1.
+            data['a']=2.01 #[amu] 
+            data['z']=1.
         data['beam_current_fraction']=[1,0,0]
         data['beam_power_fraction']=[1,0,0]
         data['power_fraction_beamlet']+=1./data['number_beamlets_per_unit'] #assume all beamlets have same power
