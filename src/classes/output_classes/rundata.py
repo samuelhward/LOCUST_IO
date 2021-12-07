@@ -109,6 +109,7 @@ def read_rundata_LOCUST(filepath,**properties):
                 rundata[calling_function][variable_or_message]=rundata[calling_function][variable_or_message][0]
 
     input_data={} #initialise data dictionary
+    input_data['data']=rundata
 
     #see whether run finished
     input_data['run_status']='unknown'
