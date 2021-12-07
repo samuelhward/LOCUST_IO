@@ -209,6 +209,8 @@ def read_equilibrium_GEQDSK(filepath,**properties):
         input_data['Z_1D']=np.linspace(input_data['zmid']-0.5*input_data['zdim'],input_data['zmid']+0.5*input_data['zdim'],num=input_data['nZ_1D']) 
         input_data['flux_pol']=np.linspace(input_data['simag'],input_data['sibry'],input_data['ffprime'].size) #all 1D profiles are defined against a flux grid, so use any 1D profile's length
         input_data['flux_tor']=processing.process_input.QTP_calc(Q=input_data['qpsi'],P=input_data['flux_pol'])*GEQDSKFIX_factor #if we flipped poloidal flux this will also flip toroidal flux since we assume Q sign always +ve by convention
+        
+        input_data['flux_pol_norm']=(input_data['flux_pol']-input_data['simag'])/(input_data['sibry']-input_data['simag'])
 
         print("finished reading equilibrium from GEQDSK")
 
