@@ -19,7 +19,7 @@ from classes.input_classes.wall import Wall as Wall
 import processing.utils
 
 
-axis='E'
+axis='V_pitch'
 shot_number='157418'
 
 #read Mike data
@@ -32,7 +32,7 @@ if axis=='V_pitch':
     quantity_to_integrate='ehis'
     quantity_to_plot_against='phis'
     convert_to_eV=1000.
-    xlabel='Pitch'
+    xlabel=r'Pitch $v_{\parallel}/v$'
 elif axis=='E':
     axis_to_integrate=0
     quantity_to_integrate='phis'
@@ -116,9 +116,9 @@ legend=[]
 legend.append('SPIRAL')
 legend.append('LOCUST 2D wall')
 legend.append('LOCUST 3D wall')
-ax.legend(legend)
+ax.legend(legend,fontsize=20)
 #ax.set_yticks([-0.6,-0.4,-0.2,0.])
-ax.set_xlabel(xlabel)
-ax.set_ylabel('$\delta f$')
+ax.set_xlabel(xlabel,fontsize=20)
+ax.set_ylabel('Change in distribution function $\delta f$',fontsize=20)
 ax.set_title('')
 plt.show()
