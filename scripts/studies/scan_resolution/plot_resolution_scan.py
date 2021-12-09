@@ -42,6 +42,12 @@ except:
     sys.exit(1)
 
 try:
+    import processing.utils
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/processing/utils.py could not be imported!\nreturning\n")
+    sys.exit(1)
+
+try:
     import support
 except:
     raise ImportError("ERROR: LOCUST_IO/src/support.py could not be imported!\nreturning\n") 
@@ -86,7 +92,7 @@ for run_number,output in enumerate(outputs):
         field_data_RZ.plot(key='divB')
 """
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
+outputs=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'fpl',batch_data,processes=16,chunksize=1)
 fig,ax1=plt.subplots(1,1,constrained_layout=True)
 Pinj=33.e6
 Einj=1.e6
@@ -99,11 +105,11 @@ for run_number,output in enumerate(outputs):
         #print(np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron)
         #print(batch_data.parameters__perturbation_resolutions_R[run_number])
         if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax1.axhline(PFC_power,color='red',label='2D field losses',linewidth=2)
+            ax1.axhline(PFC_power,color='black',label='2D field losses',linewidth=2)
         else:
             ax1.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),PFC_power,color='black',marker='x',linestyle='solid',alpha=1,linewidth=2,s=80)
 ax1.set_xlabel("")
-ax1.set_xlabel(r"Perturbation grid spacing (log$_{10}$) [m]")
+ax1.set_xlabel(r"Perturbation grid spacing $\Delta x_{\widetilde{\mathbf{B}}}$ (log$_{10}$) [m]")
 ax1.set_ylabel("NBI power loss [%]")
 ax1.legend()
 #ax1.tick_params(
@@ -114,22 +120,43 @@ ax1.legend()
 #    labelbottom=False) 
 
 
+# plot divergence here
+
+#static length scales
+equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][0],GEQDSKFIX1=True,GEQDSKFIX2=True)
+grid_spacing_equilibrium=np.abs(equilibrium['R_1D'][1]-equilibrium['R_1D'][0])
+boris_step_length=1.e-9*np.sqrt(2.*1.e6*constants.charge_e/constants.mass_deuteron)
+print(boris_step_length)
+
+#static B scales
+B_0=np.abs(equilibrium['bcentr'])
+
 ax2=ax1.twinx()
 outputs=templates.plot_mod.get_divergence_files(batch_data)
 for run_number,output in enumerate(outputs):
     if output is not None:
         field_data_RZ,field_data_XY=output
-        #remove silly values that arise from evaluating the field outside the original domain
-        p=np.where(np.abs(field_data_RZ['dB_field_R'])<1.0)
-        #p=np.where((np.abs(field_data_RZ['dB_field_R'])>1.0) | (np.log(np.abs(field_data_RZ['divB']))<-10.))
-        divB=np.log10(np.mean(np.abs(field_data_RZ['divB'][p])))
-        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax2.axhline(divB,color=cmap_r(0.),label='2D case')
-        else:
-            ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color=cmap_b(0.),marker='x',linestyle='solid',alpha=1,linewidth=2,s=80)
-            #ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='-',alpha=1,linewidth=2)
-ax2.set_ylabel(r"Mean $\left|\nabla\cdot\mathbf{B}\right|$ (log$_{10}$)",color=cmap_b(0.))
+        #remove values outside LCFS since they can dominate errors
+        #p=np.where(np.abs(field_data_RZ['dB_field_R'])<1.0)
+        p=processing.utils.within_LCFS(
+            field_data_RZ['R'].flatten(),field_data_RZ['Z'].flatten(),equilibrium).reshape(
+            len(field_data_RZ['R_1D']),len(field_data_RZ['Z_1D']))
+        
+        for scaling_factor,scaling_label,marker in zip(
+            [batch_data.parameters__perturbation_resolutions_R[run_number]/B_0,boris_step_length/B_0],
+        [r'$A=\Delta x_{\widetilde{\mathbf{B}}}/B_{\mathrm{0}}$','$A=\Delta x_{\mathrm{Boris}}/B_{\mathrm{0}}$'],
+        ['x','.'],
+        ):
+            divB=np.log10(scaling_factor*np.mean(np.abs(field_data_RZ['divB'][p])))
+            if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
+                pass#ax2.axhline(divB,color=cmap_r(0.),label='2D case')
+            else:
+                label=scaling_label if run_number == 5 else ''
+                ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color=cmap_b(0.),marker=marker,linestyle='solid',alpha=1,linewidth=2,s=80,label=label)
+                #ax2.scatter(np.log10(batch_data.parameters__perturbation_resolutions_R[run_number]),divB,color='black',marker='x',linestyle='-',alpha=1,linewidth=2)
+ax2.set_ylabel(r"Mean $\left|\nabla\cdot A\mathbf{B}\right|$ (log$_{10}$)",color=cmap_b(0.))
 ax2.tick_params('y',colors=cmap_b(0.))
+ax2.legend(bbox_to_anchor=(.0,.9),ncol=1,loc='upper left')
 plt.show()
 
 

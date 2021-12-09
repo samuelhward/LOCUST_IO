@@ -118,7 +118,6 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 
 parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7']
 parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
-configs_beam_species=['deuterium','deuterium','deuterium','deuterium']
 plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
 
 ##################################################################
@@ -131,35 +130,38 @@ parameters__kinetic_profs_tF_tE=[2.]
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 
 # since optimal phases now depend on both case and toroidal mode number need to introduce another iteration level
-parameters__phases_uppers_case2=[30.-190./3.-3.3,30.-230./4.-3.3]
-parameters__phases_middles_case2=[26.7+0./3.,26.7+0./4.]
-parameters__phases_lowers_case2=[30.-145./3.-3.3,30.-75./4.-3.3]
+parameters__phases_uppers_case2=[np.linspace(0,120,5)[:-1]+30.-190./3.-3.3,np.linspace(0,90,5)[:-1]+30.-230./4.-3.3]
+parameters__phases_middles_case2=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case2=[np.linspace(0,120,5)[:-1]+30.-145./3.-3.3,np.linspace(0,90,5)[:-1]+30.-75./4.-3.3]
 
-parameters__phases_uppers_case3=[30.-330./3.-3.3,30.-215./4.-3.3]
-parameters__phases_middles_case3=[26.7+0./3.,26.7+0./4.]
-parameters__phases_lowers_case3=[30.-20./3.-3.3,30.-100./4.-3.3]
+parameters__phases_uppers_case3=[np.linspace(0,120,5)[:-1]+30.-330./3.-3.3,np.linspace(0,90,5)[:-1]+30.-215./4.-3.3]
+parameters__phases_middles_case3=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case3=[np.linspace(0,120,5)[:-1]+30.-20./3.-3.3,np.linspace(0,90,5)[:-1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case5=[30.-200./3.-3.3,30.-250./4.-3.3]
-parameters__phases_middles_case5=[26.7+0./3.,26.7+0./4.]
-parameters__phases_lowers_case5=[30.-140./3.-3.3,30.-95./4.-3.3]
+parameters__phases_uppers_case5=[np.linspace(0,120,5)[:-1]+30.-200./3.-3.3,np.linspace(0,90,5)[:-1]+30.-250./4.-3.3]
+parameters__phases_middles_case5=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case5=[np.linspace(0,120,5)[:-1]+30.-140./3.-3.3,np.linspace(0,90,5)[:-1]+30.-95./4.-3.3]
 
-parameters__phases_uppers_case7=[30.-290./3.-3.3,30.-0./4.-3.3]
-parameters__phases_middles_case7=[26.7-0./3.,26.7-0./4.]
-parameters__phases_lowers_case7=[30.-55./3.-3.3,30.+10./4.-3.3]
+parameters__phases_uppers_case7=[np.linspace(0,120,5)[:-1]+30.-290./3.-3.3,np.linspace(0,90,5)[:-1]+30.-0./4.-3.3]
+parameters__phases_middles_case7=[np.linspace(0,120,5)[:-1]+26.7-0./3.,np.linspace(0,90,5)[:-1]+26.7-0./4.]
+parameters__phases_lowers_case7=[np.linspace(0,120,5)[:-1]+30.-55./3.-3.3,np.linspace(0,90,5)[:-1]+30.+10./4.-3.3]
 
 parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
 parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
 parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case5,parameters__phases_lowers_case7]
 
+#range of currents to measure depends on plasma scenario
+parameters__currents_uppers=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
+parameters__currents_middles=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
+parameters__currents_lowers=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
+
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
-parameters__currents_upper=np.array([0.,90.])*1000.
-parameters__currents_middle=np.array([0.,90.])*1000.
-parameters__currents_lower=np.array([0.,90.])*1000.
 
-configs_beam_1=['diagnostic']
-configs_beam_2=[None]
+config_beam_1='diagnostic'
+config_beam_2=None
+config_beam_species='hydrogen'
 
 ##################################################################
 #define the workflow commands in order we want to execute them
@@ -174,19 +176,28 @@ run_number=0
 parameter_strings=[]
 
 #first level are the data which remain constant for a parameter scan
-for config_beam_1,config_beam_2 in zip(configs_beam_1,configs_beam_2):
-    for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_species,plasma_species,
-            parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in zip(
-            parameters__databases,parameters__sheet_names_kinetic_prof,configs_beam_species,plasmas_species,
-            parameters__phases_uppers_cases_all,parameters__phases_middles_cases_all,parameters__phases_lowers_cases_all): 
-        for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
-            for parameters__toroidal_mode_number,parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower):
-                for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): #nest at same level == rotating them together rigidly
+for (
+        parameters__database,parameters__sheet_name_kinetic_prof,plasma_species,
+        parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers,
+        parameters__currents_upper,parameters__currents_middle,parameters__currents_lower 
+        ) in zip(
+        parameters__databases,parameters__sheet_names_kinetic_prof,plasmas_species,
+        parameters__phases_uppers_cases_all,parameters__phases_middles_cases_all,parameters__phases_lowers_cases_all,
+        parameters__currents_uppers,parameters__currents_middles,parameters__currents_lowers
+        ): 
+    for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
+        for parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers):
+            for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower): #nest at same level == offset them together rigidly 
+                for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(parameters__rotations_upper,parameters__rotations_middle,parameters__rotations_lower): 
                     for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
 
-                        #skip n_0=4 when current = 0 since will be same as n=3 case
-                        if parameters__current_upper==0. and -4 in parameters__toroidal_mode_number:
-                            continue
+                        #skip all but the first run for each database when currents=0 since results will be independent of phase/n 
+                        #note that this could be commented out for use with a plot script - that way one can build the full ND hyperparameter array (masked) and just replace non-existent runs with None  
+                        if parameters__current_upper==0.: 
+                            if parameters__phase_upper!=parameters__phases_upper[0]:
+                                continue
+                            if -3 not in parameters__toroidal_mode_number:
+                                continue
 
                         run_number+=1 #increment run counter              
 
@@ -252,7 +263,7 @@ for config_beam_1,config_beam_2 in zip(configs_beam_1,configs_beam_2):
                         LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                         LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                         LOCUST_run__settings_prec_mod['threadsPerBlock']=64
-                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64*16
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64*8
                         LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1
@@ -396,19 +407,28 @@ if __name__=='__main__':
         ngpus=8
         ngpus_per_group=1
         ngpu_groups=int(ngpus/ngpus_per_group)
-        n_sims_per_gpu_group=int(len(list(args_batch.values())[0])/ngpu_groups)
+        number_simulations=len(list(args_batch.values())[-1])
+        n_sims_per_gpu_group=int(number_simulations/ngpu_groups)
 
-        for gpu_group in range(ngpu_groups):
-            for sim in np.arange(n_sims_per_gpu_group*gpu_group,n_sims_per_gpu_group*(gpu_group+1)):
+        #need to account for non-integer simulations per gpu_group
+        #essentially the first "remainder" number of gpu_groups do 1 extra simulation 
+        remainder_simulations=list(range(np.mod(number_simulations,ngpu_groups)+1)) #e.g. if remainder = 3 this is [0,1,2,3] - need one extra since we look at the differences
+        remainder_simulations+=[remainder_simulations[-1] for _ in range(ngpu_groups-len(remainder_simulations)+1)] #again need one extra since we use differences
+
+        processes=[]
+        for counter,gpu_group in enumerate(range(ngpu_groups)):
+            for sim in np.arange(n_sims_per_gpu_group*gpu_group+remainder_simulations[counter],n_sims_per_gpu_group*(gpu_group+1)+remainder_simulations[counter+1]):
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl']=np.zeros(32,dtype=int) #opt to run more markers on fewer GPUs in parallel
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl'][gpu_group*ngpus_per_group:(gpu_group+1)*ngpus_per_group]=1 
                 args_batch['LOCUST_run__settings_prec_mod'][sim]['incl']=np.array2string(args_batch['LOCUST_run__settings_prec_mod'][sim]['incl'],separator=',')
-
-        processes = [multiprocessing.Process(target=Batch_wrapper, args=({key:value[slice(gpu*n_sims_per_gpu_group,(gpu+1)*n_sims_per_gpu_group)] for key,value in args_batch.items()},), kwargs={'workflow_filepath':path_template_run,'environment_name_batch':LOCUST_run__environment_name,'environment_name_workflow':LOCUST_run__environment_name,'interactive':True}) for gpu in range(ngpus)]
+                args_batch['LOCUST_run__settings_prec_mod'][sim]['blocksPerGrid']*=ngpu_groups #scale up markers to match decrease in ngpus 
+            processes.append(
+                multiprocessing.Process(target=Batch_wrapper, args=({key:value[n_sims_per_gpu_group*gpu_group+remainder_simulations[counter]:n_sims_per_gpu_group*(gpu_group+1)+remainder_simulations[counter+1]] for key,value in args_batch.items()},), kwargs={'workflow_filepath':path_template_run,'environment_name_batch':LOCUST_run__environment_name,'environment_name_workflow':LOCUST_run__environment_name,'interactive':True})
+            )
 
         for p in processes:
             p.start()
-            time.sleep(300)
+            time.sleep(600)
         for p in processes:
             p.join()
 

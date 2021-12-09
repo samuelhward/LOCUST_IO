@@ -79,7 +79,7 @@ def calc_PFC_power(filename,classtype='fpl'):
         PFC_power=-1
     return PFC_power  
 
-PFC_power=templates.plot_mod.apply_func_parallel(calc_PFC_power,'fpl',batch_data,processes=24,chunksize=1)
+PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=12,chunksize=1)
 PFC_power=np.array(PFC_power).reshape(
                     len(batch_data.parameters__kinetic_profs_Pr),
                     len(batch_data.parameters__currents_upper),
@@ -109,8 +109,9 @@ for plasma_state_counter,(ax,Pr,tftE) in enumerate(zip([axs],batch_data.paramete
             ax.scatter(batch_data.parameters__phases_middles[mode_number_counter],100*PFC_power[plasma_state_counter,current_counter,mode_number_counter]/Pinj,label=label,color=colour,linestyle=linestyle,marker=marker,s=80)
 
 ax.legend()
-ax.set_xlabel('$\Phi_{\mathrm{m}}$ [deg]') #\Phi for absolute
+ax.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{m}}$) [deg]') #\Phi for absolute
 ax.set_ylabel('NBI power loss [%]')
+ax.set_ylim([0,13])
 # remove ticks from total ax
 #ax_total = fig.add_subplot(111,frameon=False)
 #ax_total.tick_params(axis='both',which='both',bottom=False,labelbottom=False,left=False,labelleft=False)

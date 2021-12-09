@@ -128,6 +128,7 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 
 parameters__databases=['ITER_15MAQ10_case5'] #these all zipped at same level in main loop because source data is not consistent enough
 parameters__sheet_names_kinetic_prof=["'Flat n'"]
+configs_beam_species=['deuterium']
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -403,7 +404,6 @@ if __name__=='__main__':
             environment_name_batch=LOCUST_run__environment_name,
             environment_name_workflow=LOCUST_run__environment_name,
             interactive=False)  
-
 
 #################################
  

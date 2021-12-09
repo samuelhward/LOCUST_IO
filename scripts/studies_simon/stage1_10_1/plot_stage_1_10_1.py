@@ -82,13 +82,22 @@ cmap_b=settings.colour_custom([33,150,243,1])
 
 import stage_1_10_1_launch as batch_data
 
-#outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
 
 Pinj=33.e6
 
-
 #read input data
-input_dBs=np.array(list(templates.plot_mod.get_output_files(batch_data,'pert'))).reshape(len(batch_data.parameters__phases_upper),len(batch_data.parameters__toroidal_mode_numbers[0]))
+#cannot read input_dBs in parallel, since sometimes variable number of input filenames per simulation
+input_dBs=np.array(list(templates.plot_mod.get_io_files(batch_data,'pert',return_lists=True)),dtype='object').reshape(
+    len(batch_data.parameters__currents_upper),
+    len(batch_data.parameters__toroidal_mode_numbers),
+    len(batch_data.parameters__phases_uppers[0]),
+    )
+#input_dBs=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'pert',batch_data,processes=16,chunksize=1)).reshape(
+#    len(batch_data.parameters__currents_upper),
+#    len(batch_data.parameters__toroidal_mode_numbers),
+#    len(batch_data.parameters__phases_uppers[0]),
+#    )
+
 equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][0],GEQDSKFIX1=True,GEQDSKFIX2=True)
 equilibrium['q_rz']=processing.utils.flux_func_to_RZ(psi=equilibrium['flux_pol'],quantity=equilibrium['qpsi'],equilibrium=equilibrium)
 beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_cache'][0].strip('\''))/'ptcles.dat')
@@ -102,73 +111,60 @@ beam_deposition.set(theta=processing.utils.angle_pol(R_major=0.639277243e1,R=bea
 beam_deposition['power']=beam_deposition['weight']*0.5*constants.mass_deuteron*(beam_deposition['V_R']**2+beam_deposition['V_phi']**2+beam_deposition['V_Z']**2)
 beam_deposition.set(V_pitch_2D=processing.utils.pitch_calc(beam_deposition,equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
 beam_deposition.set(q=processing.utils.value_at_RZ(R=beam_deposition['R'],Z=beam_deposition['Z'],quantity=equilibrium['q_rz'],grid=equilibrium))
-
+for key in beam_deposition.data:
+    if np.any([angle in key for angle in ['theta','phi']]):
+        beam_deposition[key][beam_deposition[key]>np.pi]-=2.*np.pi
+        beam_deposition[key]*=180./np.pi
 
 #read outputs
-output_fpls=list(templates.plot_mod.get_output_files(batch_data,'fpl'))
+#output_fpls=np.array(templates.plot_mod.get_io_files(batch_data,'fpl')).reshape(
+#    len(batch_data.parameters__currents_upper),
+#    len(batch_data.parameters__toroidal_mode_numbers),
+#    len(batch_data.parameters__phases_uppers[0]),
+#    )
+output_fpls=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'fpl',batch_data,processes=4,chunksize=1)).reshape(
+    len(batch_data.parameters__currents_upper),
+    len(batch_data.parameters__toroidal_mode_numbers),
+    len(batch_data.parameters__phases_uppers[0]),
+    )
+#output_orbits_3D=templates.plot_mod.get_io_files(batch_data,'orbit3D')
+#output_orbits_2D=templates.plot_mod.get_io_files(batch_data,'orbit2D')
 
 #calculate some data
-for output_fpl,input_dB in zip(output_fpls,input_dBs):
-    if output_fpl and np.all(input_dB):
-        #set toroidal mode number
-        for mode in input_dB:
-            mode.mode_number=-int(str(mode.filename)[-1])
-        output_fpl.set(theta_initial=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpl['R_initial'],Z=output_fpl['Z_initial'],Z_major=0.597384943))
-        output_fpl.set(theta_final=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpl['R'],Z=output_fpl['Z'],Z_major=0.597384943))
-        output_fpl.set(dTheta=output_fpl['theta_final']-output_fpl['theta_initial'])
-        output_fpl.set(dPhi=output_fpl['phi']-output_fpl['phi_initial'])
-        output_fpl['power']=output_fpl['weight']*0.5*constants.mass_deuteron*(output_fpl['V_R']**2+output_fpl['V_phi']**2+output_fpl['V_Z']**2)
-        #output_fpl['weight']=output_fpl['weight']*0.5*constants.mass_deuteron*(output_fpl['V_R']**2+output_fpl['V_phi']**2+output_fpl['V_Z']**2)
-        output_fpl.set(V_pitch_initial_2D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpl.data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
-        output_fpl.set(V_pitch_initial_3D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpl.data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=[mode for mode in input_dB],i3dr=-1,phase=0.))
-        output_fpl.set(V_pitch_final_2D=processing.utils.pitch_calc(output_fpl,equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
-        output_fpl.set(V_pitch_final_3D=processing.utils.pitch_calc(output_fpl,equilibria=[equilibrium],perturbations=[mode for mode in input_dB],i3dr=-1,phase=0.))
-        output_fpl.set(dV_pitch_initial=output_fpl['V_pitch_initial_3D']-output_fpl['V_pitch_initial_2D'])
-        output_fpl.set(dV_pitch_final=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_final_2D'])
-        output_fpl.set(dV_pitch=output_fpl['V_pitch_final_3D']-output_fpl['V_pitch_initial_3D'])
-        output_fpl.set(ddV_pitch=output_fpl['dV_pitch_final']-output_fpl['dV_pitch_initial'])
-        output_fpl.set(psi_norm_sqrt_initial=np.sqrt(output_fpl['psi_norm_initial']))
-        output_fpl.set(q_initial=processing.utils.value_at_RZ(R=output_fpl['R_initial'],Z=output_fpl['Z_initial'],quantity=equilibrium['q_rz'],grid=equilibrium))
-        #to avoid discontinuities in the colour map since lots of markers near to phi=0 and theta=0
-        for key in output_fpl.data:
-            if np.any([angle in key for angle in ['theta','phi']]):
-                output_fpl[key][output_fpl[key]>np.pi]-=2.*np.pi
-                output_fpl[key]*=180./np.pi
+for current_counter,(parameters__current_upper,parameters__current_middle,parameters__current_lower) in enumerate(zip(batch_data.parameters__currents_upper,batch_data.parameters__currents_middle,batch_data.parameters__currents_lower)):
+    for mode_counter,(parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,batch_data.parameters__phases_uppers,batch_data.parameters__phases_middles,batch_data.parameters__phases_lowers)):
+        for phase_counter,(parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower)): #nest at same level == offset them together rigidly 
+
+            if output_fpls[current_counter,mode_counter,phase_counter] and np.all(input_dBs[current_counter,mode_counter,phase_counter]):
+
+                for mode in input_dBs[current_counter,mode_counter,phase_counter]:
+                    mode.mode_number=-int(str(mode.filename)[-1])
+
+                output_fpls[current_counter,mode_counter,phase_counter].set(theta_initial=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpls[current_counter,mode_counter,phase_counter]['R_initial'],Z=output_fpls[current_counter,mode_counter,phase_counter]['Z_initial'],Z_major=0.597384943))
+                output_fpls[current_counter,mode_counter,phase_counter].set(theta_final=processing.utils.angle_pol(R_major=0.639277243e1,R=output_fpls[current_counter,mode_counter,phase_counter]['R'],Z=output_fpls[current_counter,mode_counter,phase_counter]['Z'],Z_major=0.597384943))
+                output_fpls[current_counter,mode_counter,phase_counter].set(dTheta=output_fpls[current_counter,mode_counter,phase_counter]['theta_final']-output_fpls[current_counter,mode_counter,phase_counter]['theta_initial'])
+                output_fpls[current_counter,mode_counter,phase_counter].set(dPhi=output_fpls[current_counter,mode_counter,phase_counter]['phi']-output_fpls[current_counter,mode_counter,phase_counter]['phi_initial'])
+                output_fpls[current_counter,mode_counter,phase_counter]['power']=output_fpls[current_counter,mode_counter,phase_counter]['weight']*0.5*constants.mass_deuteron*(output_fpls[current_counter,mode_counter,phase_counter]['V_R']**2+output_fpls[current_counter,mode_counter,phase_counter]['V_phi']**2+output_fpls[current_counter,mode_counter,phase_counter]['V_Z']**2)
+                #output_fpls[current_counter,mode_counter,phase_counter]['weight']=output_fpls[current_counter,mode_counter,phase_counter]['weight']*0.5*constants.mass_deuteron*(output_fpls[current_counter,mode_counter,phase_counter]['V_R']**2+output_fpls[current_counter,mode_counter,phase_counter]['V_phi']**2+output_fpls[current_counter,mode_counter,phase_counter]['V_Z']**2)
+                output_fpls[current_counter,mode_counter,phase_counter].set(V_pitch_initial_2D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpls[current_counter,mode_counter,phase_counter].data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
+                output_fpls[current_counter,mode_counter,phase_counter].set(V_pitch_initial_3D=processing.utils.pitch_calc({key.replace('_initial',''):value for key,value in output_fpls[current_counter,mode_counter,phase_counter].data.items() if 'initial' in key},equilibria=[equilibrium],perturbations=[mode for mode in input_dBs[current_counter,mode_counter,phase_counter]],i3dr=-1,phase=0.))
+                output_fpls[current_counter,mode_counter,phase_counter].set(V_pitch_final_2D=processing.utils.pitch_calc(output_fpls[current_counter,mode_counter,phase_counter],equilibria=[equilibrium],perturbations=None,i3dr=-1,phase=0.))
+                output_fpls[current_counter,mode_counter,phase_counter].set(V_pitch_final_3D=processing.utils.pitch_calc(output_fpls[current_counter,mode_counter,phase_counter],equilibria=[equilibrium],perturbations=[mode for mode in input_dBs[current_counter,mode_counter,phase_counter]],i3dr=-1,phase=0.))
+                output_fpls[current_counter,mode_counter,phase_counter].set(dV_pitch_initial=output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_initial_3D']-output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_initial_2D'])
+                output_fpls[current_counter,mode_counter,phase_counter].set(dV_pitch_final=output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_final_3D']-output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_final_2D'])
+                output_fpls[current_counter,mode_counter,phase_counter].set(dV_pitch=output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_final_3D']-output_fpls[current_counter,mode_counter,phase_counter]['V_pitch_initial_3D'])
+                output_fpls[current_counter,mode_counter,phase_counter].set(ddV_pitch=output_fpls[current_counter,mode_counter,phase_counter]['dV_pitch_final']-output_fpls[current_counter,mode_counter,phase_counter]['dV_pitch_initial'])
+                output_fpls[current_counter,mode_counter,phase_counter].set(psi_norm_sqrt_initial=np.sqrt(output_fpls[current_counter,mode_counter,phase_counter]['psi_norm_initial']))
+                output_fpls[current_counter,mode_counter,phase_counter].set(q_initial=processing.utils.value_at_RZ(R=output_fpls[current_counter,mode_counter,phase_counter]['R_initial'],Z=output_fpls[current_counter,mode_counter,phase_counter]['Z_initial'],quantity=equilibrium['q_rz'],grid=equilibrium))
+                output_fpls[current_counter,mode_counter,phase_counter].set(q_final=processing.utils.value_at_RZ(R=output_fpls[current_counter,mode_counter,phase_counter]['R'],Z=output_fpls[current_counter,mode_counter,phase_counter]['Z'],quantity=equilibrium['q_rz'],grid=equilibrium))
+                #to avoid discontinuities in the colour map since lots of markers near to phi=0 and theta=0
+                for key in output_fpls[current_counter,mode_counter,phase_counter].data:
+                    if np.any([angle in key for angle in ['theta','phi']]):
+                        output_fpls[current_counter,mode_counter,phase_counter][key][output_fpls[current_counter,mode_counter,phase_counter][key]>np.pi]-=2.*np.pi
+                        output_fpls[current_counter,mode_counter,phase_counter][key]*=180./np.pi
 
 if __name__=='__main__':
 
-    run_number=0
-    for parameters__database,parameters__sheet_name_kinetic_prof in zip(
-            parameters__databases,parameters__sheet_names_kinetic_prof): 
-        for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
-            
-            '''
-            equilibrium=Equilibrium(ID='',data_format='GEQDSK',filename=batch_data.args_batch['RMP_study__filepath_equilibrium'][run_number],GEQDSKFIX1=True,GEQDSKFIX2=True)
-            beam_deposition=Beam_Deposition(ID='',data_format='LOCUST_FO_weighted',filename=pathlib.Path(batch_data.args_batch['LOCUST_run__dir_cache'][run_number].strip('\''))/'ptcles.dat')
-            #always generate more markers that used, so crop the beam deposition down
-            number_markers=8*batch_data.LOCUST_run__settings_prec_mod['threadsPerBlock']*batch_data.LOCUST_run__settings_prec_mod['blocksPerGrid']
-            for key in beam_deposition.data.keys():
-                try:
-                    beam_deposition[key]=beam_deposition[key][0:number_markers]
-                except:
-                    pass
-            '''
-
-            for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(batch_data.parameters__rotations_upper,batch_data.parameters__rotations_middle,batch_data.parameters__rotations_lower): #nest at same level == rotating them together rigidly
-                for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(batch_data.parameters__currents_upper,batch_data.parameters__currents_middle,batch_data.parameters__currents_lower):
-                    for parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower in zip(batch_data.parameters__toroidal_mode_numbers,batch_data.parameters__phases_uppers,parameters__phases_middles,batch_data.parameters__phases_lowers):
-
-                        number_points=len(batch_data.parameters__phases_lower)    
-                        #fig,ax=plt.subplots(number_points)
-                        #ax=np.array(ax,ndmin=1)
-
-                        for parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(batch_data.parameters__phases_upper,batch_data.parameters__phases_middle,batch_data.parameters__phases_lower): #nest at same level == offset them together rigidly 
-
-                            output_fpls[run_number].plot(axes=['phi','Z'],style='scatter',fill=False,colmap=settings.cmap_default,colfield='V_phi',number_bins=200,weight=True)
-                        
-                            run_number+=1
-
-                        plt.show()
 
 
     #find markers which lost at all phases

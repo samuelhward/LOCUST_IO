@@ -151,6 +151,8 @@ parameters__currents_lower=np.array([90.])*1000.
 
 config_beam_1='diagnostic'
 config_beam_2=None
+config_beam_species='hydrogen' if config_beam_1 == 'diagnostic' else 'deuterium'
+
 
 ##################################################################
 #define the workflow commands in order we want to execute them

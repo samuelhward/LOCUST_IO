@@ -219,8 +219,8 @@ for collision_type in collision_types:
                                     parameters__current_middle,
                                     parameters__current_lower])])
 
-                            for collision in ['icoll','iscat','idiff']: #add collision types to parameter string
-                                parameters__parameter_string+=''.join('_{}_{}'.format(collision,collision_type[collision]))
+                            #for collision in ['icoll','iscat','idiff']: #add collision types to parameter string
+                            #    parameters__parameter_string+=''.join('_{}_{}'.format(collision,collision_type[collision]))
 
                             parameters__parameter_string+=f'_beams_{str(config_beam_1)}_{str(config_beam_2)}'
 

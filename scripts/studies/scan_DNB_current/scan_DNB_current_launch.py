@@ -105,7 +105,7 @@ except:
 #################################
 #define study name 
 
-RMP_study__name='scan_DNB_phase'
+RMP_study__name='scan_DNB_current'
 
 #################################
 #define options and dispatch tables for helping choosing settings
@@ -130,22 +130,22 @@ parameters__kinetic_profs_tF_tE=[2.]
 
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 
-# since optimal phases now depend on both case and toroidal mode number need to introduce another iteration level
-parameters__phases_uppers_case2=[np.linspace(0,120,7)[:-1]+30.-190./3.-3.3,np.linspace(0,90,7)[:-1]+30.-230./4.-3.3]
-parameters__phases_middles_case2=[np.linspace(0,120,7)[:-1]+26.7+0./3.,np.linspace(0,90,7)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case2=[np.linspace(0,120,7)[:-1]+30.-145./3.-3.3,np.linspace(0,90,7)[:-1]+30.-75./4.-3.3]
+# just pick single phase here
+parameters__phases_uppers_case2=[np.linspace(0,120,7)[:-1][0:1]+30.-190./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-230./4.-3.3]
+parameters__phases_middles_case2=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
+parameters__phases_lowers_case2=[np.linspace(0,120,7)[:-1][0:1]+30.-145./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-75./4.-3.3]
 
-parameters__phases_uppers_case3=[np.linspace(0,120,7)[:-1]+30.-330./3.-3.3,np.linspace(0,90,7)[:-1]+30.-215./4.-3.3]
-parameters__phases_middles_case3=[np.linspace(0,120,7)[:-1]+26.7+0./3.,np.linspace(0,90,7)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case3=[np.linspace(0,120,7)[:-1]+30.-20./3.-3.3,np.linspace(0,90,7)[:-1]+30.-100./4.-3.3]
+parameters__phases_uppers_case3=[np.linspace(0,120,7)[:-1][0:1]+30.-330./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-215./4.-3.3]
+parameters__phases_middles_case3=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
+parameters__phases_lowers_case3=[np.linspace(0,120,7)[:-1][0:1]+30.-20./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case5=[np.linspace(0,120,7)[:-1]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1]+30.-250./4.-3.3]
-parameters__phases_middles_case5=[np.linspace(0,120,7)[:-1]+26.7+0./3.,np.linspace(0,90,7)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case5=[np.linspace(0,120,7)[:-1]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1]+30.-95./4.-3.3]
+parameters__phases_uppers_case5=[np.linspace(0,120,7)[:-1][0:1]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-250./4.-3.3]
+parameters__phases_middles_case5=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
+parameters__phases_lowers_case5=[np.linspace(0,120,7)[:-1][0:1]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-95./4.-3.3]
 
-parameters__phases_uppers_case7=[np.linspace(0,120,7)[:-1]+30.-290./3.-3.3,np.linspace(0,90,7)[:-1]+30.-0./4.-3.3]
-parameters__phases_middles_case7=[np.linspace(0,120,7)[:-1]+26.7-0./3.,np.linspace(0,90,7)[:-1]+26.7-0./4.]
-parameters__phases_lowers_case7=[np.linspace(0,120,7)[:-1]+30.-55./3.-3.3,np.linspace(0,90,7)[:-1]+30.+10./4.-3.3]
+parameters__phases_uppers_case7=[np.linspace(0,120,7)[:-1][0:1]+30.-290./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-0./4.-3.3]
+parameters__phases_middles_case7=[np.linspace(0,120,7)[:-1][0:1]+26.7-0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7-0./4.]
+parameters__phases_lowers_case7=[np.linspace(0,120,7)[:-1][0:1]+30.-55./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.+10./4.-3.3]
 
 parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
 parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
@@ -154,9 +154,9 @@ parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters_
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
 parameters__rotations_lower=np.array([0.])
-parameters__currents_upper=np.array([90.])*1000.
-parameters__currents_middle=np.array([90.])*1000.
-parameters__currents_lower=np.array([90.])*1000.
+parameters__currents_upper=np.linspace(10.,90.,9)*1000.
+parameters__currents_middle=np.linspace(10.,90.,9)*1000.
+parameters__currents_lower=np.linspace(10.,90.,9)*1000.
 
 config_beam_1='diagnostic'
 config_beam_2=None

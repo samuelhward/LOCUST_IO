@@ -108,7 +108,6 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 
 parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5'] #these all zipped at same level in main loop because source data is not consistent enough
 parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'"]
-configs_beam_species=['deuterium','deuterium','deuterium']
 plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium']] #"\"['']\""
 
 

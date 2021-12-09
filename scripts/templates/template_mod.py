@@ -42,14 +42,14 @@ except:
 #define parameters which are fixed throughout a parameter scan - if we want to vary then add as a layer in the for loops
 
 commit_hash_dispatch={} #select LOCUST commit hash based on system
-commit_hash_dispatch['GPU6']='053aefeeccab47bedb11de691a979e769c29630f'
-commit_hash_dispatch['GPU7']='053aefeeccab47bedb11de691a979e769c29630f'
-commit_hash_dispatch['GPU8']='b304bee99a485a9b44d8350cfa141ed9c1b7d19a'
-commit_hash_dispatch['GPU9']='b304bee99a485a9b44d8350cfa141ed9c1b7d19a'
-commit_hash_dispatch['GPU10']='b304bee99a485a9b44d8350cfa141ed9c1b7d19a'
-commit_hash_dispatch['CUMULUS']='d9b084fb119ffa6c06a1a0f473f683a378646b3f'
-commit_hash_dispatch['TITAN']='0c2bbb9eab574bb3b6a5d48a8a4cd8ddc6448ee4'
-commit_hash_dispatch['VIKING']='908df2997978f99a9f871acb0f4031e56f505727'
+commit_hash_dispatch['GPU6']='5866207de6853a4d5172b12c3eaa0d2d4fea6aaa'
+commit_hash_dispatch['GPU7']='5866207de6853a4d5172b12c3eaa0d2d4fea6aaa'
+commit_hash_dispatch['GPU8']='8412c1d2ba23551d7abcce7fa1018222890452dc'
+commit_hash_dispatch['GPU9']='8412c1d2ba23551d7abcce7fa1018222890452dc'
+commit_hash_dispatch['GPU10']='8412c1d2ba23551d7abcce7fa1018222890452dc'
+commit_hash_dispatch['CUMULUS']='e1593aa71769bfc2bc158583e813bbaedcce6492'
+commit_hash_dispatch['TITAN']='5f8c8b708883765901736b4735c00a8353fd813b'
+commit_hash_dispatch['VIKING']='9e8b251d3024f94a8a5f237bcf026ea46dae5c35'
 
 #fixed parameters needed by LOCUST_run
 LOCUST_run__environment_name='TITAN'
@@ -369,11 +369,11 @@ config_beam_dispatch['off']['on']['deuterium']['imasdb']='ITER_MD'
 config_beam_dispatch['off']['on']['deuterium']['user']='public'
 config_beam_dispatch['diagnostic']={}
 config_beam_dispatch['diagnostic'][None]={}
-config_beam_dispatch['diagnostic'][None]['deuterium']={}
-config_beam_dispatch['diagnostic'][None]['deuterium']['shot']=IDS__shot
-config_beam_dispatch['diagnostic'][None]['deuterium']['run']=IDS__run+1 #just fill the adjacent run when generating our own NBI
-config_beam_dispatch['diagnostic'][None]['deuterium']['imasdb']=IDS__imasdb
-config_beam_dispatch['diagnostic'][None]['deuterium']['user']=IDS__username
+config_beam_dispatch['diagnostic'][None]['hydrogen']={}
+config_beam_dispatch['diagnostic'][None]['hydrogen']['shot']=IDS__shot
+config_beam_dispatch['diagnostic'][None]['hydrogen']['run']=IDS__run+1 #just fill the adjacent run when generating our own NBI
+config_beam_dispatch['diagnostic'][None]['hydrogen']['imasdb']=IDS__imasdb
+config_beam_dispatch['diagnostic'][None]['hydrogen']['user']=IDS__username
 config_beam_dispatch['test']={}
 config_beam_dispatch['test']['test']={}
 config_beam_dispatch['test']['test']['deuterium']={}

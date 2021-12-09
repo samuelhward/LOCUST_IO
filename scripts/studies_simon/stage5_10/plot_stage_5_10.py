@@ -1,10 +1,10 @@
-#plot_stage_5_1.py
+#plot_stage_5_10.py
  
 """
 Samuel Ward
 29/06/21
 ----
-script for plotting stage 5 of Simon's studies 
+script for plotting stage 5.10 of Simon's studies 
 ---
  
 notes:         
@@ -65,16 +65,18 @@ except:
 
 import stage_5_10_launch as batch_data
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
+def calc_PFC_power(filename,classtype='fpl'):
+    fpl=templates.plot_mod.read_locust_io_obj(filename=filename,classtype=classtype)
+    if fpl:
+        i=np.where(fpl['status_flag']=='PFC_intercept_3D')[0]
+        PFC_power=1.e6*fpl['f']*np.sum((fpl['V_R'][i]**2+fpl['V_phi'][i]**2+fpl['V_Z'][i]**2)*fpl['FG'][i])*0.5 #leave out species mass for now, since applied later
+    else:
+        PFC_power=-1
+    return PFC_power 
 
 Pinj=33.e6
-PFC_power=[]
-for output in outputs:
-    if output:
-        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power.append([1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5])
-    else:
-        PFC_power.append([-10.])
+PFC_power=templates.plot_mod.apply_func_parallel(calc_PFC_power,'fpl',batch_data,processes=8,chunksize=1)
+PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
 '''
 outputs=templates.plot_mod.get_output_files(batch_data,'rund')
@@ -88,8 +90,6 @@ for output in outputs:
         PFC_power.append([-10.])
 
 '''
-
-PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
 for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
     if beam_species=='hydrogen':

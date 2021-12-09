@@ -10,7 +10,7 @@ note that the phase shift here is in the opposite direction to the ITER coordina
 
 
 
-def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='MARS',colourbar=False,plot_points=True):
+def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='MARS',colourbar=False,plot_points=True,return_grid=False):
     """[summary]
 
     Args:
@@ -22,6 +22,7 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
         coord_system ([type], optional): [if 'ITER' then plot in ITER coordinate system]. Defaults to 'MARS'.
         colourbar ([type], optional): [Toggle whether to add colourbar if fig/ax supplied]. Defaults to False.
         plot_points - toggle whether to plot points along XPD contour
+        return_grid - toggle whether to simply return the X,Y,Z plot data for use externally
     Returns:
         [type]: [description]
     """
@@ -31,21 +32,23 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
     import copy,support
     import matplotlib.pyplot as plt
 
-    if ax is None:
-        ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
-    else:
-        ax_flag=True
+    if not return_grid:
 
-    if fig is None:
-        fig_flag=False
-    else:
-        fig_flag=True
+        if ax is None:
+            ax_flag=False #need to make extra ax_flag since ax state is overwritten before checking later
+        else:
+            ax_flag=True
 
-    if fig_flag is False:
-        fig = plt.figure() #if user has not externally supplied figure, generate
+        if fig is None:
+            fig_flag=False
+        else:
+            fig_flag=True
 
-    if ax_flag is False: #if user has not externally supplied axes, generate them
-        ax = fig.add_subplot(111)
+        if fig_flag is False:
+            fig = plt.figure() #if user has not externally supplied figure, generate
+
+        if ax_flag is False: #if user has not externally supplied axes, generate them
+            ax = fig.add_subplot(111)
 
     KAPPROACH = 2
     PU10 = 0
@@ -251,6 +254,10 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
         SXLAB = '$\Phi$ [deg]'
 
     levels=np.linspace(np.min(VnXpt*1e+3),np.max(VnXpt*1e+3),7)
+
+    if return_grid:
+        return Icc2.T,Icc1.T,VnXpt.T*1e+3
+        
     mesh=ax.contourf(Icc2.T,Icc1.T,VnXpt.T*1e+3,levels=levels,cmap='Greys')
     if fig_flag is False or colourbar is True:    
         cbar=fig.colorbar(mesh,ax=ax,orientation='vertical')
@@ -332,5 +339,5 @@ def plot_X_point_displacement(case=5,n=3,LVV=90,fig=None,ax=None,coord_system='M
 
     return levels_coords
 
-    # so now levels_coords[n,0,p] contains the x coordinate for point p along contour n
-    # so now levels_coords[n,1,p] contains the y coordinate for point p along contour n
+    # so now levels_coords[p,0,n] contains the x coordinate for point p along contour n
+    # so now levels_coords[p,1,n] contains the y coordinate for point p along contour n

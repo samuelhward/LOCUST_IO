@@ -116,10 +116,9 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7']
-parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
-configs_beam_species=['deuterium','deuterium','deuterium','deuterium']
-plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7','ITER_15MAQ10_case5']
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'","'Flat n'",]
+plasmas_species=[['deuterium'],['deuterium'],['deuterium'],['deuterium','tritium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -147,9 +146,9 @@ parameters__phases_uppers_case7=[0]
 parameters__phases_middles_case7=[0]
 parameters__phases_lowers_case7=[0]
 
-parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
-parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
-parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case5,parameters__phases_lowers_case7]
+parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case7,parameters__phases_uppers_case5]
+parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case7,parameters__phases_middles_case5]
+parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case7,parameters__phases_lowers_case5]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
@@ -158,13 +157,13 @@ parameters__currents_upper=np.array([0.])
 parameters__currents_middle=np.array([0.])
 parameters__currents_lower=np.array([0.])
 
-configs_beam_1=['diagnostic','on','off','off']
+configs_beam_1=['diagnostic','off','off','on']
 configs_beam_2=[None,'on','off','on']
 
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflows_commands=["\"['mkdir','save_args','kin_get','IDS_create_DNB','IDS_create','run_BBNBI','depo_get']\""]+["\"['mkdir','save_args','kin_get','IDS_create','run_BBNBI','depo_get']\""]*3
+RMP_study__workflows_commands=["\"['mkdir','save_args','kin_get','input_get','IDS_create_DNB','IDS_create','run_BBNBI','depo_get']\""]+["\"['mkdir','save_args','kin_get','input_get','IDS_create','run_BBNBI','depo_get']\""]*3
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -175,9 +174,9 @@ parameter_strings=[]
 
 #first level are the data which remain constant for a parameter scan
 for config_beam_1,config_beam_2,RMP_study__workflow_commands in zip(configs_beam_1,configs_beam_2,RMP_study__workflows_commands):
-    for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_species,plasma_species,
+    for (parameters__database,parameters__sheet_name_kinetic_prof,plasma_species,
             parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in zip(
-            parameters__databases,parameters__sheet_names_kinetic_prof,configs_beam_species,plasmas_species,
+            parameters__databases,parameters__sheet_names_kinetic_prof,plasmas_species,
             parameters__phases_uppers_cases_all,parameters__phases_middles_cases_all,parameters__phases_lowers_cases_all): 
         for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(parameters__kinetic_profs_tF_tE,parameters__kinetic_profs_Pr):
             for parameters__toroidal_mode_number,parameters__phase_upper,parameters__phase_middle,parameters__phase_lower in zip(parameters__toroidal_mode_numbers,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower):
@@ -185,6 +184,8 @@ for config_beam_1,config_beam_2,RMP_study__workflow_commands in zip(configs_beam
                     for parameters__current_upper,parameters__current_middle,parameters__current_lower in zip(parameters__currents_upper,parameters__currents_middle,parameters__currents_lower):
 
                         run_number+=1 #increment run counter              
+
+                        config_beam_species='hydrogen' if config_beam_1 == 'diagnostic' else 'deuterium'
 
                         #create a string of variables identifying this run
                         parameters__kinetic_prof_tF_tE_string=parameters__kinetic_profs_tF_tE__dispatch[parameters__kinetic_prof_tF_tE] #generate some variable string equivalents for later
@@ -253,7 +254,7 @@ for config_beam_1,config_beam_2,RMP_study__workflow_commands in zip(configs_beam
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1
 
-                        #if using diagnostic beam then lower the beam average power
+                        #if using diagnostic beam then lower the beam average power 
                         if config_beam_1 is 'diagnostic': 
                             LOCUST_run__settings_prec_mod['Pdep']=f'{0.13*1.e6}_gpu'
 

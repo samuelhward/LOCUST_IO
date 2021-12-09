@@ -69,7 +69,8 @@ except:
 
 import scan_current_n3_n6_launch as batch_data
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
+outputs=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'fpl',batch_data,processes=16,chunksize=1))
+
 fig1,ax1=plt.subplots(1)
 fig2,ax2=plt.subplots(1)
 fig3,ax3=plt.subplots(1)
@@ -77,9 +78,10 @@ Pinj=33.e6
 PFC_power=[]
 for run_number,(output,current,col_val) in enumerate(zip(outputs,batch_data.parameters__currents_upper,np.linspace(0,1,len(batch_data.args_batch['LOCUST_run__dir_output'])))):
     if output: 
-        output.plot(fig=fig1,ax=ax1,axes=['time'],fill=False,label=str(current/1000.),colmap=settings.cmap_default,colmap_val=col_val,number_bins=200,weight=False)
+        #output['weight']*=0.5*constants.mass_deuteron*(output['V_R']**2+output['V_phi']**2+output['V_Z']**2)*1.e6*output['f']
+        output.plot(fig=fig1,ax=ax1,axes=['time'],fill=False,label=int(current/1000.),colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100,weight=True)
         output['E']/=1000. #convert to keV
-        output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=str(current/1000.),colmap=settings.cmap_default,colmap_val=col_val,number_bins=200,weight=False)
+        output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=int(current/1000.),colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100,weight=True)
 
     #calculate losses from particle list
 
@@ -87,12 +89,12 @@ for run_number,(output,current,col_val) in enumerate(zip(outputs,batch_data.para
         i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
         power_loss=1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron
         if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax3.axhline(power_loss/1.e6,color='red',label='2D case')
-        PFC_power.append([power_loss/1.e6])
+            ax3.axhline(100.*power_loss/Pinj,color='red',label='2D field')
+        PFC_power.append([100.*power_loss/Pinj])
     else:
         PFC_power.append([-10.])
 
-ax3.plot(batch_data.parameters__currents_upper,PFC_power,color='b',marker='x',linestyle='-',label='3D cases')
+ax3.plot(batch_data.parameters__currents_upper/1000.,PFC_power,color='b',marker='x',linestyle='-',label='3D field')
 
 ax1.legend()
 ax2.legend()
@@ -102,7 +104,7 @@ ax2.set_xlabel('Energy [keV]')
 ax3.set_xlabel("Coil current [kAt]")
 ax1.set_ylabel('losses')
 ax2.set_ylabel('losses')
-ax3.set_ylabel("Normalised PFC power flux")
+ax3.set_ylabel("NBI power loss [%]")
 ax1.set_title('')
 ax2.set_title('')
 ax3.set_title('')
@@ -112,7 +114,7 @@ outputs=templates.plot_mod.get_output_files(batch_data,'dfn')
 
 fig,ax=plt.subplots(1)
 for output,current,col_val in zip(outputs,batch_data.parameters__currents_upper,np.linspace(0,1,len(batch_data.args_batch['LOCUST_run__dir_output']))):
-    if output: output.plot(fig=fig,ax=ax,axes=['R'],label=current,colmap=settings.cmap_default,colmap_val=col_val,number_bins=200)
+    if output: output.plot(fig=fig,ax=ax,axes=['R'],label=current,colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100)
 ax.legend()
 plt.show()
 
