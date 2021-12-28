@@ -1,11 +1,10 @@
-#scan_DNB_current_launch.py
+#scan_current_launch.py
  
 """
 Samuel Ward
 14/12/20
 ----
 script for controlling and launching LOCUST parameter scans for static RMP studies
-iteration on scan_DNB, but scanning across absolute toroidal phase and lowering simulation time 
 ---
  
 notes:         
@@ -105,7 +104,7 @@ except:
 #################################
 #define study name 
 
-RMP_study__name='scan_DNB_current'
+RMP_study__name='scan_current'
 
 #################################
 #define options and dispatch tables for helping choosing settings
@@ -117,9 +116,9 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7']
-parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
-plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7','ITER_15MAQ10_case5']
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'","'Flat n'"]
+plasmas_species=[['deuterium','tritium'],['deuterium'],['deuterium'],['deuterium','tritium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -130,26 +129,59 @@ parameters__kinetic_profs_tF_tE=[2.]
 
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 
-# just pick single phase here
-parameters__phases_uppers_case2=[np.linspace(0,120,7)[:-1][0:1]+30.-190./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-230./4.-3.3]
-parameters__phases_middles_case2=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
-parameters__phases_lowers_case2=[np.linspace(0,120,7)[:-1][0:1]+30.-145./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-75./4.-3.3]
+# just pick single phase with lowest global fast-ion losses
+parameters__phases_uppers_case2=[
+    np.linspace(0,120,6)[:-1][0:1]+30.-3.3-190./3.,
+    np.linspace(0,90,6)[:-1][0:1]+30.-3.3-230./4.
+    ]
+parameters__phases_middles_case2=[
+    np.full(1,np.linspace(0,120,6)[:-1][0:1])+26.7,
+    np.full(1,np.linspace(0,90,6)[:-1][0:1])+26.7
+    ]
+parameters__phases_lowers_case2=[
+    np.linspace(0,120,6)[:-1][0:1]+30.-3.3-145./3.,
+    np.linspace(0,90,6)[:-1][0:1]+30.-3.3-75./4.
+    ]
+parameters__phases_uppers_case3=[
+    np.linspace(0,120,6)[:-1][1:2]+30.-3.3-330./3.,
+    np.linspace(0,90,6)[:-1][4:5]+30.-3.3-215./4.
+    ]
+parameters__phases_middles_case3=[
+    np.full(1,np.linspace(0,120,6)[:-1][1:2])+26.7,
+    np.full(1,np.linspace(0,90,6)[:-1][4:5])+26.7
+    ]
+parameters__phases_lowers_case3=[
+    np.linspace(0,120,6)[:-1][1:2]+30.-3.3-20./3.,
+    np.linspace(0,90,6)[:-1][4:5]+30.-3.3-100./4.
+    ]
+parameters__phases_uppers_case7=[
+    np.linspace(0,120,6)[:-1][3:4]+30.-3.3-295./3.,
+    np.linspace(0,90,6)[:-1][0:1]+30.-3.3-0./4.
+    ]
+parameters__phases_middles_case7=[
+    np.full(1,np.linspace(0,120,6)[:-1][3:4])+26.7,
+    np.full(1,np.linspace(0,90,6)[:-1][0:1])+26.7
+    ]
+parameters__phases_lowers_case7=[
+    np.linspace(0,120,6)[:-1][3:4]+30.-3.3-55./3.,
+    np.linspace(0,90,6)[:-1][0:1]+30.-3.3+10./4.
+    ]
+parameters__phases_uppers_case5=[
+    np.linspace(0,120,7)[:-1][0:1]+30-3.3-200/3.,
+    np.linspace(0,90,7)[:-1][1:2]+30-3.3-250/4.,
+    ]
+parameters__phases_middles_case5=[
+    np.full(1,np.linspace(0,120,7)[:-1][0:1])+26.7,
+    np.full(1,np.linspace(0,90,7)[:-1][1:2])+26.7,
+    ]
+parameters__phases_lowers_case5 = [
+    np.linspace(0,120,7)[:-1][0:1]+30-3.3-140./3,
+    np.linspace(0,90,7)[:-1][1:2]+30-3.3-95./4.,
+    ]
 
-parameters__phases_uppers_case3=[np.linspace(0,120,7)[:-1][0:1]+30.-330./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-215./4.-3.3]
-parameters__phases_middles_case3=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
-parameters__phases_lowers_case3=[np.linspace(0,120,7)[:-1][0:1]+30.-20./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-100./4.-3.3]
-
-parameters__phases_uppers_case5=[np.linspace(0,120,7)[:-1][0:1]+30.-200./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-250./4.-3.3]
-parameters__phases_middles_case5=[np.linspace(0,120,7)[:-1][0:1]+26.7+0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7+0./4.]
-parameters__phases_lowers_case5=[np.linspace(0,120,7)[:-1][0:1]+30.-140./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-95./4.-3.3]
-
-parameters__phases_uppers_case7=[np.linspace(0,120,7)[:-1][0:1]+30.-290./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.-0./4.-3.3]
-parameters__phases_middles_case7=[np.linspace(0,120,7)[:-1][0:1]+26.7-0./3.,np.linspace(0,90,7)[:-1][0:1]+26.7-0./4.]
-parameters__phases_lowers_case7=[np.linspace(0,120,7)[:-1][0:1]+30.-55./3.-3.3,np.linspace(0,90,7)[:-1][0:1]+30.+10./4.-3.3]
-
-parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
-parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
-parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case5,parameters__phases_lowers_case7]
+parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case7,parameters__phases_uppers_case5]
+parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case7,parameters__phases_middles_case5]
+parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case7,parameters__phases_lowers_case5]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
@@ -158,16 +190,16 @@ parameters__currents_upper=np.linspace(10.,90.,9)*1000.
 parameters__currents_middle=np.linspace(10.,90.,9)*1000.
 parameters__currents_lower=np.linspace(10.,90.,9)*1000.
 
-config_beam_1='diagnostic'
-config_beam_2=None
+config_beam_1='off'
+config_beam_2='on'
 config_beam_species='hydrogen' if config_beam_1 == 'diagnostic' else 'deuterium'
 
 
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create_DNB','IDS_create','run_BBNBI','depo_get','run_LOCUST']\""
-RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','depo_get_premade','run_LOCUST']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','IDS_create','run_BBNBI','depo_get','run_LOCUST','clean_input']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','depo_get_premade','run_LOCUST','clean_input']\""
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -233,7 +265,7 @@ for (parameters__database,parameters__sheet_name_kinetic_prof,plasma_species,
                         #run-specific settings
 
                         LOCUST_run__flags=copy.deepcopy(LOCUST_run__flags_default)
-                        LOCUST_run__flags['TIMAX']='0.02D0'
+                        LOCUST_run__flags['TIMAX']='0.05D0'
                         LOCUST_run__flags['PSIMGRLX']=True #equilibria are relatively poor so relax magnetic axis location
 
                         if parameters__current_upper==0.:
@@ -251,7 +283,7 @@ for (parameters__database,parameters__sheet_name_kinetic_prof,plasma_species,
                         LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                         LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                         LOCUST_run__settings_prec_mod['threadsPerBlock']=64
-                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=128
                         LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1

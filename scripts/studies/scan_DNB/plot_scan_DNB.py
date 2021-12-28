@@ -81,16 +81,34 @@ cmap_r=settings.colour_custom([194,24,91,1])
 cmap_g=settings.colour_custom([76,175,80,1])
 cmap_b=settings.colour_custom([33,150,243,1])
 
-Pinj=.13e6
-
 import scan_DNB_launch as batch_data
 
+Pinj=.13e6 #RMS is 0.13MW, since fires for 0.1s every 1.4s
 PFC_power=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=32,chunksize=1)).reshape(
     len(batch_data.parameters__databases),
     len(batch_data.parameters__toroidal_mode_numbers),
     len(batch_data.parameters__phases_uppers_case7[0]),
-    len(batch_data.parameters__currents_upper),
+    len(batch_data.parameters__currents_uppers[0]),
     )
+fig,ax=plt.subplots(1,constrained_layout=True)
+colours=plt.rcParams['axes.prop_cycle'].by_key()['color']
+for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
+    for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
+        label=f'{scenario.split("_")[-1]}'
+        label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
+        ax.plot(batch_data.parameters__phases_middles_cases_all[scenario_counter][mode_number_counter],100.*PFC_power[scenario_counter,mode_number_counter,:,-1]/Pinj,
+        label=label,
+        color=colours[int(2*scenario_counter)+2+mode_number_counter],
+        )
+
+ax.set_xlabel('$\Delta\Phi$ [deg]') #\Phi for absolute
+ax.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{m}}$) [deg]') #\Phi for absolute
+ax.set_ylabel("NBI power loss [%]")
+fig.subplots_adjust(right=0.85)
+ax.legend(loc='center',bbox_to_anchor=(0.5,1.1),ncol=4)
+plt.show()
+
+
 
 fig,axs=plt.subplots(2,constrained_layout=False)
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
@@ -101,6 +119,7 @@ for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
             label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
             axs[current_counter].plot(batch_data.parameters__phases_middles_cases_all[scenario_counter][mode_number_counter],100.*PFC_power[scenario_counter,mode_number_counter,:,current_counter+1]/Pinj,
             label=label,
+            color=colours[int(2*scenario_counter)+2+mode_number_counter],
             )
 fig.subplots_adjust(right=0.85)
 axs[0].set_xlabel('$\Delta\Phi$ [deg]') #\Phi for absolute
@@ -140,54 +159,56 @@ for database_counter, (parameters__database,parameters__sheet_name_kinetic_prof,
     batch_data.parameters__phases_uppers_cases_all,
     batch_data.parameters__phases_middles_cases_all,
     batch_data.parameters__phases_lowers_cases_all)):
-    DFN_2D=output_dfns[database_counter,0,0,0].transform(axes=plot_axes)
-    for mode_number_counter,(parameters__toroidal_mode_number,parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,batch_data.parameters__phases_upper,batch_data.parameters__phases_middle,batch_data.parameters__phases_lower)):
-        ax_counter+=1    
-        axs.append(fig.add_subplot(*dimensions,ax_counter))
-        #remove labels
-        axs[-1].tick_params(
-            axis='both',          
-            which='both',      
-            labelbottom=False,
-            labelleft=False,
+    try:
+        DFN_2D=output_dfns[database_counter,0,0,0].transform(axes=plot_axes)
+        for mode_number_counter,(parameters__toroidal_mode_number,parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,batch_data.parameters__phases_upper,batch_data.parameters__phases_middle,batch_data.parameters__phases_lower)):
+            ax_counter+=1    
+            axs.append(fig.add_subplot(*dimensions,ax_counter))
+            #remove labels
+            axs[-1].tick_params(
+                axis='both',          
+                which='both',      
+                labelbottom=False,
+                labelleft=False,
+                )
+            
+            print(f'total difference for case={parameters__database}, n={parameters__toroidal_mode_number}: {output_dfns[database_counter,mode_number_counter,0,-1].transform(axes=["N"])["dfn"]-output_dfns[database_counter,0,0,0].transform(axes=["N"])["dfn"]}')
+            DFN_diff=output_dfns[database_counter,mode_number_counter,0,-1].transform(axes=plot_axes)
+            DFN_diff['dfn']=np.nan_to_num((DFN_diff['dfn']-DFN_2D['dfn'])/DFN_2D['dfn'],nan=0.)
+            DFN_diff['dfn'][np.abs(DFN_diff['dfn'])>1e10]=0
+            """
+            output_dfns[database_counter,mode_number_counter,0,-1].plot(
+                axes=plot_axes,
+                ax=axs[-1],
+                fig=fig,
+                colmap=settings.cmap_r,
             )
-        
-        print(f'total difference for case={parameters__database}, n={parameters__toroidal_mode_number}: {output_dfns[database_counter,mode_number_counter,0,-1].transform(axes=["N"])["dfn"]-output_dfns[database_counter,0,0,0].transform(axes=["N"])["dfn"]}')
-        DFN_diff=output_dfns[database_counter,mode_number_counter,0,-1].transform(axes=plot_axes)
-        DFN_diff['dfn']=np.nan_to_num((DFN_diff['dfn']-DFN_2D['dfn'])/DFN_2D['dfn'],nan=0.)
-        DFN_diff['dfn'][np.abs(DFN_diff['dfn'])>1e10]=0
-        """
-        output_dfns[database_counter,mode_number_counter,0,-1].plot(
-            axes=plot_axes,
-            ax=axs[-1],
-            fig=fig,
-            colmap=settings.cmap_r,
-        )
-        output_dfns[database_counter,0,0,0].plot(
-            axes=plot_axes,
-            ax=axs[-1],
-            fig=fig,
-            colmap=settings.cmap_g,
-        )
-        """ 
-        DFN_diff['E']/=1.e3 #convert to keV
-        mesh=DFN_diff.plot(
-            axes=plot_axes,
-            transform=False,
-            ax=axs[-1],
-            fig=fig,
-            colmap=settings.cmap_k,
-            #vminmax=[-5,5],
-            #real_scale=True
-        )
-        #plt.colorbar(mesh,ax=axs[-1])
-        axs[-1].set_title('')
-        axs[-1].set_xlabel('')
-        axs[-1].set_ylabel('')
-        axs[-1].set_xlim([-1,1])
-        axs[-1].set_xlim([0,1e2]) #beam energy is 100keV
-        axs[-1].set_ylim([-1.,0.])
-
+            output_dfns[database_counter,0,0,0].plot(
+                axes=plot_axes,
+                ax=axs[-1],
+                fig=fig,
+                colmap=settings.cmap_g,
+            )
+            """ 
+            DFN_diff['E']/=1.e3 #convert to keV
+            mesh=DFN_diff.plot(
+                axes=plot_axes,
+                transform=False,
+                ax=axs[-1],
+                fig=fig,
+                colmap=settings.cmap_k,
+                #vminmax=[-5,5],
+                #real_scale=True
+            )
+            #plt.colorbar(mesh,ax=axs[-1])
+            axs[-1].set_title('')
+            axs[-1].set_xlabel('')
+            axs[-1].set_ylabel('')
+            axs[-1].set_xlim([-1,1])
+            axs[-1].set_xlim([0,1e2]) #beam energy is 100keV
+            axs[-1].set_ylim([-1.,0.])
+    except:
+        pass 
 axs=np.array(axs).reshape(dimensions)
 #re-add labels for edge plots
 for axis in axs[-1,:]:

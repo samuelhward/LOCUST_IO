@@ -66,15 +66,20 @@ except:
 
 import stage_4_10_launch as batch_data
 
-Pinj=33.e6
-PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'fpl',batch_data,processes=16,chunksize=1)
-PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))/scipy.constants.physical_constants['deuteron mass'][0] #account for possible difference in mass of injected isotope
+method='rund'
 
-for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
-    if beam_species=='hydrogen':
-        PFC_power[scenario_counter]*=scipy.constants.physical_constants['proton mass'][0]
-    elif beam_species=='deuterium':
-        PFC_power[scenario_counter]*=scipy.constants.physical_constants['deuteron mass'][0]
+Pinj=33.e6
+PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data,processes=16,chunksize=1)
+PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
+
+#account for possible difference in mass of injected isotope
+if method=='fpl':
+    PFC_power/=constants.mass_deuteron #different masses in some cases, so divide by mass here for re-multiplication later
+    for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
+        if beam_species=='hydrogen':
+            PFC_power[scenario_counter]*=scipy.constants.physical_constants['proton mass'][0]
+        elif beam_species=='deuterium':
+            PFC_power[scenario_counter]*=scipy.constants.physical_constants['deuteron mass'][0]
 
 fig,ax=plt.subplots(1,constrained_layout=True)
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
@@ -104,7 +109,7 @@ for key,value in batch_data_1_10.args_batch.items():
         for ind in inds_to_del:
             del(batch_data_1_10.args_batch[key][ind])
         
-PFC_power_1_10=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'fpl',batch_data_1_10,processes=4,chunksize=1)
+PFC_power_1_10=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data_1_10,processes=4,chunksize=1)
 
 PFC_power_1_10=np.array(PFC_power_1_10).reshape(
                     len(batch_data_1_10.parameters__kinetic_profs_Pr),
@@ -130,7 +135,7 @@ for scenario_counter,scenario in enumerate(batch_data_1_10.parameters__databases
 
 ax.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{M}}$) [deg]') #\Phi for absolute
 ax.set_ylabel('NBI power loss [%]')
-ax.set_ylim([0,8])
+ax.set_ylim([0,8.1])
 #fig.subplots_adjust(right=0.8)
 ax.legend()#loc='center',bbox_to_anchor=(1.15,0.5),ncol=1)
 

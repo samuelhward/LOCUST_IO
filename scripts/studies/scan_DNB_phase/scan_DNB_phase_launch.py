@@ -117,9 +117,9 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7']
-parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
-plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7','ITER_15MAQ10_case5']
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'","'Flat n'"]
+plasmas_species=[['deuterium'],['deuterium'],['deuterium'],['deuterium','tritium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -147,9 +147,9 @@ parameters__phases_uppers_case7=[np.linspace(0,120,7)[:-1]+30.-290./3.-3.3,np.li
 parameters__phases_middles_case7=[np.linspace(0,120,7)[:-1]+26.7-0./3.,np.linspace(0,90,7)[:-1]+26.7-0./4.]
 parameters__phases_lowers_case7=[np.linspace(0,120,7)[:-1]+30.-55./3.-3.3,np.linspace(0,90,7)[:-1]+30.+10./4.-3.3]
 
-parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case5,parameters__phases_uppers_case7]
-parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case5,parameters__phases_middles_case7]
-parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case5,parameters__phases_lowers_case7]
+parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case7,parameters__phases_uppers_case5]
+parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case7,parameters__phases_middles_case5]
+parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case7,parameters__phases_lowers_case5]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])

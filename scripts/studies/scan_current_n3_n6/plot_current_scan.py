@@ -75,31 +75,33 @@ fig1,ax1=plt.subplots(1)
 fig2,ax2=plt.subplots(1)
 fig3,ax3=plt.subplots(1)
 Pinj=33.e6
-PFC_power=[]
 for run_number,(output,current,col_val) in enumerate(zip(outputs,batch_data.parameters__currents_upper,np.linspace(0,1,len(batch_data.args_batch['LOCUST_run__dir_output'])))):
     if output: 
         #output['weight']*=0.5*constants.mass_deuteron*(output['V_R']**2+output['V_phi']**2+output['V_Z']**2)*1.e6*output['f']
-        output.plot(fig=fig1,ax=ax1,axes=['time'],fill=False,label=int(current/1000.),colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100,weight=True)
+        output.plot(fig=fig1,ax=ax1,axes=['Z'],fill=False,label=int(current/1000.),colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100,weight=True)
         output['E']/=1000. #convert to keV
         output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=int(current/1000.),colmap=settings.cmap_inferno,colmap_val=col_val,number_bins=100,weight=True)
 
     #calculate losses from particle list
 
-    if output:
-        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
-        power_loss=1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron
-        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
-            ax3.axhline(100.*power_loss/Pinj,color='red',label='2D field')
-        PFC_power.append([100.*power_loss/Pinj])
-    else:
-        PFC_power.append([-10.])
-
-ax3.plot(batch_data.parameters__currents_upper/1000.,PFC_power,color='b',marker='x',linestyle='-',label='3D field')
+#    if output:
+#        i=np.where(output['status_flag']=='PFC_intercept_3D')[0]
+#        power_loss=1.e6*output['f']*np.sum((output['V_R'][i]**2+output['V_phi'][i]**2+output['V_Z'][i]**2)*output['FG'][i])*0.5*constants.mass_deuteron
+#        if 'B3D_EX' not in batch_data.args_batch['LOCUST_run__flags'][run_number]: #this is the 2D case
+#            ax3.axhline(100.*power_loss/Pinj,color='red',label='2D field')
+#        PFC_power.append([100.*power_loss/Pinj])
+#    else:
+#        PFC_power.append([-10.])
+#
+PFC_power=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=32,chunksize=1))
+ax3.axhline(100.*PFC_power[0]/Pinj,color='red',label='2D field')
+ax3.plot(batch_data.parameters__currents_upper/1000.,100.*PFC_power/Pinj,color='b',marker='x',linestyle='-',label='3D field')
 
 ax1.legend()
 ax2.legend()
 ax3.legend()
 ax1.set_xlabel('Time [s]')
+ax1.set_xlabel('Z [m]')
 ax2.set_xlabel('Energy [keV]')
 ax3.set_xlabel("Coil current [kAt]")
 ax1.set_ylabel('losses')

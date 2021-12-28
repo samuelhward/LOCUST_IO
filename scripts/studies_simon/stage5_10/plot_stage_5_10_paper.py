@@ -66,24 +66,19 @@ except:
 
 import stage_5_10_launch as batch_data
 
-def calc_PFC_power(filename,classtype='fpl'):
-    fpl=templates.plot_mod.read_locust_io_obj(filename=filename,classtype=classtype)
-    if fpl:
-        i=np.where(fpl['status_flag']=='PFC_intercept_3D')[0]
-        PFC_power=1.e6*fpl['f']*np.sum((fpl['V_R'][i]**2+fpl['V_phi'][i]**2+fpl['V_Z'][i]**2)*fpl['FG'][i])*0.5 #leave out species mass for now, since applied later
-    else:
-        PFC_power=-1
-    return PFC_power 
+method='rund'
 
 Pinj=33.e6
-PFC_power=templates.plot_mod.apply_func_parallel(calc_PFC_power,'fpl',batch_data,processes=10,chunksize=1)
+PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data,processes=32,chunksize=1)
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
-for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
-    if beam_species=='hydrogen':
-        PFC_power[scenario_counter]*=scipy.constants.physical_constants['proton mass'][0]
-    elif beam_species=='deuterium':
-        PFC_power[scenario_counter]*=scipy.constants.physical_constants['deuteron mass'][0]
+if method=='fpl':
+    PFC_power/=constants.mass_deuteron #different masses in some cases, so divide by mass here for re-multiplication later
+    for scenario_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
+        if beam_species=='hydrogen':
+            PFC_power[scenario_counter]*=scipy.constants.physical_constants['proton mass'][0]
+        elif beam_species=='deuterium':
+            PFC_power[scenario_counter]*=scipy.constants.physical_constants['deuteron mass'][0]
 
 fig,ax=plt.subplots(1)
 for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
@@ -97,8 +92,8 @@ for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.par
 del(batch_data)
 import studies_simon.stage3_10.stage_3_10_launch as batch_data
 
-PFC_power_3_10=templates.plot_mod.apply_func_parallel(calc_PFC_power,'fpl',batch_data,processes=12,chunksize=1)
-PFC_power_3_10=np.array(PFC_power_3_10).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))*scipy.constants.physical_constants['deuteron mass'][0]
+PFC_power_3_10=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data,processes=32,chunksize=1)
+PFC_power_3_10=np.array(PFC_power_3_10).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         label=f'{scenario.split("_")[-1]}'+f' ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
@@ -107,6 +102,7 @@ for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.par
 
 ax.set_xlabel('XPD contour point')
 ax.set_ylabel('NBI power loss [%]')
+ax.set_ylim([0,8.1])
 ax.legend(loc='center',bbox_to_anchor=(1.1,0.5),ncol=1)
 plt.show()
 

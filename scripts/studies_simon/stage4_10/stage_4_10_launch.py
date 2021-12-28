@@ -126,7 +126,7 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7'] #these all zipped at same level in main loop because source data is not consistent enough
 parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'"]
 configs_beam_species=['hydrogen','deuterium','deuterium','deuterium']
-plasmas_species=[['hydrogen'],['deuterium'],['deuterium'],['deuterium']] #"\"['']\""
+plasmas_species=[['hydrogen'],['deuterium','tritium'],['deuterium'],['deuterium']] #"\"['']\""
 
 ##################################################################
 #define the parameter space for a given scenario
@@ -151,7 +151,7 @@ parameters__phases_uppers_case3=[np.linspace(0,120,6)[:-1]+30.-330./3.-3.3,np.li
 parameters__phases_middles_case3=[np.linspace(0,120,6)[:-1]+26.7+0./3.,np.linspace(0,90,6)[:-1]+26.7+0./4.]
 parameters__phases_lowers_case3=[np.linspace(0,120,6)[:-1]+30.-20./3.-3.3,np.linspace(0,90,6)[:-1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case7=[np.linspace(0,120,6)[:-1]+30.-290./3.-3.3,np.linspace(0,90,6)[:-1]+30.-0./4.-3.3] #XXX -290 here should be -295, Yueqiang uses 290,50
+parameters__phases_uppers_case7=[np.linspace(0,120,6)[:-1]+30.-295./3.-3.3,np.linspace(0,90,6)[:-1]+30.-0./4.-3.3] #Yueqiang uses -290,-50 for n=3
 parameters__phases_middles_case7=[np.linspace(0,120,6)[:-1]+26.7-0./3.,np.linspace(0,90,6)[:-1]+26.7-0./4.]
 parameters__phases_lowers_case7=[np.linspace(0,120,6)[:-1]+30.-55./3.-3.3,np.linspace(0,90,6)[:-1]+30.+10./4.-3.3]
 
@@ -174,6 +174,7 @@ config_beam_2='on'
 ##################################################################
 #define the workflow commands in order we want to execute them
 
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','depo_get_premade','run_LOCUST','clean_input']\""
 RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create','run_BBNBI','depo_get','run_LOCUST','clean_input']\""
 
 ##################################################################
@@ -242,7 +243,7 @@ for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_specie
 
                         
                         LOCUST_run__flags=copy.deepcopy(LOCUST_run__flags_default)
-                        LOCUST_run__flags['TIMAX']='0.25D0'
+                        LOCUST_run__flags['TIMAX']='0.05D0'
                         LOCUST_run__flags['PSIMGRLX']=True #equilibria are relatively poor so relax magnetic axis location
                         #XXX CURRENTLY WAITING FOR FIX LOCUST_run__flags['I3DR']=-1 
                         LOCUST_run__settings_prec_mod={}
@@ -252,7 +253,7 @@ for (parameters__database,parameters__sheet_name_kinetic_prof,config_beam_specie
                         LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                         LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                         LOCUST_run__settings_prec_mod['threadsPerBlock']=64
-                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=128
                         LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1

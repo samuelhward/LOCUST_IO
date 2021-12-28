@@ -8,6 +8,7 @@ script for plotting scan_DNB_phase
 ---
  
 notes:         
+fpl is preferred since some output rundata files cannot be read by python readlines for some reason
 ---
 """
 
@@ -69,16 +70,18 @@ except:
 import scan_DNB_phase_launch as batch_data
 
 Pinj=.13e6 #RMS is 0.13MW, since fires for 0.1s every 1.4s
-PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'fpl',batch_data,processes=32,chunksize=1) #if using fpl remember to re-scale beam species!
-PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))/2.
+PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'fpl',batch_data,processes=32,chunksize=1)/2. #if using fpl remember to re-scale beam species!
+PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
 
 fig,ax=plt.subplots(1,constrained_layout=True)
+colours=plt.rcParams['axes.prop_cycle'].by_key()['color']
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         label=f'{scenario.split("_")[-1]}'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
         ax.plot(batch_data.parameters__phases_middles_cases_all[scenario_counter][mode_number_counter],100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
         label=label,
+        color=colours[int(2*scenario_counter)+2+mode_number_counter],
         )
 
 ax.set_xlabel('$\Delta\Phi$ [deg]') #\Phi for absolute

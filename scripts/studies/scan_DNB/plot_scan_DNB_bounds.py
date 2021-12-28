@@ -120,46 +120,49 @@ for database_counter,(
         batch_data.parameters__phases_uppers_cases_all,batch_data.parameters__phases_middles_cases_all,batch_data.parameters__phases_lowers_cases_all,
         batch_data.parameters__currents_uppers,batch_data.parameters__currents_middles,batch_data.parameters__currents_lowers
         )): 
-    DFN_2D=output_dfns[database_counter,0,0,0].transform(axes=plot_axes)
-    DFN_2D['E']/=1.e3 #plot in keV
-    for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(batch_data.parameters__kinetic_profs_tF_tE,batch_data.parameters__kinetic_profs_Pr):
-        for mode_counter,(parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers)):
-            for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(batch_data.parameters__rotations_upper,batch_data.parameters__rotations_middle,batch_data.parameters__rotations_lower): 
-                for current_counter,(parameters__current_upper,parameters__current_middle,parameters__current_lower) in enumerate(zip(
-                    parameters__currents_upper,
-                    parameters__currents_middle,
-                    parameters__currents_lower)):                    
-                    if parameters__current_upper==0: continue
-                    DFN_3Ds=[]
-                    for phase_counter,(parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower)): #nest at same level == offset them together rigidly 
-                        if output_dfns[database_counter,mode_counter,phase_counter,current_counter]:
-                            DFN_3Ds.append(output_dfns[database_counter,mode_counter,phase_counter,current_counter].transform(axes=plot_axes)['dfn'])            
-                    DFN_3Ds=np.array(DFN_3Ds)                    
-                    DFN_min=np.min(DFN_3Ds,axis=0)
-                    DFN_max=np.max(DFN_3Ds,axis=0)
-                    label=f'{parameters__database.split("_")[-1]} '
-                    label=f'$n$ = {"+".join(str(abs(int(mode))) for mode in parameters__toroidal_mode_number)}'
-                    axs[database_counter,current_counter-1].fill_between(
-                        DFN_2D[plot_axes[0]],
-                        np.nan_to_num((DFN_max-DFN_2D['dfn'])/DFN_2D['dfn']),
-                        np.nan_to_num((DFN_min-DFN_2D['dfn'])/DFN_2D['dfn']),
-                        label=label,
-                        alpha=0.45,
-                    )        
-                    axs[database_counter,current_counter-1].text(x=0.1,y=0.05,s=f'{parameters__database.split("_")[-1]}'+', $I_{\mathrm{p}}$'+f'={int(parameters__current_upper/1000)}kAt',fontsize=10)
-                    axs[database_counter,current_counter-1].set_xlabel('')
-                    axs[database_counter,current_counter-1].set_ylabel('')
-                    axs[database_counter,current_counter-1].set_yticks([-1.,-0.5,0.])
-                    #axs[database_counter,current_counter-1].set_xlim([-1,1])
-                    axs[database_counter,current_counter-1].set_xlim([0,1e2]) #beam energy is 100keV
-                    axs[database_counter,current_counter-1].set_ylim([-1.,0.])
-                    axs[database_counter,current_counter-1].tick_params(
-                        axis='both',          
-                        which='both',      
-                        labelbottom=False,
-                        labelleft=False,
-                        )
-
+    try:
+        DFN_2D=output_dfns[database_counter,0,0,0].transform(axes=plot_axes)
+        DFN_2D['E']/=1.e3 #plot in keV
+        for parameters__kinetic_prof_tF_tE,parameters__kinetic_prof_Pr in zip(batch_data.parameters__kinetic_profs_tF_tE,batch_data.parameters__kinetic_profs_Pr):
+            for mode_counter,(parameters__toroidal_mode_number,parameters__phases_upper,parameters__phases_middle,parameters__phases_lower) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,parameters__phases_uppers,parameters__phases_middles,parameters__phases_lowers)):
+                for parameters__rotation_upper,parameters__rotation_middle,parameters__rotation_lower in zip(batch_data.parameters__rotations_upper,batch_data.parameters__rotations_middle,batch_data.parameters__rotations_lower): 
+                    for current_counter,(parameters__current_upper,parameters__current_middle,parameters__current_lower) in enumerate(zip(
+                        parameters__currents_upper,
+                        parameters__currents_middle,
+                        parameters__currents_lower)):                    
+                        if parameters__current_upper==0: continue
+                        DFN_3Ds=[]
+                        for phase_counter,(parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower)): #nest at same level == offset them together rigidly 
+                            if output_dfns[database_counter,mode_counter,phase_counter,current_counter]:
+                                DFN_3Ds.append(output_dfns[database_counter,mode_counter,phase_counter,current_counter].transform(axes=plot_axes)['dfn'])            
+                        DFN_3Ds=np.array(DFN_3Ds)                    
+                        DFN_min=np.min(DFN_3Ds,axis=0)
+                        DFN_max=np.max(DFN_3Ds,axis=0)
+                        label=f'{parameters__database.split("_")[-1]} '
+                        label=f'$n$ = {"+".join(str(abs(int(mode))) for mode in parameters__toroidal_mode_number)}'
+                        axs[database_counter,current_counter-1].fill_between(
+                            DFN_2D[plot_axes[0]],
+                            np.nan_to_num((DFN_max-DFN_2D['dfn'])/DFN_2D['dfn']),
+                            np.nan_to_num((DFN_min-DFN_2D['dfn'])/DFN_2D['dfn']),
+                            label=label,
+                            alpha=0.45,
+                        )        
+                        axs[database_counter,current_counter-1].text(x=0.1,y=0.05,s=f'{parameters__database.split("_")[-1]}'+', $I_{\mathrm{p}}$'+f'={int(parameters__current_upper/1000)}kAt',fontsize=10)
+                        axs[database_counter,current_counter-1].set_xlabel('')
+                        axs[database_counter,current_counter-1].set_ylabel('')
+                        axs[database_counter,current_counter-1].set_yticks([-1.,-0.5,0.])
+                        #axs[database_counter,current_counter-1].set_xlim([-1,1])
+                        axs[database_counter,current_counter-1].set_xlim([0,1e2]) #beam energy is 100keV
+                        axs[database_counter,current_counter-1].set_ylim([-1.,0.])
+                        axs[database_counter,current_counter-1].tick_params(
+                            axis='both',          
+                            which='both',      
+                            labelbottom=False,
+                            labelleft=False,
+                            )
+    except:
+        pass
+    
 for axis in axs[-1,:]:
     axis.tick_params(
         axis='both',          

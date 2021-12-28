@@ -711,12 +711,13 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         if not np.any(new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor):
             new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor=interpolator_rho_tor(new_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.*np.pi)) #remember from IDS to GEQDSK (to [Wb/rad])
 
-        #if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
+        #originally: if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
+        #now: set density_thermal same as density in IDS for BBNBI
         az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['parameters__plasma_species']})
         for ion_counter,ion in enumerate(new_IDS.core_profiles.profiles_1d[0].ion):
-            if [ion.element[0].a,ion.element[0].z_n] not in az_avail: 
-                new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
-                new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density_thermal=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
+            #if [ion.element[0].a,ion.element[0].z_n] not in az_avail: 
+            #new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
+            new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density_thermal=new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density#np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
 
         #set time data
         new_IDS.nbi.ids_properties.homogeneous_time = 1

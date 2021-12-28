@@ -10,11 +10,11 @@ import pathlib
 simulations=[
     #'*-3_p*90000*',
     #'*-4_p*90000*',
-    '*-3_-6*90000*',
+    #'*-3_-6*90000*',
     #'*-4_-5*90000*',
     #'*-3_p*60000*',
     #'*-4_p*60000*',
-    #'*-3_-6*60000*',
+    '*-3_-6*60000*',
     #'*-4_-5*60000*',
     #'*phaseu_20.033333333333328_phasem_86.7_phasel_40.033333333333*',
     #'*phaseu_-19.966666666666672_phasem_46.7_phasel_0.03333333333333588*',
@@ -138,7 +138,7 @@ def render_mesh(simulations,components,vminmax=[0,0.5],opacity_transfer=False,ad
                 1.,1.,0.5,0.,
             ]
 
-render_mesh(simulations,components,[0.001,0.5],opacity_transfer=False)
+render_mesh(simulations,components,[0.001,0.3],opacity_transfer=False)
 
 render_mesh(simulations,components,opacity_transfer=False,add_label=False,colour_by='Component_ID',vminmax=[0,12])
 
@@ -146,7 +146,7 @@ render_mesh(simulations,components,opacity_transfer=False,add_label=False,colour
 #colorMap = GetColorTransferFunction('Power_Flux_[MW/m2]')
 
 colorMap = GetColorTransferFunction('Power_Flux_[MW/m2]')
-colorMap.RescaleTransferFunction(0.001,0.25)
+colorMap.RescaleTransferFunction(0.001,0.2)
 
 colorMap.EnableOpacityMapping = 0
 opacityMap = GetOpacityTransferFunction('Power_Flux_[MW/m2]')

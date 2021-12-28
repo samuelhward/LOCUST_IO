@@ -111,10 +111,10 @@ parameters__toroidal_mode_numbers__options['n=4']=[-4,-5]
 ##################################################################
 #choose the scenarios we will want to examine
 
-parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_15MAQ10_case5','ITER_7d5MA4d5T_case7'] #these all zipped at same level in main loop because source data is not consistent enough
-parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Flat n'","'Pr=0.3,tF=2tE'"]
+parameters__databases=['ITER_7d5MAHalfB_case2','ITER_7d5MAFullB_case3','ITER_7d5MA4d5T_case7','ITER_15MAQ10_case5'] #these all zipped at same level in main loop because source data is not consistent enough
+parameters__sheet_names_kinetic_prof=["'nT=0.76ne'","'iterDD.iterFSBMI'","'Pr=0.3,tF=2tE'","'Flat n'"]
 configs_beam_species=['deuterium','deuterium','deuterium','deuterium']
-plasmas_species=[['deuterium'],['deuterium'],['deuterium','tritium'],['deuterium']] #"\"['']\""
+plasmas_species=[['deuterium'],['deuterium'],['deuterium'],['deuterium','tritium']] #"\"['']\""
 
 
 ##################################################################

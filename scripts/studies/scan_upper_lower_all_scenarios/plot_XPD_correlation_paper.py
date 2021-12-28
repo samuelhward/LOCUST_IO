@@ -119,9 +119,9 @@ markers = itertools.cycle((
     'x',
     ))
     
-number_colours=len(batch_data.parameters__databases)
-colours=matplotlib.cm.get_cmap('tab10',10)
-colours=itertools.cycle(list(colours(np.arange(number_colours)))[0:number_colours])
+#number_colours=len(batch_data.parameters__databases)
+#colours=matplotlib.cm.get_cmap('tab10',10)
+#colours=itertools.cycle(list(colours(np.arange(number_colours)))[0:number_colours])
 #next(colours)
 
 rundata=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'rund',batch_data,processes=32,chunksize=1)
@@ -140,8 +140,8 @@ top_ax=fig.add_subplot(2,1,1)
 bottom_axs=[]
 bottom_axs.append(fig.add_subplot(2,2,3))
 bottom_axs.append(fig.add_subplot(2,2,4))
+colours=plt.rcParams['axes.prop_cycle'].by_key()['color']
 for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databases):
-    colour=next(colours)
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         marker=next(markers)
         n=int(np.abs(mode_number[0]))
@@ -164,7 +164,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
         XPD.T.flatten(),
         quantity[plasma_state_counter,mode_number_counter].flatten(),
         label=label,
-        color=colour,
+        color=colours[int(2*plasma_state_counter)+2+int(mode_number_counter/2)],
         marker=marker,
         )
         m,c,r,p,err=scipy.stats.linregress(
@@ -173,9 +173,9 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
         )
         bottom_axs[bottom_ax].plot(
             np.linspace(np.min(XPD),np.max(XPD),10),
-            m*np.linspace(np.min(XPD),np.max(XPD),10),
+            m*np.linspace(np.min(XPD),np.max(XPD),10)+c,
             marker=marker,
-            color=colour,
+            color=colours[int(2*plasma_state_counter)+2+int(mode_number_counter/2)],
             label=label,
             linewidth=1
         #    linestyle=linestyle,
@@ -199,10 +199,10 @@ ax_total.set_xlabel('X-point displacement [mm]')
 top_ax.legend(bbox_to_anchor=(1.15,.5),ncol=1,loc='center',bbox_transform=ax_total.transAxes)
 fig.subplots_adjust(right=0.8)
 
-plt.savefig(
-    fname=f'/home/ITER/wards2/pics/paper_3_XPD_correlation.pdf',
-    dpi=800,
-)
+#plt.savefig(
+#    fname=f'/home/ITER/wards2/pics/paper_3_XPD_correlation.pdf',
+#    dpi=800,
+#)
 
 plt.show()
 
@@ -212,7 +212,6 @@ plt.show()
 # component-resolved Pearson correlation vs component
 fig,ax=plt.subplots(1)
 for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databases):
-    colour=next(colours)
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         marker=next(markers)
         for component_number,component in components.items():
@@ -229,7 +228,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
                     batch_data.parameters__phases_lowers[mode_number_counter], 
                     batch_data.parameters__phases_uppers[mode_number_counter],
                 )
-            label=f'{plasma_state.split("_")[-1]} ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
+            label=f'{plasma_state.split("_")[-1]}'# ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
             label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
             label+=f', {component}'
             Pearson=scipy.stats.pearsonr(
@@ -248,7 +247,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
                 #Pearson[0],
                 m,
                 marker=marker, 
-                color=colour,
+                color=colours[int(2*plasma_state_counter)+2+int(mode_number_counter/2)],
             )
             #try:
             #except:
