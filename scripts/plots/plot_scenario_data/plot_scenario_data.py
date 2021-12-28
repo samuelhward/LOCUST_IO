@@ -278,7 +278,8 @@ if __name__=='__main__':
     ax2.set_ylim((0,9.))
     ax2.set_thetamin(0)
     ax2.set_thetamax(90)
-    ax2.set_xlabel('$R$ [m]')
+    ax2.set_xlabel('$X$ [m]')
+    ax2.set_ylabel('$Y$')
 
     ax3 = fig.add_subplot(223)
     ax4 = fig.add_subplot(224)
