@@ -16,8 +16,6 @@ notes:
  
 import sys
 
-from matplotlib.lines import _LineStyle #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
-
 try:
     import numpy as np
     import pathlib

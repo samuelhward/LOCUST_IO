@@ -2,7 +2,7 @@
  
 """
 Samuel Ward
-28/10/21
+30/12/21
 ----
 script for reading component-level power loads
 ---
@@ -77,14 +77,14 @@ except:
     raise ImportError("ERROR: templates/template_mod.py could not be imported!\nreturning\n") 
     sys.exit(1)
 
-import stage_1_10_1_launch as batch_data
+import scan_current_launch as batch_data
 
 
 output_rundata=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'rund',batch_data,processes=32,chunksize=1)
 output_rundata=np.array(output_rundata).reshape(
-    len(batch_data.parameters__currents_upper),
+    len(batch_data.parameters__databases),
     len(batch_data.parameters__toroidal_mode_numbers),
-    len(batch_data.parameters__phases_uppers[0]),
+    len(batch_data.parameters__currents_upper),
     )
 
 
@@ -129,7 +129,7 @@ colours=itertools.cycle(colours)
 #output_rundata[0,0,4]['data']['write_vtk']['Integrated power to component'][0]
 
 fig=plt.figure(constrained_layout=False)
-ylim=[0.,3.5]
+ylim=[-5.,3.5]
 axs=[]
 ax_total=fig.add_subplot(1,1,1)
 ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
@@ -137,46 +137,52 @@ ax_total.spines['top'].set_color('none')
 ax_total.spines['bottom'].set_color('none')
 ax_total.spines['left'].set_color('none')
 ax_total.spines['right'].set_color('none')
-axs.append(fig.add_subplot(2,2,1))
-axs.append(fig.add_subplot(2,2,3))
-axs.append(fig.add_subplot(2,2,2))
-axs.append(fig.add_subplot(2,2,4))
-axs=np.array(axs)
+num_axes=len(batch_data.parameters__databases)*len(batch_data.parameters__toroidal_mode_numbers)
+counter=0
+for database_counter,database in enumerate(batch_data.parameters__databases):
+    for mode_counter,modes in enumerate(batch_data.parameters__toroidal_mode_numbers):
+        counter+=1
+        axs.append(fig.add_subplot(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),counter))
 
-for ax_counter,(ax,rundata,modes) in enumerate(zip(axs,output_rundata[0],batch_data.parameters__toroidal_mode_numbers)): #just plot one value of current for now
+axs=np.array(axs).reshape(
+    len(batch_data.parameters__databases),
+    len(batch_data.parameters__toroidal_mode_numbers),
+)
 
-    for component_number in [str(number) for number in np.arange(12)+1]:
-        try:
-            PFC_power=np.array([float(dict(rd['data']['write_vtk']['Integrated power to component'])[component_number].strip('MW')) if rd else 0 for rd in rundata])
-            print(f'n={modes}: {components[component_number]}: {np.min(PFC_power)}-{np.max(PFC_power)}MW')
-            PFC_power=np.nan_to_num(np.log10(PFC_power*1.e3),nan=ylim[0])
-            PFC_power[PFC_power>ylim[-1]]=ylim[-1]
-            PFC_power[PFC_power<ylim[0]]=ylim[0]
-            ax.plot(batch_data.parameters__phases_middles[ax_counter],PFC_power,label=components[component_number],color=next(colours),marker=next(marker),markersize=10)
-            title=f'$n$ = {"+".join(str(abs(int(mode))) for mode in modes)}'
-            ax.set_title(title,y=0.05)
-            ax.set_ylim(ylim)
-            ax.grid(True,axis='y',which='both')
-        except:
-            pass
-        
-axs[0].tick_params(
-    axis='x',
-    which='both',
-    bottom=True,
-    top=False,
-    labelbottom=True
-    )
-axs[1].tick_params(
-    axis='x',
-    which='both',
-    bottom=True,
-    top=False,
-    labelbottom=True
-    )
+for database_counter,(ax_col,database) in enumerate(zip(axs,batch_data.parameters__databases)):
+    for mode_counter,(ax,modes) in enumerate(zip(ax_col,batch_data.parameters__toroidal_mode_numbers)):
+        for component_number in [str(number) for number in np.arange(12)+1]:
 
-ax_total.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{M}}$) [deg]') #\Phi for absolute
+            try:
+                PFC_power=np.array([float(dict(rd['data']['write_vtk']['Integrated power to component'])[component_number].strip('MW'))  if rd else 0 for rd in output_rundata[database_counter,mode_counter]])
+                print(f'case={database}: n={modes}: {components[component_number]}: {np.min(PFC_power)}-{np.max(PFC_power)}MW')
+                PFC_power=np.nan_to_num(np.log10(PFC_power*1.e3),nan=ylim[0])
+                PFC_power[PFC_power>ylim[-1]]=ylim[-1]
+                PFC_power[PFC_power<ylim[0]]=ylim[0]
+                ax.plot(batch_data.parameters__currents_upper/1.e3,PFC_power,label=components[component_number],color=next(colours),marker=next(marker),markersize=10)
+                title=f'$n$ = {"+".join(str(abs(int(mode))) for mode in modes)}'
+                ax.set_title(title,y=0.05)
+                ax.set_ylim(ylim)
+                ax.grid(True,axis='y',which='both')
+            except:
+                pass
+
+for ax in axs[:,-1]:
+    ax.tick_params(
+        axis='y',
+        which='both',
+        labelleft=False
+        )
+for row in axs[:-1,:]: 
+    for ax in row:
+        ax.tick_params(
+            axis='x',
+            which='both',
+            labelbottom=False
+            )
+
+ax_total.set_xlabel('ECC coil current [kAt]')
 ax_total.set_ylabel(r'Component power flux [kW] ($\mathrm{log}_{10}$)')
 
-axs[0].legend(loc='center',ncol=6,bbox_to_anchor=(0.5,1.1),bbox_transform=ax_total.transAxes)
+axs[0,0].legend(loc='center',ncol=6,bbox_to_anchor=(0.5,1.1),bbox_transform=ax_total.transAxes)
 plt.show()

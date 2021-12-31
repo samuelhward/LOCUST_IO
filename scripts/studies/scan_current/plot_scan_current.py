@@ -16,8 +16,6 @@ notes:
  
 import sys
 
-from matplotlib.lines import _LineStyle #have global imports --> makes less modular (no "from input_classes import x") but best practice to import whole input_classes module anyway
-
 try:
     import numpy as np
     import pathlib
@@ -70,7 +68,7 @@ except:
 
 import scan_current_launch as batch_data
 
-Pinj=.13e6 #RMS is 0.13MW, since fires for 0.1s every 1.4s
+Pinj=33.e6 #RMS is 0.13MW, since fires for 0.1s every 1.4s
 PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=32,chunksize=1) #if using fpl remember to re-scale beam species!
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__currents_upper))
 
@@ -80,7 +78,7 @@ for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
         linestyle='solid' if np.abs(mode_number[0])==3 else 'dashed'
         label=f'{scenario.split("_")[-1]}'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
-        ax.plot(batch_data.parameters__currents_upper,100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
+        ax.plot(batch_data.parameters__currents_upper/1.e3,100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
         label=label,
         linestyle=linestyle
         )
