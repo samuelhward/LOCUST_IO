@@ -73,17 +73,21 @@ PFC_power=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_pow
 PFC_power=np.array(PFC_power).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__currents_upper))
 
 fig,ax=plt.subplots(1,constrained_layout=False)
+colours=plt.rcParams['axes.prop_cycle'].by_key()['color']
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         linestyle='solid' if np.abs(mode_number[0])==3 else 'dashed'
         label=f'{scenario.split("_")[-1]}'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
-        ax.plot(batch_data.parameters__currents_upper/1.e3,100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
-        label=label,
-        linestyle=linestyle
+        ax.plot(
+            batch_data.parameters__currents_upper/1.e3,
+            100.*PFC_power[scenario_counter,mode_number_counter]/Pinj,
+            label=label,
+            linestyle=linestyle,
+            color=colours[int(2*scenario_counter)+2+mode_number_counter],
         )
 
-ax.set_xlabel('$I_{\mathrm{coil}}$ [kAt]')
+ax.set_xlabel('ECC current [kAt]')
 ax.set_ylabel('Deposited power lost [%]')
 fig.subplots_adjust(right=0.85)
 ax.legend(loc='center',bbox_to_anchor=(1.1,0.5),ncol=1)

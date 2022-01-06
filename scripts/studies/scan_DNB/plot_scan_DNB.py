@@ -109,8 +109,22 @@ ax.legend(loc='center',bbox_to_anchor=(0.5,1.1),ncol=4)
 plt.show()
 
 
-
-fig,axs=plt.subplots(2,constrained_layout=False)
+fig=plt.figure(constrained_layout=False)
+ax_total=fig.add_subplot(1,1,1,frameon=False)
+ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+ax_total.spines['top'].set_color('none')
+ax_total.spines['bottom'].set_color('none')
+ax_total.spines['left'].set_color('none')
+ax_total.spines['right'].set_color('none')
+axs=[]
+axs.append(fig.add_subplot(2,1,1))
+axs.append(fig.add_subplot(2,1,2))
+axs=np.array(axs)
+axs[0].tick_params(
+                axis='both',          
+                which='both',      
+                labelbottom=False,
+                )
 for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         for current_counter,current in enumerate(batch_data.parameters__currents_uppers[scenario_counter][1:]):
@@ -121,11 +135,12 @@ for scenario_counter,scenario in enumerate(batch_data.parameters__databases):
             label=label,
             color=colours[int(2*scenario_counter)+2+mode_number_counter],
             )
-fig.subplots_adjust(right=0.85)
-axs[0].set_xlabel('$\Delta\Phi$ [deg]') #\Phi for absolute
-axs[1].set_xlabel('$\Delta\Phi$ [deg]') #\Phi for absolute
-axs[0].set_ylabel('Deposited power lost [%]')
-axs[1].legend(loc='center',bbox_to_anchor=(1.1,0.5),ncol=1)
+#fig.subplots_adjust(right=0.85)
+ax_total.set_xlabel(r'Absolute phase shift of RMP ($\Delta\Phi_{\mathrm{m}}$) [deg]') #\Phi for absolute
+ax_total.set_ylabel('DNB power loss [%]')
+axs[1].legend(loc='center',bbox_to_anchor=(0.5,1.1),ncol=4,bbox_transform=ax_total.transAxes)
+axs[0].set_title('standard ECC current',loc='left',y=1.)
+axs[1].set_title('maximum ECC current',loc='left',y=1.)
 plt.show()
 
 

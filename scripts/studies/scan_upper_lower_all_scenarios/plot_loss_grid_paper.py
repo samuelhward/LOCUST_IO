@@ -95,7 +95,7 @@ for run in rundata:
     except:
         quantity.append(0.)
 
-#quantity=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'fpl',batch_data,processes=4,chunksize=1)
+quantity=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=32,chunksize=1)
 quantity=np.array(quantity).reshape(
     len(batch_data.parameters__databases),
     len(batch_data.parameters__toroidal_mode_numbers),
@@ -147,8 +147,9 @@ for plasma_state_counter,database in enumerate(batch_data.parameters__databases)
         LPHASE,UPHASE=np.append(batch_data.parameters__phases_lowers[mode_number_counter],batch_data.parameters__phases_lowers[mode_number_counter][-1]+dLPHASE),np.append(batch_data.parameters__phases_uppers[mode_number_counter],batch_data.parameters__phases_uppers[mode_number_counter][-1]+dUPHASE)
         #settings.discrete_colmap(colmap_name='Greys',face_colour='red',number_bins=11)
         mesh=ax[plasma_state_counter,mode_number_counter+int(mode_number_counter/2)+1].pcolormesh(LPHASE-dLPHASE/2.,UPHASE-dUPHASE/2.,quantity[plasma_state_counter,mode_number_counter],cmap='Greys',edgecolor='none',antialiased=True,
-        vmin=np.min(quantity[plasma_state_counter,2*int(mode_number_counter/2):2*int(mode_number_counter/2)+1]),
-        vmax=np.max(quantity[plasma_state_counter,2*int(mode_number_counter/2):2*int(mode_number_counter/2)+1])) #have same min/max for all modes within scenario 
+        #vmin=np.min(quantity[plasma_state_counter,2*int(mode_number_counter/2):2*int(mode_number_counter/2)+1]),
+        #vmax=np.max(quantity[plasma_state_counter,2*int(mode_number_counter/2):2*int(mode_number_counter/2)+1]),
+        ) #have same min/max for all modes within scenario 
         ax[plasma_state_counter,mode_number_counter+int(mode_number_counter/2)+1].set_xticks(batch_data.parameters__phases_lowers[mode_number_counter][::4])
         ax[plasma_state_counter,mode_number_counter+int(mode_number_counter/2)+1].set_yticks(batch_data.parameters__phases_uppers[mode_number_counter][::4])
         ax[plasma_state_counter,mode_number_counter+int(mode_number_counter/2)+1].set_xlim([np.min(batch_data.parameters__phases_lowers[mode_number_counter]),dLPHASE/2.+np.max(batch_data.parameters__phases_lowers[mode_number_counter])])

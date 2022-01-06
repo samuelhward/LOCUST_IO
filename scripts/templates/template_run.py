@@ -1071,7 +1071,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 field_builder.run()
 
             #look for combined BPLASMA file and create point_data.inp field checking file for LOCUST based on the grid dimensions
-            combined_field=Perturbation('',data_format='LOCUST',filename=(self.args['LOCUST_run__dir_input'] / f'BPLASMA_n{np.abs(mode)}').relative_to(support.dir_input_files))
+            combined_field=Perturbation('',data_format='MARSF',filename=(self.args['LOCUST_run__dir_input'] / f'BPLASMA_n{np.abs(mode)}').relative_to(support.dir_input_files))
 
             combined_field.set(
                 time_point_data=time_points,
@@ -1163,7 +1163,24 @@ class RMP_study_run(run_scripts.workflow.Workflow):
             #plt.savefig('BCHECK_{}.png'.format(mode),bbox_inches='tight')
             plt.show()
 
-            fig,(axes)=plt.subplots(3,1)
+            fig=plt.figure(constrained_layout=False)
+            ax_total=fig.add_subplot(1,1,1,frameon=False)
+            ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+            ax_total.spines['top'].set_color('none')
+            ax_total.spines['bottom'].set_color('none')
+            ax_total.spines['left'].set_color('none')
+            ax_total.spines['right'].set_color('none')
+            axes=[]
+            axes.append(fig.add_subplot(3,1,1))
+            axes.append(fig.add_subplot(3,1,2))
+            axes.append(fig.add_subplot(3,1,3))
+            axes=np.array(axes)
+            for ax in axes[0:-1]:
+                ax.tick_params(
+                            axis='both',          
+                            which='both',      
+                            labelbottom=False,
+                            )
 
             #read probe_g biot-savart code vacuum data
             d={}
@@ -1226,9 +1243,10 @@ class RMP_study_run(run_scripts.workflow.Workflow):
                 ax.plot(d['phi_tor']+phi0,quantity_probeG,'g-',label=f'probe\_g')
                 ax.plot(phi_points*rad_2_deg,combined_field[quantity_MARSF],'b',linestyle='--',label=f'Python check') #overplot these as they SHOULD be the same
                 ax.plot(phi_points*rad_2_deg,combined_field_BCHECK[quantity_MARSF],'b',linestyle='-',label=f'LOCUST')
-                #ax.set_ylabel(r'$\widetilde{{ \underline{{B}}}}_{{{}}}$ [T]'.format(component))
+                label=r'$\widetilde{{B_{}}}$ [tesla]'.format(component)
+                ax.set_ylabel(label)
             axes[0].legend()
-            axes[-1].set_xlabel('$\phi$ [degrees]')
+            axes[-1].set_xlabel('$\phi$ [deg]')
 
             plt.show()
 

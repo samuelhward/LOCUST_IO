@@ -74,8 +74,8 @@ import scan_upper_lower_all_scenarios_launch as batch_data
 
 Pinj=33.e6
 
-def calculate_quantity(rundata,component_numbers=None):
-    quantity=[]
+def calc_PFC_power(rundata,component_numbers=None):
+    PFC_powers=[]
     for run in rundata:
         try:
             if component_numbers:
@@ -85,15 +85,10 @@ def calculate_quantity(rundata,component_numbers=None):
             else:
                 PFC_power=run['PFC_power']['total']
             PFC_power*=100./Pinj
-            quantity.append(PFC_power)
+            PFC_powers.append(PFC_power)
         except:
-            quantity.append(0.)
-    quantity=np.array(quantity).reshape(
-        len(batch_data.parameters__databases),
-        len(batch_data.parameters__toroidal_mode_numbers),
-        len(batch_data.parameters__phases_upper),
-        len(batch_data.parameters__phases_lower))
-    return quantity
+            PFC_powers.append(0.)
+    return PFC_powers
 
 components={
             '1': 'first wall',
@@ -127,8 +122,24 @@ markers = itertools.cycle((
 rundata=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'rund',batch_data,processes=32,chunksize=1)
 
 #correlation plot
-quantity=calculate_quantity(rundata,component_numbers=[2])
-quantity=calculate_quantity(rundata)
+#quantity=np.array(calc_PFC_power(rundata,component_numbers=[2])).reshape(
+#        len(batch_data.parameters__databases),
+#        len(batch_data.parameters__toroidal_mode_numbers),
+#        len(batch_data.parameters__phases_upper),
+#        len(batch_data.parameters__phases_lower))
+#quantity=np.array(calc_PFC_power(rundata)).reshape(
+#        len(batch_data.parameters__databases),
+#        len(batch_data.parameters__toroidal_mode_numbers),
+#        len(batch_data.parameters__phases_upper),
+#        len(batch_data.parameters__phases_lower))
+
+quantity=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,'rund',batch_data,processes=32,chunksize=1)).reshape(
+        len(batch_data.parameters__databases),
+        len(batch_data.parameters__toroidal_mode_numbers),
+        len(batch_data.parameters__phases_upper),
+        len(batch_data.parameters__phases_lower)
+        )*100./Pinj
+        
 fig=plt.figure(figsize=(20, 10))
 ax_total=fig.add_subplot(1,1,1,frameon=False)
 ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
@@ -158,7 +169,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
                 batch_data.parameters__phases_lowers[mode_number_counter], 
                 batch_data.parameters__phases_uppers[mode_number_counter],
             )
-        label=f'{plasma_state.split("_")[-1]} ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
+        label=f'{plasma_state.split("_")[-1]}'# ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'        
         top_ax.scatter(
         XPD.T.flatten(),
@@ -173,7 +184,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
         )
         bottom_axs[bottom_ax].plot(
             np.linspace(np.min(XPD),np.max(XPD),10),
-            m*np.linspace(np.min(XPD),np.max(XPD),10)+c,
+            m*np.linspace(np.min(XPD),np.max(XPD),10),#+c,
             marker=marker,
             color=colours[int(2*plasma_state_counter)+2+int(mode_number_counter/2)],
             label=label,
@@ -194,7 +205,9 @@ for ax in bottom_axs:
     ax.set_ylim([0,15.5])
 
 bottom_axs[-1].tick_params(top=False, bottom=True, left=False, right=False)
-ax_total.set_ylabel('NBI power loss [%]')
+ax_total.set_ylabel('NBI power loss [%]',labelpad=25)
+top_ax.set_ylabel('Total')
+bottom_axs[0].set_ylabel('ECC-induced (fit)')
 ax_total.set_xlabel('X-point displacement [mm]')
 top_ax.legend(bbox_to_anchor=(1.15,.5),ncol=1,loc='center',bbox_transform=ax_total.transAxes)
 fig.subplots_adjust(right=0.8)
@@ -215,7 +228,11 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         marker=next(markers)
         for component_number,component in components.items():
-            quantity=calculate_quantity(rundata,component_numbers=[component_number])
+            quantity=np.array(calc_PFC_power(rundata,component_numbers=[component_number])).reshape(
+                len(batch_data.parameters__databases),
+                len(batch_data.parameters__toroidal_mode_numbers),
+                len(batch_data.parameters__phases_upper),
+                len(batch_data.parameters__phases_lower))
             n=int(np.abs(mode_number[0]))
             case=int(batch_data.parameters__databases[plasma_state_counter][-1])
             PHI_L,PHI_U,XPD_mars=plot_X_point_displacement(case=case,n=n,LVV=90,return_grid=True,coord_system='ITER')

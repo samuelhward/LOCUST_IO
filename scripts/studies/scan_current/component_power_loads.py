@@ -130,6 +130,7 @@ colours=itertools.cycle(colours)
 
 fig=plt.figure(constrained_layout=False)
 ylim=[-5.,3.5]
+ylim=[0.,3.5]
 axs=[]
 ax_total=fig.add_subplot(1,1,1)
 ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
@@ -160,9 +161,11 @@ for database_counter,(ax_col,database) in enumerate(zip(axs,batch_data.parameter
                 PFC_power[PFC_power>ylim[-1]]=ylim[-1]
                 PFC_power[PFC_power<ylim[0]]=ylim[0]
                 ax.plot(batch_data.parameters__currents_upper/1.e3,PFC_power,label=components[component_number],color=next(colours),marker=next(marker),markersize=10)
-                title=f'$n$ = {"+".join(str(abs(int(mode))) for mode in modes)}'
-                ax.set_title(title,y=0.05)
+                title=f'{database.split("_")[-1]}'# ({batch_data.configs_beam_species[database_counter][0].capitalize()})'
+                title+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in modes)}'
+                ax.set_title(title,loc='left',y=1.0)
                 ax.set_ylim(ylim)
+                ax.set_yticks(np.arange(ylim[0],ylim[1]))
                 ax.grid(True,axis='y',which='both')
             except:
                 pass
@@ -181,7 +184,7 @@ for row in axs[:-1,:]:
             labelbottom=False
             )
 
-ax_total.set_xlabel('ECC coil current [kAt]')
+ax_total.set_xlabel('ECC current [kAt]')
 ax_total.set_ylabel(r'Component power flux [kW] ($\mathrm{log}_{10}$)')
 
 axs[0,0].legend(loc='center',ncol=6,bbox_to_anchor=(0.5,1.1),bbox_transform=ax_total.transAxes)
