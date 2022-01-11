@@ -135,25 +135,46 @@ for database_counter,(
                         for phase_counter,(parameters__phase_upper,parameters__phase_middle,parameters__phase_lower) in enumerate(zip(parameters__phases_upper,parameters__phases_middle,parameters__phases_lower)): #nest at same level == offset them together rigidly 
                             if output_dfns[database_counter,mode_counter,phase_counter,current_counter]:
                                 DFN_3Ds.append(output_dfns[database_counter,mode_counter,phase_counter,current_counter].transform(axes=plot_axes)['dfn'])            
+                                #either plot each DFN here + 2D axisymmetric 
+                            """ 
+                                marker='+' if -3 in parameters__toroidal_mode_number else '.'
+                                axs[database_counter,current_counter-1].plot(
+                                DFN_2D[plot_axes[0]],
+                                DFN_3Ds[-1],
+                                #label=r'$\Phi_{\mathrm{m}}={}$'.format(str(parameters__phase_middle)),
+                                label='{}'.format(str(parameters__phase_middle)),
+                                color=settings.cmap_inferno(phase_counter/len(parameters__phases_upper)),
+                                marker=marker,
+                                )
+                            axs[database_counter,current_counter-1].plot(
+                            DFN_2D[plot_axes[0]],
+                            DFN_2D['dfn'],
+                            linestyle='dashed',
+                            color='black',
+                            )                                
+                            """
+                        #or plot range between DFNs here
+                        #"""
+                        label=f'{parameters__database.split("_")[-1]} '
+                        label=f'$n$ = {"+".join(str(abs(int(mode))) for mode in parameters__toroidal_mode_number)}'
                         DFN_3Ds=np.array(DFN_3Ds)                    
                         DFN_min=np.min(DFN_3Ds,axis=0)
                         DFN_max=np.max(DFN_3Ds,axis=0)
-                        label=f'{parameters__database.split("_")[-1]} '
-                        label=f'$n$ = {"+".join(str(abs(int(mode))) for mode in parameters__toroidal_mode_number)}'
                         axs[database_counter,current_counter-1].fill_between(
                             DFN_2D[plot_axes[0]],
                             np.nan_to_num((DFN_max-DFN_2D['dfn'])/DFN_2D['dfn']),
                             np.nan_to_num((DFN_min-DFN_2D['dfn'])/DFN_2D['dfn']),
                             label=label,
                             alpha=0.45,
-                        )        
+                            )        
+                        #"""
                         axs[database_counter,current_counter-1].text(x=0.1,y=0.05,s=f'{parameters__database.split("_")[-1]}'+', $I_{\mathrm{p}}$'+f'={int(parameters__current_upper/1000)}kAt',fontsize=10)
                         axs[database_counter,current_counter-1].set_xlabel('')
                         axs[database_counter,current_counter-1].set_ylabel('')
-                        axs[database_counter,current_counter-1].set_yticks([-1.,-0.5,0.])
-                        #axs[database_counter,current_counter-1].set_xlim([-1,1])
-                        axs[database_counter,current_counter-1].set_xlim([0,1e2]) #beam energy is 100keV
-                        axs[database_counter,current_counter-1].set_ylim([-1.,0.])
+                        #axs[database_counter,current_counter-1].set_yticks([-1.,-0.5,0.])
+                        ##axs[database_counter,current_counter-1].set_xlim([-1,1])
+                        #axs[database_counter,current_counter-1].set_xlim([0,1e2]) #beam energy is 100keV
+                        #axs[database_counter,current_counter-1].set_ylim([-1.,0.])
                         axs[database_counter,current_counter-1].tick_params(
                             axis='both',          
                             which='both',      
@@ -184,10 +205,10 @@ ax_total.set_xlabel('Energy [keV]',fontsize=15)
 ax_total.set_ylabel('Fractional change in fast-ion density',fontsize=15)
 axs[0,0].legend(loc='lower right',fontsize=10)
 
-plt.savefig(
-    fname=f'/home/ITER/wards2/pics/paper_3_DNB_loss_bounds_E.pdf',
-    dpi=800,
-)
+#plt.savefig(
+#    fname=f'/home/ITER/wards2/pics/paper_3_DNB_loss_bounds_E.pdf',
+#    dpi=800,
+#)
 
 if __name__ == '__main__':
     plt.show()

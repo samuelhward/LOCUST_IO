@@ -73,13 +73,13 @@ def plot_fpl_q_lambda_bounds_1d(output_fpls,beam_deposition,batch_data,output_fp
     axs[0,1].set_xlim([2,4.05])
     axs[1,0].set_xlim([0.34,.8])
     axs[1,1].set_xlim([0.34,.8])
-    ax_row1.set_title('Collisionless')
-    ax_row2.set_title('Collisional')
+    ax_row1.set_title('Without plasma collisions')
+    ax_row2.set_title('With plasma collisions')
     ax_total.set_ylabel('Loss probability')
-    plt.savefig(
-        fname='paper_2_loss_probability_q_lambda_bounds.pdf',
-        dpi=800,
-    )
+    #plt.savefig(
+    #    fname='paper_2_loss_probability_q_lambda_bounds.pdf',
+    #    dpi=800,
+    #)
     plt.show()
 
 def plot_fpl_q_lambda_1d(output_fpls,beam_deposition,batch_data,run_number=0,output_fpls_collisionless=[]):

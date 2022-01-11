@@ -88,7 +88,7 @@ cmap_b=settings.colour_custom([33,150,243,1])
 import plot_scenario_data_launch as batch_data
 
 beam_depositions=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'beamdepo',batch_data,processes=16,chunksize=1)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
-equilibria=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'eq',batch_data,processes=16,chunksize=1)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
+equilibria=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'eq',batch_data,processes=16,chunksize=1,GEQDSKFIX1=True,GEQDSKFIX2=True)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
 temperatures_e=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'temp_e',batch_data,processes=16,chunksize=1)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
 temperatures_i=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'temp_i',batch_data,processes=16,chunksize=1)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
 density_electrons=np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'numden',batch_data,processes=16,chunksize=1)).reshape(len(batch_data.configs_beam_1),len(batch_data.parameters__databases))
@@ -258,7 +258,7 @@ if __name__=='__main__':
         depo['weight']*=depo['E']*mass*constants.species_charge/constants.species_mass/1.e6 #deposition in MW
 
     combined.combine(*[depo for depo in beam_depositions[0:2,-1]])
-    fig=plt.figure()
+    fig=plt.figure(constrained_layout=False)
     ax1 = fig.add_subplot(221)
     axes=['R','Z']
     run_scripts.utils.plot_NBI_geometry(axes=axes,beam_name='heating beam 1',fig=fig,ax=ax1,axis='off',colmap=settings.cmap_r)
@@ -267,6 +267,8 @@ if __name__=='__main__':
     combined.plot(axes=axes,number_bins=500,fig=fig,ax=ax1,real_scale=True,LCFS=equilibria[0,-1],colmap=settings.discrete_colmap(colmap_name='plasma',face_colour='white',number_bins=50))
     ax1.set_xlabel('$R$ [m]')
     ax1.set_ylabel('$Z$ [m]')
+    ax1.set_xlim((4.,8.5))
+    ax1.set_xticks((4,6,8))
     ax2 = fig.add_subplot(222,polar=True)
     axes=['phi','R']
     run_scripts.utils.plot_NBI_geometry(axes=axes,label='heating beam 1',beam_name='heating beam 1',fig=fig,ax=ax2,axis='off',colmap=settings.cmap_r)
@@ -281,8 +283,9 @@ if __name__=='__main__':
     ax2.set_xlabel('$X$ [m]')
     ax2.set_ylabel('$Y$')
 
-    ax3 = fig.add_subplot(223)
-    ax4 = fig.add_subplot(224)
+    ax3 = fig.add_subplot(234)
+    ax4 = fig.add_subplot(235)
+    ax5 = fig.add_subplot(236)
     ax4.tick_params(
         axis='y',
         which='both',
@@ -303,19 +306,27 @@ if __name__=='__main__':
         depo_binned_R,depo_binned_R_edges=np.histogram(depo['R'],bins=np.linspace(4,8.5,100),weights=depo['weight'])
         depo_binned_R_centres=(depo_binned_R_edges[:-1]+depo_binned_R_edges[1:])*0.5
         ax3.plot(depo_binned_R_centres,depo_binned_R/(depo_binned_R_centres[1]-depo_binned_R_centres[0]),color=colour(0.),label=label)
+        depo.set(V_pitch=processing.utils.pitch_calc(depo,equilibria=[equilibria[0,-1]],perturbations=None,i3dr=-1,phase=0.))
+        depo_binned_pitch,depo_binned_pitch_edges=np.histogram(depo['V_pitch'],bins=np.linspace(-1.,1.,100),weights=depo['weight'])
+        depo_binned_pitch_centres=(depo_binned_pitch_edges[:-1]+depo_binned_pitch_edges[1:])*0.5
+        ax5.plot(depo_binned_pitch_centres,depo_binned_pitch/(depo_binned_pitch_centres[1]-depo_binned_pitch_centres[0]),color=colour(0.))
 
     ax3.plot(depo_binned_R_centres,depo_binned_R/(depo_binned_R_centres[1]-depo_binned_R_centres[0]),color=cmap_b(0.),label='HNB2')
     ax3.plot(depo_binned_R_centres,depo_binned_R/(depo_binned_R_centres[1]-depo_binned_R_centres[0]),color=settings.cmap_k(0.),label='HNB1 + HNB2')
     ax4.plot(depo_binned_Z_centres,depo_binned_Z/(depo_binned_Z_centres[1]-depo_binned_Z_centres[0]),color=settings.cmap_k(0.),label='HNB1 + HNB2')
+    ax5.plot(depo_binned_pitch_centres,depo_binned_pitch/(depo_binned_pitch_centres[1]-depo_binned_pitch_centres[0]),color=settings.cmap_k(0.),label='HNB1 + HNB2')
 
     ax3.set_title('')
     ax4.set_title('')
     ax3.set_xlabel(r'$R$ [m]')
     ax4.set_xlabel(r'$Z$ [m]')
+    ax5.set_xlabel(r'Pitch ($v_{\parallel}/v$)')
     ax4.set_ylabel(r'')
     ax3.set_ylabel(r'Power deposited [MWm$^{-1}$]')
+    ax5.text(0.05, 0.95, r'[MW$\lambda^{-1}$]', ha='left', va='top', rotation='horizontal',transform=ax5.transAxes,color=settings.colour_custom(rgba=[100,100,100,1])(0.)) 
     ax3.set_xlim((4.,8.5))
     ax4.set_xlim((-1.5,1.5))
+    ax5.set_xlim((-1.,1.))
     ax3.set_ylim((0,35.))
     ax4.set_ylim((0,35.))
     ax3.axvline(np.min(equilibria[0,-1]['lcfs_r']),color='m',label='LCFS')
@@ -325,5 +336,8 @@ if __name__=='__main__':
     ax3.legend()
 
     plt.show()
+
+
+
 
 

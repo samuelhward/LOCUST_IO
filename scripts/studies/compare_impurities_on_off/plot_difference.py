@@ -103,6 +103,10 @@ except:
 ################################################################## 
 #Main 
 
+cmap_r=settings.colour_custom([194,24,91,1])
+cmap_g=settings.colour_custom([76,175,80,1])
+cmap_b=settings.colour_custom([33,150,243,1])
+
 import compare_impurities_on_off_launch as batch_data
 
 def get_output_files(batch_data,output_type='dfn',**kwargs): 
@@ -151,7 +155,7 @@ def get_output_files(batch_data,output_type='dfn',**kwargs):
 outputs=get_output_files(batch_data,'fpl')
 fig1,ax1=plt.subplots(1)
 fig2,ax2=plt.subplots(1)
-for output,colour in zip(outputs,[settings.cmap_g,settings.cmap_r]):
+for output,colour in zip(outputs,[settings.cmap_r,cmap_b]):
     if output:
         output['weight']/=output['weight']*len(output['weight'])
         output['E']/=1000.
@@ -161,8 +165,8 @@ for output,colour in zip(outputs,[settings.cmap_g,settings.cmap_r]):
         output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=output.ID,colmap=colour,number_bins=50,weight=True)
 ax1.set_xlabel('R [m]',fontsize=25)  
 ax2.set_xlabel('Energy [keV]',fontsize=25)  
-ax1.set_ylabel('marker loss fraction',fontsize=25)  
-ax2.set_ylabel('marker loss fraction',fontsize=25)  
+ax1.set_ylabel('Loss power [a.u.]',fontsize=25)  
+ax2.set_ylabel('Loss power [a.u.]',fontsize=25)  
 ax1.set_title('')
 ax2.set_title('')
 ax1.legend()

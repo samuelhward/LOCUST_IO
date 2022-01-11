@@ -85,24 +85,33 @@ for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.par
     for mode_number_counter,(mode_number) in enumerate(batch_data.parameters__toroidal_mode_numbers):
         label=f'{scenario.split("_")[-1]}'+f' ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
+        print(100*PFC_power[plasma_state_counter][mode_number_counter]/Pinj)
         ax.plot(np.arange(len(PFC_power[plasma_state_counter][mode_number_counter])),100*PFC_power[plasma_state_counter][mode_number_counter]/Pinj,label=label)
 
 
 #now add 1_10_1 data to plot (or could re-run 1_10 to fill in missing simulations...it doesn't matter - but 1_10_1 data are huge! so think about editing the launch file...)
-del(batch_data)
-import studies_simon.stage3_10.stage_3_10_launch as batch_data
+import studies_simon.stage3_10.stage_3_10_launch as batch_data_3_10
 
-PFC_power_3_10=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data,processes=32,chunksize=1)
-PFC_power_3_10=np.array(PFC_power_3_10).reshape(len(batch_data.parameters__databases),len(batch_data.parameters__toroidal_mode_numbers),len(batch_data.parameters__phases_upper))
-for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data.parameters__databases,batch_data.configs_beam_species)):
-    for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
-        label=f'{scenario.split("_")[-1]}'+f' ({batch_data.configs_beam_species[plasma_state_counter][0].capitalize()})'
+inds_to_del=[counter for counter,val in enumerate(batch_data_3_10.args_batch['LOCUST_run__dir_output']) if '5_10' in str(val)]
+inds_to_del.reverse()
+for key,value in batch_data_3_10.args_batch.items():
+    if value:
+        for ind in inds_to_del:
+            del(batch_data_3_10.args_batch[key][ind])
+            
+
+PFC_power_3_10=templates.plot_mod.apply_func_parallel(templates.plot_mod.calc_PFC_power,method,batch_data_3_10,processes=32,chunksize=1)
+PFC_power_3_10=np.array(PFC_power_3_10).reshape(len(batch_data_3_10.parameters__databases),len(batch_data_3_10.parameters__toroidal_mode_numbers),len(batch_data_3_10.parameters__phases_upper))
+for plasma_state_counter,(scenario,beam_species) in enumerate(zip(batch_data_3_10.parameters__databases,batch_data_3_10.configs_beam_species)):
+    for mode_number_counter,mode_number in enumerate(batch_data_3_10.parameters__toroidal_mode_numbers):
+        label=f'{scenario.split("_")[-1]}'+f' ({batch_data_3_10.configs_beam_species[plasma_state_counter][0].capitalize()})'
         label+=f', $n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
+        print(100*PFC_power_3_10[plasma_state_counter][mode_number_counter]/Pinj)
         ax.plot(np.arange(len(PFC_power_3_10[plasma_state_counter][mode_number_counter])),100*PFC_power_3_10[plasma_state_counter][mode_number_counter]/Pinj,label=label)
 
 ax.set_xlabel('XPD contour point')
 ax.set_ylabel('NBI power loss [%]')
-ax.set_ylim([0,8.1])
+#ax.set_ylim([0,8.1])
 ax.legend(loc='center',bbox_to_anchor=(1.1,0.5),ncol=1)
 plt.show()
 

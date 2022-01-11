@@ -137,7 +137,7 @@ ax.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{M}}$) [deg]') #\Phi f
 ax.set_ylabel('NBI power loss [%]')
 ax.set_ylim([0,8.1])
 #fig.subplots_adjust(right=0.8)
-ax.legend()#loc='center',bbox_to_anchor=(1.15,0.5),ncol=1)
+ax.legend(loc='center',bbox_to_anchor=(1.1,0.5),ncol=1)
 
 #'''
 plt.show()

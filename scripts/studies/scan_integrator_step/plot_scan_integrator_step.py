@@ -63,9 +63,18 @@ except:
 
 import scan_integrator_step_launch as batch_data
 
-outputs=templates.plot_mod.get_output_files(batch_data,'fpl')
-fig1,ax1=plt.subplots(1)
-fig2,ax2=plt.subplots(1)
+outputs=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'fpl',batch_data,processes=16,chunksize=1)
+
+fig=plt.figure(constrained_layout=False)
+ax_total=fig.add_subplot(1,1,1,frameon=False)
+ax_total.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+ax_total.spines['top'].set_color('none')
+ax_total.spines['bottom'].set_color('none')
+ax_total.spines['left'].set_color('none')
+ax_total.spines['right'].set_color('none')
+ax1=fig.add_subplot(2,1,1)
+ax2=fig.add_subplot(2,1,2)
+
 Pinj=33.e6
 for counter,(output,col_val) in enumerate(zip(outputs,np.linspace(0,0.9,len(batch_data.args_batch['LOCUST_run__dir_output'])))):
     if output: 
@@ -91,15 +100,13 @@ for counter,(output,col_val) in enumerate(zip(outputs,np.linspace(0,0.9,len(batc
         label+=r'$, \mathrm{P}_{\mathrm{loss}}=$'
         label+=f'{format(100*PFC_power/Pinj,".2f")}%'
         output['weight']*=1.e6*output['f']*output['E']*constants.charge_e/1.e3 #plot loss power of markers in kW
-        output.plot(fig=fig1,ax=ax1,axes=['time'],fill=False,label=label,colmap=colmap,colmap_val=col_val,number_bins=200,weight=True)
+        output.plot(fig=fig,ax=ax1,axes=['time'],fill=False,label=label,colmap=colmap,colmap_val=col_val,number_bins=200,weight=True)
         output['E']/=1000. #convert to keV
-        output.plot(fig=fig2,ax=ax2,axes=['E'],fill=False,label=label,colmap=colmap,colmap_val=col_val,number_bins=200,weight=True)
+        output.plot(fig=fig,ax=ax2,axes=['E'],fill=False,label=label,colmap=colmap,colmap_val=col_val,number_bins=200,weight=True)
 ax1.legend()
-ax2.legend()
 ax1.set_xlabel('Time [s]')
 ax2.set_xlabel('Energy [keV]')
-ax1.set_ylabel('Loss power [kW]')
-ax2.set_ylabel('Loss power [kW]')
+ax_total.set_ylabel('Loss power [a.u.]')
 ax1.set_title('')
 ax2.set_title('')
 plt.show()

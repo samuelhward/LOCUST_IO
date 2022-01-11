@@ -69,7 +69,7 @@ except:
 import scan_marker_number_launch as batch_data
 
 Pinj=33.e6
-outputs=list(templates.plot_mod.get_output_files(batch_data,'fpl'))
+outputs=templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,'fpl',batch_data,processes=4,chunksize=1)
 
 fig = plt.figure()
 ax1 = fig.add_subplot(222)
