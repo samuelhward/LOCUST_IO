@@ -84,6 +84,11 @@ except:
     raise ImportError("ERROR: LOCUST_IO/src/classes/output_classes/orbits.py could not be imported!\nreturning\n")
     sys.exit(1)
 try:
+    from classes.output_classes.moments import Moments
+except:
+    raise ImportError("ERROR: LOCUST_IO/src/classes/output_classes/moments.py could not be imported!\nreturning\n")
+    sys.exit(1)
+try:
     from classes.output_classes.output_mesh import Output_Mesh
 except:
     raise ImportError("ERROR: LOCUST_IO/src/classes/output_classes/output_mesh.py could not be imported!\nreturning\n")
@@ -143,6 +148,7 @@ def read_locust_io_obj(filename,classtype='eq',*args,**kwargs):
     data_format_dispatch['orbit2D']='LOCUST'
     data_format_dispatch['orbit3D']='LOCUST'
     data_format_dispatch['pfc']='LOCUST'
+    data_format_dispatch['mom']='LOCUST'
 
     classes_dispatch={}
     classes_dispatch['eq']=Equilibrium
@@ -162,6 +168,7 @@ def read_locust_io_obj(filename,classtype='eq',*args,**kwargs):
     classes_dispatch['orbit2D']=Orbits
     classes_dispatch['orbit3D']=Orbits
     classes_dispatch['pfc']=Output_Mesh
+    classes_dispatch['mom']=Moments
 
     if filename:
         try:
@@ -194,6 +201,7 @@ def get_io_files(batch_data=None,classtype='eq',yield_filenames=False,return_lis
     file_extension_dispatch['rot']='profile_wT.dat'
     file_extension_dispatch['beamdepo']='ptcles.dat'
     file_extension_dispatch['wall']='locust_wall'
+    file_extension_dispatch['mom']='*.h5'
 
     io_type_dispatch={}
     io_type_dispatch['dfn']='output'
@@ -205,6 +213,7 @@ def get_io_files(batch_data=None,classtype='eq',yield_filenames=False,return_lis
     io_type_dispatch['orbit2D']='output'
     io_type_dispatch['orbit3D']='output'
     io_type_dispatch['pfc']='output'
+    io_type_dispatch['mom']='output'
     io_type_dispatch['eq']='input'
     io_type_dispatch['pert']='input'
     io_type_dispatch['temp_e']='input'

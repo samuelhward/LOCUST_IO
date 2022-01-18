@@ -21,16 +21,28 @@ cmap_b=settings.colour_custom([33,150,243,1])
 
 
 #n=3+6 90kAt
+#at the point at which power flux is max at EACH phase
 n_3_6=np.array([
 [26, 0.184], 
 [46, 0.183],
-[66, 0.5327],
+[66, 0.533],
 [86, 0.337],
 [106, 0.322],
 [126, 0.351],
 ]) 
+#n=3+6 90kAt
+#at the point at which power flux is max for all phases - tet 421322
+n_3_6=np.array([
+[26, 0.], 
+[46, 0.002279], #used tet 164600
+[66, 0.532702],
+[86, 0.307391], #used tet 164566
+[106, 0.105879], #used tet 164566
+[126, 0.000316], #used tet 164566
+]) 
 
 #n=4+5 90kAt
+#at the point at which power flux is max at EACH phase
 n_4_5=np.array([
 [26, 0.665],
 [41, 0.428], #on lower panels between first wall and outer baffle
@@ -38,6 +50,15 @@ n_4_5=np.array([
 [71, 0.691],
 [86, 0.466], #on panels higher up
 [101, 0.498], #on panels higher up
+])
+#at the point at which power flux is max for all phases - tet 421108
+n_4_5=np.array([
+[26, 0.204012],
+[41, 0.186503], 
+[56, 0.119086], 
+[71, 0.691468],
+[86, 0.173177], 
+[101, 0.134278], #for some reason cannot find tet 421108, so use 164592 which is very close
 ])
 
 import matplotlib.pyplot as plt 
@@ -59,3 +80,9 @@ print(np.mean(n_3_6,axis=0)[-1]-np.mean(n_4_5,axis=0)[-1])
 
 plt.show()
 
+
+""" 
+in case where single point is chosen,
+power reduction for n=3 is ~0.37MW
+power reduction for n=4 is ~0.43MW
+"""

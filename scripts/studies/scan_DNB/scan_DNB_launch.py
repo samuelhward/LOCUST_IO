@@ -104,7 +104,7 @@ except:
 #################################
 #define study name 
 
-RMP_study__name='scan_DNB'
+RMP_study__name='scan_DNB'#_updated_beam_depo'
 
 #################################
 #define options and dispatch tables for helping choosing settings
@@ -130,30 +130,30 @@ parameters__kinetic_profs_tF_tE=[2.]
 parameters__toroidal_mode_numbers=[[-3,-6],[-4,-5]]
 
 # since optimal phases now depend on both case and toroidal mode number need to introduce another iteration level
-parameters__phases_uppers_case2=[np.linspace(0,120,5)[:-1]+30.-190./3.-3.3,np.linspace(0,90,5)[:-1]+30.-230./4.-3.3]
-parameters__phases_middles_case2=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case2=[np.linspace(0,120,5)[:-1]+30.-145./3.-3.3,np.linspace(0,90,5)[:-1]+30.-75./4.-3.3]
+parameters__phases_uppers_case2=[np.linspace(0,120,9)[:-1]+30.-190./3.-3.3,np.linspace(0,90,9)[:-1]+30.-230./4.-3.3]
+parameters__phases_middles_case2=[np.linspace(0,120,9)[:-1]+26.7+0./3.,np.linspace(0,90,9)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case2=[np.linspace(0,120,9)[:-1]+30.-145./3.-3.3,np.linspace(0,90,9)[:-1]+30.-75./4.-3.3]
 
-parameters__phases_uppers_case3=[np.linspace(0,120,5)[:-1]+30.-330./3.-3.3,np.linspace(0,90,5)[:-1]+30.-215./4.-3.3]
-parameters__phases_middles_case3=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case3=[np.linspace(0,120,5)[:-1]+30.-20./3.-3.3,np.linspace(0,90,5)[:-1]+30.-100./4.-3.3]
+parameters__phases_uppers_case3=[np.linspace(0,120,9)[:-1]+30.-330./3.-3.3,np.linspace(0,90,9)[:-1]+30.-215./4.-3.3]
+parameters__phases_middles_case3=[np.linspace(0,120,9)[:-1]+26.7+0./3.,np.linspace(0,90,9)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case3=[np.linspace(0,120,9)[:-1]+30.-20./3.-3.3,np.linspace(0,90,9)[:-1]+30.-100./4.-3.3]
 
-parameters__phases_uppers_case5=[np.linspace(0,120,5)[:-1]+30.-200./3.-3.3,np.linspace(0,90,5)[:-1]+30.-250./4.-3.3]
-parameters__phases_middles_case5=[np.linspace(0,120,5)[:-1]+26.7+0./3.,np.linspace(0,90,5)[:-1]+26.7+0./4.]
-parameters__phases_lowers_case5=[np.linspace(0,120,5)[:-1]+30.-140./3.-3.3,np.linspace(0,90,5)[:-1]+30.-95./4.-3.3]
+parameters__phases_uppers_case5=[np.linspace(0,120,9)[:-1]+30.-200./3.-3.3,np.linspace(0,90,9)[:-1]+30.-250./4.-3.3]
+parameters__phases_middles_case5=[np.linspace(0,120,9)[:-1]+26.7+0./3.,np.linspace(0,90,9)[:-1]+26.7+0./4.]
+parameters__phases_lowers_case5=[np.linspace(0,120,9)[:-1]+30.-140./3.-3.3,np.linspace(0,90,9)[:-1]+30.-95./4.-3.3]
 
-parameters__phases_uppers_case7=[np.linspace(0,120,5)[:-1]+30.-290./3.-3.3,np.linspace(0,90,5)[:-1]+30.-0./4.-3.3]
-parameters__phases_middles_case7=[np.linspace(0,120,5)[:-1]+26.7-0./3.,np.linspace(0,90,5)[:-1]+26.7-0./4.]
-parameters__phases_lowers_case7=[np.linspace(0,120,5)[:-1]+30.-55./3.-3.3,np.linspace(0,90,5)[:-1]+30.+10./4.-3.3]
+parameters__phases_uppers_case7=[np.linspace(0,120,9)[:-1]+30.-290./3.-3.3,np.linspace(0,90,9)[:-1]+30.-0./4.-3.3]
+parameters__phases_middles_case7=[np.linspace(0,120,9)[:-1]+26.7-0./3.,np.linspace(0,90,9)[:-1]+26.7-0./4.]
+parameters__phases_lowers_case7=[np.linspace(0,120,9)[:-1]+30.-55./3.-3.3,np.linspace(0,90,9)[:-1]+30.+10./4.-3.3]
 
 parameters__phases_uppers_cases_all=[parameters__phases_uppers_case2,parameters__phases_uppers_case3,parameters__phases_uppers_case7,parameters__phases_uppers_case5]
 parameters__phases_middles_cases_all=[parameters__phases_middles_case2,parameters__phases_middles_case3,parameters__phases_middles_case7,parameters__phases_middles_case5]
 parameters__phases_lowers_cases_all=[parameters__phases_lowers_case2,parameters__phases_lowers_case3,parameters__phases_lowers_case7,parameters__phases_lowers_case5]
 
 #range of currents to measure depends on plasma scenario
-parameters__currents_uppers=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
-parameters__currents_middles=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
-parameters__currents_lowers=[np.array([0.,30.,90.])*1000.]*2+[np.array([0.,60.,90.])*1000.]+[np.array([0.,30.,90.])*1000.]
+parameters__currents_uppers=[np.array([0.,30.,90.])*1000.]*3+[np.array([0.,60.,90.])*1000.]
+parameters__currents_middles=[np.array([0.,30.,90.])*1000.]*3+[np.array([0.,60.,90.])*1000.]
+parameters__currents_lowers=[np.array([0.,30.,90.])*1000.]*3+[np.array([0.,60.,90.])*1000.]
 
 parameters__rotations_upper=np.array([0.])
 parameters__rotations_middle=np.array([0.])
@@ -166,7 +166,8 @@ config_beam_species='hydrogen'
 ##################################################################
 #define the workflow commands in order we want to execute them
 
-RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create_DNB','IDS_create','run_BBNBI','depo_get','run_LOCUST']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','IDS_create_DNB','IDS_create','run_BBNBI','depo_get','run_LOCUST','calc_poinc','clean_input']\""
+RMP_study__workflow_commands="\"['mkdir','save_args','kin_get','3D_get','3D_calc','input_get','depo_get_premade','run_LOCUST','calc_poinc','clean_input']\""
 
 ##################################################################
 #create every valid combination of parameter, returned in flat lists
@@ -263,7 +264,7 @@ for (
                         LOCUST_run__settings_prec_mod['file_tet']="'locust_wall'" 
                         LOCUST_run__settings_prec_mod['file_eqm']="'locust_eqm'" 
                         LOCUST_run__settings_prec_mod['threadsPerBlock']=64
-                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64*8
+                        LOCUST_run__settings_prec_mod['blocksPerGrid']=64*4
                         LOCUST_run__settings_prec_mod['root']="'/tmp/{username}/{study}/{params}'".format(username=settings.username,study=RMP_study__name,params=parameters__parameter_string)
                         LOCUST_run__settings_prec_mod['i3dr']=-1 #XXX WHILST I3DR FLAG IS BROKE
                         LOCUST_run__settings_prec_mod['niter']=1

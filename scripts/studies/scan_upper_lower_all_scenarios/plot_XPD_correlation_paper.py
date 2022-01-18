@@ -227,6 +227,7 @@ fig,ax=plt.subplots(1)
 for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databases):
     for mode_number_counter,mode_number in enumerate(batch_data.parameters__toroidal_mode_numbers):
         marker=next(markers)
+        mean_Pearson=0
         for component_number,component in components.items():
             quantity=np.array(calc_PFC_power(rundata,component_numbers=[component_number])).reshape(
                 len(batch_data.parameters__databases),
@@ -252,6 +253,7 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
                 XPD.T.flatten(),
                 quantity[plasma_state_counter,mode_number_counter].flatten(),
                 )
+            mean_Pearson+=Pearson[0]
             m,c,r,p,err=scipy.stats.linregress(
             XPD.T.flatten(),
             quantity[plasma_state_counter,mode_number_counter].flatten(),
@@ -261,15 +263,15 @@ for plasma_state_counter,plasma_state in enumerate(batch_data.parameters__databa
             print(label)
             ax.scatter(
                 int(component_number),
-                #Pearson[0],
-                m,
+                Pearson[0],
+                #m,
                 marker=marker, 
                 color=colours[int(2*plasma_state_counter)+2+int(mode_number_counter/2)],
             )
             #try:
             #except:
             #    pass
-
+        print(f'Mean Pearson: {mean_Pearson/(int(component_number)+1)}')
 plt.show()
 
 #################################

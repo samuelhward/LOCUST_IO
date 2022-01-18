@@ -111,7 +111,7 @@ except:
 #################################
 #define study name 
 
-RMP_study__name='stage_4_10'
+RMP_study__name='stage_4_10'#_updated_beam_depo'
 
 #################################
 #define options and dispatch tables for helping choosing settings

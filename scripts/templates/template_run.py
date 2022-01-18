@@ -11,6 +11,7 @@ notes:
     all filepaths are absolute at the beginning
     LOCUST_run__settings_prec_mod['file_tet'] and LOCUST_run__settings_prec_mod['file_eqm'] must be set
     ! setting interpolation type=RBF currently breaks due to bugs in module environment
+    ! create_IDS stage relies on NBI actor enforcing quasineutrality
 todo:
 
     create helper functions e.g. for reading kinetic profiles, strategy behaviour decided by template_launch i.e. whether to read from excel or IDS 
@@ -636,6 +637,7 @@ class RMP_study_run(run_scripts.workflow.Workflow):
     def create_IDS(self,*args,**kwargs):
         """
         notes:
+            relies on NBI actor enforcing quasineutrality
         """
 
         try:
@@ -711,13 +713,15 @@ class RMP_study_run(run_scripts.workflow.Workflow):
         if not np.any(new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor):
             new_IDS.equilibrium.time_slice[0].profiles_1d.rho_tor=interpolator_rho_tor(new_IDS.equilibrium.time_slice[0].profiles_1d.psi/(2.*np.pi)) #remember from IDS to GEQDSK (to [Wb/rad])
 
-        #originally: if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
-        #now: set density_thermal same as density in IDS for BBNBI
-        az_avail=list({species_name:table_species_AZ[species_name] for species_name in self.args['parameters__plasma_species']})
+        az_avail=list(table_species_AZ.values())
         for ion_counter,ion in enumerate(new_IDS.core_profiles.profiles_1d[0].ion):
-            #if [ion.element[0].a,ion.element[0].z_n] not in az_avail: 
-            #new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
+            #set density_thermal same as density in IDS for BBNBI
             new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density_thermal=new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density#np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
+            #if species not present in table_species_AZ - i.e. we do not want it in there - set density to very low
+            #!!! make sure that codes reading this IDS still maintain quasineutrality - default IMAS BBNBI actor should do this
+            if [ion.element[0].a,ion.element[0].z_n] not in az_avail: 
+                new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
+                new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density_thermal=np.full(len(new_IDS.core_profiles.profiles_1d[0].ion[ion_counter].density),1.)
 
         #set time data
         new_IDS.nbi.ids_properties.homogeneous_time = 1

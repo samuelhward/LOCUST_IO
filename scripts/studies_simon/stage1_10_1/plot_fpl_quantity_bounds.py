@@ -215,4 +215,3 @@ for current_counter,(parameters__current_upper,parameters__current_middle,parame
 
 plot_fpl_q_lambda_bounds_1d(output_fpls,beam_deposition,batch_data,output_fpls_collisionless=output_fpls_1_10_2)
 
-
