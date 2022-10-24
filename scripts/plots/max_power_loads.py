@@ -76,13 +76,23 @@ ax.legend(fontsize=20)
 ax.set_xlabel(r'Absolute phase shift of RMP ($\Phi_{\mathrm{m}}$) [deg]',fontsize=20)
 ax.set_ylabel(r'Maximum first wall power load [$\mathrm{MWm}^{-2}$]',fontsize=20)
 
-print(np.mean(n_3_6,axis=0)[-1]-np.mean(n_4_5,axis=0)[-1])
+# max
+print(np.max(n_3_6,axis=0)[-1]) # = 0.532702
+print(np.max(n_4_5,axis=0)[-1]) # = 0.691468
+# min
+print(np.min(n_3_6,axis=0)[-1]) # = 0.0
+print(np.min(n_4_5,axis=0)[-1]) # = 0.119086
+
+# diff between means
+print(np.mean(n_3_6,axis=0)[-1]-np.mean(n_4_5,axis=0)[-1]) # = -0.09332616666666665
+
+# reduction by rotation (varying phase)
+print(np.max(n_3_6,axis=0)[-1]-np.mean(n_3_6,axis=0)[-1]) # = 0.3746075
+print(np.max(n_4_5,axis=0)[-1]-np.mean(n_4_5,axis=0)[-1]) # = 0.4400473333333333
+
+# peak-peak (fixing phase)
+print(np.max(n_3_6,axis=0)[-1]-np.min(n_3_6,axis=0)[-1]) # = 0.532702
+print(np.max(n_4_5,axis=0)[-1]-np.min(n_4_5,axis=0)[-1]) # = 0.572382
 
 plt.show()
 
-
-""" 
-in case where single point is chosen,
-power reduction for n=3 is ~0.37MW
-power reduction for n=4 is ~0.43MW
-"""

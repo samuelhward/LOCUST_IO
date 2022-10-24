@@ -87,6 +87,32 @@ PFC_power=np.array(PFC_power).reshape(
                     len(batch_data.parameters__phases_upper)
                     )
 
+runds=[np.array(templates.plot_mod.apply_func_parallel(templates.plot_mod.read_locust_io_obj,f'rund_{i+1}',batch_data,processes=12,chunksize=1)).reshape(
+                    len(batch_data.parameters__kinetic_profs_Pr),
+                    len(batch_data.parameters__currents_upper),
+                    len(batch_data.parameters__toroidal_mode_numbers),
+                    len(batch_data.parameters__phases_upper)
+                    ) 
+        for i in range(8)] #8 here is OMP_NUM_THREADS i.e. the number of output rundata files produced
+
+PFC_power_error=np.zeros((
+                    len(batch_data.parameters__kinetic_profs_Pr),
+                    len(batch_data.parameters__currents_upper),
+                    len(batch_data.parameters__toroidal_mode_numbers),
+                    len(batch_data.parameters__phases_upper)
+                    ))
+
+for plasma_state_counter,(Pr,tftE) in enumerate(zip(batch_data.parameters__kinetic_profs_Pr,batch_data.parameters__kinetic_profs_tF_tE)):
+    for current_counter,(current) in enumerate(zip(batch_data.parameters__currents_upper)):
+        for mode_number_counter,(mode_number) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers)):
+            for phase_counter,phase in enumerate(batch_data.parameters__phases_middles[mode_number_counter]):
+                measured_powers=1.e6*np.array([float(runds[r][plasma_state_counter,current_counter,mode_number_counter,phase_counter].data['data']['ctrk_tick']['~power to PFCs [MW]'][-1][0] ) for r in range(8)])
+                print(mode_number)
+                print(phase)
+                print(measured_powers)
+                print(np.var(measured_powers))
+                PFC_power_error[plasma_state_counter,current_counter,mode_number_counter,phase_counter]=np.std(measured_powers)
+
 # one figure per plasma
 fig,axs=plt.subplots(len(batch_data.parameters__kinetic_profs_Pr),constrained_layout=True)
 colours=[cmap_r(0.),cmap_r(0.),cmap_b(0.),cmap_b(0.)] #one colour per mode number
@@ -96,22 +122,20 @@ for plasma_state_counter,(ax,Pr,tftE) in enumerate(zip([axs],batch_data.paramete
     for current_counter,(current,linestyle) in enumerate(zip(batch_data.parameters__currents_upper,['solid','solid'])):
         for mode_number_counter,(mode_number,colour) in enumerate(zip(batch_data.parameters__toroidal_mode_numbers,colours)):
             marker='.' if len(mode_number)>1 else 'x' #XXX if only one value of current, here override what linestyle denotes
-
             label=f'$n$ = {"+".join(str(abs(int(mode))) for mode in mode_number)}'
             #label+=', '+r'$\Delta\Phi_{\mathrm{u,m}}$'
             #label+=f'={int(np.abs(mode_number[0])*relative_phases_upper_middle[0])}'
             #label+=', '+r'$\Delta\Phi_{\mathrm{l,m}}$='
             #label+=f'{int(np.abs(mode_number[0])*relative_phases_lower_middle[0])}'
-            
             #find relative phase between coils for this toroidal mode number
             relative_phases_upper_middle=batch_data.parameters__phases_uppers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
             relative_phases_lower_middle=batch_data.parameters__phases_lowers[mode_number_counter]-batch_data.parameters__phases_middles[mode_number_counter]
-            ax.scatter(batch_data.parameters__phases_middles[mode_number_counter],100*PFC_power[plasma_state_counter,current_counter,mode_number_counter]/Pinj,label=label,color=colour,linestyle=linestyle,marker=marker,s=80)
+            ax.errorbar(batch_data.parameters__phases_middles[mode_number_counter],100*PFC_power[plasma_state_counter,current_counter,mode_number_counter]/Pinj,yerr=100*PFC_power_error[plasma_state_counter,current_counter,mode_number_counter]/Pinj,label=label,color=colour,linestyle=linestyle,marker=marker,ms=20)
 
 ax.legend()
 ax.set_xlabel('Absolute phase shift of RMP ($\Phi_{\mathrm{m}}$) [deg]') #\Phi for absolute
 ax.set_ylabel('NBI power loss [%]')
-ax.set_ylim([0,13])
+ax.set_ylim([0,15])
 # remove ticks from total ax
 #ax_total = fig.add_subplot(111,frameon=False)
 #ax_total.tick_params(axis='both',which='both',bottom=False,labelbottom=False,left=False,labelleft=False)

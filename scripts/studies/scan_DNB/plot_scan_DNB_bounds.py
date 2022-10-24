@@ -433,13 +433,15 @@ for database_counter,(
                     DFN_2D_plot_max=np.max(DFNs_for_2D_plots[database_counter,mode_counter,:,current_counter-1,...],axis=0)
                     DFN_2_plot=copy.deepcopy(output_dfns[database_counter,0,0,0])
                     DFN_2_plot['E']/=1000.
-                    DFN_2_plot.set(dfn=np.nan_to_num((DFN_2D_plot_max-DFN_2D_plot_min))),#/DFN_2_plot.transform(axes=plot_axes_2D)['dfn']))
-                    DFN_2_plot.plot(
+                    DFN_diff=np.nan_to_num(DFN_2D_plot_max-DFN_2D_plot_min)
+                    DFN_2_plot.set(dfn=(DFN_diff-np.min(DFN_diff))/(np.max(DFN_diff)-np.min(DFN_diff))),#/DFN_2_plot.transform(axes=plot_axes_2D)['dfn']))
+                    mesh=DFN_2_plot.plot(
                         fig=fig_2D,
                         ax=ax_group[database_counter,current_counter-1],
                         transform=False,
                         axes=plot_axes_2D,
                         colmap=settings.cmap_inferno,
+                        number_bins=11,
                     )
                     ax_group[database_counter,current_counter-1].text(x=0.95,y=0.05,s=f'{parameters__database.split("_")[-1]}'+', $I_{\mathrm{c}}$'+f'={int(parameters__current_upper/1000)}kAt',fontsize=10,
                     ha='right',
@@ -484,6 +486,13 @@ ax_total_2D_n3.set_xlabel('Energy [keV]',fontsize=15)
 ax_total_2D_n3.set_ylabel(r'Pitch ($v_{\parallel}/v$)',fontsize=15)
 ax_total_2D_n4.set_xlabel('Energy [keV]',fontsize=15)
 ax_total_2D_n4.set_ylabel(r'Pitch ($v_{\parallel}/v$)',fontsize=15)
+
+cbar_ax = fig_2D_n3.add_axes([0.91, 0.1, 0.025, 0.7])
+cbar=fig_2D_n3.colorbar(mesh,cax=cbar_ax,orientation='vertical',)#,pad=0.2)
+cbar.ax.tick_params(labelsize=10)
+cbar_ax = fig_2D_n4.add_axes([0.91, 0.1, 0.025, 0.7])
+cbar=fig_2D_n4.colorbar(mesh,cax=cbar_ax,orientation='vertical')#,pad=0.2)
+cbar.ax.tick_params(labelsize=10)
 
 
 if __name__ == '__main__':
